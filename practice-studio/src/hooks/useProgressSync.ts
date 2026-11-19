@@ -90,15 +90,40 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
   const [statusOverride, setStatusOverride] = useState<PracticeStatusOverride>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingDocRef = useRef<DrillDocument | null>(null);
+
+  const flushAutoSave = useCallback(async () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const doc = pendingDocRef.current;
+    if (!doc) return;
+    pendingDocRef.current = null;
+    try {
+      await fetch("/api/save-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(doc),
+      });
+    } catch {
+      // silent fail on transient autosave
+    }
+  }, []);
 
   const triggerAutoSave = useCallback((updatedDoc: DrillDocument) => {
+    pendingDocRef.current = updatedDoc;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
+      saveTimerRef.current = null;
+      const docToSave = pendingDocRef.current;
+      pendingDocRef.current = null;
+      if (!docToSave) return;
       try {
         await fetch("/api/save-state", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedDoc),
+          body: JSON.stringify(docToSave),
         });
       } catch {
         // silent fail on transient autosave
@@ -213,6 +238,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
     setStatusOverride,
     isSyncing,
     triggerAutoSave,
+    flushAutoSave,
     confirmSyncToNotion,
   };
 }

@@ -13,6 +13,7 @@ import {
 import { applyProgress, readProgress } from "@/lib/progress";
 import { redactDrill, redactDrillForReview } from "@/lib/redact";
 import { plainTitle } from "@/lib/titleText";
+import { hasVariantsForProblem } from "@/lib/variants";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -58,24 +59,37 @@ export async function GET(req: NextRequest) {
         doc.unitTitle = plainTitle(doc.unitTitle) || doc.unitCode;
       }
 
-      // Compute local IDE workspace paths at runtime from repo root (never baked into drill JSON)
-      if (Array.isArray(doc.problems) && doc.drillId) {
-        const wsDir =
-          getDrillWorkspaceDir(doc.drillId, rootDir) ??
-          path.join(getDrillWorkspacesDir(rootDir), doc.drillId);
+      // Compute local IDE workspace paths & variant bank availability at runtime (never baked into drill JSON)
+      if (Array.isArray(doc.problems)) {
+        const variantBankCache = new Map<string, Array<Record<string, unknown>>>();
+        const isMath =
+          doc.subject !== "PRG" && !String(doc.unitCode || "").startsWith("PRG-");
+        const wsDir = doc.drillId
+          ? getDrillWorkspaceDir(doc.drillId, rootDir) ??
+            path.join(getDrillWorkspacesDir(rootDir), doc.drillId)
+          : null;
         for (const prob of doc.problems) {
-          if (prob && typeof prob === "object" && prob.workspaceFile) {
-            const mappedRel = remapWorkspaceFileForMode(
-              prob.workspaceFile,
-              doc.drillId
-            ).replace(/\\/g, "/");
-            const absFile =
-              resolveInsideDrillWorkspace(mappedRel, doc.drillId, rootDir) ??
-              path.resolve(rootDir, mappedRel);
-            prob.workspaceFile = mappedRel;
-            prob.workspaceDir = wsDir;
-            prob.vscodeFolderUrl = `vscode://file/${wsDir}`;
-            prob.vscodeUrl = `vscode://file/${absFile}`;
+          if (prob && typeof prob === "object") {
+            if (isMath) {
+              prob.hasVariants = hasVariantsForProblem(
+                doc as Record<string, unknown>,
+                prob as Record<string, unknown>,
+                variantBankCache
+              );
+            }
+            if (doc.drillId && wsDir && prob.workspaceFile) {
+              const mappedRel = remapWorkspaceFileForMode(
+                prob.workspaceFile,
+                doc.drillId
+              ).replace(/\\/g, "/");
+              const absFile =
+                resolveInsideDrillWorkspace(mappedRel, doc.drillId, rootDir) ??
+                path.resolve(rootDir, mappedRel);
+              prob.workspaceFile = mappedRel;
+              prob.workspaceDir = wsDir;
+              prob.vscodeFolderUrl = `vscode://file/${wsDir}`;
+              prob.vscodeUrl = `vscode://file/${absFile}`;
+            }
           }
         }
       }
