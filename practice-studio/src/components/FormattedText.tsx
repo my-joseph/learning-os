@@ -240,7 +240,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
               key={lineIdx}
               className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <span className="font-mono text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
+              <span className="font-display tabular-nums text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
                 {num}.
               </span>
               <div className="flex-1">{renderInline(numContent)}</div>

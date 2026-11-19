@@ -91,7 +91,7 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
           >
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <span
-                className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-mono font-semibold shrink-0 transition-colors ${badgeCls}`}
+                className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-display font-semibold shrink-0 transition-colors ${badgeCls}`}
               >
                 {opt.id}
               </span>

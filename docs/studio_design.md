@@ -12,7 +12,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Layout
 - Workspace switch (`Math` / `Programming`, icon-only): fixed vertical rail on the left-middle edge on `>=1024 px`, and an inline icon-only switch in the header below `1024 px`.
 - Shell: one slim header row — drill switcher + Generate button, then right-aligned mobile side-drawer icon (`<1024 px`), theme toggle, Notion link, and Reset all icon button.
-- Stepper row under the header: centred horizontally inside the header card; compact 24 px desktop / 22 px mobile circles use `Q1`, `Q2`, … for drills and `M1`, `M2`, … for labs. Connector lines are indigo up to the current step and zinc after it. Small desktop labels show only `Level N` for drills, the milestone name for labs, and `Review` on the trailing clipboard step. Buttons keep 44 px minimum tap targets, while keyboard focus outlines hug the circle outside the current-step halo. On mobile (`<640 px`) labels hide and the strip scrolls horizontally with the current step centred and edge fades.
+- Stepper row under the header: centred horizontally inside the header card; compact 24 px desktop / 22 px mobile circles use `Q1`, `Q2`, … for drills and `M1`, `M2`, … for labs. Connector lines are indigo up to the current step and zinc after it. Small desktop labels show only `Level N` for drills, the milestone name for labs, and `Review` on the trailing clipboard step. Buttons keep 44 px minimum tap targets; steps highlight on hover and do not show a focus ring. On mobile (`<640 px`) labels hide and the strip scrolls horizontally with the current step centred and edge fades.
 - Main column max-width ~720 px, centred. Side panel (Due today & weak spots) collapses into a drawer below `1024 px` and is closed by default while answering.
 
 ## Colour (Tailwind tokens; light / dark)
@@ -48,7 +48,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 | `--accent` | `accent` | Brand primary accent (exposed for gradual migration; used on active step highlight) | `79 70 229` (`#4f46e5`, indigo-600) | `129 140 248` (`#818cf8`, indigo-400) |
 
 ## Type
-- Geist Sans for UI and prose, Geist Mono for code and IDs, KaTeX for math.
+- Source Sans Pro (`font-sans`) for UI and prose, Roboto Slab (`font-display`) for non-code labels and numbers, Geist Mono (`font-mono`) only for code, and KaTeX for math.
 - Scale: question prompt `text-base` (16 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). No uppercase/all-caps labels; at most two font weights on screen.
 
 ## Spacing and motion

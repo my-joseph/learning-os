@@ -618,7 +618,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       >
                         {copiedError ? (
                           <>
-                            <Check className={`w-3 h-3 ${statusTone.correct.text}`} aria-hidden="true" />
+                            <Check className="w-3 h-3" aria-hidden="true" />
                             <span>Copied</span>
                           </>
                         ) : (

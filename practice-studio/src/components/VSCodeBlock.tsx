@@ -134,7 +134,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
 
         <div className="flex items-center gap-2 shrink-0">
           {selectableLines && (
-            <span className="text-xs font-sans px-2.5 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
+            <span className="text-xs font-sans px-2.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
               {selectedLine ? `Selected: Line ${selectedLine}` : "Click defective line in code"}
             </span>
           )}
@@ -146,8 +146,8 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                <span className="text-emerald-700 dark:text-emerald-400 font-sans text-xs">
+                <Check className="w-3.5 h-3.5" />
+                <span className="font-sans text-xs">
                   Copied
                 </span>
               </>
