@@ -180,25 +180,27 @@ const mathSteps = buildDrillSteps(
   "math"
 );
 assert.deepEqual(
-  mathSteps.map((s) => [s.title, s.secondary, s.result, s.ariaLabel]),
+  mathSteps.map((s) => [s.title, s.result, s.ariaLabel]),
   [
-    ["Question 1", "Level 1", "correct", "Question 1, Level 1, correct"],
-    ["Question 2", "Level 2", "assisted", "Question 2, Level 2, correct with help"],
-    ["Question 3", "Level 2", "partial", "Question 3, Level 2, partly correct"],
-    ["Question 4", "Level 3", "wrong", "Question 4, Level 3, wrong"],
-    ["Question 5", "Level 3", "skipped", "Question 5, Level 3, skipped"],
-    ["Question 6", "Level 4", "notTried", "Question 6, Level 4, not tried"],
+    ["Level 1", "correct", "Question 1, Level 1, correct"],
+    ["Level 2", "assisted", "Question 2, Level 2, correct with help"],
+    ["Level 2", "partial", "Question 3, Level 2, partly correct"],
+    ["Level 3", "wrong", "Question 4, Level 3, wrong"],
+    ["Level 3", "skipped", "Question 5, Level 3, skipped"],
+    ["Level 4", "notTried", "Question 6, Level 4, not tried"],
   ]
 );
-assert.deepEqual(buildReviewStepMeta(mathSteps, false), {
-  secondary: "4 of 6 answered",
-  ariaLabel: "Review & sync, 4 of 6 answered",
+assert.deepEqual(buildReviewStepMeta(), {
+  ariaLabel: "Review & sync",
 });
 
 const codeSteps = buildDrillSteps([makeProblem("Q01", { level: 3 }, {})], "code");
-assert.equal(codeSteps[0].title, "Problem 1");
-assert.equal(codeSteps[0].secondary, "Level 3");
+assert.equal(codeSteps[0].title, "Level 3");
 assert.equal(codeSteps[0].ariaLabel, "Problem 1, Level 3, not tried");
+const fallbackLevelSteps = buildDrillSteps([
+  makeProblem("Q01", { level: undefined, levelLabel: "Level 4 - Advanced Challenge" }, {}),
+]);
+assert.equal(fallbackLevelSteps[0].title, "Level 4");
 
 // ---------------------------------------------------------------------------
 // 2. Lab mapping: passed, tests-pass-awaiting-review, regressed, in-progress, empty
@@ -271,46 +273,40 @@ const labSteps = buildLabSteps([
   labEmpty,
 ]);
 assert.deepEqual(
-  labSteps.map((s) => [s.title, s.secondary, s.result, s.ariaLabel]),
+  labSteps.map((s) => [s.title, s.result, s.ariaLabel]),
   [
     [
       "Schema Types & Result Union",
-      "Tests passing",
       "passed",
       "Milestone 1, Schema Types & Result Union, tests passing, passed",
     ],
     [
       "Primitive & Object Parsers",
-      "Tests passing",
       "inProgress",
       "Milestone 2, Primitive & Object Parsers, tests passing",
     ],
     [
       "Validators",
-      "In progress",
       "regressed",
       "Milestone 3, Validators, in progress, regressed",
     ],
     [
       "Error Paths",
-      "In progress",
       "inProgress",
       "Milestone 4, Error Paths, in progress",
     ],
     [
       "CLI Wiring",
-      "Not started",
       "notStarted",
       "Milestone 5, CLI Wiring, not started",
     ],
   ]
 );
-assert.deepEqual(buildReviewStepMeta(labSteps, true), {
-  secondary: "1 of 5 passed",
-  ariaLabel: "Review & sync, 1 of 5 passed",
+assert.deepEqual(buildReviewStepMeta(), {
+  ariaLabel: "Review & sync",
 });
 
-// Verify rendered lab circles match state table (passed -> emerald ✓, testsOnly -> outlined + "02", regressed -> amber + "03")
+// Verify rendered lab circles match state table (passed -> emerald ✓, testsOnly -> outlined + "M2", regressed -> amber + "M3")
 const labHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}
@@ -327,20 +323,21 @@ assert.match(
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 2, Primitive &amp; Object Parsers, tests passing"[\s\S]*?border-zinc-400[\s\S]*?>02<\/span>[\s\S]*?>Tests passing<\/span>/
+  /aria-label="Milestone 2, Primitive &amp; Object Parsers, tests passing"[\s\S]*?border-zinc-400[\s\S]*?>M2<\/span>[\s\S]*?(?!Tests passing)/
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 3, Validators, in progress, regressed"[\s\S]*?bg-amber-600[\s\S]*?>03<\/span>[\s\S]*?>In progress<\/span>/
+  /aria-label="Milestone 3, Validators, in progress, regressed"[\s\S]*?bg-amber-600[\s\S]*?>M3<\/span>/
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 4, CLI Wiring, not started"[\s\S]*?border-zinc-300[\s\S]*?>04<\/span>[\s\S]*?>Not started<\/span>/
+  /aria-label="Milestone 4, CLI Wiring, not started"[\s\S]*?border-zinc-300[\s\S]*?>M4<\/span>/
 );
+assert.doesNotMatch(labHtml, />Tests passing|>In progress|>Not started<\/span>/);
 
 // ---------------------------------------------------------------------------
 // 3. Markup: nav > ol > li > button, one aria-current="step", Review last with svg,
-//    numbers "01".."12", labels aria-hidden + hidden sm:block, all drill state tokens
+//    labels Q1..Q12, labels aria-hidden + hidden sm:block, all drill state tokens
 // ---------------------------------------------------------------------------
 const drillSixProblems = [
   makeProblem("Q01", { level: 1 }, { score: 1 }),
@@ -367,10 +364,10 @@ assert.match(sixHtml, /<\/button><\/li><\/ol><\/div><\/nav><\/div>$/);
 const ariaCurrentMatches = sixHtml.match(/aria-current="step"/g) ?? [];
 assert.equal(ariaCurrentMatches.length, 1, "exactly one step carries aria-current='step'");
 
-// Current step Q03 shows "03" with indigo outline + halo
+// Current step Q3 shows "Q3" with indigo outline + halo
 assert.match(
   sixHtml,
-  /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>03<\/span>/
+  /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q3<\/span>/
 );
 // Q01 correct -> emerald + svg check
 assert.match(
@@ -392,17 +389,17 @@ assert.match(
   sixHtml,
   /aria-label="Question 5, Level 3, partly correct"[\s\S]*?bg-amber-600[\s\S]*?<svg/
 );
-// Q06 skipped -> dashed border + "06"
+// Q06 skipped -> dashed border + "Q6"
 assert.match(
   sixHtml,
-  /aria-label="Question 6, Level 3, skipped"[\s\S]*?border-dashed[\s\S]*?>06<\/span>/
+  /aria-label="Question 6, Level 3, skipped"[\s\S]*?border-dashed[\s\S]*?>Q6<\/span>/
 );
 
 // Used help before answering -> amber circle with step number (no ✓) and not counted as answered
 const usedHelpSteps = buildDrillSteps([makeProblem("Q01", { level: 1 }, { hintsRevealed: 1 })], "math");
 assert.equal(usedHelpSteps[0].result, "usedHelp");
 assert.equal(usedHelpSteps[0].ariaLabel, "Question 1, Level 1, used help");
-assert.equal(buildReviewStepMeta(usedHelpSteps, false).secondary, "0 of 1 answered");
+assert.deepEqual(buildReviewStepMeta(), { ariaLabel: "Review & sync" });
 const usedHelpHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}
@@ -415,28 +412,33 @@ const usedHelpHtml = renderToStaticMarkup(
 );
 assert.match(
   usedHelpHtml,
-  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?bg-amber-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>01<\/span>/
+  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?bg-amber-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q1<\/span>/
 );
 
 // Review step is last, has an svg, and has no step number inside its circle
 const lastLiMatch = sixHtml.match(/<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/);
 assert.ok(lastLiMatch, "last <li> must exist");
-assert.match(lastLiMatch[0], /aria-label="Review &amp; sync, 4 of 6 answered"/);
+assert.match(lastLiMatch[0], /aria-label="Review &amp; sync"/);
+assert.match(lastLiMatch[0], />Review<\/span>/);
+assert.doesNotMatch(lastLiMatch[0], /of 6 answered|&amp; sync<\/span>/);
 assert.match(lastLiMatch[0], /<svg[^>]*>/);
 assert.doesNotMatch(lastLiMatch[0], />07<\/span>/);
 
 // Visible desktop labels carry aria-hidden="true" and hidden sm:block + font-display
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*">Question 3<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display text-\[11px\][^"]*">Level 2<\/span>/
 );
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*">Level 2<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display text-\[11px\][^"]*">Level 2<\/span>/
 );
 
-// Mobile 44px tap targets on every step button
-assert.match(sixHtml, /min-w-11 h-11/);
+// Every step button keeps a 44px minimum hit area while circles remain compact.
+assert.match(sixHtml, /min-w-11 min-h-11/);
+assert.match(sixHtml, /w-\[22px\] h-\[22px\] sm:w-6 sm:h-6/);
+assert.match(sixHtml, /text-\[10px\] sm:text-\[11px\]/);
+assert.match(sixHtml, /group-focus-visible:outline-offset-\[5px\]/);
 
 // ---------------------------------------------------------------------------
 // 4. Connectors: current = 2 => segments 0 & 1 indigo, rest zinc; review => all indigo
@@ -472,7 +474,7 @@ assert.equal(
 );
 assert.match(
   sixReviewHtml,
-  /aria-label="Review &amp; sync, 4 of 6 answered"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
 );
 
 // ---------------------------------------------------------------------------
@@ -488,7 +490,7 @@ assert.doesNotMatch(paginationSrc, /scrollIntoView/);
 assert.match(stepperSrc, /scroller\.scrollTo\(/);
 
 // ---------------------------------------------------------------------------
-// 6. 12 problems render 13 <li> with min-w-[72px], zero-padded "01".."12", and text-xs title
+// 6. 12 problems render 13 <li> with min-w-[72px] and Q1..Q12 labels
 // ---------------------------------------------------------------------------
 const twelveProblems = Array.from({ length: 12 }, (_, i) =>
   makeProblem(`Q${String(i + 1).padStart(2, "0")}`, { level: (i % 4) + 1 }, {})
@@ -506,13 +508,13 @@ const twelveHtml = renderToStaticMarkup(
 const liMatches = twelveHtml.match(/<li\b/g) ?? [];
 assert.equal(liMatches.length, 13, "12 problems + Review step must render 13 <li> items");
 assert.match(twelveHtml, /min-w-\[72px\]/);
-assert.match(twelveHtml, />01<\/span>/);
-assert.match(twelveHtml, />07<\/span>/);
-assert.match(twelveHtml, />12<\/span>/);
+assert.match(twelveHtml, />Q1<\/span>/);
+assert.match(twelveHtml, />Q7<\/span>/);
+assert.match(twelveHtml, />Q12<\/span>/);
 assert.match(
   twelveHtml,
-  /<span aria-hidden="true" class="[^"]*font-display text-xs font-semibold[^"]*">Question 12<\/span>/,
-  ">9 columns drops the title size to text-xs"
+  /<span aria-hidden="true" class="[^"]*font-display text-\[11px\] font-semibold[^"]*">Level 4<\/span>/,
+  "step labels use the compact 11px type size"
 );
 
 console.log("stepper tests passed");

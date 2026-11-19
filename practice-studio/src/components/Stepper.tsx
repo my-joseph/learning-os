@@ -17,12 +17,12 @@ export interface StepperProps {
 }
 
 const CIRCLE_BASE_CLS =
-  "relative flex items-center justify-center shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 font-display text-xs sm:text-sm font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color] duration-150";
+  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color] duration-150 group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-indigo-600 dark:group-focus-visible:outline-indigo-400 group-focus-visible:outline-offset-[5px]";
 
 const CURRENT_HALO_CLS = "ring-4 ring-indigo-600/15 dark:ring-indigo-400/25";
 
 const BUTTON_CLS =
-  "group relative z-10 flex w-full flex-col items-center justify-center sm:justify-start min-w-11 h-11 sm:h-auto sm:min-w-0 sm:pt-1 sm:pb-1 rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ring-offset-white dark:ring-offset-zinc-900";
+  "group relative z-10 flex w-full flex-col items-center justify-start min-w-11 min-h-11 py-1 sm:min-w-0 rounded-lg cursor-pointer focus:outline-none focus-visible:outline-none";
 
 const STEP_LI_CLS =
   "relative first:ml-auto last:mr-auto flex-none w-11 sm:flex-1 sm:basis-0 sm:min-w-[72px] sm:max-w-[160px]";
@@ -58,11 +58,11 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
   }
 }
 
-function renderCircleContent(result: StepResult, index: number): React.ReactNode {
+function renderCircleContent(result: StepResult, circleLabel: string): React.ReactNode {
   if (result === "correct" || result === "passed" || result === "assisted") {
     return (
       <Check
-        className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
         strokeWidth={2.5}
         aria-hidden="true"
       />
@@ -71,7 +71,7 @@ function renderCircleContent(result: StepResult, index: number): React.ReactNode
   if (result === "partial") {
     return (
       <Minus
-        className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
         strokeWidth={2.5}
         aria-hidden="true"
       />
@@ -80,13 +80,13 @@ function renderCircleContent(result: StepResult, index: number): React.ReactNode
   if (result === "wrong") {
     return (
       <X
-        className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
         strokeWidth={2.5}
         aria-hidden="true"
       />
     );
   }
-  return String(index + 1).padStart(2, "0");
+  return circleLabel;
 }
 
 /**
@@ -110,9 +110,8 @@ export const Stepper: React.FC<StepperProps> = ({
   const hasMountedRef = useRef(false);
   const [overflow, setOverflow] = useState(false);
 
-  const totalColumns = steps.length + 1;
   const currentPosition = isReview ? steps.length : currentIndex;
-  const titleSizeCls = totalColumns > 9 ? "text-xs" : "text-sm";
+  const titleSizeCls = "text-[11px]";
 
   // Keep keyboard focus on the current step (including Review) when navigation happens
   // while focus is already inside this nav.
@@ -184,7 +183,7 @@ export const Stepper: React.FC<StepperProps> = ({
     : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
 
   return (
-    <div className="pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80 min-w-0">
+    <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 min-w-0">
       <nav ref={navRef} aria-label={navLabel} className="min-w-0">
         <div
           ref={scrollerRef}
@@ -195,7 +194,7 @@ export const Stepper: React.FC<StepperProps> = ({
               : ""
           }`}
         >
-          <ol className="flex w-full min-w-0 py-1.5 px-1 gap-4 sm:gap-0">
+          <ol className="flex w-full min-w-0 py-0.5 px-1 gap-4 sm:gap-0">
             {steps.map((step, idx) => {
               const isCurrent = !isReview && currentIndex === idx;
               const isSegmentIndigo = idx + 1 <= currentPosition;
@@ -206,7 +205,7 @@ export const Stepper: React.FC<StepperProps> = ({
                   <span
                     aria-hidden="true"
                     data-connector-active={isSegmentIndigo ? "true" : "false"}
-                    className="pointer-events-none absolute top-[22px] -translate-y-1/2 left-[calc(50%_+_18px)] w-6 sm:left-[calc(50%_+_24px)] sm:w-[calc(100%_-_48px)] h-0.5 rounded-full z-0"
+                    className="pointer-events-none absolute top-[11px] sm:top-3 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0"
                   >
                     <span className="block w-full h-full bg-zinc-200 dark:bg-zinc-800 rounded-full" />
                     <m.span
@@ -235,12 +234,12 @@ export const Stepper: React.FC<StepperProps> = ({
                       transition={quick}
                       className={`${CIRCLE_BASE_CLS} ${getCircleClass(step.result, isCurrent)}`}
                     >
-                      {renderCircleContent(step.result, idx)}
+                      {renderCircleContent(step.result, step.circleLabel)}
                     </m.span>
 
                     <span
                       aria-hidden="true"
-                      className={`hidden sm:block mt-2 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-snug transition-colors ${
+                      className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-tight transition-colors ${
                         isCurrent
                           ? "text-zinc-900 dark:text-zinc-100"
                           : "text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
@@ -249,12 +248,6 @@ export const Stepper: React.FC<StepperProps> = ({
                       {step.title}
                     </span>
 
-                    <span
-                      aria-hidden="true"
-                      className="hidden sm:block max-w-full truncate px-1 font-display text-xs text-zinc-500 dark:text-zinc-400 leading-snug"
-                    >
-                      {step.secondary}
-                    </span>
                   </button>
                 </li>
               );
@@ -279,7 +272,7 @@ export const Stepper: React.FC<StepperProps> = ({
                   className={`${CIRCLE_BASE_CLS} ${reviewCircleCls}`}
                 >
                   <ClipboardCheck
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+                    className="w-3 h-3 shrink-0"
                     strokeWidth={2}
                     aria-hidden="true"
                   />
@@ -287,20 +280,13 @@ export const Stepper: React.FC<StepperProps> = ({
 
                 <span
                   aria-hidden="true"
-                  className={`hidden sm:block mt-2 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-snug transition-colors ${
+                  className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-tight transition-colors ${
                     isReview
                       ? "text-zinc-900 dark:text-zinc-100"
                       : "text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
                   }`}
                 >
-                  Review &amp; sync
-                </span>
-
-                <span
-                  aria-hidden="true"
-                  className="hidden sm:block max-w-full truncate px-1 font-display text-xs text-zinc-500 dark:text-zinc-400 leading-snug"
-                >
-                  {review.secondary}
+                  Review
                 </span>
               </button>
             </li>

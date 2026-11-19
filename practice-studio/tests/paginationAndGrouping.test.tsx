@@ -105,9 +105,10 @@ const drillQuizTiles = renderToStaticMarkup(
 );
 assert.match(drillQuizTiles, /<nav[^>]*aria-label="Questions"/);
 assert.doesNotMatch(drillQuizTiles, /aria-label="Lab milestones"/);
-assert.match(drillQuizTiles, /aria-label="Review &amp; sync, 0 of 2 answered"/);
-assert.match(drillQuizTiles, /title="Review &amp; sync, 0 of 2 answered"/);
-assert.doesNotMatch(drillQuizTiles, />Review<\/span>/);
+assert.match(drillQuizTiles, /aria-label="Review &amp; sync"/);
+assert.match(drillQuizTiles, /title="Review &amp; sync"/);
+assert.match(drillQuizTiles, />Review<\/span>/);
+assert.doesNotMatch(drillQuizTiles, /of 2 answered|&amp; sync<\/span>/);
 
 const codeQuizTiles = renderToStaticMarkup(
   <QuizPaginationBar
@@ -133,7 +134,7 @@ const drillReviewTiles = renderToStaticMarkup(
 );
 assert.match(
   drillReviewTiles,
-  /aria-label="Review &amp; sync, 0 of 2 answered"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync, 0 of 2 answered"[\s\S]*ring-indigo-600\/15/
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[\s\S]*ring-indigo-600\/15/
 );
 
 const labQuizStepper = renderToStaticMarkup(
@@ -150,10 +151,10 @@ assert.match(labQuizStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.doesNotMatch(labQuizStepper, /aria-label="Questions"/);
 assert.match(
   labQuizStepper,
-  /aria-label="Milestone 1, Algebra, not started, current"[^>]*aria-current="step"/
+  /aria-label="Milestone 1, Algebra, not started, current"[^>]*aria-current="step"[\s\S]*?>M1<\/span>[\s\S]*?>Algebra<\/span>/
 );
 assert.match(labQuizStepper, /aria-label="Milestone 2, Algebra, not started"/);
-assert.doesNotMatch(labQuizStepper, />Review<\/span>/);
+assert.doesNotMatch(labQuizStepper, />Not started<\/span>/);
 
 const labReviewStepper = renderToStaticMarkup(
   <QuizPaginationBar
@@ -168,11 +169,11 @@ const labReviewStepper = renderToStaticMarkup(
 assert.match(labReviewStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.match(
   labReviewStepper,
-  /aria-label="Review &amp; sync, 0 of 2 passed"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
 );
 assert.match(
   labReviewStepper,
-  /aria-label="Review &amp; sync, 0 of 2 passed"[\s\S]*ring-indigo-600\/15/
+  /aria-label="Review &amp; sync"[\s\S]*ring-indigo-600\/15/
 );
 
 // ---------------------------------------------------------------------------
