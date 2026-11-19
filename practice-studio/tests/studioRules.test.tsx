@@ -65,6 +65,7 @@ assert.match(THEME_INIT_SCRIPT, /matchMedia/);
 
 const codeDashboard = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
 const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
+const mathItemView = readFileSync("src/components/math/MathItemView.tsx", "utf8");
 const problemAssistSection = readFileSync("src/components/workspace/ProblemAssistSection.tsx", "utf8");
 const problemSelfEval = readFileSync("src/components/workspace/ProblemSelfEval.tsx", "utf8");
 const problemNavFooter = readFileSync("src/components/workspace/ProblemNavFooter.tsx", "utf8");
@@ -89,9 +90,9 @@ assert.doesNotMatch(codeDashboard, /review-code skill/);
 assert.match(codeDashboard, /Ask Claude to review your code/);
 assert.match(codeDashboard, /method: "POST"[\s\S]*?JSON\.stringify\(\{ drillId \}\)/);
 assert.match(codeDashboard, /workspace file from disk/);
-assert.match(mathWorkspace, /<AnswerResultCard/);
-assert.match(mathWorkspace, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
-assert.match(mathWorkspace, /<ProblemAssistSection/);
+assert.match(mathItemView, /<AnswerResultCard/);
+assert.match(mathItemView, /`Answer for question \$\{problem\.id\}`/);
+assert.match(mathItemView, /<ProblemAssistSection/);
 assert.match(codeDashboard, /<ProblemAssistSection/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
 assert.match(mathWorkspace, /<ProblemSelfEval/);
@@ -553,7 +554,7 @@ const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8"
 assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-zinc-100/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
-assert.match(mathWorkspace, /problem\.plainText && !isChoice/);
+assert.match(mathItemView, /problem\.plainText && !isChoice/);
 
 // Learner 2026-11-19: one global list bullet (ListDot, small indigo dot); no "•" glyph bullets.
 {

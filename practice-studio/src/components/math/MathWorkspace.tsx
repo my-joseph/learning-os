@@ -1,65 +1,31 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import dynamic from "next/dynamic";
-import { Reveal } from "@/components/motion/Reveal";
-import {
-  Copy,
-  Check,
-} from "lucide-react";
-import {
-  Problem,
-  MistakeTag,
-  CheckResult,
-  RedactedVariant,
-  WorkedExampleVariant,
-} from "@/types/drill";
-import { MathBlock } from "@/components/MathRender";
-import { FormattedText } from "@/components/FormattedText";
-import { MathFigure } from "@/components/MathFigure";
-import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoicePrompt";
-import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
-import { AnswerResultCard } from "@/components/AnswerResultCard";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft } from "lucide-react";
+import { Problem, MistakeTag } from "@/types/drill";
 import { QuestionTimer } from "@/components/QuestionTimer";
-import {
-  ANSWER_FIELD_CONTAINER_CLASS,
-  InlineCheckButton,
-  PlainAnswerField,
-} from "@/components/workspace/PlainAnswerField";
-import { ProblemAssistSection } from "@/components/workspace/ProblemAssistSection";
+import { ResultCardSecondaryAction } from "@/components/AnswerResultCard";
 import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
+import { MathItemView, MathItemViewHandle } from "@/components/math/MathItemView";
 import {
-  VariantActionButtons,
-  VariantPracticeCard,
-  WorkedExampleCard,
-} from "@/components/workspace/VariantPracticePanel";
-import type { MathLiveInputHandle } from "@/components/math/MathLiveInput";
-import { MathPalette } from "@/components/math/MathPalette";
+  WorkedExampleDisclosure,
+  WorkedExampleView,
+} from "@/components/math/WorkedExampleView";
 import {
-  getProblemPlaceholder,
-  getUnitKeyboardProfile,
-  isMathLiveSupportedAnswerSpec,
-  MathInputMode,
-  readMathInputMode,
-  writeMathInputMode,
-} from "@/lib/mathInput";
-import { isTouchPrimaryDevice } from "@/lib/mathPalette";
-import { countWrongAttempts, hasSubstantiveAttempt } from "@/lib/reviewGuard";
+  useVariantSession,
+  VariantWorkspaceMode,
+} from "@/hooks/useVariantSession";
+import {
+  countWrongAttempts,
+  countWrongAttemptsAfter,
+  hasSubstantiveAttempt,
+} from "@/lib/reviewGuard";
+import {
+  getOriginalLadderActions,
+  getSimilarLadderActions,
+} from "@/lib/variantLadder";
 import { plainTitle } from "@/lib/titleText";
-import { useChoiceController } from "@/components/workspace/useChoiceController";
-
-const DynamicMathLiveInput = dynamic(
-  () => import("@/components/math/MathLiveInput"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex-1 min-w-0 h-11 pl-3 pr-12 py-2 flex items-center text-sm text-zinc-400 dark:text-zinc-500">
-        Loading math input…
-      </div>
-    ),
-  }
-);
 
 export interface MathWorkspaceProps {
   problem: Problem;
@@ -83,6 +49,8 @@ export interface MathWorkspaceProps {
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
   onBeforeFetchVariant?: () => Promise<void>;
+  onExampleViewed?: (viewedAt: string) => void;
+  onVariantModeChange?: (inVariantMode: boolean) => void;
   autoOpenSimilar?: boolean;
   onAutoOpenSimilarConsumed?: () => void;
   onPrevQuestion?: () => void;
@@ -98,7 +66,7 @@ export interface MathWorkspaceProps {
   lastQuestionNavLabel?: string;
 }
 
-/** Clean centred Math workspace following docs/studio_design.md. */
+/** Clean centred Math workspace following docs/studio_design.md and the swap-in-place variant flow. */
 export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   problem,
   drillId,
@@ -121,6 +89,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onSetupRevealed,
   onSolutionRevealed,
   onBeforeFetchVariant,
+  onExampleViewed,
+  onVariantModeChange,
   autoOpenSimilar = false,
   onAutoOpenSimilarConsumed,
   onPrevQuestion,
@@ -135,586 +105,386 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   nextCardLabel,
   lastQuestionNavLabel,
 }) => {
-  const shouldAutoReveal = (p: Problem) =>
-    p.state.lastCheck?.verdict === "correct" || Boolean(p.state.skipped);
+  const questionNumber = index + 1;
+  const cardRef = useRef<HTMLElement | null>(null);
+  const originalItemRef = useRef<MathItemViewHandle | null>(null);
+  const similarItemRef = useRef<MathItemViewHandle | null>(null);
+  const [similarStepsOpen, setSimilarStepsOpen] = useState(false);
 
-  const [copied, setCopied] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
-  const [isChecking, setIsChecking] = useState(false);
-  // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
-  const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
-  const [inputMode, setInputMode] = useState<MathInputMode>("math");
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [tryVariant, setTryVariant] = useState<{
-    variant: RedactedVariant;
-    remainingCount: number;
-  } | null>(null);
-  const [exampleVariant, setExampleVariant] = useState<WorkedExampleVariant | null>(null);
-  const [variantLoading, setVariantLoading] = useState<"try" | "example" | null>(null);
-  const [variantError, setVariantError] = useState<string | null>(null);
-  const answerInputRef = useRef<HTMLInputElement | null>(null);
-  const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
-  const stepsRef = useRef<HTMLDivElement | null>(null);
+  const scrollCardIntoView = useCallback(() => {
+    const el = cardRef.current;
+    if (!el || typeof el.scrollIntoView !== "function") return;
+    const reduced =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({
+      block: "start",
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, []);
+
+  const handleModeSwap = useCallback(
+    (nextMode: VariantWorkspaceMode, opts?: { selectOriginal?: boolean }) => {
+      requestAnimationFrame(() => {
+        scrollCardIntoView();
+        if (nextMode === "similar") {
+          similarItemRef.current?.focusAnswer();
+        } else if (nextMode === "original" && opts?.selectOriginal) {
+          originalItemRef.current?.selectAnswer();
+        }
+      });
+    },
+    [scrollCardIntoView]
+  );
 
   const {
-    isChoice,
-    choiceOptions,
-    checkingOptionId,
-    choiceLocked,
-    choiceResultStatus,
-    handleChoiceSelect,
-    unlockChoiceRetry,
-    resetChoiceState,
-  } = useChoiceController({
+    mode,
+    activeSimilar,
+    example,
+    exampleViewedAt,
+    remainingCount,
+    serverVariantWrongs,
+    hasUnfinishedActiveSimilar,
+    loadingAction,
+    loadingSteps,
+    activeStep: similarActiveStep,
+    setActiveStep: setSimilarActiveStep,
+    announcement,
+    similarTimerMs,
+    isSimilarPaused,
+    toggleSimilarPaused,
+    openSimilar,
+    loadAnotherSimilar,
+    openWorkedExample,
+    backToOriginal,
+    handleSimilarInputChange,
+    handleSimilarCheckAnswer,
+    handleSimilarHintRevealed,
+    handleSimilarSetupRevealed,
+    handleSimilarSolutionRevealed,
+    handleSimilarReset,
+    resetAllVariantUi,
+  } = useVariantSession({
+    drillId,
     problem,
-    isChecking,
-    setIsChecking,
-    onInputChange,
-    onCheckAnswer,
+    questionNumber,
+    isReviewSession,
+    onBeforeFetchVariant,
+    onExampleViewed,
+    onModeSwap: handleModeSwap,
   });
 
-  useEffect(() => {
-    setInputMode(readMathInputMode());
-  }, []);
-
-  useEffect(() => {
-    if (isTouchPrimaryDevice()) {
-      setPanelOpen(false);
-    }
-  }, [problem.id]);
-  const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
-  const answered = hasSubstantiveAttempt(problem.state);
-  const hasAttempt = answered;
-  const setupUnopenedUnattempted =
-    hasSetup &&
-    !hasAttempt &&
-    !showSetup &&
-    !problem.state.setupRevealedBeforeAnswer;
-  const stepsUnopenedUnattempted =
-    !hasAttempt &&
-    !showSolution &&
-    !problem.state.solutionRevealedBeforeAnswer;
-  const hasCorrectAttempt =
-    problem.state.score === 1 ||
-    Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
-
-  useEffect(() => {
-    const reveal =
-      problem.state.lastCheck?.verdict === "correct" || Boolean(problem.state.skipped);
-    setShowSolution(reveal);
-    setShowSetup(reveal);
-    setShowHint(false);
-  }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
-
-  const toggleSetup = () => {
-    if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
-      onSetupRevealed();
-    }
-    setShowSetup(!showSetup);
-  };
-
-  const handleCopyCas = () => {
-    if (!problem.plainText) return;
-    navigator.clipboard.writeText(problem.plainText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
-  };
-
-  const score = problem.state.score;
-  const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isMathLiveSupported = isMathLiveSupportedAnswerSpec(problem.answerSpec);
-  const useMathLive = !isChoice && isMathLiveSupported && inputMode === "math";
-  const placeholder = getProblemPlaceholder(problem);
-  const keyboardProfile = useMemo(
-    () =>
-      getUnitKeyboardProfile({
-        unitCode,
-        drillTitle,
-        prompt: problem.prompt,
-        inputHint: problem.inputHint,
-      }),
-    [unitCode, drillTitle, problem.prompt, problem.inputHint]
-  );
-
-  const triggerCheck = async (inputOverride?: string) => {
-    if (isChecking) return;
-    const resolved =
-      inputOverride !== undefined
-        ? inputOverride
-        : useMathLive
-        ? mathLiveRef.current?.getPlainText() ?? problem.state.userInput
-        : problem.state.userInput;
-    if (!resolved.trim()) return;
-    if (resolved !== problem.state.userInput) {
-      onInputChange(resolved);
-    }
-    setIsChecking(true);
-    try {
-      await onCheckAnswer(resolved);
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const handleInputModeChange = (nextMode: MathInputMode) => {
-    if (nextMode === inputMode) {
-      if (nextMode === "math") {
-        mathLiveRef.current?.focus();
-      } else {
-        answerInputRef.current?.focus();
-      }
-      return;
-    }
-
-    if (nextMode === "plain") {
-      const plain = mathLiveRef.current?.getPlainText();
-      if (plain !== undefined && plain !== problem.state.userInput) {
-        onInputChange(plain);
-      }
-      setPanelOpen(false);
-      setInputMode("plain");
-      writeMathInputMode("plain");
-      requestAnimationFrame(() => {
-        answerInputRef.current?.focus();
-      });
-    } else {
-      setInputMode("math");
-      writeMathInputMode("math");
-      requestAnimationFrame(() => {
-        mathLiveRef.current?.focus();
-      });
-    }
-  };
-
-  const handleMathFieldFocus = useCallback(() => {
-    if (isTouchPrimaryDevice()) {
-      setPanelOpen(true);
-    }
-  }, []);
-
-  const handleInsertLatex = useCallback((latex: string) => {
-    mathLiveRef.current?.insertLatex(latex);
-  }, []);
-
-  const lineChoiceData = useMemo(
-    () =>
-      isChoice
-        ? parseLineChoicePrompt(problem.prompt, problem.answerSpec.options)
-        : null,
-    [isChoice, problem.prompt, problem.answerSpec.options]
-  );
-
-  useEffect(() => {
-    setTryVariant(null);
-    setExampleVariant(null);
-    setVariantLoading(null);
-    setVariantError(null);
-  }, [problem.id]);
-
-  const wrongAttempts = countWrongAttempts(problem.state);
-
-  const handleFetchVariant = useCallback(
-    async (mode: "try" | "example") => {
-      if (!drillId || variantLoading) return;
-      setVariantLoading(mode);
-      setVariantError(null);
-      try {
-        if (onBeforeFetchVariant) {
-          await onBeforeFetchVariant();
-        }
-        const qs = new URLSearchParams({
-          drillId,
-          qid: problem.id,
-          mode,
-        });
-        if (mode === "example" && tryVariant?.variant.variantId) {
-          qs.set("exclude", tryVariant.variant.variantId);
-        }
-        const res = await fetch(`/api/variant?${qs.toString()}`);
-        const data = (await res.json()) as {
-          variant?: RedactedVariant | WorkedExampleVariant;
-          remainingCount?: number;
-          error?: string;
-        };
-        if (!res.ok || !data.variant) {
-          setVariantError(data.error || "No similar question is available right now.");
-          return;
-        }
-        if (mode === "try") {
-          setTryVariant({
-            variant: data.variant as RedactedVariant,
-            remainingCount: typeof data.remainingCount === "number" ? data.remainingCount : 0,
-          });
-        } else {
-          setExampleVariant(data.variant as WorkedExampleVariant);
-        }
-      } catch {
-        setVariantError("Couldn't load a similar question right now.");
-      } finally {
-        setVariantLoading(null);
-      }
-    },
-    [drillId, onBeforeFetchVariant, problem.id, tryVariant, variantLoading]
-  );
-
+  // "Practise a similar question" from the end-of-drill summary: open the similar question once when asked
+  // (the server still requires a wrong attempt on the original before serving one).
   const autoSimilarTriggeredRef = useRef<string | null>(null);
   useEffect(() => {
     if (!autoOpenSimilar || !problem.hasVariants || !drillId) return;
     if (autoSimilarTriggeredRef.current === problem.id) return;
     autoSimilarTriggeredRef.current = problem.id;
     onAutoOpenSimilarConsumed?.();
-    void handleFetchVariant("try");
-  }, [autoOpenSimilar, drillId, handleFetchVariant, onAutoOpenSimilarConsumed, problem.hasVariants, problem.id]);
+    void openSimilar();
+  }, [autoOpenSimilar, drillId, onAutoOpenSimilarConsumed, openSimilar, problem.hasVariants, problem.id]);
 
-  const handleTryAgain = () => {
-    if (isChoice) {
-      unlockChoiceRetry();
-      return;
-    }
-    if (useMathLive) {
-      mathLiveRef.current?.focus();
-      mathLiveRef.current?.select();
-      return;
-    }
-    answerInputRef.current?.focus();
-    answerInputRef.current?.select();
-  };
+  // Pause Q_N's timer while in similar-question or worked-example mode.
+  useEffect(() => {
+    onVariantModeChange?.(mode !== "original");
+    return () => {
+      onVariantModeChange?.(false);
+    };
+  }, [mode, onVariantModeChange]);
 
-  const handleShowStepsFromCard = () => {
-    if (!showSolution) {
-      if ((!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
-        onSolutionRevealed();
+  // Esc returns to Question N (in similar mode only when no palette is open and field is empty; always in example mode).
+  useEffect(() => {
+    if (mode === "original") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
+      if (mode === "example") {
+        e.preventDefault();
+        backToOriginal({ selectOriginal: true });
+        return;
       }
-      setShowSolution(true);
-    }
-    requestAnimationFrame(() => {
-      stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-  };
+      if (mode === "similar") {
+        if (similarItemRef.current?.isPanelOpen()) return;
+        const currentInput = activeSimilar?.problem.state.userInput || "";
+        if (currentInput.trim()) return;
+        e.preventDefault();
+        backToOriginal({ selectOriginal: true });
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mode, activeSimilar, backToOriginal]);
 
+  const hasAttempt = hasSubstantiveAttempt(problem.state);
+  const score = problem.state.score;
+  const originalWrongAttempts = countWrongAttempts(problem.state);
+  const clusterWrongAttempts = originalWrongAttempts + serverVariantWrongs;
+  const effectiveExampleViewedAt = exampleViewedAt || problem.state.exampleViewedAt || null;
+  const exampleViewed = Boolean(effectiveExampleViewedAt || example);
+  const wrongAfterExample =
+    countWrongAttemptsAfter(problem.state, effectiveExampleViewedAt) > 0;
+
+  const originalLadder = getOriginalLadderActions({
+    hasVariants: Boolean(drillId && problem.hasVariants),
+    originalWrongAttempts,
+    clusterWrongAttempts,
+    hasActiveSimilar: hasUnfinishedActiveSimilar,
+    remainingCount,
+    exampleViewed,
+    wrongAfterExample,
+    lastVerdict: problem.state.lastCheck?.verdict,
+    skipped: problem.state.skipped,
+  });
+
+  const originalSecondaryActions: ResultCardSecondaryAction[] = [];
+  if (originalLadder.showResumeSimilar) {
+    originalSecondaryActions.push({
+      label: "Resume similar question",
+      onClick: () => void openSimilar(),
+      loading: loadingAction === "try",
+      disabled: loadingAction !== null,
+      trailingChevron: true,
+    });
+  } else if (originalLadder.showTrySimilar) {
+    originalSecondaryActions.push({
+      label: "Try a similar question",
+      onClick: () => void openSimilar(),
+      loading: loadingAction === "try",
+      disabled: loadingAction !== null,
+      trailingChevron: true,
+    });
+  }
+  if (originalLadder.showSeeExample) {
+    originalSecondaryActions.push({
+      label: "See a worked example",
+      onClick: () => void openWorkedExample(),
+      loading: loadingAction === "example",
+      disabled: loadingAction !== null,
+      trailingChevron: true,
+    });
+  }
   const isLastQuestion =
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
 
   const displayTitle = plainTitle(drillTitle);
 
+  const questionHeader = (
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span>
+          Question {questionNumber}
+          {typeof totalQuestions === "number" && totalQuestions > 0
+            ? ` of ${totalQuestions}`
+            : ""}
+        </span>
+        {typeof problem.level === "number" && problem.level > 0 && (
+          <span title={problem.levelLabel?.trim() || undefined}>
+            Level {problem.level}
+          </span>
+        )}
+      </div>
+      <QuestionTimer
+        questionMs={questionTimerMs ?? (problem.state?.durationMs || 0)}
+        totalMs={totalTimerMs ?? (questionTimerMs ?? (problem.state?.durationMs || 0))}
+        isPaused={isTimerPaused}
+        onTogglePause={onToggleTimerPause}
+      />
+    </div>
+  );
+
+  const similarIsCorrect =
+    activeSimilar?.problem.state.lastCheck?.verdict === "correct";
+  const similarHasAttempt = activeSimilar
+    ? hasSubstantiveAttempt(activeSimilar.problem.state)
+    : false;
+  const similarEffectiveRemaining =
+    remainingCount !== null ? remainingCount : activeSimilar?.remainingCount ?? 0;
+
+  const similarLadder = getSimilarLadderActions({
+    hasAttemptOnCurrent: similarHasAttempt,
+    isCurrentCorrect: Boolean(similarIsCorrect),
+    clusterWrongAttempts,
+    remainingCount: similarEffectiveRemaining,
+    stepsOpen: similarStepsOpen,
+  });
+
+  const similarSecondaryActions: ResultCardSecondaryAction[] = [];
+  if (similarLadder.showSeeExample) {
+    similarSecondaryActions.push({
+      label: "See a worked example",
+      onClick: () => void openWorkedExample(),
+      loading: loadingAction === "example",
+      disabled: loadingAction !== null,
+      trailingChevron: true,
+    });
+  }
+  if (similarLadder.showAnotherSimilar) {
+    similarSecondaryActions.push({
+      label: similarIsCorrect ? "Another one" : "Another similar question",
+      onClick: () => void loadAnotherSimilar(),
+      loading: loadingAction === "try",
+      disabled: loadingAction !== null,
+      trailingChevron: true,
+    });
+  }
+
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
+      <div aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
+
       {displayTitle && (
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
           {displayTitle}
         </h1>
       )}
 
-      <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Question number + level + timer + prompt (text-base, leading-relaxed) */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>
-                Question {index + 1}
-                {typeof totalQuestions === "number" && totalQuestions > 0
-                  ? ` of ${totalQuestions}`
-                  : ""}
-              </span>
-              {typeof problem.level === "number" && problem.level > 0 && (
-                <span title={problem.levelLabel?.trim() || undefined}>
-                  Level {problem.level}
-                </span>
-              )}
-            </div>
-            <QuestionTimer
-              questionMs={questionTimerMs ?? (problem.state?.durationMs || 0)}
-              totalMs={totalTimerMs ?? (questionTimerMs ?? (problem.state?.durationMs || 0))}
-              isPaused={isTimerPaused}
-              onTogglePause={onToggleTimerPause}
-            />
-          </div>
-
-          <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
-            {lineChoiceData ? (
-              <LineChoicePrompt
-                parsed={lineChoiceData}
-                selectedValue={problem.state.userInput}
-                onSelect={(optId) => void handleChoiceSelect(optId)}
-                disabled={choiceLocked}
-                checkingOptionId={checkingOptionId}
-                resultStatus={choiceResultStatus}
-              />
-            ) : (
-              <FormattedText text={problem.prompt} />
-            )}
-          </div>
-        </div>
-
-        {/* 2. Figure (larger: full column width) */}
-        {(problem.figure || problem.visual) && (
-          <div className="w-full">
-            <MathFigure
-              figure={problem.figure || problem.visual!}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* 3. Answer input / choice options + calm Result Card */}
-        <div className="space-y-3">
-          {isChoice && !lineChoiceData && choiceOptions && (
-            <ChoiceOptionGroup
-              options={choiceOptions}
-              selectedValue={problem.state.userInput}
-              onSelect={(optId) => void handleChoiceSelect(optId)}
-              disabled={choiceLocked}
-              checkingOptionId={checkingOptionId}
-              resultStatus={choiceResultStatus}
-              layout="wrap"
-            />
-          )}
-
-          {!isChoice && isMathLiveSupported && (
-            <div
-              onKeyDown={(e) => {
-                if (e.key === "Escape" && panelOpen) {
-                  e.preventDefault();
-                  setPanelOpen(false);
-                  mathLiveRef.current?.focus();
-                }
-              }}
-              className="space-y-2"
-            >
-              {useMathLive ? (
-                <div className={ANSWER_FIELD_CONTAINER_CLASS}>
-                  <DynamicMathLiveInput
-                    value={problem.state.userInput}
-                    placeholder={placeholder}
-                    ariaLabel={`Answer for question ${problem.id}`}
-                    variables={problem.answerSpec.variables}
-                    disabled={isChecking}
-                    fieldRef={mathLiveRef}
-                    onChange={onInputChange}
-                    onCheck={(plain) => void triggerCheck(plain)}
-                    onFocus={handleMathFieldFocus}
-                    onEscape={() => {
-                      if (!panelOpen) return false;
-                      setPanelOpen(false);
-                      return true;
-                    }}
-                  />
-                  <InlineCheckButton
-                    onClick={() => void triggerCheck()}
-                    disabled={isChecking || !problem.state.userInput.trim()}
-                    isChecking={isChecking}
-                  />
+      <article
+        ref={cardRef}
+        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6 scroll-mt-4"
+      >
+        {mode === "example" && example ? (
+          <WorkedExampleView
+            key={example.token}
+            questionNumber={questionNumber}
+            example={example}
+            onBackToQuestion={() => backToOriginal({ selectOriginal: true })}
+          />
+        ) : mode === "similar" && activeSimilar ? (
+          <MathItemView
+            key={activeSimilar.token}
+            ref={similarItemRef}
+            problem={activeSimilar.problem}
+            header={
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => backToOriginal({ selectOriginal: true })}
+                    className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 -ml-1.5 px-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                  >
+                    <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>Question {questionNumber}</span>
+                  </button>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-zinc-900 dark:text-zinc-100">
+                    Similar question {activeSimilar.index} of {activeSimilar.total}
+                  </span>
                 </div>
-              ) : (
-                <PlainAnswerField
-                  inputRef={answerInputRef}
-                  value={problem.state.userInput}
-                  onChange={onInputChange}
-                  onCheck={() => void triggerCheck()}
-                  placeholder={placeholder}
-                  aria-label={`Answer for question ${problem.id}`}
-                  isChecking={isChecking}
+                <QuestionTimer
+                  questionMs={similarTimerMs}
+                  totalMs={similarTimerMs}
+                  isPaused={isSimilarPaused}
+                  onTogglePause={toggleSimilarPaused}
                 />
-              )}
-
-              <MathPalette
-                inputMode={inputMode}
-                onModeChange={handleInputModeChange}
-                keyboardProfile={keyboardProfile}
-                panelOpen={panelOpen}
-                onTogglePanel={() => {
-                  setPanelOpen((prev) => !prev);
-                  mathLiveRef.current?.focus();
-                }}
-                onInsertLatex={handleInsertLatex}
-                disabled={isChecking}
-              />
-            </div>
-          )}
-
-          {!isChoice && !isMathLiveSupported && (
-            <PlainAnswerField
-              inputRef={answerInputRef}
-              value={problem.state.userInput}
-              onChange={onInputChange}
-              onCheck={() => void triggerCheck()}
-              placeholder={placeholder}
-              aria-label={`Answer for question ${problem.id}`}
-              isChecking={isChecking}
-            />
-          )}
-
-          {/* 4. Calm Result Card directly under the answer area */}
-          <AnswerResultCard
-            lastCheck={lastCheck}
-            state={problem.state}
+              </div>
+            }
+            unitCode={unitCode}
+            drillTitle={drillTitle}
+            mistakeTags={[]}
+            activeStep={similarActiveStep}
+            autoRevealOnCorrect={false}
+            autoFocusPrimaryAction={similarHasAttempt && !similarIsCorrect}
+            loadingSteps={loadingSteps}
+            ariaLabel={`Answer for similar question ${activeSimilar.index} of ${activeSimilar.total}`}
+            resultTitleOverride={
+              similarIsCorrect
+                ? `Correct · now try Question ${questionNumber}`
+                : undefined
+            }
+            backLabel={`Back to Question ${questionNumber}`}
+            onBack={
+              similarLadder.showBackToOriginal
+                ? () =>
+                    backToOriginal({
+                      selectOriginal: true,
+                      markSimilarDone: true,
+                    })
+                : undefined
+            }
+            resultSecondaryActions={similarSecondaryActions}
+            onInputChange={handleSimilarInputChange}
+            onCheckAnswer={handleSimilarCheckAnswer}
+            onToggleStepHighlight={(sIdx) =>
+              setSimilarActiveStep((prev) => (prev === sIdx ? null : sIdx))
+            }
+            onReset={handleSimilarReset}
+            onHintRevealed={handleSimilarHintRevealed}
+            onSetupRevealed={() => void handleSimilarSetupRevealed()}
+            onSolutionRevealed={() => void handleSimilarSolutionRevealed()}
+            onStepsOpenChange={setSimilarStepsOpen}
+          />
+        ) : (
+          <MathItemView
+            ref={originalItemRef}
             problem={problem}
+            header={questionHeader}
+            unitCode={unitCode}
+            drillTitle={drillTitle}
             mistakeTags={mistakeTags}
+            activeStep={activeStep}
             isLastQuestion={isReviewSession ? false : isLastQuestion}
             nextLabel={nextCardLabel ?? "Next question"}
+            resultSecondaryActions={originalSecondaryActions}
+            onInputChange={onInputChange}
+            onCheckAnswer={onCheckAnswer}
+            onSkip={onSkip}
+            onToggleStepHighlight={onToggleStepHighlight}
+            onMarkDivergedStep={onMarkDivergedStep}
+            onReset={() => {
+              resetAllVariantUi();
+              if (drillId) {
+                void fetch("/api/variant", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ drillId, qid: problem.id, action: "reset-question" }),
+                }).then((res) => {
+                  if (res.ok) onResetProblem();
+                });
+              } else {
+                onResetProblem();
+              }
+            }}
+            onHintRevealed={onHintRevealed}
+            onSetupRevealed={onSetupRevealed}
+            onSolutionRevealed={onSolutionRevealed}
             onNextQuestion={onNextQuestion}
             onOpenReview={onOpenReview}
-            onTryAgain={handleTryAgain}
-            onShowSteps={handleShowStepsFromCard}
+            afterResultCard={
+              example ? <WorkedExampleDisclosure example={example} /> : undefined
+            }
+            supplement={reviewSupplement}
+            footer={
+              <ProblemSelfEval
+                hasAttempt={hasAttempt}
+                score={score}
+                mistakes={problem.state.mistakes}
+                mistakeNote={problem.state.mistakeNote}
+                mistakeTags={mistakeTags}
+                noteAriaLabel={`Note for question ${questionNumber}`}
+                onSetScore={onSetScore}
+                onToggleMistakeTag={onToggleMistakeTag}
+                onMistakeNoteChange={onMistakeNoteChange}
+              />
+            }
           />
-
-          {drillId && (
-            <VariantActionButtons
-              hasVariants={problem.hasVariants}
-              wrongAttempts={wrongAttempts}
-              loadingMode={variantLoading}
-              errorMessage={variantError}
-              onTrySimilar={() => void handleFetchVariant("try")}
-              onSeeExample={() => void handleFetchVariant("example")}
-            />
-          )}
-        </div>
-
-        {reviewSupplement}
-
-        {/* 5. Quiet secondary actions: Reset / equation set-up / hint / steps / skip */}
-        <ProblemAssistSection
-          problem={problem}
-          hasAttempt={hasAttempt}
-          showHint={showHint}
-          onToggleHint={() => {
-            if (!showHint && onHintRevealed) {
-              onHintRevealed();
-            }
-            setShowHint(!showHint);
-          }}
-          showSolution={showSolution}
-          onToggleSolution={() => {
-            if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
-              onSolutionRevealed();
-            }
-            setShowSolution(!showSolution);
-          }}
-          stepsUnopenedUnattempted={stepsUnopenedUnattempted}
-          stepsRef={stepsRef}
-          showStepsHeader={true}
-          activeStep={activeStep}
-          onToggleStepHighlight={onToggleStepHighlight}
-          onMarkDivergedStep={onMarkDivergedStep}
-          onReset={() => {
-            setTryVariant(null);
-            setExampleVariant(null);
-            setVariantError(null);
-            resetChoiceState();
-            onResetProblem();
-          }}
-          onSkip={
-            onSkip
-              ? () => {
-                  if (!showHint && onHintRevealed) {
-                    onHintRevealed();
-                  }
-                  setShowHint(true);
-                  setShowSolution(true);
-                  onSkip();
-                }
-              : undefined
-          }
-          hasSetup={hasSetup}
-          showSetup={showSetup}
-          setupUnopenedUnattempted={setupUnopenedUnattempted}
-          onToggleSetup={toggleSetup}
-          setupDisclosure={
-            <Reveal show={Boolean(hasSetup && showSetup)}>
-              {hasSetup && showSetup && (
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
-                  {problem.display && (
-                    <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
-                      <MathBlock latex={problem.display} />
-                    </div>
-                  )}
-                  {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
-                  {problem.plainText && !isChoice && (
-                    <div
-                      className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
-                        problem.display
-                          ? "pt-2.5 border-t border-zinc-200 dark:border-zinc-800"
-                          : ""
-                      }`}
-                    >
-                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
-                        {problem.plainText}
-                      </code>
-                      <button
-                        type="button"
-                        onClick={handleCopyCas}
-                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </Reveal>
-          }
-        />
-
-        {/* 6. Self-score, mistake tags & mistake note — shown ONLY after an attempt */}
-        <ProblemSelfEval
-          hasAttempt={hasAttempt}
-          score={score}
-          mistakes={problem.state.mistakes}
-          mistakeNote={problem.state.mistakeNote}
-          mistakeTags={mistakeTags}
-          noteAriaLabel={`Note for question ${index + 1}`}
-          onSetScore={onSetScore}
-          onToggleMistakeTag={onToggleMistakeTag}
-          onMistakeNoteChange={onMistakeNoteChange}
-        />
+        )}
       </article>
 
-      {/* Inline similar-question practice and worked example under the problem card */}
-      <Reveal show={Boolean(drillId && tryVariant)}>
-        {drillId && tryVariant && (
-          <VariantPracticeCard
-            key={tryVariant.variant.variantId}
-            drillId={drillId}
-            qid={problem.id}
-            variant={tryVariant.variant}
-            remainingCount={tryVariant.remainingCount}
-            loadingAnother={variantLoading === "try"}
-            onAnother={() => void handleFetchVariant("try")}
-            onClose={() => setTryVariant(null)}
-          />
-        )}
-      </Reveal>
-
-      <Reveal show={Boolean(exampleVariant)}>
-        {exampleVariant && (
-          <WorkedExampleCard
-            key={exampleVariant.variantId}
-            example={exampleVariant}
-            onClose={() => setExampleVariant(null)}
-          />
-        )}
-      </Reveal>
-
-      {/* Quiet question navigation footer */}
-      <ProblemNavFooter
-        index={index}
-        isLastQuestion={isLastQuestion}
-        onPrevQuestion={onPrevQuestion}
-        onNextQuestion={onNextQuestion}
-        onOpenReview={onOpenReview}
-        lastQuestionLabel={lastQuestionNavLabel}
-      />
+      {/* Quiet question navigation footer — hidden in similar & worked-example modes */}
+      {mode === "original" && (
+        <ProblemNavFooter
+          index={index}
+          isLastQuestion={isLastQuestion}
+          onPrevQuestion={onPrevQuestion}
+          onNextQuestion={onNextQuestion}
+          onOpenReview={onOpenReview}
+          lastQuestionLabel={lastQuestionNavLabel}
+        />
+      )}
     </div>
   );
 };

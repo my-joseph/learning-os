@@ -34,6 +34,6 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Calm ease-out motion via `src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
 
 ## Workspaces
-- **Math**: prompt → figure → answer input with `=` inside the field → feedback → (Try again | Hint / set-up / steps after reveal). Self-score buttons only after an attempt.
+- **Math**: prompt → figure → answer input with `=` inside the field → feedback → (Try again + swap-in-place similar question / progressive worked example ladder | Hint / set-up / steps after reveal). Self-score buttons only after an attempt.
 - **Programming** (dashboard, no editor): brief → visible tests → status line `Tests  Lint  Types  Review` (✓ / ✗ / –) → primary action (Open in VS Code, or Copy `ตรวจโค้ด <ID> <QID>` once tests pass) → review history and explain question in collapsible sections → reference locked until review = pass.
 - **Labs**: same as Programming, tiles are milestones M1…Mn.

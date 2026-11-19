@@ -60,6 +60,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [showGenPopover, setShowGenPopover] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetAllVersion, setResetAllVersion] = useState(0);
   const [lastMathId, setLastMathId] = useState<string | null>(null);
   const [lastCodeId, setLastCodeId] = useState<string | null>(null);
   const [pendingSimilarProbId, setPendingSimilarProbId] = useState<string | null>(() =>
@@ -119,6 +120,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     timerState,
     timerNow,
     handleToggleTimerPause,
+    handleVariantModeChange,
+    handleExampleViewed,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,
@@ -308,7 +311,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         </div>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
         <m.div
-          key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}`}
+          key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}:${resetAllVersion}`}
           variants={fadeUp}
           initial="hidden"
           animate="shown"
@@ -351,6 +354,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onSetupRevealed={() => handleSetupRevealed(prob.id)}
                   onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                   onBeforeFetchVariant={flushAutoSave}
+                  onExampleViewed={(viewedAt) => handleExampleViewed(prob.id, viewedAt)}
+                  onVariantModeChange={handleVariantModeChange}
                   autoOpenSimilar={pendingSimilarProbId === prob.id}
                   onAutoOpenSimilarConsumed={() => setPendingSimilarProbId(null)}
                   onPrevQuestion={handlePrevQuestion}
@@ -457,7 +462,18 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             onCancel={() => setShowResetConfirm(false)}
             onConfirm={() => {
               setShowResetConfirm(false);
-              handleResetAll();
+              void handleResetAll().then(() => {
+                setResetAllVersion((version) => version + 1);
+                const url = new URL(window.location.href);
+                if (url.searchParams.has("similar")) {
+                  url.searchParams.delete("similar");
+                  window.history.replaceState(
+                    window.history.state,
+                    "",
+                    url.pathname + url.search + url.hash
+                  );
+                }
+              });
             }}
           />
         );

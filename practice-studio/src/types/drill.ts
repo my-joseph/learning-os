@@ -182,10 +182,26 @@ export interface AttemptRecord {
   verdict: string;
   diagnosticCodes?: string[];
   matchedTrap?: string;
+  /** Distinguishes variant-practice attempts from original problem attempts. */
+  kind?: "variant";
   /** Learner opened the equation set-up before submitting this attempt (assisted, not independent). */
   setupRevealed?: boolean;
   /** Learner opened the step-by-step solution before submitting this attempt (assisted, not independent). */
   solutionRevealed?: boolean;
+  /** Learner viewed a worked example before submitting this attempt (assisted, not independent). */
+  exampleViewed?: boolean;
+}
+
+export interface VariantSessionRecord {
+  /** Server-only bank ID; stripped before sending to the browser so method/archetype names never leak. */
+  variantId?: string;
+  role: "try" | "example";
+  attempts: AttemptRecord[];
+  hintsRevealed?: number;
+  setupRevealed?: boolean;
+  stepsRevealed?: boolean;
+  durationMs?: number;
+  servedAt: string;
 }
 
 export interface ReviewDispute {
@@ -252,9 +268,15 @@ export interface ProblemState {
   /** Set when the learner opens the step-by-step solution before the first correct answer. */
   solutionRevealedBeforeAnswer?: boolean;
   durationMs?: number;
-  /** Variant IDs already served to the learner in "Try a similar question" mode. */
+  /** Server-side variant sessions keyed by opaque per-problem token (e.g. "v1", "v2"). */
+  variants?: Record<string, VariantSessionRecord>;
+  /** Opaque token of the currently active similar question, or null when none is open. */
+  activeVariant?: string | null;
+  /** ISO timestamp when a worked example was first viewed for this problem. */
+  exampleViewedAt?: string | null;
+  /** Server-derived backward-compat list of bank variant IDs served (stripped before sending to browser). */
   variantsSeen?: string[];
-  /** Variant IDs the learner has substantively attempted (unlocks reveal for that variant). */
+  /** Server-derived backward-compat list of bank variant IDs substantively attempted (stripped before sending to browser). */
   variantsAttempted?: string[];
 }
 
@@ -417,7 +439,8 @@ export interface DrillListItem {
 }
 
 export interface RedactedVariant {
-  variantId: string;
+  /** Opaque per-problem handle (e.g. "v1"), never the bank variantId or archetype name. */
+  token: string;
   id: string;
   level: number;
   levelLabel?: string;
@@ -434,7 +457,8 @@ export interface RedactedVariant {
 }
 
 export interface WorkedExampleVariant {
-  variantId: string;
+  /** Opaque per-problem handle (e.g. "v2"), never the bank variantId or archetype name. */
+  token: string;
   id: string;
   level: number;
   levelLabel?: string;
