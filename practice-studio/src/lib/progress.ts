@@ -221,7 +221,7 @@ function mutateProblemVariantState(
   }
   const existing = readProgress(drillId);
   const problems = {
-    ...((existing?.problems || {}) as Record<string, ProblemState>),
+    ...((existing?.problems || {}) as Record<string, Partial<ProblemState>>),
   };
   const nextState: ProblemState = {
     userInput: "",

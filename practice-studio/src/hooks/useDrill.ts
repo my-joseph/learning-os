@@ -436,6 +436,7 @@ export function useDrill({
     return () => window.clearInterval(id);
   }, [isTimerRunning, activeProbId]);
 
+  const pausedBeforeVariantRef = useRef<boolean | null>(null);
   const handleToggleTimerPause = useCallback(() => {
     const now = Date.now();
     const next = timerStateRef.current.paused
@@ -443,6 +444,47 @@ export function useDrill({
       : pauseTimer(timerStateRef.current, now);
     commitTimerState(next, now);
   }, [commitTimerState]);
+
+  const handleVariantModeChange = useCallback(
+    (inVariantMode: boolean) => {
+      const now = Date.now();
+      if (inVariantMode) {
+        if (pausedBeforeVariantRef.current === null) {
+          pausedBeforeVariantRef.current = timerStateRef.current.paused;
+        }
+        if (!timerStateRef.current.paused) {
+          commitTimerState(pauseTimer(timerStateRef.current, now), now);
+        }
+      } else if (pausedBeforeVariantRef.current !== null) {
+        const wasPaused = pausedBeforeVariantRef.current;
+        pausedBeforeVariantRef.current = null;
+        if (!wasPaused && timerStateRef.current.paused) {
+          commitTimerState(resumeTimer(timerStateRef.current, now), now);
+        }
+      }
+    },
+    [commitTimerState]
+  );
+
+  const handleExampleViewed = useCallback((probId: string, viewedAt: string) => {
+    setCurrentDrill((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        problems: prev.problems.map((p) =>
+          p.id === probId
+            ? {
+                ...p,
+                state: {
+                  ...p.state,
+                  exampleViewedAt: p.state.exampleViewedAt || viewedAt,
+                },
+              }
+            : p
+        ),
+      };
+    });
+  }, []);
 
   const handleHintRevealed = useCallback((probId: string) => {
     timerStateRef.current = recordHint(timerStateRef.current, probId);
@@ -804,6 +846,8 @@ export function useDrill({
     timerState,
     timerNow,
     handleToggleTimerPause,
+    handleVariantModeChange,
+    handleExampleViewed,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,

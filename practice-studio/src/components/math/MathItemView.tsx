@@ -12,7 +12,10 @@ import { Check, Copy } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { MathBlock } from "@/components/MathRender";
 import { parseLineChoicePrompt } from "@/components/LineChoicePrompt";
-import { AnswerResultCard } from "@/components/AnswerResultCard";
+import {
+  AnswerResultCard,
+  ResultCardSecondaryAction,
+} from "@/components/AnswerResultCard";
 import { ProblemAssistSection } from "@/components/workspace/ProblemAssistSection";
 import { useChoiceController } from "@/components/workspace/useChoiceController";
 import { MathQuestionBody } from "@/components/math/MathQuestionBody";
@@ -27,6 +30,7 @@ export interface MathItemViewHandle {
   isPanelOpen: () => boolean;
   closePanel: () => void;
   openSteps: () => void;
+  isStepsOpen: () => boolean;
 }
 
 export interface MathItemViewProps {
@@ -38,20 +42,27 @@ export interface MathItemViewProps {
   activeStep: number | null;
   isLastQuestion?: boolean;
   nextLabel?: string;
+  backLabel?: string;
+  resultTitleOverride?: string;
+  resultSecondaryActions?: ResultCardSecondaryAction[];
+  autoFocusPrimaryAction?: boolean;
   autoRevealOnCorrect?: boolean;
+  loadingSteps?: boolean;
   ariaLabel?: string;
   choiceKeyboardEnabled?: boolean;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
-  onMarkDivergedStep: (stepIdx: number) => void;
+  onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
+  onStepsOpenChange?: (open: boolean) => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
+  onBack?: () => void;
   afterResultCard?: React.ReactNode;
   supplement?: React.ReactNode;
   footer?: React.ReactNode;
@@ -73,7 +84,12 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       activeStep,
       isLastQuestion = false,
       nextLabel = "Next question",
+      backLabel,
+      resultTitleOverride,
+      resultSecondaryActions,
+      autoFocusPrimaryAction = false,
       autoRevealOnCorrect = true,
+      loadingSteps = false,
       ariaLabel,
       choiceKeyboardEnabled = true,
       onInputChange,
@@ -85,8 +101,10 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       onHintRevealed,
       onSetupRevealed,
       onSolutionRevealed,
+      onStepsOpenChange,
       onNextQuestion,
       onOpenReview,
+      onBack,
       afterResultCard,
       supplement,
       footer,
@@ -148,6 +166,10 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       setShowSetup(reveal);
       setShowHint(false);
     }, [autoRevealOnCorrect, problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
+
+    useEffect(() => {
+      onStepsOpenChange?.(showSolution);
+    }, [showSolution, onStepsOpenChange]);
 
     const toggleSetup = () => {
       if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
@@ -232,6 +254,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
         isPanelOpen: () => answerAreaRef.current?.isPanelOpen() ?? false,
         closePanel: () => answerAreaRef.current?.closePanel(),
         openSteps: handleShowStepsFromCard,
+        isStepsOpen: () => showSolution,
       }),
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [isChoice, unlockChoiceRetry, showSolution, hasCorrectAttempt, problem.steps, onSolutionRevealed]
@@ -286,10 +309,15 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             mistakeTags={mistakeTags}
             isLastQuestion={isLastQuestion}
             nextLabel={nextLabel}
+            backLabel={backLabel}
+            titleOverride={resultTitleOverride}
+            autoFocusPrimaryAction={autoFocusPrimaryAction}
+            secondaryActions={resultSecondaryActions}
             onNextQuestion={onNextQuestion}
             onOpenReview={onOpenReview}
             onTryAgain={handleTryAgain}
             onShowSteps={handleShowStepsFromCard}
+            onBack={onBack}
           />
 
           {afterResultCard}
@@ -318,10 +346,14 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           stepsUnopenedUnattempted={stepsUnopenedUnattempted}
           stepsRef={stepsRef}
           showStepsHeader={true}
+          loadingSteps={loadingSteps}
           activeStep={activeStep}
           onToggleStepHighlight={onToggleStepHighlight}
           onMarkDivergedStep={onMarkDivergedStep}
           onReset={() => {
+            setShowHint(false);
+            setShowSetup(false);
+            setShowSolution(false);
             resetChoiceState();
             onReset();
           }}

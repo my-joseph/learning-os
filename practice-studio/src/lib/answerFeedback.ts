@@ -10,7 +10,7 @@ import { canRevealSteps } from "./redact";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
 
 export type ResultCardTone = "correct" | "almost" | "wrong" | "skipped";
-export type ResultCardActionKind = "next" | "review" | "retry" | "show_steps";
+export type ResultCardActionKind = "next" | "review" | "retry" | "show_steps" | "back";
 export type ChoiceResultStatus = "correct" | "wrong" | null;
 
 export interface ResultCardModel {
@@ -201,8 +201,16 @@ export function buildResultCardModel(params: {
   problem?: Pick<Problem, "commonTrapTag" | "answerSpec">;
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
+  preferBackAction?: boolean;
 }): ResultCardModel {
-  const { lastCheck, state, problem, mistakeTags = [], isLastQuestion = false } = params;
+  const {
+    lastCheck,
+    state,
+    problem,
+    mistakeTags = [],
+    isLastQuestion = false,
+    preferBackAction = false,
+  } = params;
   const tone = getResultCardTone(lastCheck, state);
   const title = getResultCardTitle(lastCheck, tone);
   const body = formatDiagnosticBody(lastCheck, problem, state, mistakeTags);
@@ -211,7 +219,7 @@ export function buildResultCardModel(params: {
 
   let actionKind: ResultCardActionKind | null = null;
   if (tone === "correct") {
-    actionKind = isLastQuestion ? "review" : "next";
+    actionKind = preferBackAction ? "back" : isLastQuestion ? "review" : "next";
   } else if (tone === "almost" || tone === "wrong") {
     actionKind = "retry";
   } else if (tone === "skipped" && canRevealSteps(state)) {

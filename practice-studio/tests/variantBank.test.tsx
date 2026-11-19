@@ -22,12 +22,7 @@ import { GET as revealGET } from "../src/app/api/reveal/route";
 import { readProgress, writeProgress } from "../src/lib/progress";
 import { applyCheckResult } from "../src/lib/applyCheckResult";
 import { buildScheduleFromProgress } from "../src/lib/reviewItems";
-import {
-  VariantActionButtons,
-  VariantPracticeCard,
-  WorkedExampleCard,
-  getVariantButtonState,
-} from "../src/components/workspace/VariantPracticePanel";
+import { getVariantButtonState } from "../src/lib/variantLadder";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import type { Problem, RedactedVariant, WorkedExampleVariant } from "../src/types/drill";
 
@@ -612,7 +607,7 @@ async function runTests() {
     }
 
     // -----------------------------------------------------------------------
-    // 6. UI smoke checks (before Commit 3 replaces VariantPracticePanel)
+    // 6. UI smoke check: MathWorkspace unattempted state hides variant links
     // -----------------------------------------------------------------------
     {
       assert.deepEqual(getVariantButtonState({ hasVariants: false, wrongAttempts: 3 }), {
@@ -623,70 +618,19 @@ async function runTests() {
         showTry: true,
         showExample: false,
       });
-      assert.deepEqual(getVariantButtonState({ hasVariants: true, wrongAttempts: 2 }), {
-        showTry: true,
-        showExample: true,
-      });
+      assert.deepEqual(
+        getVariantButtonState({
+          hasVariants: true,
+          wrongAttempts: 1,
+          clusterWrongAttempts: 2,
+        }),
+        {
+          showTry: true,
+          showExample: true,
+        }
+      );
 
       const noop = () => {};
-      const btnHtml = renderToStaticMarkup(
-        <VariantActionButtons
-          hasVariants={true}
-          wrongAttempts={2}
-          loadingMode={null}
-          onTrySimilar={noop}
-          onSeeExample={noop}
-        />
-      );
-      assert.ok(btnHtml.includes("Try a similar question"));
-      assert.ok(btnHtml.includes("See a worked example"));
-
-      const sampleTry: RedactedVariant = {
-        token: "v1",
-        id: "v1",
-        level: 1,
-        prompt: "Reduce $\\frac{88}{165}$ to lowest terms.",
-        answerSpec: { type: "number" },
-        placeholder: "Enter a reduced fraction",
-        checkpointHint: "Factor out the greatest common divisor.",
-        hasSetup: true,
-      };
-      const tryHtml = renderToStaticMarkup(
-        <VariantPracticeCard
-          drillId="DRL-MTH-T01-C04-99"
-          qid="Q01"
-          variant={sampleTry}
-          remainingCount={1}
-          onAnother={noop}
-          onClose={noop}
-        />
-      );
-      assert.ok(tryHtml.includes("Similar question"));
-      assert.ok(!tryHtml.includes("8/15"));
-
-      const sampleExample: WorkedExampleVariant = {
-        token: "v2",
-        id: "v2",
-        level: 1,
-        prompt: "Reduce $\\frac{42}{90}$ to lowest terms.",
-        answerDisplay: "\\frac{7}{15}",
-        answerPlain: "7/15",
-        steps: [
-          {
-            latex: "\\frac{42}{90} = \\frac{7 \\cdot 6}{15 \\cdot 6}",
-            explain: "Factor out the greatest common divisor.",
-          },
-          {
-            latex: "\\frac{7 \\cdot 6}{15 \\cdot 6} = \\frac{7}{15}",
-            explain: "Cancel the common factor.",
-          },
-        ],
-      };
-      const exHtml = renderToStaticMarkup(
-        <WorkedExampleCard example={sampleExample} onClose={noop} />
-      );
-      assert.ok(exHtml.includes("Worked example — a similar question, not yours"));
-
       const html0 = renderToStaticMarkup(
         <MathWorkspace
           problem={makeMathProblem()}
@@ -708,6 +652,7 @@ async function runTests() {
         />
       );
       assert.ok(!html0.includes("Try a similar question"));
+      assert.ok(!html0.includes("See a worked example"));
     }
 
     console.log("PASS: variantBank.test.tsx (opaque tokens, zero-leak, server state, review isolation)");

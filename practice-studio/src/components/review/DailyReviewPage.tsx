@@ -83,6 +83,8 @@ export interface DailyReviewViewProps {
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
+  onExampleViewed?: (viewedAt: string) => void;
+  onVariantModeChange?: (inVariantMode: boolean) => void;
   onToggleStepHighlight?: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onSetScore?: (score: number | null) => void;
@@ -130,6 +132,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
   onHintRevealed,
   onSetupRevealed,
   onSolutionRevealed,
+  onExampleViewed,
+  onVariantModeChange,
   onToggleStepHighlight = noop,
   onMarkDivergedStep = noop,
   onSetScore = noop,
@@ -455,6 +459,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       onHintRevealed={onHintRevealed}
                       onSetupRevealed={onSetupRevealed}
                       onSolutionRevealed={onSolutionRevealed}
+                      onExampleViewed={onExampleViewed}
+                      onVariantModeChange={onVariantModeChange}
                       onPrevQuestion={onPrevItem}
                       onNextQuestion={onNextItem}
                       onOpenReview={onNextItem}
@@ -680,6 +686,7 @@ export const DailyReviewPage: React.FC = () => {
     return () => window.clearInterval(id);
   }, [isTimerRunning, currentKey]);
 
+  const pausedBeforeVariantRef = useRef<boolean | null>(null);
   const handleToggleTimerPause = useCallback(() => {
     const now = Date.now();
     const next = timerStateRef.current.paused
@@ -687,6 +694,27 @@ export const DailyReviewPage: React.FC = () => {
       : pauseTimer(timerStateRef.current, now);
     commitTimerState(next, now);
   }, [commitTimerState]);
+
+  const handleVariantModeChange = useCallback(
+    (inVariantMode: boolean) => {
+      const now = Date.now();
+      if (inVariantMode) {
+        if (pausedBeforeVariantRef.current === null) {
+          pausedBeforeVariantRef.current = timerStateRef.current.paused;
+        }
+        if (!timerStateRef.current.paused) {
+          commitTimerState(pauseTimer(timerStateRef.current, now), now);
+        }
+      } else if (pausedBeforeVariantRef.current !== null) {
+        const wasPaused = pausedBeforeVariantRef.current;
+        pausedBeforeVariantRef.current = null;
+        if (!wasPaused && timerStateRef.current.paused) {
+          commitTimerState(resumeTimer(timerStateRef.current, now), now);
+        }
+      }
+    },
+    [commitTimerState]
+  );
 
   const updateCurrentProblem = useCallback(
     (
@@ -731,6 +759,20 @@ export const DailyReviewPage: React.FC = () => {
     timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
     incrementHintsUsed();
   }, [currentKey, currentItem, incrementHintsUsed]);
+
+  const handleExampleViewed = useCallback(
+    (viewedAt: string) => {
+      incrementHintsUsed();
+      updateCurrentProblem((p) => ({
+        ...p,
+        state: {
+          ...p.state,
+          exampleViewedAt: p.state.exampleViewedAt || viewedAt,
+        },
+      }));
+    },
+    [incrementHintsUsed, updateCurrentProblem]
+  );
 
   const fetchAndMergeReveal = useCallback(
     async (doc: DrillDocument, key: string, qid: string, parts: RevealPart[]) => {
@@ -967,6 +1009,8 @@ export const DailyReviewPage: React.FC = () => {
       onHintRevealed={handleHintRevealed}
       onSetupRevealed={handleSetupRevealed}
       onSolutionRevealed={handleSolutionRevealed}
+      onExampleViewed={handleExampleViewed}
+      onVariantModeChange={handleVariantModeChange}
       onToggleStepHighlight={(stepIdx) => {
         if (!currentKey) return;
         setActiveStepsByKey((prev) => ({

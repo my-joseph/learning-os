@@ -113,6 +113,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     timerState,
     timerNow,
     handleToggleTimerPause,
+    handleVariantModeChange,
+    handleExampleViewed,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,
@@ -334,6 +336,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onSetupRevealed={() => handleSetupRevealed(prob.id)}
                   onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                   onBeforeFetchVariant={flushAutoSave}
+                  onExampleViewed={(viewedAt) => handleExampleViewed(prob.id, viewedAt)}
+                  onVariantModeChange={handleVariantModeChange}
                   onPrevQuestion={handlePrevQuestion}
                   onNextQuestion={handleNextQuestion}
                   onOpenReview={() => setViewMode("review")}
