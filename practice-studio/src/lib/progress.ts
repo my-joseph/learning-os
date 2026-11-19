@@ -405,6 +405,36 @@ export function updateVariantSession(
   return { record: updatedRecord, state };
 }
 
+/** Clear server-owned variant UI state for one or every problem in a drill. */
+export function resetVariantProgress(
+  drillId: string,
+  unitCode: string | undefined,
+  qid?: string
+): void {
+  if (!isSafeId(drillId) || (qid !== undefined && !isSafeId(qid))) {
+    throw new Error("Invalid drillId or qid");
+  }
+  const existing = readProgress(drillId);
+  if (!existing) return;
+  const problems = { ...(existing.problems || {}) } as Record<string, Record<string, unknown>>;
+  const ids = qid ? [qid] : Object.keys(problems);
+  for (const id of ids) {
+    const state = { ...(problems[id] || {}) };
+    delete state.variants;
+    delete state.activeVariant;
+    delete state.exampleViewedAt;
+    delete state.variantsSeen;
+    delete state.variantsAttempted;
+    problems[id] = state;
+  }
+  const file = progressFile(drillId);
+  fs.writeFileSync(
+    file,
+    JSON.stringify({ ...existing, unitCode: unitCode || existing.unitCode, updatedAt: new Date().toISOString(), problems }, null, 2),
+    "utf-8"
+  );
+}
+
 function appendVariantTrackingField(
   drillId: string,
   unitCode: string | undefined,

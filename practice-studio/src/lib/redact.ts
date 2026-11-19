@@ -574,9 +574,6 @@ export function redactVariantForTry(
     answerSpec: (redacted.answerSpec as AnswerSpec) || { type: "number" },
     ...(typeof redacted.inputHint === "string" ? { inputHint: redacted.inputHint } : {}),
     ...(typeof redacted.placeholder === "string" ? { placeholder: redacted.placeholder } : {}),
-    ...(typeof redacted.checkpointHint === "string"
-      ? { checkpointHint: redacted.checkpointHint }
-      : {}),
     hasSetup: Boolean(redacted.hasSetup),
   };
 }

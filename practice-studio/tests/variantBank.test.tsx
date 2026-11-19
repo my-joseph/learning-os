@@ -265,6 +265,17 @@ async function runTests() {
       assert.equal(headMiss.status, 404);
     }
 
+    // `mode=try` is gated by an original wrong attempt and a refusal must not persist a session.
+    {
+      const refusedTry = await variantGET(
+        new NextRequest(
+          "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=try"
+        )
+      );
+      assert.equal(refusedTry.status, 403);
+      assert.equal(readProgress("DRL-MTH-T01-C04-99"), null);
+    }
+
     // Seed 1 wrong attempt on Q01 (sets Q01 to Level 1, due next day)
     writeProgress({
       drillId: "DRL-MTH-T01-C04-99",
@@ -319,6 +330,7 @@ async function runTests() {
       assert.equal(body1.variant.answerDisplay, undefined);
       assert.equal(body1.variant.steps, undefined);
       assert.equal(body1.variant.display, undefined);
+      assert.equal(body1.variant.checkpointHint, undefined);
       assert.equal(body1.variant.plainText, undefined);
       assert.equal(body1.variant.trapValue, undefined);
       assert.equal(body1.variant.trapDerivation, undefined);
@@ -332,6 +344,7 @@ async function runTests() {
       assert.ok(!rawJson.includes("SECRET_DISPLAY_88_165"), "try payload must never leak display");
       assert.ok(!rawJson.includes("SECRET_PLAINTEXT_88_165"), "try payload must never leak plainText");
       assert.ok(!rawJson.includes("SECRET_STEP_EXPLAIN_ONE"), "try payload must never leak steps");
+      assert.ok(!rawJson.includes("greatest common divisor"), "try payload must not ship the hint before it is requested");
 
       // Refuses a new try while the active try has no substantive attempt (prevents skipping to easier numbers)
       const skipRes = await variantGET(
@@ -399,6 +412,14 @@ async function runTests() {
       const displayData = (await displayRes.json()) as { display: string; plainText: string };
       assert.equal(displayData.display, "SECRET_DISPLAY_88_165");
       assert.equal(displayData.plainText, "SECRET_PLAINTEXT_88_165");
+
+      const hintRes = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?variantToken=${firstToken}&drillId=DRL-MTH-T01-C04-99&qid=Q01&part=hint`
+        )
+      );
+      assert.equal(hintRes.status, 200);
+      assert.equal((await hintRes.json()).checkpointHint, "Factor out the greatest common divisor.");
 
       const progAfterDisplay = readProgress("DRL-MTH-T01-C04-99");
       const v1AfterDisplay = (progAfterDisplay?.problems?.Q01 as Problem["state"])?.variants?.v1;
@@ -653,6 +674,50 @@ async function runTests() {
       );
       assert.ok(!html0.includes("Try a similar question"));
       assert.ok(!html0.includes("See a worked example"));
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. Question and drill resets clear active variant UI state and seen-bank state.
+    // -----------------------------------------------------------------------
+    {
+      const resetQuestion = await variantPOST(
+        new NextRequest("http://127.0.0.1:3000/api/variant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId: "DRL-MTH-T01-C04-99",
+            qid: "Q01",
+            action: "reset-question",
+          }),
+        })
+      );
+      assert.equal(resetQuestion.status, 200);
+      let resetState = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q01 as Problem["state"];
+      assert.equal(resetState.activeVariant, undefined);
+      assert.equal(resetState.exampleViewedAt, undefined);
+      assert.equal(resetState.variants, undefined);
+      assert.equal(resetState.variantsSeen, undefined);
+      assert.equal(resetState.variantsAttempted, undefined);
+      const afterQuestionReset = await variantGET(
+        new NextRequest(
+          "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=active"
+        )
+      );
+      assert.equal((await afterQuestionReset.json()).active, null);
+
+      const resetAll = await variantPOST(
+        new NextRequest("http://127.0.0.1:3000/api/variant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId: "DRL-MTH-T01-C04-99", action: "reset-all" }),
+        })
+      );
+      assert.equal(resetAll.status, 200);
+      resetState = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q01 as Problem["state"];
+      assert.equal(resetState.activeVariant, undefined);
+      assert.equal(resetState.exampleViewedAt, undefined);
+      assert.equal(resetState.variants, undefined);
+      assert.equal(resetState.variantsSeen, undefined);
     }
 
     console.log("PASS: variantBank.test.tsx (opaque tokens, zero-leak, server state, review isolation)");

@@ -648,11 +648,14 @@ export function useVariantSession({
         }
         if (checked.verdict === "correct") {
           setHasUnfinishedActiveOnServer(false);
+          setIsSimilarPaused(true);
         }
 
         setSimilarBaseMs((prev) => prev + attemptElapsed);
         setSimilarElapsedMs(0);
-        if (similarTickStartRef.current !== null) {
+        if (checked.verdict === "correct") {
+          similarTickStartRef.current = null;
+        } else if (similarTickStartRef.current !== null) {
           similarTickStartRef.current = Date.now();
         }
 
@@ -706,32 +709,30 @@ export function useVariantSession({
     [activeSimilar, drillId, problem.id, similarElapsedMs]
   );
 
-  const handleSimilarHintRevealed = useCallback(() => {
+  const handleSimilarHintRevealed = useCallback(async () => {
     if (!drillId || !activeSimilar) return;
+    const params = new URLSearchParams({
+      drill: drillId,
+      q: problem.id,
+      variantToken: activeSimilar.token,
+      part: "hint",
+    });
+    const res = await fetch(`/api/reveal?${params.toString()}`);
+    if (!res.ok) return;
+    const data = (await res.json()) as { checkpointHint?: string };
     setActiveSimilar((prev) => {
-      if (!prev) return prev;
+      if (!prev || prev.token !== activeSimilar.token) return prev;
       return {
         ...prev,
         problem: {
           ...prev.problem,
+          checkpointHint: data.checkpointHint || "",
           state: {
             ...prev.problem.state,
             hintsRevealed: (prev.problem.state.hintsRevealed || 0) + 1,
           },
         },
       };
-    });
-    void fetch("/api/variant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        drillId,
-        qid: problem.id,
-        variantToken: activeSimilar.token,
-        action: "hint",
-      }),
-    }).catch(() => {
-      // non-blocking
     });
   }, [activeSimilar, drillId, problem.id]);
 
@@ -890,8 +891,14 @@ export function useVariantSession({
   const resetAllVariantUi = useCallback(() => {
     setMode("original");
     setActiveSimilar(null);
+    setExample(null);
+    setExampleViewedAt(null);
+    setRemainingCount(null);
+    setServerVariantWrongs(0);
+    setHasUnfinishedActiveOnServer(false);
     setActiveStep(null);
     setLoadingAction(null);
+    setLoadingSteps(false);
     syncSimilarUrlParam(false, isReviewSession);
   }, [isReviewSession]);
 

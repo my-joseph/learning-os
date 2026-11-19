@@ -10,7 +10,7 @@ import {
 import { Problem, ProblemState } from "@/types/drill";
 
 const VALID_PARTS = new Set<RevealPart>(["steps", "display", "solution"]);
-const VALID_VARIANT_PARTS = new Set<RevealPart>(["steps", "display"]);
+const VALID_VARIANT_PARTS = new Set<RevealPart | "hint">(["steps", "display", "hint"]);
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -41,9 +41,9 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (!VALID_VARIANT_PARTS.has(partParam as RevealPart)) {
+    if (!VALID_VARIANT_PARTS.has(partParam as RevealPart | "hint")) {
       return NextResponse.json(
-        { error: "Invalid part parameter for variant; expected steps or display" },
+        { error: "Invalid part parameter for variant; expected hint, steps, or display" },
         { status: 400 }
       );
     }
@@ -54,6 +54,13 @@ export async function GET(req: NextRequest) {
     const loadedVariant = loadVariantFromDisk(resolved.record.variantId);
     if (!loadedVariant) {
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+    }
+
+    if (partParam === "hint") {
+      updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
+        hintIncrement: 1,
+      });
+      return NextResponse.json({ checkpointHint: loadedVariant.variant.checkpointHint || "" });
     }
 
     const part = partParam as RevealPart;

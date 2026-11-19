@@ -3,6 +3,7 @@ import { isSafeId, loadProblemFromDisk, loadVariantFromDisk } from "@/lib/paths"
 import {
   readProgress,
   registerServedVariant,
+  resetVariantProgress,
   resolveVariantToken,
   updateVariantSession,
 } from "@/lib/progress";
@@ -12,7 +13,11 @@ import {
   formatWorkedExampleVariant,
   redactVariantForTry,
 } from "@/lib/redact";
-import { countClusterWrongAttempts, isSubstantiveVerdict } from "@/lib/reviewGuard";
+import {
+  countClusterWrongAttempts,
+  countWrongAttempts,
+  isSubstantiveVerdict,
+} from "@/lib/reviewGuard";
 import {
   collectSeenVariantIds,
   findVariantsForProblem,
@@ -278,6 +283,14 @@ export async function GET(req: NextRequest) {
   }
 
   // mode === "try"
+  const originalWrongAttempts = countWrongAttempts(state);
+  if (originalWrongAttempts < 1) {
+    return NextResponse.json(
+      { error: "A similar question unlocks after a wrong attempt on the original question." },
+      { status: 403 }
+    );
+  }
+
   // Refuse serving a new try while the current active try has no substantive attempt yet.
   const activeToken =
     typeof state?.activeVariant === "string" && state.activeVariant
@@ -333,7 +346,14 @@ export async function GET(req: NextRequest) {
   });
 }
 
-const ALLOWED_ACTIONS = new Set(["hint", "reveal-steps", "reset", "deactivate"]);
+const ALLOWED_ACTIONS = new Set([
+  "hint",
+  "reveal-steps",
+  "reset",
+  "deactivate",
+  "reset-question",
+  "reset-all",
+]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -344,19 +364,35 @@ export async function POST(req: NextRequest) {
       typeof body.variantToken === "string" ? body.variantToken.trim() : "";
     const action = typeof body.action === "string" ? body.action.trim() : "";
 
-    if (!isSafeId(drillId) || !isSafeId(qid) || !isSafeId(variantToken)) {
+    if (!isSafeId(drillId) || !ALLOWED_ACTIONS.has(action)) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid drillId or variant action" },
+        { status: 400 }
+      );
+    }
+    if (action === "reset-question" || action === "reset-all") {
+      const qid = typeof body.qid === "string" ? body.qid.trim() : undefined;
+      if (action === "reset-question" && (!qid || !isSafeId(qid))) {
+        return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
+      }
+      const loaded = qid ? loadProblemFromDisk(drillId, qid) : null;
+      if (qid && !loaded) {
+        return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
+      }
+      resetVariantProgress(
+        drillId,
+        loaded && typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
+        action === "reset-question" ? qid : undefined
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!isSafeId(qid) || !isSafeId(variantToken)) {
       return NextResponse.json(
         { ok: false, error: "Invalid drillId, qid, or variantToken" },
         { status: 400 }
       );
     }
-    if (!ALLOWED_ACTIONS.has(action)) {
-      return NextResponse.json(
-        { ok: false, error: "Invalid variant action" },
-        { status: 400 }
-      );
-    }
-
     const resolved = resolveVariantToken(drillId, qid, variantToken);
     if (!resolved) {
       return NextResponse.json(

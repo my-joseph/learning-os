@@ -712,8 +712,15 @@ export function useDrill({
     triggerAutoSave(transition.updatedDoc);
   };
 
-  const handleResetAll = () => {
+  const handleResetAll = async () => {
     if (!currentDrill) return;
+
+    const variantReset = await fetch("/api/variant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ drillId: currentDrill.drillId, action: "reset-all" }),
+    });
+    if (!variantReset.ok) return;
 
     const now = Date.now();
     const isVisible = typeof document !== "undefined" ? !document.hidden : true;
