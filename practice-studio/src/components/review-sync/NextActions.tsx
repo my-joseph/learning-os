@@ -8,6 +8,7 @@ import type {
   ProblemJumpTarget,
   WeakSpotSuggestion,
 } from "@/lib/reviewRow";
+import { trapName } from "@/lib/titleText";
 
 export interface NextActionsProps {
   dueReviewCount: number;
@@ -72,9 +73,8 @@ export const NextActions: React.FC<NextActionsProps> = ({
   const weakSpotAction: ActionDescriptor | null = topWeakSpot
     ? {
         key: `weak-spot-${topWeakSpot.id}`,
-        label: <span>Practise {topWeakSpot.label}</span>,
-        href: firstWrong ? undefined : "/review",
-        onClick: firstWrong && onOpenItem ? () => onOpenItem(firstWrong.index) : undefined,
+        label: <span>Practise {topWeakSpot.label || trapName(topWeakSpot.id)}</span>,
+        href: `/review?trap=${encodeURIComponent(topWeakSpot.id)}`,
       }
     : firstWrong && onOpenItem
     ? {

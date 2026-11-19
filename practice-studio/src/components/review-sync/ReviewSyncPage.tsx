@@ -130,7 +130,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
       for (const id of initialExpandedIds) explicit[id] = true;
       return explicit;
     }
-    return getDefaultExpandedRowIds(sortedNeedsAttention, currentDrill.problems.length);
+    return getDefaultExpandedRowIds(sortedNeedsAttention);
   });
 
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
@@ -194,7 +194,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
       setExpandedIds(explicit);
     } else {
       setExpandedIds(
-        getDefaultExpandedRowIds(sortedNeedsAttention, currentDrill.problems.length)
+        getDefaultExpandedRowIds(sortedNeedsAttention)
       );
     }
     setPendingScrollId(null);

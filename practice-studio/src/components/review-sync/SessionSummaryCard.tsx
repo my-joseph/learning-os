@@ -137,6 +137,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
   const drillTitle = plainTitle(drill.unitTitle) || drill.unitCode;
   const totalCount = drill.problems.length;
   const rightCount = countRightItems(drill.problems);
+  const points = drill.problems.reduce((sum, problem) => sum + (problem.state?.score ?? 0), 0);
   const firstTryCount = groups.firstTryCount;
   const allFirstTry = totalCount > 0 && firstTryCount === totalCount;
   const formattedTime = durationMs > 0 ? formatDuration(durationMs) : null;
@@ -177,7 +178,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
         <button
           type="button"
           onClick={onScrollToSync}
-          className={`self-start sm:self-auto inline-flex items-center gap-1 text-xs transition-colors rounded-md py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0 ${statusLink.toneClass}`}
+          className={`self-start sm:self-auto inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs transition-colors rounded-md py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0 ${statusLink.toneClass}`}
         >
           <span className="font-display tabular-nums">{statusLink.label}</span>
           {statusLink.showArrow && <ArrowDown className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
@@ -200,11 +201,10 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           </>
         ) : allFirstTry ? (
           <>
-            <span>All </span>
             <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {totalCount}
+              {points} / {totalCount}
             </span>
-            <span> right on the first try</span>
+            <span> points · All {totalCount} right on the first try</span>
             {formattedTime && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
@@ -217,13 +217,9 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
         ) : (
           <>
             <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {rightCount}
+              {points} / {totalCount}
             </span>
-            <span> of </span>
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {totalCount}
-            </span>
-            <span> right</span>
+            <span> points · {rightCount} of {totalCount} right</span>
             {firstTryCount > 0 && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>

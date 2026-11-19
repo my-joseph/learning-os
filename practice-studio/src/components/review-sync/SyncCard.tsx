@@ -209,7 +209,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
       </h2>
 
       {/* Exact payload preview (hidden only when showing the calm post-sync summary, still visible while syncing/changed/error) */}
-      {effectiveSyncPhase !== "synced" && (
+      {preview.hasAnyAttempt && effectiveSyncPhase !== "synced" && (
         <ul aria-label="Sync preview" className="space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
           {/* 1. Drill result + status toggle */}
           <li className="flex items-start gap-2.5 leading-relaxed">
@@ -217,7 +217,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span>Drill result:</span>
               <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                {summary.score} / {summary.maxScore} ({summary.accuracyPct}%)
+                {summary.score} / {summary.maxScore} points ({summary.accuracyPct}%)
               </span>
               <span aria-hidden="true" className="text-zinc-400 dark:text-zinc-500">
                 ·
@@ -231,13 +231,13 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   ({preview.statusReason})
                 </span>
               </span>
-              <button
+              {preview.hasAnyAttempt && <button
                 type="button"
                 onClick={() => onStatusOverrideChange(toggleTargetStatus)}
-                className="text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
               >
                 {toggleLabel}
-              </button>
+              </button>}
             </div>
           </li>
 
@@ -283,7 +283,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       onClick={() => setShowLines((prev) => !prev)}
                       aria-expanded={showLines}
                       aria-controls="sync-preview-log-lines"
-                      className="inline-flex items-center gap-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                      className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                     >
                       <span>{showLines ? "Hide lines" : "Show lines"}</span>
                       <ChevronDown
@@ -391,7 +391,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   <button
                     type="button"
                     onClick={onAnswerFirstUnanswered}
-                    className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                    className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                   >
                     Answer them first
                   </button>
@@ -437,7 +437,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   href={notionUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-emerald-800 dark:text-emerald-300 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                  className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-emerald-800 dark:text-emerald-300 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                 >
                   <span>Open in Notion</span>
                   <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -531,7 +531,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                     type="button"
                     onClick={() => setShowErrorDetails((prev) => !prev)}
                     aria-expanded={showErrorDetails}
-                    className="inline-flex items-center gap-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                    className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                   >
                     <span>Details</span>
                     <ChevronDown
@@ -599,7 +599,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         type="button"
                         onClick={() => setShowErrorDetails((prev) => !prev)}
                         aria-expanded={showErrorDetails}
-                        className="inline-flex items-center gap-0.5 font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                       >
                         <span>Details</span>
                         <ChevronDown
@@ -612,7 +612,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       <button
                         type="button"
                         onClick={handleCopyError}
-                        className="inline-flex items-center gap-1 font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                       >
                         {copiedError ? (
                           <>
@@ -705,7 +705,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
               {!preview.hasAnyAttempt
-                ? "Answer at least one question to sync."
+                ? "Nothing to sync yet — answer at least one question"
                 : "Your progress is already saved on this computer."}
             </p>
           </div>

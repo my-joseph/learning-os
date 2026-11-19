@@ -9,10 +9,13 @@ import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
 import { buildSessionSummary, buildSyncPayload, summaryFingerprint } from "../src/lib/sessionSummary";
 import {
   formatChoiceAnswerLabel,
+  findNextDrill,
+  getDefaultExpandedRowIds,
   lastAnswerText,
   latestReviewVerdict,
   matchedTraps,
   normaliseTestReport,
+  shortRowTitle,
 } from "../src/lib/reviewRow";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
@@ -160,6 +163,17 @@ assert.equal(normaliseTestReport({ passedCount: 3, totalCount: 4 }).total, 4);
 assert.equal(latestReviewVerdict({ ...baseState(), reviews: [{ verdict: "changes", findings: [] }] } as unknown as ProblemState).status, "revise");
 assert.equal(formatChoiceAnswerLabel({ ...makeProblem("Q01"), prompt: "Line 1: parse logs\nLine 2: write report",
   answerSpec: { type: "choice", options: [{ id: "B", label: "Second line" }] } }, "B"), "Second line");
+const lineChoiceProblem = { ...makeProblem("Q01"), prompt: "Choose the correct step:\nLine 1: Add terms\nLine 2: Combine terms\nLine 3: Simplify result",
+  answerSpec: { type: "choice" as const, options: [{ id: "step-a", label: "Line 1" }, { id: "step-b", label: "Line 2" }, { id: "step-c", label: "Line 3" }] },
+  state: { ...baseState(), userInput: "step-c", attempts: [{ input: "step-c", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }] } };
+assert.equal(lastAnswerText(lineChoiceProblem), "Line 3", "choice IDs display their option labels");
+assert.equal(shortRowTitle(makeProblem("Q01")), "Find the product $$(2+3i)(4-2i)$$.", "row title uses the prompt's first line");
+const attentionItems = ["Q01", "Q02", "Q03"].map((id, index) => ({ problem: makeProblem(id), index, outcome: "wrong" as const }));
+assert.deepEqual(Object.keys(getDefaultExpandedRowIds(attentionItems)), ["Q01", "Q02", "Q03"], "all rows expand when To review has three items");
+assert.deepEqual(getDefaultExpandedRowIds([...attentionItems, { problem: makeProblem("Q04"), index: 3, outcome: "unanswered" as const }]), {}, "rows collapse when To review has more than three items");
+const nextDrill = findNextDrill(mathDrill, [{ drillId: "DRL-MTH-T02-C01-U01-04", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-19", questionCount: 4, difficultyMode: "Mixed" }, { drillId: "DRL-MTH-T02-C01-U01-03", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-18", questionCount: 4, difficultyMode: "Mixed" }]);
+assert.equal(nextDrill?.drillId, "DRL-MTH-T02-C01-U01-03", "next drill excludes the current drill");
+assert.equal(nextDrill?.title, "Complex Numbers · Set 3", "next drill names its unit and set");
 
 // Sync state and metadata stamping: only a real successful response stamps.
 const reply = (data: unknown, ok = true) => new Response(JSON.stringify(data), { status: ok ? 200 : 500 });
@@ -230,9 +244,12 @@ assert.doesNotMatch(JSON.stringify(buildSyncPayload(mathDrill, null, { attemptDa
 const untouched = { ...mathDrill, problems: [makeProblem("Q01"), makeProblem("Q02")] };
 const untouchedHtml = render(untouched);
 assert.match(untouchedHtml, /Nothing answered yet/);
-assert.match(untouchedHtml, /Answer at least one question to sync/);
+assert.match(untouchedHtml, /Nothing to sync yet — answer at least one question/);
 assert.match(untouchedHtml, /Start Q1/);
 assert.match(untouchedHtml, /disabled=""/);
+assert.match(untouchedHtml, /Nothing to sync yet — answer at least one question/);
+assert.doesNotMatch(untouchedHtml, /Mark as graded/);
+assert.doesNotMatch(untouchedHtml, /They are sent as not tried/);
 
 for (const [state, expected] of [
   [{ phase: "syncing" }, /Syncing…/],
@@ -256,11 +273,25 @@ const allCorrect = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(
   attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] })] };
 assert.match(render(allCorrect), /right on the first try/);
 assert.match(render(allCorrect), /Nothing to fix/);
+assert.match(render(allCorrect), /1 \/ 1 points/);
+assert.match(render(mathDrill), /0\.5 \/ 3 points/);
+assert.match(render(mathDrill), /0\.5 \/ 3 points/);
 const manyWrong = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id) =>
   makeProblem(id, { ...baseState(), score: 0, userInput: "wrong", attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect", matchedTrap: "positive-last-term" }] })) };
 const manyWrongHtml = render(manyWrong);
 assert.match(manyWrongHtml, /Same trap/);
 assert.match(manyWrongHtml, /aria-expanded="false"/);
+const weakSpotHtml = render(mathDrill, {
+  dueReviewCount: 0,
+  weakSpotUnits: [{ unitCode: mathDrill.unitCode, unitTitle: mathDrill.unitTitle, subject: "MTH", itemCount: 2, drillCount: 1, open: [{ id: "positive-last-term", name: "Positive last term", matches: 2, drills: 1, last: "2026-11-19", subject: "MTH" }], closed: [], levels: {}, assistedCount: 0, skipped: [] }],
+  workspaceDrills: [{ drillId: "DRL-MTH-T02-C01-U01-03", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-18", questionCount: 4, difficultyMode: "Mixed" }],
+  onTrySimilarQuestion: noop,
+});
+assert.match(weakSpotHtml, /href="\/review\?trap=positive-last-term"/);
+assert.match(weakSpotHtml, /Practise Positive last term/);
+assert.match(weakSpotHtml, /Next drill: Complex Numbers · Set 3/);
+const similarRowHtml = render({ ...mathDrill, problems: [{ ...mathDrill.problems[0], hasVariants: true }] }, { initialExpandedIds: ["Q01"], onTrySimilarQuestion: noop });
+assert.match(similarRowHtml, /Try a similar question/);
 
 const prgHtml = render({ ...prgDrill, problems: [makeProblem("Q01", { ...baseState(), score: 0,
   lastTestReport: { allPassed: false, score: 0.5, passedCount: 2, totalCount: 4, visibleResults: [], hiddenPassed: 0, hiddenTotal: 0, executionTimeMs: 2 },

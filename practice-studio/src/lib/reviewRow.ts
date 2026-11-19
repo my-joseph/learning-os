@@ -287,6 +287,10 @@ export function verifiedAnswerLabel(problem: Problem): string {
 
 /** Plain-text collapsed row title (never a truncated KaTeX prompt or raw slug). */
 export function shortRowTitle(problem: Problem): string {
+  const promptLine = typeof problem.prompt === "string"
+    ? problem.prompt.split(/\r?\n/, 1)[0].trim()
+    : "";
+  if (promptLine) return promptLine;
   const ctx = typeof problem.context === "string" ? problem.context.trim() : "";
   if (ctx && !isContextSlug(ctx)) {
     return plainTitle(ctx);
@@ -406,18 +410,11 @@ export function sortNeedsAttention<T>(
  * wrong or assisted rows expand when there are 3 or fewer of them AND it is not a "many wrong" session.
  */
 export function getDefaultExpandedRowIds(
-  needsAttention: readonly GroupedReviewItem<Problem>[],
-  totalProblems: number
+  needsAttention: readonly GroupedReviewItem<Problem>[]
 ): Record<string, boolean> {
-  const wrongAndAssisted = needsAttention.filter(
-    (item) => item.outcome === "wrong" || item.outcome === "assisted_or_partial"
-  );
-  const isManyWrong = totalProblems > 0 && wrongAndAssisted.length * 2 >= totalProblems;
-  if (isManyWrong || wrongAndAssisted.length === 0 || wrongAndAssisted.length > 3) {
-    return {};
-  }
+  if (needsAttention.length > 3 || needsAttention.length === 0) return {};
   const map: Record<string, boolean> = {};
-  for (const item of wrongAndAssisted) {
+  for (const item of needsAttention) {
     map[item.problem.id] = true;
   }
   return map;
@@ -536,9 +533,10 @@ export function findNextDrill(
   if (!picked) return null;
   const href = drillHref(picked.drillId);
   if (href === "/") return null;
+  const setNumber = Number(picked.drillId.match(/-(\d+)$/)?.[1]);
   return {
     drillId: picked.drillId,
-    title: plainTitle(picked.unitTitle) || picked.unitCode,
+    title: `${plainTitle(picked.unitTitle) || picked.unitCode} · Set ${Number.isFinite(setNumber) && setNumber > 0 ? setNumber : picked.drillId}`,
     href,
   };
 }
@@ -572,7 +570,7 @@ export function pickTopWeakSpot(weakSpotUnits: readonly WeakSpotUnit[]): WeakSpo
       const spot = unit.open[0];
       return {
         id: spot.id,
-        label: plainTitle(spot.name) || spot.id,
+        label: plainTitle(spot.name) || trapName(spot.id),
         matches: spot.matches,
         unitCode: unit.unitCode,
       };
