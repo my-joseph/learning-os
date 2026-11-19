@@ -1,0 +1,700 @@
+{
+  "unitCode": "MTH-T02-C04-U01",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-01",
+      "sourceArchetype": "t02-c04-u01-read-quadratic-form",
+      "archetypeKey": "t02-c04-u01-read-quadratic-form",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $f(x) = -3(x + 7)^2 - 4$, find the $x$-coordinate of the vertex.",
+      "display": "f(x) = a(x - h)^2 + k",
+      "plainText": "f(x) = -3*(x + 7)^2 - 4",
+      "givens": {
+        "a": -3,
+        "inside": 7,
+        "k": -4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-7",
+        "tolerance": 0
+      },
+      "answerPlain": "-7",
+      "answerDisplay": "-7",
+      "inputHint": "Enter a signed integer.",
+      "commonTrapTag": "t02-c04-u01-vertex-inside-sign-trap",
+      "trapDerivation": "3*7/3",
+      "trapValue": "7",
+      "verify": {
+        "source": "-7",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Find the input value that makes the squared binomial equal zero.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the vertex and reveal the requested input directly.",
+      "steps": [
+        {
+          "latex": "x + 7 = 0",
+          "explain": "Set the expression inside the square equal to zero to locate the vertex."
+        },
+        {
+          "latex": "x = -7",
+          "explain": "Subtract 7 from both sides to solve for the vertex x-coordinate.",
+          "val": "-7"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u01-vertex-inside-sign-trap|direct|f(x) = -#*(x + #)^# - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-02",
+      "sourceArchetype": "t02-c04-u01-read-quadratic-form",
+      "archetypeKey": "t02-c04-u01-read-quadratic-form",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $g(x) = 4(x - 6)^2 + 9$, find the $x$-coordinate of the vertex.",
+      "display": "g(x) = a(x - h)^2 + k",
+      "plainText": "g(x) = 4*(x - 6)^2 + 9",
+      "givens": {
+        "a": 4,
+        "inside": -6,
+        "k": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a signed integer.",
+      "commonTrapTag": "t02-c04-u01-vertex-inside-sign-trap",
+      "trapDerivation": "-4*6/4",
+      "trapValue": "-6",
+      "verify": {
+        "source": "6",
+        "trapValue": "-6"
+      },
+      "checkpointHint": "Compare the squared factor to standard vertex form by solving for where it vanishes.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the vertex and reveal the requested input directly.",
+      "steps": [
+        {
+          "latex": "x - 6 = 0",
+          "explain": "Set the inner linear factor equal to zero to locate the vertex."
+        },
+        {
+          "latex": "x = 6",
+          "explain": "Add 6 to both sides to find the x-coordinate of the vertex.",
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u01-vertex-inside-sign-trap|direct|g(x) = #*(x - #)^# + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-03",
+      "sourceArchetype": "t02-c04-u01-read-quadratic-form",
+      "archetypeKey": "t02-c04-u01-read-quadratic-form",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $h(x) = 5(x + 8)^2 - 11$, what value of $x$ defines the axis of symmetry?",
+      "display": "h(x) = a(x - h)^2 + k",
+      "plainText": "h(x) = 5*(x + 8)^2 - 11",
+      "givens": {
+        "a": 5,
+        "inside": 8,
+        "k": -11
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-8",
+        "tolerance": 0
+      },
+      "answerPlain": "-8",
+      "answerDisplay": "-8",
+      "inputHint": "Enter the signed value of x.",
+      "commonTrapTag": "t02-c04-u01-vertex-inside-sign-trap",
+      "trapDerivation": "5*8/5",
+      "trapValue": "8",
+      "verify": {
+        "source": "-8",
+        "trapValue": "8"
+      },
+      "checkpointHint": "The axis of symmetry passes through the input that makes the squared expression zero.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the vertex and axis of symmetry directly.",
+      "steps": [
+        {
+          "latex": "x + 8 = 0",
+          "explain": "Set the squared binomial equal to zero to locate the symmetry axis."
+        },
+        {
+          "latex": "x = -8",
+          "explain": "Subtract 8 from both sides to isolate the axis value.",
+          "val": "-8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-read-quadratic-form-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u01-vertex-inside-sign-trap|direct|h(x) = #*(x + #)^# - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-01",
+      "sourceArchetype": "t02-c04-u01-find-quadratic-vertex",
+      "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $f(x) = -2x^2 + 12x - 7$, what is the maximum output value?",
+      "display": "f(x) = ax^2 + bx + c;\\quad x_v = -\\frac{b}{2a}",
+      "plainText": "f(x) = -2*x^2 + 12*x - 7",
+      "givens": {
+        "a": -2,
+        "b": 12,
+        "c": -7
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        12,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "11",
+        "tolerance": 0
+      },
+      "answerPlain": "11",
+      "answerDisplay": "11",
+      "inputHint": "Enter the extreme output, not the input where it occurs.",
+      "commonTrapTag": "t02-c04-u01-stop-at-axis-trap",
+      "trapDerivation": "-12/(2*(-2))",
+      "trapValue": "3",
+      "verify": {
+        "source": "-2*(3)^2 + 12*3 - 7",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Locate the symmetry axis first, then evaluate the entire quadratic at that input.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the maximum output that the learner is asked to calculate.",
+      "steps": [
+        {
+          "latex": "x_v = -\\frac{12}{2(-2)}",
+          "explain": "Substitute the quadratic coefficients into the axis-of-symmetry formula.",
+          "eq": [
+            "-12/(2*(-2))",
+            "3"
+          ]
+        },
+        {
+          "latex": "x_v = 3",
+          "explain": "Simplify the ratio to obtain the vertex input."
+        },
+        {
+          "latex": "f(3) = -2(3)^2 + 12(3) - 7",
+          "explain": "Substitute x = 3 into every term of the function."
+        },
+        {
+          "latex": "f(3) = -18 + 36 - 7",
+          "explain": "Evaluate the squared term and linear product.",
+          "eq": [
+            "-2*(3)^2 + 12*3 - 7",
+            "-18 + 36 - 7"
+          ]
+        },
+        {
+          "latex": "f(3) = 11",
+          "explain": "Combine the terms to find the maximum output.",
+          "val": "11"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-stop-at-axis-trap|reverse|f(x) = -#*x^# + #*x - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-02",
+      "sourceArchetype": "t02-c04-u01-find-quadratic-vertex",
+      "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $g(x) = 3x^2 - 24x + 50$, what is the minimum output value?",
+      "display": "g(x) = ax^2 + bx + c;\\quad x_v = -\\frac{b}{2a}",
+      "plainText": "g(x) = 3*x^2 - 24*x + 50",
+      "givens": {
+        "a": 3,
+        "b": -24,
+        "c": 50
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        24,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter the extreme output, not the input where it occurs.",
+      "commonTrapTag": "t02-c04-u01-stop-at-axis-trap",
+      "trapDerivation": "-(-24)/(2*3)",
+      "trapValue": "4",
+      "verify": {
+        "source": "3*(4)^2 - 24*4 + 50",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Find the vertex input using the coefficients, then substitute it back into the full polynomial.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the minimum output that the learner is asked to calculate.",
+      "steps": [
+        {
+          "latex": "x_v = -\\frac{-24}{2(3)}",
+          "explain": "Substitute the coefficients into the vertex-input formula.",
+          "eq": [
+            "-(-24)/(2*3)",
+            "4"
+          ]
+        },
+        {
+          "latex": "x_v = 4",
+          "explain": "Simplify the quotient to find the axis of symmetry."
+        },
+        {
+          "latex": "g(4) = 3(4)^2 - 24(4) + 50",
+          "explain": "Substitute x = 4 into the entire function."
+        },
+        {
+          "latex": "g(4) = 48 - 96 + 50",
+          "explain": "Evaluate each term separately.",
+          "eq": [
+            "3*(4)^2 - 24*4 + 50",
+            "48 - 96 + 50"
+          ]
+        },
+        {
+          "latex": "g(4) = 2",
+          "explain": "Combine the values to obtain the minimum output.",
+          "val": "2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-stop-at-axis-trap|reverse|g(x) = #*x^# - #*x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-03",
+      "sourceArchetype": "t02-c04-u01-find-quadratic-vertex",
+      "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $h(x) = -x^2 - 6x + 4$, what is the maximum output value?",
+      "display": "h(x) = ax^2 + bx + c;\\quad x_v = -\\frac{b}{2a}",
+      "plainText": "h(x) = -x^2 - 6*x + 4",
+      "givens": {
+        "b": -6,
+        "c": 4
+      },
+      "constants": {
+        "a": -1,
+        "two": 2
+      },
+      "trapGivens": [
+        6,
+        -1,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "13",
+        "tolerance": 0
+      },
+      "answerPlain": "13",
+      "answerDisplay": "13",
+      "inputHint": "Enter the extreme output, not the input where it occurs.",
+      "commonTrapTag": "t02-c04-u01-stop-at-axis-trap",
+      "trapDerivation": "-(-6)/(2*(-1))",
+      "trapValue": "-3",
+      "verify": {
+        "source": "-(-3)^2 - 6*(-3) + 4",
+        "trapValue": "-3"
+      },
+      "checkpointHint": "Compute the vertex input carefully with signs, then evaluate the full function at that input.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "A graph would mark the maximum output that the learner is asked to calculate.",
+      "steps": [
+        {
+          "latex": "x_v = -\\frac{-6}{2(-1)}",
+          "explain": "Substitute a = -1 and b = -6 into the axis formula.",
+          "eq": [
+            "-(-6)/(2*(-1))",
+            "-3"
+          ]
+        },
+        {
+          "latex": "x_v = -3",
+          "explain": "Simplify to obtain the vertex input."
+        },
+        {
+          "latex": "h(-3) = -(-3)^2 - 6(-3) + 4",
+          "explain": "Substitute x = -3 into the full quadratic."
+        },
+        {
+          "latex": "h(-3) = -9 + 18 + 4",
+          "explain": "Evaluate the power and product terms with attention to signs.",
+          "eq": [
+            "-(-3)^2 - 6*(-3) + 4",
+            "-9 + 18 + 4"
+          ]
+        },
+        {
+          "latex": "h(-3) = 13",
+          "explain": "Sum the terms to find the maximum value.",
+          "val": "13"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-find-quadratic-vertex-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-stop-at-axis-trap|reverse|h(x) = -x^# - #*x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-01",
+      "sourceArchetype": "t02-c04-u01-optimize-quadratic-model",
+      "archetypeKey": "t02-c04-u01-optimize-quadratic-model",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "translation",
+      "archetype": "problem-solving",
+      "context": "A model rocket is launched straight upward from an elevated test stand, and its height above ground is modeled by a downward-opening quadratic function of elapsed time.",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Vertical projectile height under constant downward gravity follows h(t) = -0.5 g t^2 + v_0 t + h_0 with g ≈ 10 m/s^2, nonnegative height on [0, 6] s, and consistent meter/second units."
+      },
+      "verificationLevel": "partial",
+      "prompt": "After $t$ seconds, the rocket's height in meters is $h(t) = -5t^2 + 30t + 4$ for $0 \\le t \\le 6$. What is the numerical maximum height? Enter only the number; the unit is meters.",
+      "display": "h(t) = at^2 + bt + c;\\quad t_v = -\\frac{b}{2a}",
+      "plainText": "h(t) = -5*t^2 + 30*t + 4, 0 <= t <= 6",
+      "givens": {
+        "a": -5,
+        "b": 30,
+        "c": 4,
+        "tmin": 0,
+        "tmax": 6
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        30,
+        5,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "49",
+        "tolerance": 0
+      },
+      "answerPlain": "49",
+      "answerDisplay": "49",
+      "inputHint": "Enter a number; the prompt specifies the height unit.",
+      "commonTrapTag": "t02-c04-u01-maximize-input-not-output-trap",
+      "trapDerivation": "-30/(2*(-5))",
+      "trapValue": "3",
+      "verify": {
+        "source": "-5*(3)^2 + 30*3 + 4",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Find the elapsed time at the vertex, confirm it lies in the flight interval, and evaluate the height there.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "This is a projectile height model rather than a rectangle, and plotting its parabola would mark the maximum height directly.",
+      "steps": [
+        {
+          "latex": "t_v = -\\frac{30}{2(-5)}",
+          "explain": "Use the vertex formula to find the time of peak height.",
+          "eq": [
+            "-30/(2*(-5))",
+            "3"
+          ]
+        },
+        {
+          "latex": "t_v = 3",
+          "explain": "Verify that 3 seconds lies within the allowed time interval."
+        },
+        {
+          "latex": "h(3) = -5(3)^2 + 30(3) + 4",
+          "explain": "Substitute the peak time into the height function."
+        },
+        {
+          "latex": "h(3) = -45 + 90 + 4",
+          "explain": "Evaluate the quadratic and linear terms.",
+          "eq": [
+            "-5*(3)^2 + 30*3 + 4",
+            "-45 + 90 + 4"
+          ]
+        },
+        {
+          "latex": "h(3) = 49",
+          "explain": "Combine the terms to find the maximum height in meters.",
+          "val": "49"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-maximize-input-not-output-trap|translation|h(t) = -#*t^# + #*t + #, # <= t <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-02",
+      "sourceArchetype": "t02-c04-u01-optimize-quadratic-model",
+      "archetypeKey": "t02-c04-u01-optimize-quadratic-model",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "translation",
+      "archetype": "problem-solving",
+      "context": "A community theater raises its base ticket price by whole dollar increments, which lowers nightly attendance linearly and yields a quadratic nightly revenue function.",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Revenue equals ticket price times seats sold; linear demand drop of 2 seats per dollar increase gives a realistic downward-opening quadratic revenue model in dollars on [0, 50]."
+      },
+      "verificationLevel": "partial",
+      "prompt": "Increasing the ticket price by $x$ dollars gives nightly revenue $R(x) = (20 + x)(100 - 2x)$ dollars for $0 \\le x \\le 50$. What is the numerical maximum nightly revenue? Enter only the number; the unit is dollars.",
+      "display": "R(x) = (p_0 + x)(q_0 - mx)",
+      "plainText": "R(x) = (20 + x)*(100 - 2*x), 0 <= x <= 50",
+      "givens": {
+        "base_price": 20,
+        "base_seats": 100,
+        "demand_slope": 2,
+        "xmin": 0,
+        "xmax": 50
+      },
+      "constants": {},
+      "trapGivens": [
+        100,
+        2,
+        20
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2450",
+        "tolerance": 0
+      },
+      "answerPlain": "2450",
+      "answerDisplay": "2450",
+      "inputHint": "Enter a number; the prompt specifies the revenue unit.",
+      "commonTrapTag": "t02-c04-u01-maximize-input-not-output-trap",
+      "trapDerivation": "(100 - 2*20)/(2*2)",
+      "trapValue": "15",
+      "verify": {
+        "source": "(20 + 15)*(100 - 2*15)",
+        "trapValue": "15"
+      },
+      "checkpointHint": "Expand or average the zeros to locate the price increase at the vertex, then compute the revenue at that increase.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "This is a ticket revenue model rather than a rectangle, and plotting the parabola would reveal the maximum revenue directly.",
+      "steps": [
+        {
+          "latex": "R(x) = -2x^2 + 60x + 2000",
+          "explain": "Expand the product to read the quadratic coefficients.",
+          "eq": [
+            "(20 + x)*(100 - 2*x)",
+            "-2*x^2 + 60*x + 2000"
+          ]
+        },
+        {
+          "latex": "x_v = -\\frac{60}{2(-2)}",
+          "explain": "Apply the vertex formula to find the optimal price increase.",
+          "eq": [
+            "-60/(2*(-2))",
+            "15"
+          ]
+        },
+        {
+          "latex": "x_v = 15",
+          "explain": "Confirm that x = 15 lies within the feasible interval."
+        },
+        {
+          "latex": "R(15) = (20 + 15)(100 - 2(15))",
+          "explain": "Substitute the optimal price increase into the revenue model."
+        },
+        {
+          "latex": "R(15) = 35 \\cdot 70",
+          "explain": "Evaluate the adjusted ticket price and attendance.",
+          "eq": [
+            "(20 + 15)*(100 - 2*15)",
+            "35*70"
+          ]
+        },
+        {
+          "latex": "R(15) = 2450",
+          "explain": "Multiply to obtain the maximum nightly revenue in dollars.",
+          "val": "2450"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-maximize-input-not-output-trap|translation|R(x) = (# + x)*(# - #*x), # <= x <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-03",
+      "sourceArchetype": "t02-c04-u01-optimize-quadratic-model",
+      "archetypeKey": "t02-c04-u01-optimize-quadratic-model",
+      "unitCode": "MTH-T02-C04-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "translation",
+      "archetype": "problem-solving",
+      "context": "A farmer builds two adjacent rectangular sheep pens against a straight barn wall, using three equal-width perpendicular fence segments and one long outer fence parallel to the wall.",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Three perpendicular fence segments of width w plus one parallel side of length 36 - 3w use 36 meters of fencing and enclose area w(36 - 3w) square meters for 0 <= w <= 12."
+      },
+      "verificationLevel": "partial",
+      "prompt": "Each of the three perpendicular fence segments has width $w$ meters, and $36$ meters of fencing are used in total, giving total enclosed area $A(w) = w(36 - 3w)$ for $0 \\le w \\le 12$. What is the numerical maximum total area? Enter only the number; the unit is square meters.",
+      "display": "A(w) = w(L - 3w)",
+      "plainText": "A(w) = w*(36 - 3*w), 0 <= w <= 12",
+      "givens": {
+        "fence": 36,
+        "width_segments": 3,
+        "wmin": 0,
+        "wmax": 12
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        36,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "108",
+        "tolerance": 0
+      },
+      "answerPlain": "108",
+      "answerDisplay": "108",
+      "inputHint": "Enter a number; the prompt specifies the area unit.",
+      "commonTrapTag": "t02-c04-u01-maximize-input-not-output-trap",
+      "trapDerivation": "-36/(2*(-3))",
+      "trapValue": "6",
+      "verify": {
+        "source": "6*(36 - 3*6)",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Find the width at the parabola's vertex, check that it is feasible, and substitute it back into the area formula.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "figureWaiver": "The model figure would mark the optimal dimensions directly instead of requiring the learner to evaluate the vertex output.",
+      "steps": [
+        {
+          "latex": "A(w) = -3w^2 + 36w",
+          "explain": "Expand the area model to identify the quadratic coefficients."
+        },
+        {
+          "latex": "w_v = -\\frac{36}{2(-3)}",
+          "explain": "Use the vertex formula to find the optimal width.",
+          "eq": [
+            "-36/(2*(-3))",
+            "6"
+          ]
+        },
+        {
+          "latex": "w_v = 6",
+          "explain": "Confirm that 6 meters lies within the feasible width interval."
+        },
+        {
+          "latex": "A(6) = 6(36 - 3(6))",
+          "explain": "Substitute w = 6 into the area formula."
+        },
+        {
+          "latex": "A(6) = 6(18)",
+          "explain": "Simplify the parallel fence length inside the parentheses.",
+          "eq": [
+            "36 - 3*6",
+            "18"
+          ]
+        },
+        {
+          "latex": "A(6) = 108",
+          "explain": "Multiply to obtain the greatest enclosed area in square meters.",
+          "val": "108"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U01-t02-c04-u01-optimize-quadratic-model-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u01-maximize-input-not-output-trap|translation|A(w) = w*(# - #*w), # <= w <= #"
+    }
+  ]
+}
