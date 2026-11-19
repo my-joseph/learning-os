@@ -42,9 +42,6 @@ export interface ProblemAssistSectionProps {
   stepsRef?: React.RefObject<HTMLDivElement>;
   showStepsHeader?: boolean;
   loadingSteps?: boolean;
-  activeStep: number | null;
-  /** Unused since steps focus on hover (2026-11-20); kept so callers compile. */
-  onToggleStepHighlight?: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
   onSkip?: () => void;
@@ -73,7 +70,6 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   stepsRef,
   showStepsHeader = false,
   loadingSteps = false,
-  activeStep,
   onMarkDivergedStep,
   onReset,
   onSkip,
@@ -181,9 +177,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
         {showSolution && (
           <div
             ref={stepsRef}
-            className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
-              activeStep !== null ? "has-active" : ""
-            }`}
+            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3"
           >
             {showStepsHeader && (
               <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
@@ -210,7 +204,6 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                     key={sIdx}
                     step={st}
                     index={sIdx}
-                    isActive={activeStep === sIdx}
                     isDiverged={onMarkDivergedStep ? problem.state.divergedStep === sIdx : false}
                     onMarkDiverged={onMarkDivergedStep ? () => onMarkDivergedStep(sIdx) : undefined}
                   />

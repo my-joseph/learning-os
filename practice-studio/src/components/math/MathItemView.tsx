@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { Check, Copy } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { Reveal } from "@/components/motion/Reveal";
 import { MathBlock } from "@/components/MathRender";
 import { parseLineChoicePrompt } from "@/components/LineChoicePrompt";
@@ -41,7 +42,6 @@ export interface MathItemViewProps {
   unitCode?: string;
   drillTitle?: string;
   mistakeTags: MistakeTag[];
-  activeStep: number | null;
   isLastQuestion?: boolean;
   isReviewSession?: boolean;
   isVariant?: boolean;
@@ -66,7 +66,6 @@ export interface MathItemViewProps {
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: (opts?: SkipOptions) => void;
-  onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
   onHintRevealed?: () => void;
@@ -94,7 +93,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       unitCode,
       drillTitle,
       mistakeTags,
-      activeStep,
       isLastQuestion = false,
       isReviewSession = false,
       isVariant = false,
@@ -119,7 +117,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       onInputChange,
       onCheckAnswer,
       onSkip,
-      onToggleStepHighlight,
       onMarkDivergedStep,
       onReset,
       onHintRevealed,
@@ -141,7 +138,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       (p.state.lastCheck?.verdict === "correct" ||
         (allowAutoRevealOnSkip && Boolean(p.state.skipped)));
 
-    const [copied, setCopied] = useState(false);
     const [showHint, setShowHint] = useState(false);
     const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
     const [isChecking, setIsChecking] = useState(false);
@@ -238,13 +234,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
         onSetupRevealed();
       }
       setShowSetup(!showSetup);
-    };
-
-    const handleCopyCas = () => {
-      if (!problem.plainText) return;
-      navigator.clipboard.writeText(problem.plainText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
     };
 
     const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
@@ -421,8 +410,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           stepsRef={stepsRef}
           showStepsHeader={true}
           loadingSteps={loadingSteps}
-          activeStep={activeStep}
-          onToggleStepHighlight={onToggleStepHighlight}
           onMarkDivergedStep={onMarkDivergedStep}
           onReset={() => {
             setShowHint(false);
@@ -473,23 +460,21 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                       <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
                         {problem.plainText}
                       </code>
-                      <button
-                        type="button"
-                        onClick={handleCopyCas}
+                      <CopyButton
+                        text={problem.plainText}
                         className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
-                      >
-                        {copied ? (
+                        copiedContent={
                           <>
                             <Check className="w-3.5 h-3.5" />
                             <span>Copied</span>
                           </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
+                        }
+                      >
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      </CopyButton>
                     </div>
                   )}
                 </div>

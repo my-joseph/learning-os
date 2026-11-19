@@ -49,6 +49,7 @@ import {
   scoreProblem,
 } from "@/lib/scoring";
 import { statusTone } from "@/lib/statusTone";
+import { statusSymbolClass } from "@/lib/statusSymbol";
 import {
   getPrgScore,
   getReviewRequest,
@@ -59,14 +60,13 @@ import {
   choosePrimaryAction,
   deriveCodeStatus,
   isWorkspaceProblem,
-  LayerCheckStatus,
   resolveIdeLinks,
   ReviewRunResult,
-  ReviewStatus,
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
 import { plainTitle } from "@/lib/titleText";
 import { ListDot } from "@/components/ui/ListDot";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { SkipOptions } from "@/hooks/types";
 
 export interface CodeDashboardProps {
@@ -77,11 +77,9 @@ export interface CodeDashboardProps {
   drillTitle?: string;
   labReadme?: string;
   mistakeTags: MistakeTag[];
-  activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: (opts?: SkipOptions) => void;
-  onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
   onTestReportChange?: (report: TestRunReport, score?: number | null) => void;
@@ -115,16 +113,6 @@ const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
   return hint || "Enter predicted terminal output (press Enter to check)...";
 };
 
-function statusSymbolColor(status: LayerCheckStatus | ReviewStatus): string {
-  if (status === "pass") {
-    return `${statusTone.correct.text} font-semibold`;
-  }
-  if (status === "fail" || status === "revise") {
-    return `${statusTone.wrong.text} font-semibold`;
-  }
-  return statusTone.notTried.text;
-}
-
 function formatReviewDate(iso?: string): string {
   if (!iso) return "";
   const trimmed = iso.trim();
@@ -143,11 +131,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   drillTitle,
   labReadme,
   mistakeTags,
-  activeStep,
   onInputChange,
   onCheckAnswer,
   onSkip,
-  onToggleStepHighlight,
   onMarkDivergedStep,
   onSetScore,
   onTestReportChange,
@@ -188,7 +174,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const [reviewRun, setReviewRun] = useState<ReviewRunResult | null>(null);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [isRunningChecks, setIsRunningChecks] = useState(false);
-  const [copiedReview, setCopiedReview] = useState(false);
 
   // Collapsible sections (closed by default)
   const [openHistory, setOpenHistory] = useState(false);
@@ -366,12 +351,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     } finally {
       setIsRunningChecks(false);
     }
-  };
-
-  const handleCopyReviewRequest = () => {
-    void navigator.clipboard.writeText(reviewRequestText);
-    setCopiedReview(true);
-    setTimeout(() => setCopiedReview(false), 1500);
   };
 
   const handleNextProblem = () => {
@@ -779,7 +758,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               >
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Tests </span>
-                  <span className={statusSymbolColor(layeredStatus.tests)}>
+                  <span className={statusSymbolClass(layeredStatus.tests)}>
                     {layeredStatus.testsSymbol}
                   </span>
                   {layeredStatus.testsCount && layeredStatus.tests !== "not_run" && (
@@ -790,19 +769,19 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Lint </span>
-                  <span className={statusSymbolColor(layeredStatus.lint)}>
+                  <span className={statusSymbolClass(layeredStatus.lint)}>
                     {layeredStatus.lintSymbol}
                   </span>
                 </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Types </span>
-                  <span className={statusSymbolColor(layeredStatus.types)}>
+                  <span className={statusSymbolClass(layeredStatus.types)}>
                     {layeredStatus.typesSymbol}
                   </span>
                 </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Review </span>
-                  <span className={statusSymbolColor(layeredStatus.review)}>
+                  <span className={statusSymbolClass(layeredStatus.review)}>
                     {layeredStatus.reviewSymbol}
                   </span>
                   <span className="text-xs font-sans text-zinc-500 dark:text-zinc-400 ml-1">
@@ -838,23 +817,22 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 )}
 
                 {primaryAction.kind === "copy_review" && (
-                  <button
-                    type="button"
-                    onClick={handleCopyReviewRequest}
+                  <CopyButton
+                    text={reviewRequestText}
                     className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
-                  >
-                    {copiedReview ? (
+                    timeoutMs={1500}
+                    copiedContent={
                       <>
                         <Check className="w-4 h-4" />
                         <span>Copied</span>
                       </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        <span>Copy review request</span>
-                      </>
-                    )}
-                  </button>
+                    }
+                  >
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copy review request</span>
+                    </>
+                  </CopyButton>
                 )}
 
                 {primaryAction.kind === "next_problem" && (
@@ -1209,8 +1187,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               stepsUnopenedUnattempted={stepsUnopenedUnattempted}
               stepsRef={stepsRef}
               showStepsHeader={false}
-              activeStep={activeStep}
-              onToggleStepHighlight={onToggleStepHighlight}
               onMarkDivergedStep={onMarkDivergedStep}
               onReset={() => {
                 resetChoiceState();

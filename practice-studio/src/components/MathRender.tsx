@@ -8,7 +8,7 @@ import katex from "katex";
  * Defensively cleans and recovers LaTeX strings corrupted by language escape collisions:
  * e.g. Python \frac -> \x0crac (formfeed), \right -> \r ight (carriage return), \begin -> \x08egin (backspace)
  */
-export function normalizeLatex(tex: string): string {
+function normalizeLatex(tex: string): string {
   if (!tex) return "";
   let clean = tex;
   // 1. Repair common Python escape artifact collisions:

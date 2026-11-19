@@ -114,8 +114,6 @@ export async function executeSaveAndReveal(
       } else if (part === "display") {
         if (typeof data.display === "string") patch.display = data.display;
         if (typeof data.plainText === "string") patch.plainText = data.plainText;
-      } else if (part === "solution") {
-        if (typeof data.solutionCode === "string") patch.solutionCode = data.solutionCode;
       }
     } catch {
       // ignore transient reveal error
@@ -409,20 +407,17 @@ export function computeSkipProblemTransition(
   };
 }
 
-/** Pure transition for resetting a single problem's state, revealed fields, active step highlight, and timer. */
+/** Pure transition for resetting a single problem's state, revealed fields, and timer. */
 export function computeResetProblemTransition(
   currentDrill: DrillDocument,
   probId: string,
   timerState: TelemetryTimerState,
-  activeSteps: { [probId: string]: number | null },
   now: number
 ): {
   updatedDoc: DrillDocument;
   nextTimerState: TelemetryTimerState;
-  nextActiveSteps: { [probId: string]: number | null };
 } {
   const nextTimerState = resetProblemTimer(timerState, probId, now);
-  const nextActiveSteps = { ...activeSteps, [probId]: null };
   const nowIso = new Date(now).toISOString();
   const updatedDoc: DrillDocument = {
     ...currentDrill,
@@ -430,14 +425,10 @@ export function computeResetProblemTransition(
       p.id === probId ? resetProblemForRetry(p, nowIso) : p
     ),
   };
-  return {
-    updatedDoc,
-    nextTimerState,
-    nextActiveSteps,
-  };
+  return { updatedDoc, nextTimerState };
 }
 
-/** Pure transition for resetting the entire drill, timer state, active steps, and status banner. */
+/** Pure transition for resetting the entire drill, timer state, and status banner. */
 export function computeResetAllTransition(
   currentDrill: DrillDocument,
   timerState: TelemetryTimerState,
@@ -446,7 +437,6 @@ export function computeResetAllTransition(
 ): {
   updatedDoc: DrillDocument;
   nextTimerState: TelemetryTimerState;
-  nextActiveSteps: { [probId: string]: number | null };
   firstProblemId: string | null;
   statusMessage: StatusMessage;
 } {
@@ -464,7 +454,6 @@ export function computeResetAllTransition(
   return {
     updatedDoc,
     nextTimerState,
-    nextActiveSteps: {},
     firstProblemId,
     statusMessage: {
       text: `Reset ${drillLabel} to initial state.`,
@@ -492,7 +481,6 @@ export function useDrill({
   const [currentDrill, setCurrentDrillState] = useState<DrillDocument | null>(null);
   const drillRef = useRef<DrillDocument | null>(null);
   const loadSeqRef = useRef<number>(0);
-  const [activeSteps, setActiveSteps] = useState<{ [probId: string]: number | null }>({});
   const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>("quiz");
   const [isLoadingDrill, setIsLoadingDrill] = useState<boolean>(true);
@@ -764,7 +752,6 @@ export function useDrill({
         setCurrentProblemIndex(targetIndex);
         setViewMode("quiz");
         onDrillLoaded?.(normalizedDoc);
-        setActiveSteps({});
       } catch (err: unknown) {
         if (seq !== loadSeqRef.current) return;
         const errMsg = err instanceof Error ? err.message : String(err);
@@ -943,13 +930,6 @@ export function useDrill({
     [commitDrillUpdate, saveAndReveal]
   );
 
-  const handleToggleStepHighlight = useCallback((probId: string, stepIdx: number) => {
-    setActiveSteps((prev) => ({
-      ...prev,
-      [probId]: prev[probId] === stepIdx ? null : stepIdx,
-    }));
-  }, []);
-
   const handleMarkDivergedStep = useCallback(
     (probId: string, stepIdx: number) => {
       updateProblem(probId, (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }));
@@ -1030,7 +1010,6 @@ export function useDrill({
             latest,
             probId,
             timerStateRef.current,
-            {},
             now
           );
           computed = transition;
@@ -1041,7 +1020,6 @@ export function useDrill({
       const applied = computed as ReturnType<typeof computeResetProblemTransition> | null;
       if (!applied || !nextDoc) return;
       commitTimerState(applied.nextTimerState, now);
-      setActiveSteps((prev) => ({ ...prev, [probId]: null }));
     },
     [commitDrillUpdate, commitTimerState]
   );
@@ -1076,7 +1054,6 @@ export function useDrill({
       ),
       now
     );
-    setActiveSteps({});
     setCurrentProblemIndex(0);
     setViewMode("quiz");
     if (applied.firstProblemId) {
@@ -1180,7 +1157,6 @@ export function useDrill({
     currentDrill,
     setCurrentDrill,
     getLatestDrill,
-    activeSteps,
     currentProblemIndex,
     setCurrentProblemIndex,
     viewMode,
@@ -1202,7 +1178,6 @@ export function useDrill({
     handleRevisitNoteChange,
     handleSetupRevealed,
     handleSolutionRevealed,
-    handleToggleStepHighlight,
     handleMarkDivergedStep,
     handleSetScore,
     handleTestReportChange,

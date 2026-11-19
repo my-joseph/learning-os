@@ -608,10 +608,8 @@ async function testSyntheticLabAndProgress() {
         drillTitle={drillDoc.unitTitle}
         labReadme={drillDoc.labReadme}
         mistakeTags={[]}
-        activeStep={null}
         onInputChange={noop}
         onCheckAnswer={noop}
-        onToggleStepHighlight={noop}
         onMarkDivergedStep={noop}
         onSetScore={noop}
         onToggleMistakeTag={noop}

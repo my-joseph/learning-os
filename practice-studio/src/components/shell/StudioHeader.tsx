@@ -3,17 +3,16 @@
 import React, { useState, useEffect } from "react";
 import {
   ArrowUpRight,
-  Moon,
   PanelRight,
   Plus,
   RotateCcw,
-  Sun,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter } from "@/hooks/types";
 import { Workspace, isLabId } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
+import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { DrillSwitcher } from "./DrillSwitcher";
 
@@ -175,19 +174,11 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-            aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          <ThemeToggleButton
+            theme={theme}
+            onToggle={onToggleTheme}
             className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            {theme === "light" ? (
-              <Moon className="w-4 h-4" />
-            ) : (
-              <Sun className="w-4 h-4" />
-            )}
-          </button>
+          />
 
           {currentDrill?.unitNotionUrl && (
             <a

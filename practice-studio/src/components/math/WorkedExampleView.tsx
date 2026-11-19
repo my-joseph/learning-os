@@ -32,7 +32,6 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
   const [revealedCount, setRevealedCount] = useState(() =>
     Math.max(0, Math.min(initialRevealedCount, steps.length))
   );
-  const [activeStep, setActiveStep] = useState<number | null>(null);
   const nextStepBtnRef = useRef<HTMLButtonElement | null>(null);
   const tryAgainBtnRef = useRef<HTMLButtonElement | null>(null);
 
@@ -40,7 +39,6 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
 
   useEffect(() => {
     setRevealedCount(Math.max(0, Math.min(initialRevealedCount, steps.length)));
-    setActiveStep(null);
   }, [example.token, initialRevealedCount, steps.length]);
 
   useEffect(() => {
@@ -120,7 +118,6 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
                 key={sIdx}
                 step={st}
                 index={sIdx}
-                isActive={activeStep === sIdx}
               />
             ))}
           </div>
@@ -195,7 +192,6 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
   defaultOpen = false,
 }) => {
   const [open, setOpen] = useState(defaultOpen);
-  const activeStep: number | null = null; // steps focus on hover (globals.css)
 
   return (
     <div className="space-y-2">
@@ -251,7 +247,6 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
                   key={sIdx}
                   step={st}
                   index={sIdx}
-                  isActive={activeStep === sIdx}
                 />
               ))}
             </div>

@@ -1,5 +1,5 @@
 /**
- * Render and source-invariant tests for QuestionTimer across Math, Code, Lab, and ReviewPanel.
+ * Render and source-invariant tests for QuestionTimer across Math, Code, Lab, and ReviewSyncPage.
  * Run: npx tsx tests/questionTimer.test.tsx (from practice-studio/)
  */
 
@@ -10,7 +10,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { QuestionTimer } from "../src/components/QuestionTimer";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
-import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { warningTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem } from "../src/types/drill";
 
@@ -77,10 +77,8 @@ const mathMetaRunning = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -104,10 +102,8 @@ const mathMetaPaused = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -152,10 +148,8 @@ const codeMetaHtml = renderToStaticMarkup(
     totalQuestions={4}
     drillTitle="Functions"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -180,10 +174,8 @@ const labMetaHtml = renderToStaticMarkup(
     totalQuestions={3}
     drillTitle="Async Pool"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -201,7 +193,7 @@ assert.match(labMetaHtml, /02:05/);
 assert.match(labMetaHtml, /Total 05:00/);
 assert.match(labMetaHtml, /aria-label="Resume timer"/);
 
-// 4. ReviewPanel uses totalDurationMs override (recorded + running) when provided
+// 4. ReviewSyncPage uses totalDurationMs override (recorded + running) when provided
 const sampleDrill: DrillDocument = {
   schemaVersion: "2.0",
   drillId: "DRL-PRG-T01-C01-U01-01",
@@ -228,7 +220,7 @@ const sampleDrill: DrillDocument = {
 };
 
 const reviewHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={sampleDrill}
     liveScore={0}
     maxScore={1}

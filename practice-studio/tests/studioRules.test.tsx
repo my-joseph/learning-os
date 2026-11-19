@@ -8,7 +8,7 @@ import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
 import { GeneratePopover } from "../src/components/shell/GeneratePopover";
-import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import {
   getPrgScore,
   getReviewRequest,
@@ -162,10 +162,8 @@ const beforeAttemptHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -203,10 +201,8 @@ const beforeAttemptWithVariantsHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -242,11 +238,9 @@ const afterInvalidHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
     onSkip={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -279,10 +273,8 @@ const afterAttemptHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="Linear Equations"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -336,10 +328,8 @@ const codeInitialHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="JavaScript & TypeScript Baseline"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -383,10 +373,8 @@ const codeAfterTestsHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="JavaScript & TypeScript Baseline"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -411,10 +399,8 @@ const codeAfterReviewPassHtml = renderToStaticMarkup(
     totalQuestions={5}
     drillTitle="JavaScript & TypeScript Baseline"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -426,7 +412,7 @@ assert.match(codeAfterReviewPassHtml, /Next problem/);
 assert.match(codeAfterReviewPassHtml, /\(pass\)/);
 assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
 
-// Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewPanel
+// Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewSyncPage
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /\.dark ::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.3\)[^}]*color:\s*inherit/s);
@@ -471,10 +457,8 @@ const inBrowserCodeHtml = renderToStaticMarkup(
     totalQuestions={3}
     drillTitle="Output Prediction"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -499,7 +483,7 @@ const sampleDrillDoc: DrillDocument = {
   mistakeTags: [],
 };
 const reviewHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={sampleDrillDoc}
     liveScore={1}
     maxScore={1}

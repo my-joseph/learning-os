@@ -128,7 +128,6 @@ body {
 }
 
 /* Step focus: hovering a step (learner 2026-11-20: hover, not click) dims its siblings. */
-.has-active .step-row:not(.step-row-active),
 *:has(> .step-row:hover) > .step-row:not(:hover):not(.step-row-active) {
   opacity: 0.45;
 }

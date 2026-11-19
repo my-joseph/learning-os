@@ -13,7 +13,7 @@ import {
   toSingleLinePrompt,
   toggleExpandedRow,
 } from "../src/lib/reviewOutcome";
-import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { statusTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
@@ -234,10 +234,10 @@ assert.equal(grouped.firstTryCount, 1);
 assert.equal(grouped.unansweredCount, 1);
 assert.equal(grouped.totalDurationMs, 110_000);
 
-// 5. ReviewPanel layout invariants & reveal guard
+// 5. ReviewSyncPage layout invariants & reveal guard
 const noop = () => {};
 const html = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={sampleDrill}
     initialExpandedIds={["Q01", "Q05"]}
     liveScore={1.5}
@@ -285,9 +285,9 @@ assert.match(
   "Unanswered Q05 must keep verified answer hidden"
 );
 assert.match(html, /aria-label="Question outcomes"/);
-// Lab & Code noun parity in ReviewPanel
+// Lab & Code noun parity in ReviewSyncPage
 const labReviewHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={{ ...sampleDrill, drillId: "LAB-PRG-T01-C01-01", subject: "PRG" }}
     liveScore={0}
     maxScore={5}
@@ -305,7 +305,7 @@ const labReviewHtml = renderToStaticMarkup(
 );
 assert.match(labReviewHtml, /Back to milestones/);
 const codeReviewHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={{ ...sampleDrill, drillId: "DRL-PRG-T01-C01-U01-01", subject: "PRG" }}
     liveScore={0}
     maxScore={5}
@@ -328,7 +328,7 @@ assert.match(html, /Self-score:/);
 assert.doesNotMatch(
   html,
   /Note for Q5/,
-  "Unattempted Q5 must not render note input in ReviewPanel"
+  "Unattempted Q5 must not render note input in ReviewSyncPage"
 );
 
 const invalidAndScoreOnlyDrill: DrillDocument = {
@@ -349,7 +349,7 @@ const invalidAndScoreOnlyDrill: DrillDocument = {
   ],
 };
 const guardedHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={invalidAndScoreOnlyDrill}
     liveScore={0}
     maxScore={2}
@@ -386,7 +386,7 @@ const reviewSource = readFileSync("src/components/review-sync/ReviewItemRow.tsx"
 assert.doesNotMatch(
   reviewSource,
   /border-l-[24]/,
-  "ReviewPanel must not use left accent borders on rounded boxes"
+  "ReviewSyncPage must not use left accent borders on rounded boxes"
 );
 const reviewPageSource = readFileSync("src/components/review-sync/ReviewSyncPage.tsx", "utf8");
 assert.match(reviewPageSource, /ensureExpandedRow/, "Score-strip jump must expand the target row");
@@ -437,7 +437,7 @@ const accordionDrill: DrillDocument = {
 };
 
 const collapsedHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={accordionDrill}
     liveScore={0}
     maxScore={1}
@@ -462,7 +462,7 @@ assert.match(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
 assert.match(collapsedHtml, /Right triangle ABC/);
 
 const expandedHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={accordionDrill}
     liveScore={0}
     maxScore={1}

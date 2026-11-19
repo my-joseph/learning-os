@@ -8,9 +8,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  Moon,
   PenLine,
-  Sun,
 } from "lucide-react";
 import {
   DrillDocument,
@@ -28,6 +26,7 @@ import {
   RevealPart,
 } from "@/hooks/useDrill";
 import { useTheme } from "@/hooks/useTheme";
+import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import { applyDivergedStep } from "@/lib/applyCheckResult";
 import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
@@ -88,7 +87,6 @@ export interface DailyReviewViewProps {
   lastDrillHref?: string;
   revealedTrapTag?: string | null;
   revisitNoteDraft?: string;
-  activeStep?: number | null;
   questionTimerMs?: number;
   totalTimerMs?: number;
   isTimerPaused?: boolean;
@@ -105,7 +103,6 @@ export interface DailyReviewViewProps {
   onExampleViewed?: (viewedAt: string) => void;
   onSimilarProgressSync?: (patch: SimilarProgressPatch) => void;
   onVariantModeChange?: (inVariantMode: boolean) => void;
-  onToggleStepHighlight?: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onSetScore?: (score: number | null) => void;
   onToggleMistakeTag?: (tagId: string) => void;
@@ -155,7 +152,6 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
   lastDrillHref,
   revealedTrapTag = null,
   revisitNoteDraft = "",
-  activeStep = null,
   questionTimerMs = 0,
   totalTimerMs = 0,
   isTimerPaused = false,
@@ -172,7 +168,6 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
   onExampleViewed,
   onSimilarProgressSync,
   onVariantModeChange,
-  onToggleStepHighlight = noop,
   onMarkDivergedStep = noop,
   onSetScore = noop,
   onToggleMistakeTag = noop,
@@ -227,19 +222,11 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             </Link>
 
             {onToggleTheme && (
-              <button
-                type="button"
-                onClick={onToggleTheme}
-                title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-                aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              <ThemeToggleButton
+                theme={theme}
+                onToggle={onToggleTheme}
                 className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                {theme === "light" ? (
-                  <Moon className="w-4 h-4" />
-                ) : (
-                  <Sun className="w-4 h-4" />
-                )}
-              </button>
+              />
             )}
           </div>
         </header>
@@ -516,11 +503,9 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       totalQuestions={items.length}
                       drillTitle=""
                       mistakeTags={currentDrillMistakeTags}
-                      activeStep={activeStep}
                       onInputChange={onInputChange}
                       onCheckAnswer={onCheckAnswer}
                       onSkip={onSkip}
-                      onToggleStepHighlight={onToggleStepHighlight}
                       onMarkDivergedStep={onMarkDivergedStep}
                       onSetScore={onSetScore}
                       onToggleMistakeTag={onToggleMistakeTag}
@@ -554,11 +539,9 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       unitCode={currentItem.unitCode}
                       drillTitle=""
                       mistakeTags={currentDrillMistakeTags}
-                      activeStep={activeStep}
                       onInputChange={onInputChange}
                       onCheckAnswer={onCheckAnswer}
                       onSkip={onSkip}
-                      onToggleStepHighlight={onToggleStepHighlight}
                       onMarkDivergedStep={onMarkDivergedStep}
                       onSetScore={onSetScore}
                       onToggleMistakeTag={onToggleMistakeTag}
@@ -631,7 +614,6 @@ export const DailyReviewPage: React.FC = () => {
   const [outcomes, setOutcomes] = useState<Record<string, ReviewSessionItemOutcome>>({});
   const [hintsByKey, setHintsByKey] = useState<Record<string, number>>({});
   const [revisitDraftByKey, setRevisitDraftByKey] = useState<Record<string, string>>({});
-  const [activeStepsByKey, setActiveStepsByKey] = useState<Record<string, number | null>>({});
   const [lastDrillHref, setLastDrillHref] = useState<string>("/");
 
   // Per-question telemetry timer
@@ -727,7 +709,6 @@ export const DailyReviewPage: React.FC = () => {
         setOutcomes({});
         setHintsByKey({});
         setRevisitDraftByKey({});
-        setActiveStepsByKey({});
         setCurrentIndex(0);
         setCompleted(false);
         if (dueList.length > 0) {
@@ -1179,7 +1160,6 @@ export const DailyReviewPage: React.FC = () => {
       currentDrill,
       currentItem.qid,
       timerStateRef.current,
-      { [currentItem.qid]: activeStepsByKey[currentKey] ?? null },
       now
     );
     const updatedDoc: DrillDocument = {
@@ -1191,12 +1171,11 @@ export const DailyReviewPage: React.FC = () => {
       ),
     };
     commitTimerState(transition.nextTimerState, now);
-    setActiveStepsByKey((prev) => ({ ...prev, [currentKey]: null }));
     setDrillsByKey((prev) => ({ ...prev, [currentKey]: updatedDoc }));
     if (!isLabId(currentDrill.drillId)) {
       void startReviewItemCycle(currentDrill.drillId, currentItem.qid, nextCycleAt);
     }
-  }, [currentDrill, currentItem, currentKey, activeStepsByKey, commitTimerState]);
+  }, [currentDrill, currentItem, currentKey, commitTimerState]);
 
   const handleRevisitNoteChange = useCallback(
     (note: string) => {
@@ -1289,7 +1268,6 @@ export const DailyReviewPage: React.FC = () => {
       lastDrillHref={lastDrillHref}
       revealedTrapTag={currentKey ? outcomes[currentKey]?.commonTrapTag ?? null : null}
       revisitNoteDraft={currentKey ? revisitDraftByKey[currentKey] ?? "" : ""}
-      activeStep={currentKey ? activeStepsByKey[currentKey] ?? null : null}
       questionTimerMs={questionTimerMs}
       totalTimerMs={questionTimerMs}
       isTimerPaused={timerState.paused}
@@ -1308,13 +1286,6 @@ export const DailyReviewPage: React.FC = () => {
       onExampleViewed={handleExampleViewed}
       onSimilarProgressSync={handleSimilarProgressSync}
       onVariantModeChange={handleVariantModeChange}
-      onToggleStepHighlight={(stepIdx) => {
-        if (!currentKey) return;
-        setActiveStepsByKey((prev) => ({
-          ...prev,
-          [currentKey]: prev[currentKey] === stepIdx ? null : stepIdx,
-        }));
-      }}
       onMarkDivergedStep={(stepIdx) =>
         updateCurrentProblem(
           (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }),

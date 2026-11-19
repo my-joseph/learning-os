@@ -36,11 +36,9 @@ export interface MathWorkspaceProps {
   unitCode?: string;
   drillTitle?: string;
   mistakeTags: MistakeTag[];
-  activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: (opts?: SkipOptions) => void;
-  onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
@@ -80,11 +78,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   unitCode,
   drillTitle,
   mistakeTags,
-  activeStep,
   onInputChange,
   onCheckAnswer,
   onSkip,
-  onToggleStepHighlight,
   onMarkDivergedStep,
   onSetScore,
   onToggleMistakeTag,
@@ -154,8 +150,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     exampleViewedAt,
     loadingExample,
     loadingSteps,
-    activeStep: similarActiveStep,
-    setActiveStep: setSimilarActiveStep,
     announcement,
     similarTimerMs,
     isSimilarPaused,
@@ -444,7 +438,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     unitCode={unitCode}
                     drillTitle={drillTitle}
                     mistakeTags={[]}
-                    activeStep={similarActiveStep}
                     isVariant={true}
                     useSessionInputMode={isReviewSession}
                     hideShowStepsButton={sPlan.showSimilarShowSteps}
@@ -460,9 +453,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     resultSecondaryActions={similarSecondaryActions}
                     onInputChange={handleSimilarInputChange}
                     onCheckAnswer={handleSimilarCheckAnswer}
-                    onToggleStepHighlight={(sIdx) =>
-                      setSimilarActiveStep((prev) => (prev === sIdx ? null : sIdx))
-                    }
                     onReset={handleSimilarReset}
                     onHintRevealed={handleSimilarHintRevealed}
                     onSetupRevealed={() => void handleSimilarSetupRevealed()}
@@ -478,7 +468,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   unitCode={unitCode}
                   drillTitle={drillTitle}
                   mistakeTags={mistakeTags}
-                  activeStep={activeStep}
                   isLastQuestion={isReviewSession ? false : isLastQuestion}
                   isReviewSession={isReviewSession}
                   isCorrectOnRetry={isCorrectOnRetry}
@@ -498,7 +487,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   onInputChange={onInputChange}
                   onCheckAnswer={onCheckAnswer}
                   onSkip={onSkip}
-                  onToggleStepHighlight={onToggleStepHighlight}
                   onMarkDivergedStep={onMarkDivergedStep}
                   onReset={() => {
                     resetAllVariantUi();

@@ -1,6 +1,6 @@
 /**
  * Unit and SSR render tests for plainTitle() stripping Markdown backtick markers
- * from curriculum/drill titles across DrillSwitcher, workspaces, ReviewPanel, and side panel.
+ * from curriculum/drill titles across DrillSwitcher, workspaces, ReviewSyncPage, and side panel.
  * Run: npx tsx tests/titleText.test.tsx (from practice-studio/)
  */
 
@@ -11,7 +11,7 @@ import { plainTitle, trapName } from "../src/lib/titleText";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
-import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { StudioSidePanel } from "../src/components/shell/StudioSidePanel";
 import type { DrillDocument, DrillListItem, Problem } from "../src/types/drill";
 
@@ -133,10 +133,8 @@ const codeHtml = renderToStaticMarkup(
     totalQuestions={1}
     drillTitle="`this` and Binding"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -154,10 +152,8 @@ const mathHtml = renderToStaticMarkup(
     totalQuestions={1}
     drillTitle="`f(x)` Notation"
     mistakeTags={[]}
-    activeStep={null}
     onInputChange={noop}
     onCheckAnswer={noop}
-    onToggleStepHighlight={noop}
     onMarkDivergedStep={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}
@@ -168,9 +164,9 @@ const mathHtml = renderToStaticMarkup(
 assert.match(mathHtml, /<h1[^>]*>f\(x\) Notation<\/h1>/);
 assert.doesNotMatch(mathHtml, /`f\(x\)`/);
 
-// 4. ReviewPanel h1 & StudioSidePanel strip backticks
+// 4. ReviewSyncPage h1 & StudioSidePanel strip backticks
 const reviewHtml = renderToStaticMarkup(
-  <ReviewPanel
+  <ReviewSyncPage
     currentDrill={backtickDrill}
     liveScore={0}
     maxScore={1}

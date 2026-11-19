@@ -372,10 +372,8 @@ async function main() {
       totalQuestions={1}
       unitCode="MTH-T01-C01-U01"
       mistakeTags={[]}
-      activeStep={null}
       onInputChange={noop}
       onCheckAnswer={noop}
-      onToggleStepHighlight={noop}
       onMarkDivergedStep={noop}
       onSetScore={noop}
       onToggleMistakeTag={noop}
@@ -402,10 +400,8 @@ async function main() {
       totalQuestions={1}
       unitCode="MTH-T01-C01-U01"
       mistakeTags={[]}
-      activeStep={null}
       onInputChange={noop}
       onCheckAnswer={noop}
-      onToggleStepHighlight={noop}
       onMarkDivergedStep={noop}
       onSetScore={noop}
       onToggleMistakeTag={noop}

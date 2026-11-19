@@ -3,7 +3,7 @@ import React from "react";
 import { NextRequest } from "next/server";
 import { renderToStaticMarkup } from "react-dom/server";
 import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
-import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { executeNotionSync, mergeSyncStampIntoLatestDrill } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
 import { buildSessionSummary, buildSyncPayload, getPersistedStatusOverride, summaryFingerprint } from "../src/lib/sessionSummary";
@@ -74,7 +74,7 @@ const mathDrill: DrillDocument = {
 
 function render(drill: DrillDocument, overrides: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(
-    <ReviewPanel
+    <ReviewSyncPage
       currentDrill={drill}
       statusOverride={null}
       isSyncing={false}

@@ -83,17 +83,10 @@ const REQUIRED_SHAPES = [
   "solidCircle",
   "tabMark",
   "softCard",
-  "choiceCard",
-  "solidBadge",
   "iconCircle",
   "text",
   "dot",
-  "selfScoreActive",
   "tile",
-  "border",
-  "borderSoft",
-  "hoverText",
-  "hoverBorderSoft",
 ] as const;
 
 const RAW_PALETTE_RE = /\b(?:amber|yellow|emerald|rose)-\d/;
@@ -110,6 +103,22 @@ for (const tone of ALL_TONES) {
       RAW_PALETTE_RE,
       `statusTone.${tone}.${shape} must use semantic CSS tokens, not raw palette classes: ${val}`
     );
+  }
+}
+
+for (const tone of ["correct", "assisted", "wrong"] as const) {
+  const recipe = statusTone[tone];
+  for (const shape of ["choiceCard", "solidBadge", "selfScoreActive"] as const) {
+    assert.equal(typeof recipe[shape], "string", `statusTone.${tone}.${shape} must be a string`);
+  }
+}
+assert.equal(typeof statusTone.correct.border, "string");
+for (const shape of ["border", "borderSoft", "hoverText", "hoverBorderSoft"] as const) {
+  assert.equal(typeof statusTone.wrong[shape], "string", `statusTone.wrong.${shape} must be a string`);
+}
+for (const tone of ["skipped", "notTried"] as const) {
+  for (const shape of ["choiceCard", "solidBadge", "selfScoreActive"] as const) {
+    assert.equal(shape in statusTone[tone], false, `statusTone.${tone}.${shape} is unused`);
   }
 }
 
