@@ -64,6 +64,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const [resetAllVersion, setResetAllVersion] = useState(0);
   const [lastMathId, setLastMathId] = useState<string | null>(null);
   const [lastCodeId, setLastCodeId] = useState<string | null>(null);
+  const [pendingSimilarProbId, setPendingSimilarProbId] = useState<string | null>(() =>
+    searchParams.get("similar") === "1" ? initialQuestionId ?? null : null
+  );
   const [reviewRetryStarted, setReviewRetryStarted] = useState(false);
   const isMissedReviewLink = searchParams.get("review") === "missed";
 
@@ -77,6 +80,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     statusOverride,
     setStatusOverride,
     isSyncing,
+    syncState,
+    resetSyncState,
     triggerAutoSave,
     flushAutoSave,
     confirmSyncToNotion,
@@ -85,6 +90,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const handleDrillLoaded = useCallback(
     (doc: DrillDocument) => {
       setStatusOverride(null);
+      resetSyncState();
       writeLastDrillId(doc.drillId, workspace);
       if (workspace === "math") {
         setLastMathId(doc.drillId);
@@ -92,7 +98,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         setLastCodeId(doc.drillId);
       }
     },
-    [setStatusOverride, workspace]
+    [resetSyncState, setStatusOverride, workspace]
   );
 
   const handleQuestionUrlSync = useCallback(
@@ -123,6 +129,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     handleCheckAnswer,
     handleInputChange,
     handleMistakeNoteChange,
+    handleRevisitNoteChange,
     handleSetupRevealed,
     handleSolutionRevealed,
     handleToggleStepHighlight,
@@ -212,6 +219,16 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onDrillUpdated: setCurrentDrill,
       onSynced: () => loadDrillsList(),
     });
+
+  const handleTrySimilarQuestion = (probId: string, idx: number) => {
+    setPendingSimilarProbId(probId);
+    handleSelectQuestion(idx);
+    if (currentDrill) {
+      const base = drillHref(currentDrill.drillId, probId);
+      const sep = base.includes("?") ? "&" : "?";
+      router.replace(`${base}${sep}similar=1`, { scroll: false });
+    }
+  };
 
   const handleSelectDrill = (nextDrillId: string) => {
     if (nextDrillId === drillId) return;
@@ -380,6 +397,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onBeforeFetchVariant={flushAutoSave}
                   onExampleViewed={(viewedAt) => handleExampleViewed(prob.id, viewedAt)}
                   onVariantModeChange={handleVariantModeChange}
+                  autoOpenSimilar={pendingSimilarProbId === prob.id}
+                  onAutoOpenSimilarConsumed={() => setPendingSimilarProbId(null)}
                   onPrevQuestion={handlePrevQuestion}
                   onNextQuestion={handleNextQuestion}
                   onOpenReview={() => setViewMode("review")}
@@ -444,15 +463,22 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             maxScore={maxScore}
             accuracyPct={accuracyPct}
             computedPracticeStatus={computedPracticeStatus}
+            statusOverride={statusOverride}
             isSyncing={isSyncing}
+            syncState={syncState}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
+            workspaceDrills={workspaceDrills}
             onStatusOverrideChange={setStatusOverride}
             onBackToQuiz={() => setViewMode("quiz")}
             onConfirmSync={handleConfirmSyncToNotion}
             onSelectQuestion={handleSelectQuestion}
+            onTrySimilarQuestion={handleTrySimilarQuestion}
             onSetScore={handleSetScore}
             onToggleMistakeTag={handleToggleMistakeTag}
             onMistakeNoteChange={handleMistakeNoteChange}
+            onRevisitNoteChange={handleRevisitNoteChange}
+            onSelectDrill={handleSelectDrill}
+            onOpenGenerate={() => setShowGenPopover(true)}
           />
         </m.div>
       )}

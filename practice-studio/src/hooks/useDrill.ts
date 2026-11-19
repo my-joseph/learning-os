@@ -619,6 +619,10 @@ export function useDrill({
     updateProblem(probId, (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }));
   };
 
+  const handleRevisitNoteChange = (probId: string, note: string) => {
+    updateProblem(probId, (p) => ({ ...p, state: { ...p.state, revisitNote: note } }));
+  };
+
   // Equation set-up opened by the learner. Only counts as assistance before the first substantive check.
   const handleSetupRevealed = (probId: string) => {
     if (!currentDrill) return;
@@ -859,6 +863,7 @@ export function useDrill({
     handleCheckAnswer,
     handleInputChange,
     handleMistakeNoteChange,
+    handleRevisitNoteChange,
     handleSetupRevealed,
     handleSolutionRevealed,
     handleToggleStepHighlight,

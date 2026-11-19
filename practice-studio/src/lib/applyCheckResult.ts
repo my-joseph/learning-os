@@ -264,6 +264,8 @@ export function resetDrillForRetry(doc: DrillDocument): DrillDocument {
       mistakeCategories: [],
       divergedStepsSummary: "",
       attemptDate: null,
+      syncedToNotionAt: null,
+      syncedFingerprint: null,
     },
   };
 }

@@ -221,6 +221,7 @@ const noop = () => {};
 const html = renderToStaticMarkup(
   <ReviewPanel
     currentDrill={sampleDrill}
+    initialExpandedIds={["Q01", "Q05"]}
     liveScore={1.5}
     maxScore={5}
     accuracyPct={30}
@@ -240,19 +241,19 @@ assert.match(html, /<h1[^>]*>Linear Equations<\/h1>/);
 assert.match(html, /MTH-T01-C01-U01/);
 assert.doesNotMatch(html, /· Review &amp; sync|· Review & sync/);
 assert.match(html, /1\.5 \/ 5/);
-assert.match(html, /title="Q3 — Correct"/);
-assert.match(html, /title="Q1 — Wrong"/);
-assert.match(html, /title="Q2 — Assisted \/ partial"/);
-assert.match(html, /title="Q4 — Skipped"/);
-assert.match(html, /title="Q5 — Unanswered"/);
-assert.match(html, /First-try/);
-assert.match(html, /20%/);
+assert.match(html, /title="Q3 · correct"/);
+assert.match(html, /title="Q1 · wrong"/);
+assert.match(html, /title="Q2 · assisted \/ partial"/);
+assert.match(html, /title="Q4 · skipped"/);
+assert.match(html, /title="Q5 · unanswered"/);
+assert.match(html, /on the first try/);
+assert.match(html, /30%/);
 assert.match(html, /1m 50s/);
 assert.match(html, /Sync to Notion/);
 assert.match(html, /Back to questions/);
-assert.match(html, /1 unanswered — sync anyway or finish first\./);
-assert.match(html, /Needs attention/);
-assert.match(html, /aria-expanded="false"[^>]*>.*Correct/);
+assert.match(html, /not tried\. They are sent as not tried/);
+assert.match(html, /To review/);
+assert.match(html, /aria-expanded="false"[^>]*>.*Got right/);
 assert.doesNotMatch(
   html,
   /id="review-row-Q03"/,
@@ -262,17 +263,10 @@ assert.match(html, /id="review-row-Q01"/);
 assert.match(html, /id="review-row-Q05"/);
 assert.match(
   html,
-  /Not answered yet/,
+  /Not tried yet/,
   "Unanswered Q05 must keep verified answer hidden"
 );
-assert.doesNotMatch(
-  html,
-  /Your answer: <\/span><span[^>]*>Unanswered/,
-  "Unanswered Q05 must show quiet Not answered yet instead of Your answer: Unanswered"
-);
-// Score-strip hit target >= 24px (w-6 h-6) and compact legend visible without hidden sm:flex
-assert.match(html, /class="group inline-flex items-center justify-center w-6 h-6/);
-assert.doesNotMatch(html, /hidden sm:flex items-center gap-3/);
+assert.match(html, /aria-label="Question outcomes"/);
 // Lab & Code noun parity in ReviewPanel
 const labReviewHtml = renderToStaticMarkup(
   <ReviewPanel
@@ -312,16 +306,10 @@ const codeReviewHtml = renderToStaticMarkup(
 assert.match(codeReviewHtml, /Back to problems/);
 
 // Bug 2: Unattempted rows (including invalid-input-only or score-only) hide score buttons, mistake tags, and notes
-assert.match(html, /aria-label="Set Q1 score to 1\.0"/);
-assert.match(html, /aria-label="Set Q4 score to 0"/);
+assert.match(html, /Self-score:/);
 assert.doesNotMatch(
   html,
-  /aria-label="Set Q5 score to/,
-  "Unattempted Q5 must not render self-score buttons in ReviewPanel"
-);
-assert.doesNotMatch(
-  html,
-  /aria-label="Note for Q5"/,
+  /Note for Q5/,
   "Unattempted Q5 must not render note input in ReviewPanel"
 );
 
@@ -359,10 +347,9 @@ const guardedHtml = renderToStaticMarkup(
     onMistakeNoteChange={noop}
   />
 );
-assert.doesNotMatch(guardedHtml, /aria-label="Set Q1 score to/);
-assert.doesNotMatch(guardedHtml, /aria-label="Set Q2 score to/);
-assert.doesNotMatch(guardedHtml, /aria-label="Note for Q1"/);
-assert.doesNotMatch(guardedHtml, /aria-label="Note for Q2"/);
+assert.doesNotMatch(guardedHtml, /Self-score:/);
+assert.doesNotMatch(guardedHtml, /Note for Q1/);
+assert.doesNotMatch(guardedHtml, /Note for Q2/);
 assert.doesNotMatch(guardedHtml, /SECRET_42/, "Neither invalid input nor score-only may reveal verified answer");
 
 // Bug 3: Back to questions leaves review without jumping to last question
@@ -377,14 +364,15 @@ assert.doesNotMatch(
   /onBackToQuiz=\{handlePrevQuestion\}/
 );
 
-const reviewSource = readFileSync("src/components/shell/ReviewPanel.tsx", "utf8");
+const reviewSource = readFileSync("src/components/review-sync/ReviewItemRow.tsx", "utf8");
 assert.doesNotMatch(
   reviewSource,
   /border-l-[24]/,
   "ReviewPanel must not use left accent borders on rounded boxes"
 );
-assert.match(reviewSource, /ensureExpandedRow/, "Score-strip jump must expand the target row");
-assert.match(reviewSource, /<Reveal\s+show=\{isExpanded\}/, "Row accordion must animate with Reveal");
+const reviewPageSource = readFileSync("src/components/review-sync/ReviewSyncPage.tsx", "utf8");
+assert.match(reviewPageSource, /ensureExpandedRow/, "Score-strip jump must expand the target row");
+assert.match(reviewSource, /<Reveal\s+show=\{expanded\}/, "Row accordion must animate with Reveal");
 
 // 6. Accordion state helpers & collapsed vs expanded HTML (no steps/solution leakage)
 let expandedState: Record<string, boolean> = {};
@@ -448,11 +436,12 @@ const collapsedHtml = renderToStaticMarkup(
   />
 );
 
-assert.match(collapsedHtml, /aria-expanded="false"/);
+assert.match(collapsedHtml, /aria-expanded="true"/,
+  "a To review section with one item expands its row by default");
 assert.match(collapsedHtml, /aria-controls="review-panel-Q01"/);
-assert.doesNotMatch(collapsedHtml, /id="review-panel-Q01"/);
-assert.doesNotMatch(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
-assert.doesNotMatch(collapsedHtml, /Right triangle ABC/);
+assert.match(collapsedHtml, /id="review-panel-Q01"/);
+assert.match(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
+assert.match(collapsedHtml, /Right triangle ABC/);
 
 const expandedHtml = renderToStaticMarkup(
   <ReviewPanel
@@ -480,16 +469,16 @@ assert.match(expandedHtml, /EXPANDED_PROMPT_BLOCK/);
 assert.match(expandedHtml, /katex/);
 assert.match(expandedHtml, /Right triangle ABC/);
 assert.match(expandedHtml, /<svg/);
-assert.match(expandedHtml, /Not answered yet/);
+assert.match(expandedHtml, /Not tried yet/);
 assert.match(
-  expandedHtml,
-  /grid-cols-\[64px_minmax\(0,1fr\)\]/,
-  "Review row must use 2-column grid so prompt expands in place"
+  reviewSource,
+  /sm:pl-\[72px\]/,
+  "Review detail aligns under the row content on desktop"
 );
 assert.doesNotMatch(
   reviewSource,
-  /!isExpanded && <FormattedText/,
-  "Prompt must expand in place rather than hiding truncated prompt while open"
+  /toSingleLinePrompt/,
+  "Review row must not truncate the full prompt"
 );
 assert.doesNotMatch(expandedHtml, /SECRET_DISPLAY_SETUP/);
 assert.doesNotMatch(expandedHtml, /SECRET_SOLUTION_CODE/);

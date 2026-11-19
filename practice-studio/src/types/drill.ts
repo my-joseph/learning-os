@@ -391,6 +391,7 @@ export interface SessionSummary {
   attemptDate: string | null;
   syncedToNotionAt?: string | null;
   notionPageId?: string | null;
+  syncedFingerprint?: string | null;
 }
 
 export interface LintOverride {

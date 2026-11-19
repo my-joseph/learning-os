@@ -22,7 +22,12 @@ export function trapName(trapId: string | null | undefined): string {
     .replace(/-trap$/i, "")
     .replace(/-/g, " ")
     .trim();
-  return words ? words.slice(0, 1).toUpperCase() + words.slice(1) : clean;
+  if (!words) return clean;
+  const [first, ...rest] = words.split(" ");
+  const prefix = /^[a-z]{2,}$/.test(first) && /^[A-Z0-9]+-/.test(clean)
+    ? first.toUpperCase()
+    : first.slice(0, 1).toUpperCase() + first.slice(1);
+  return [prefix, ...rest].join(" ");
 }
 
 export const trapTitle = trapName;

@@ -347,3 +347,64 @@ export function getDueTodayUnits(options?: {
 
   return { today, units, unitMastery };
 }
+
+/** Read-only lookup of current `_review_schedule.json` entries for a list of unit codes. */
+export function getReviewScheduleForUnits(
+  unitCodes: readonly string[],
+  options?: {
+    progressDir?: string;
+    dataDir?: string;
+    rootDir?: string;
+  }
+): Record<string, ReviewScheduleEntry> {
+  const progressDir = options?.progressDir ?? getProgressDir();
+  const dataDir = options?.dataDir ?? getDrillsDataDir();
+  const rootDir = options?.rootDir ?? getWorkspaceRoot();
+
+  const schedule = readReviewSchedule(progressDir);
+  const idMapTitles = loadIdMapTitles(rootDir);
+  const l4Units = unitsWithL4Challenge(dataDir, progressDir);
+
+  const result: Record<string, ReviewScheduleEntry> = {};
+  for (const rawCode of unitCodes) {
+    const unitCode = rawCode.trim();
+    if (!unitCode) continue;
+    const entry = schedule[unitCode];
+    if (!entry || typeof entry !== "object") {
+      const title = plainTitle(idMapTitles.get(unitCode)) || unitCode;
+      result[unitCode] = {
+        title,
+        mastery: null,
+        lastReviewed: null,
+        nextReview: null,
+        masteryCap: null,
+      };
+      continue;
+    }
+    const mastery = typeof entry.mastery === "number" ? clampMastery(entry.mastery) : null;
+    const rawLast =
+      typeof entry.lastReviewed === "string" && entry.lastReviewed.trim()
+        ? entry.lastReviewed.trim().slice(0, 10)
+        : null;
+    const rawNext =
+      typeof entry.nextReview === "string" && entry.nextReview.trim()
+        ? entry.nextReview.trim().slice(0, 10)
+        : null;
+    const title =
+      plainTitle(typeof entry.title === "string" ? entry.title : "") ||
+      plainTitle(idMapTitles.get(unitCode)) ||
+      unitCode;
+
+    result[unitCode] = {
+      title,
+      mastery,
+      lastReviewed: rawLast,
+      nextReview: rawNext,
+      masteryCap:
+        mastery !== null
+          ? resolveMasteryCap(unitCode, mastery, entry.masteryCap, l4Units)
+          : null,
+    };
+  }
+  return result;
+}

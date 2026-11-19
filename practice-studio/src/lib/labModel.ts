@@ -185,6 +185,7 @@ export function makeDefaultMilestoneState(
     divergedStep: typeof s.divergedStep === "number" ? s.divergedStep : null,
     mistakes: Array.isArray(s.mistakes) ? s.mistakes : [],
     mistakeNote: typeof s.mistakeNote === "string" ? s.mistakeNote : "",
+    ...(typeof s.revisitNote === "string" ? { revisitNote: s.revisitNote } : {}),
     skipped: Boolean(s.skipped),
     lastCheck: s.lastCheck ?? null,
     lastTestReport: s.lastTestReport ?? null,

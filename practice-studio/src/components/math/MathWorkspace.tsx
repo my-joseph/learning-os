@@ -51,6 +51,8 @@ export interface MathWorkspaceProps {
   onBeforeFetchVariant?: () => Promise<void>;
   onExampleViewed?: (viewedAt: string) => void;
   onVariantModeChange?: (inVariantMode: boolean) => void;
+  autoOpenSimilar?: boolean;
+  onAutoOpenSimilarConsumed?: () => void;
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
@@ -92,6 +94,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onBeforeFetchVariant,
   onExampleViewed,
   onVariantModeChange,
+  autoOpenSimilar = false,
+  onAutoOpenSimilarConsumed,
   onPrevQuestion,
   onNextQuestion,
   onOpenReview,
@@ -176,6 +180,17 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     onExampleViewed,
     onModeSwap: handleModeSwap,
   });
+
+  // "Practise a similar question" from the end-of-drill summary: open the similar question once when asked
+  // (the server still requires a wrong attempt on the original before serving one).
+  const autoSimilarTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoOpenSimilar || !problem.hasVariants || !drillId) return;
+    if (autoSimilarTriggeredRef.current === problem.id) return;
+    autoSimilarTriggeredRef.current = problem.id;
+    onAutoOpenSimilarConsumed?.();
+    void openSimilar();
+  }, [autoOpenSimilar, drillId, onAutoOpenSimilarConsumed, openSimilar, problem.hasVariants, problem.id]);
 
   // Pause Q_N's timer while in similar-question or worked-example mode.
   useEffect(() => {
