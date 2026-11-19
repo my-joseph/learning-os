@@ -7,9 +7,10 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 
 - Answer and trusted functions: `sec`, `csc`, `cot`, `arcsin`/`asin`, `arccos`/`acos`, `arctan`/`atan` are not in `WHITELIST_FUNCS` or `TRUSTED_INTERNAL_FUNCS`. Problems must be written with `sin`, `cos`, `tan` until then.
 
-## Before T02-C05 (Exponential and Logarithmic Functions)
+## Resolved
 
-- `is_equal` also samples negative values, so `ln(x^2)` and `2*ln(x)` (or `ln(x)` and `ln(abs(x))`) compare as unequal. Log answers need a domain-aware comparison.
+- **T02-C05 (`is_equal` logarithm domain sampling):** `math_engine/answer_check.py`'s `is_equal` skips non-real samples so equivalent log forms (`ln(x^2)` vs `2*ln(x)`, `ln(x)` vs `ln(abs(x))`) compare equal on their shared real domain; `MTH-T02-C05-U01` is active.
+- **Studio Math / Programming workspace split:** live at `/math/[drillId]`, `/code/[drillId]`, and `/code/lab/[labId]`.
 
 ## Before adding calculus to the curriculum
 
@@ -23,6 +24,3 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 - The `whole_sign_flip` diagnostic mentions `i^2 = -1` in non-complex problems.
 - `solution_set` diagnostics: `missing_solution` always says "Remember both signs of ±" (wrong hint for trig), and a value outside the requested interval (e.g. `13pi/6` for `[0, 2pi)`) is called "does not satisfy the equation" although it does.
 
-## Studio
-
-- Separate Math and Programming workspaces inside the same Studio, so neither constrains the other (learner, 2026-11-16). Deferred: system first, UI later.

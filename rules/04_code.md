@@ -127,7 +127,7 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
   3. **Strict Code Identifier Typography:** Every code symbol, variable/parameter (`order.items`, `subtotal`), literal value (`"PERCENT10"`, `true`, `8 USD`), and Error type (`RangeError`, `TypeError`) must be formatted as inline code with backticks.
   4. **Explicit Return Schema Contract:** Multi-key return objects or data structures must be explicitly written out as an inline code contract (e.g. `{ subtotal, discount, shipping, tax, total, currency: 'USD' }`) or code block so the developer never has to guess the shape.
 
-New PRG drill problems and lab milestones also include 2–3 LeetCode-style `examples` (`[{ input, output, explanation?, call? }]`, with `input`/`output` in JS/TS literal syntax and `call` verified against the reference solution at ingest and stripped before browser delivery) and optional `constraints: string[]` when inputs have limits; examples are visible before any attempt and must use normal cases only (never hidden-test inputs or `commonTrap` cases).
+New PRG coding drill problems and every lab milestone also include 2–3 LeetCode-style `examples` (`[{ input, output, explanation?, call? }]`, with `input`/`output` in JS/TS literal syntax and `call` verified against the reference solution at ingest and stripped before browser delivery) and optional `constraints: string[]` when inputs have limits; examples are visible before any attempt and must use normal cases only (never hidden-test inputs or `commonTrap` cases). Pure `code-tracing` / `predict-output` / `trace-explain` drill problems with a fixed `codeSnippet` (or without `solutionCode`/`visibleTests`) are exempt from `examples` so they do not spoil the answer.
 
 ### 5. Final-Pass Concept Vault Cross-Referencing & Auto-Linking Protocol
 - **Final-Pass Cross-Reference:** In the final step of generating any drill problem, lab specification, or question README, AI must cross-reference the generated text against the `Concept Vault` database and `id_map.json` (keys prefixed with `CON-*`).
@@ -200,15 +200,15 @@ Every multi-milestone project lab adheres to a standardized milestone sequence:
 For **PRG drills**, follow the `new-code-drill` skill (`.claude/skills/new-code-drill/SKILL.md`) and enforce all gates via `python -m code_engine.ai_drill_ingest --check <draft.json>` (scope & trap tag, starter compile & no-leak, reference green & starter red, `trapMutant` + generic mutants killed by hidden/visible tests, Layer 2 ESLint + `tsc`, Layer 3 `qualityChecks` rubric, `rules/07` mix, `blindSolve`, and `review`) before ingesting and syncing to Notion.
 
 For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/new-project/SKILL.md`) and enforce all gates via `python -m code_engine.lab_ingest --check <lab_dir>` (config schema, `id_map` + Notion `Done`/`In progress` check for `extra-project`, rubric `qualityChecks`, reference visible+hidden+lint+`tsc`, stubs lint-clean & failing visible tests, per-milestone `trapMutant` caught by hidden tests, zero-leak, `blindSolve`, and `review`) before finalising (`python -m code_engine.lab_ingest <lab_dir>`) and syncing to Notion (`python -m notion_sync.lab_sync <lab_dir>`):
-1. **Spec Definition:** Create `lab.config.json` defining metadata, dependencies, and milestone point allocations.
-2. **Canonical Solution:** Author complete, clean, production-grade reference implementation in `.canonical/`.
-3. **Milestone Test Suites:** Author robust test suites in `tests/` covering every milestone requirement and edge cases.
-4. **Mandatory Functional Pre-Execution Verification:** Execute `node --test` or `vitest run` on `.canonical/`. **Must exit with code 0 and 100% pass rate.**
-5. **Scaffolding Starter Code:** Strip the canonical solution into starter skeleton files with clear `// TODO [Milestone X]` markers.
-6. **Package Scripts Configuration:** Configure `package.json` scripts (`test`, `test:watch`, `submit`).
-7. **Baseline Negative Verification:** Run tests against starter code to confirm it fails gracefully with descriptive errors.
-8. **Final-Pass Concept Vault Auto-Linking:** Cross-reference problem specifications and README text against `Concept Vault` in `id_map.json`, automatically linking all matching domain keywords.
-9. **Notion Registration:** Register the lab record in the `Learning Practice & Drills` database (`Format: "Code Test Suite"`).
+1. **Spec Definition:** Create `labs/<LAB_ID>/lab.config.json` (metadata, `scenario`, `unitsUsed`, milestones, `qualityChecks`, `examples`, `trapMutant`) and `README.md`.
+2. **Reference & Hidden Tests:** Author complete, clean, production-grade reference implementation in `labs/_reference/<LAB_ID>/src/` and hidden trap/edge-case tests in `labs/_reference/<LAB_ID>/hidden/` (excluded from the learner's VS Code view via `.vscode/settings.json`).
+3. **Visible Milestone Test Suites:** Author visible acceptance test suites in `labs/<LAB_ID>/tests/` importing from `process.env.LAB_SRC_DIR || "../src"`.
+4. **Mandatory Pre-Execution Verification:** Run `node --experimental-strip-types --test` (or `vitest run` for `react-dom` labs) on the reference implementation via `npm run check:reference` and `npm run check:hidden` (plus ESLint + `tsc`). **Must exit with code 0 and 100% pass rate.**
+5. **Scaffolding Starter Code:** Create starter stubs in `labs/<LAB_ID>/src/` with exported types/signatures, `_`-prefixed unused params, and `throw new Error("TODO [M1]: …");` bodies (ESLint-clean and `tsc`-clean).
+6. **Package Scripts Configuration:** Configure `package.json` scripts (`test`, `test:reference`, `lint`, `typecheck`, `check`, `check:reference`, `check:hidden`, `review`, `submit`, plus per-milestone `test:mN`/`check:mN`).
+7. **Baseline Negative & Gate Verification:** Run `python -m code_engine.lab_ingest --check labs/<LAB_ID>` to confirm stubs fail visible tests cleanly, `trapMutant` fails hidden tests, and blind-solve + reviewer gates pass, then finalise with `python -m code_engine.lab_ingest labs/<LAB_ID>`.
+8. **Final-Pass Concept Vault Auto-Linking:** Cross-reference specifications and README text against `Concept Vault` in `id_map.json`, linking matching domain keywords where applicable.
+9. **Notion Registration:** Sync the pristine lab record to `Learning Practice & Drills` via `python -m notion_sync.lab_sync labs/<LAB_ID>` (`Format: "Code Test Suite"`).
 
 ---
 
@@ -250,4 +250,4 @@ Workspaces are scaffolded using one of 4 environment presets:
 ### 2. Dual-Tier Test Suite Architecture
 To ensure high engineering integrity and prevent hardcoded return hacks:
 - **Visible Acceptance Tests (`visibleTests`):** Scaffolded into `<PID>_<name>.test.*` for rapid local feedback and TDD iteration.
-- **Hidden Trap Tests (`hiddenTests`):** Scaffolded into `.canonical/<PID>_<name>.hidden.test.*` and evaluated during `npm run submit`. Tests boundary invariants, scale limits, and poison payloads to verify true generalized logic.
+- **Hidden Trap Tests (`hiddenTests`):** Stored in the drill JSON (`drills/data/<UNIT>/<DRILL_ID>.json`) for drills — or in `labs/_reference/<LAB_ID>/hidden/` for project labs — never materialized into the learner's drill workspace, and evaluated in an isolated temp directory during `npm run submit` / `code_engine.review_run`. Tests boundary invariants, scale limits, and poison payloads to verify true generalized logic.
