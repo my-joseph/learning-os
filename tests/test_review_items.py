@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 
 from scripts import review_items as ri
@@ -42,6 +44,25 @@ def test_step_schedule_levels_and_intervals():
             "lastReviewed": "2026-11-10",
             "dueDate": "2026-11-11",
         }
+
+
+def test_attempt_dates_use_machine_local_day_and_undated_events_are_due(monkeypatch):
+    prior_tz = os.environ.get("TZ")
+    monkeypatch.setenv("TZ", "Asia/Bangkok")
+    time.tzset()
+    try:
+        assert ri._normalize_date("2026-11-18T17:00:00Z") == "2026-11-19"  # midnight local
+        assert ri._normalize_date("2026-11-18T23:59:00Z") == "2026-11-19"  # 06:59 local
+        assert ri._normalize_date("2026-11-18T16:59:00Z") == "2026-11-18"  # 23:59 previous local day
+        events = ri.extract_review_events({"attempts": [{"verdict": "correct"}]}, "2026-11-20T12:00:00Z")
+        assert events[0]["date"] == "1970-01-01"
+        assert ri.replay_events(events)["dueDate"] < "2026-11-19"
+    finally:
+        if prior_tz is None:
+            monkeypatch.delenv("TZ", raising=False)
+        else:
+            monkeypatch.setenv("TZ", prior_tz)
+        time.tzset()
 
 
 def _seed_fixture(tmp_path: Path) -> tuple[str, str]:
@@ -252,10 +273,10 @@ def test_backfill_from_attempts_and_revisit_note(tmp_path: Path):
     assert q3["revisitNote"] is None
 
     u2_q1 = schedule["DRL-MTH-T01-C04-U02-01/Q01"]
-    assert u2_q1["level"] == 1 and u2_q1["dueDate"] == "2026-11-18"
+    assert u2_q1["level"] == 1 and u2_q1["dueDate"] == "1970-01-02"
 
     u2_q2 = schedule["DRL-MTH-T01-C04-U02-01/Q02"]
-    assert u2_q2["level"] == 1 and u2_q2["dueDate"] == "2026-11-18"
+    assert u2_q2["level"] == 1 and u2_q2["dueDate"] == "1970-01-02"
 
     prg_q1 = schedule["DRL-PRG-T01-C01-U01-01/Q01"]
     assert prg_q1["subject"] == "PRG"
@@ -381,6 +402,14 @@ def test_cli_is_read_only_unless_rebuild_and_respects_pilot_mode(tmp_path: Path,
     saved = json.loads(store_file.read_text(encoding="utf-8"))
     assert "DRL-MTH-T01-C04-U01-01/Q01" in saved
 
+    # Rebuild recalculates old evidence while preserving review-only results.
+    saved_review = dict(saved["DRL-MTH-T01-C04-U01-01/Q01"], level=5, lastReviewed="2026-11-19", dueDate="2026-12-24")
+    saved["DRL-MTH-T01-C04-U01-01/Q01"] = saved_review
+    store_file.write_text(json.dumps(saved), encoding="utf-8")
+    ri.main(["--rebuild", "--today", "2026-11-19", "--data-root", data_root, "--progress-dir", progress_dir, "--json"])
+    capsys.readouterr()
+    assert json.loads(store_file.read_text(encoding="utf-8"))["DRL-MTH-T01-C04-U01-01/Q01"]["level"] == 5
+
     # Pilot mode writes to pilot/progress/review_items.json and never touches progress/
     pilot_workspace = tmp_path / "pilot_repo"
     pilot_workspace.mkdir()
@@ -422,6 +451,42 @@ def test_newer_drill_attempt_wins_over_older_saved_review(tmp_path: Path):
     ri.write_review_items({key: fresh}, progress_dir=progress_dir)
     merged = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
     assert merged[key]["level"] == 4 and merged[key]["lastReviewed"] == "2026-11-18"
+
+
+def test_saved_items_for_deleted_or_reset_problems_are_ignored(tmp_path: Path):
+    data_root, progress_dir = _seed_fixture(tmp_path)
+    key = "DRL-MTH-T01-C04-U01-01/Q01"
+    saved = ri.build_schedule_from_progress(data_root=data_root, progress_dir=progress_dir)
+    ri.write_review_items(saved, progress_dir=progress_dir)
+    progress_file = Path(progress_dir) / "DRL-MTH-T01-C04-U01-01.json"
+    progress = json.loads(progress_file.read_text(encoding="utf-8"))
+    progress["problems"]["Q01"]["cycleStartedAt"] = "2026-11-20T00:00:00Z"
+    progress_file.write_text(json.dumps(progress), encoding="utf-8")
+    active = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    assert key not in active
+
+    drill_file = Path(data_root) / "MTH-T01-C04-U01" / "DRL-MTH-T01-C04-U01-01.json"
+    drill = json.loads(drill_file.read_text(encoding="utf-8"))
+    drill["problems"] = [problem for problem in drill["problems"] if problem["id"] != "Q01"]
+    drill_file.write_text(json.dumps(drill), encoding="utf-8")
+    assert key not in ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+
+
+def test_new_review_record_resolves_unit_for_unattempted_problem(tmp_path: Path):
+    data_root, progress_dir = _seed_fixture(tmp_path)
+    progress_file = Path(progress_dir) / "DRL-MTH-T01-C04-U01-01.json"
+    progress = json.loads(progress_file.read_text(encoding="utf-8"))
+    del progress["problems"]["Q03"]
+    progress_file.write_text(json.dumps(progress), encoding="utf-8")
+    item = ri.record_review_result(
+        "DRL-MTH-T01-C04-U01-01",
+        "Q03",
+        correct=True,
+        review_date="2026-11-19",
+        data_root=data_root,
+        progress_dir=progress_dir,
+    )
+    assert item["unitCode"] == "MTH-T01-C04-U01"
 
 
 def _seed_priority_and_scope_fixture(tmp_path: Path) -> tuple[str, str]:

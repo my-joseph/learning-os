@@ -16,13 +16,14 @@ Read-only unless `--rebuild` is passed.
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import math
 import os
 import re
 import tempfile
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from progress_store import find_repo_root, progress_root, review_items_path
@@ -43,6 +44,7 @@ _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SAFE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 _SAFE_TRAP_RE = re.compile(r"^[A-Za-z0-9@._/-]{1,128}$")
 _NON_SUBSTANTIVE_VERDICTS = ("invalid input", "parse_error")
+_LEGACY_UNDATED = "1970-01-01"
 
 
 def _round_half_up(value: float) -> int:
@@ -103,13 +105,57 @@ def item_key(drill_id: str, qid: str) -> str:
 
 
 def _normalize_date(raw: str | None, fallback: str | None = None) -> str:
-    cand = (raw or "").strip()[:10]
-    if _DATE_RE.match(cand):
+    def local_date(value: str | None) -> str:
+        text = (value or "").strip()
+        if _DATE_RE.match(text):
+            return text
+        if not text:
+            return ""
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            return parsed.astimezone().date().isoformat()
+        except ValueError:
+            return ""
+
+    cand = local_date(raw)
+    if cand:
         return cand
-    fb = (fallback or "").strip()[:10]
-    if _DATE_RE.match(fb):
+    fb = local_date(fallback)
+    if fb:
         return fb
     return date.today().isoformat()
+
+
+def _cycle_started_after_evidence(state: dict[str, Any], evidence_date: str) -> bool:
+    cycle = state.get("cycleStartedAt")
+    if not isinstance(cycle, str) or not cycle:
+        return False
+
+    def instant(value: Any) -> datetime | None:
+        if not isinstance(value, str) or not value:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            return parsed.astimezone()
+        except ValueError:
+            return None
+
+    cycle_at = instant(cycle)
+    evidence_at = []
+    for field, time_field in (("attempts", "ts"), ("reviews", "at")):
+        records = state.get(field) or []
+        if not isinstance(records, list):
+            continue
+        evidence_at.extend(
+            parsed
+            for record in records
+            if isinstance(record, dict)
+            if field != "attempts" or record.get("kind") != "variant"
+            if (parsed := instant(record.get(time_field)))
+        )
+    if cycle_at and evidence_at:
+        return cycle_at > max(evidence_at)
+    return _normalize_date(cycle) > evidence_date
 
 
 def add_days(date_str: str, days: int) -> str:
@@ -154,7 +200,8 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     """Extract chronological review events from a problem's progress `state`."""
     if not isinstance(state, dict):
         return []
-    fallback_date = _normalize_date(fallback_ts)
+    # Old records without event timestamps are due immediately and never drift with updatedAt.
+    fallback_date = _LEGACY_UNDATED
     raw_example_at = state.get("exampleViewedAt")
     example_viewed_at = raw_example_at.strip() if isinstance(raw_example_at, str) and raw_example_at.strip() else ""
     state_assisted = bool(
@@ -177,7 +224,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
         )
         for att in substantive:
             att_ts = str(att.get("ts") or "").strip()
-            ev_date = _normalize_date(att_ts, fallback_date)
+            ev_date = _normalize_date(att_ts) if att_ts else _LEGACY_UNDATED
             verdict = str(att.get("verdict") or "")
             correct = verdict == "correct"
             has_explicit_hint = any(k in att for k in ("hintsUsed", "assisted", "hintsRevealed"))
@@ -198,7 +245,8 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     valid_reviews = [r for r in reviews if isinstance(r, dict) and r.get("verdict")]
     if valid_reviews:
         for rev in valid_reviews:
-            ev_date = _normalize_date(str(rev.get("at") or ""), fallback_date)
+            rev_at = str(rev.get("at") or "")
+            ev_date = _normalize_date(rev_at) if rev_at else _LEGACY_UNDATED
             verdict = str(rev.get("verdict") or "")
             correct = verdict == "pass"
             has_explicit_hint = any(k in rev for k in ("hintsUsed", "assisted", "hintsRevealed"))
@@ -319,6 +367,8 @@ def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict
             ]
         replayed = replay_events(events)
         if not replayed:
+            continue
+        if _cycle_started_after_evidence(item.state, replayed["lastReviewed"]):
             continue
         trap_tag = item.trap or (item.matched[-1] if item.matched else None)
         key = item_key(item.drill, item.pid)
@@ -482,11 +532,13 @@ def rebuild_review_items(
 ) -> dict[str, dict[str, Any]]:
     """Rebuild the review schedule from progress files and persist to `review_items.json`."""
     resolved_progress = progress_dir or progress_root(repo_root)
-    schedule = build_schedule_from_progress(
+    backfilled = build_schedule_from_progress(
         data_root=data_root,
         progress_dir=resolved_progress,
         labs_root=labs_root,
     )
+    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    schedule = _merge_saved_schedule(backfilled, _prune_saved_items(saved, data_root, resolved_progress, labs_root))
     write_review_items(schedule, progress_dir=resolved_progress, repo_root=repo_root)
     return schedule
 
@@ -518,6 +570,78 @@ def _merge_saved_schedule(
     return dict(sorted(merged.items()))
 
 
+def _prune_saved_items(
+    saved: dict[str, dict[str, Any]],
+    data_root: str | None,
+    progress_dir: str | None,
+    labs_root: str | None,
+) -> dict[str, dict[str, Any]]:
+    """Ignore cached results for retired problems or problems reset after their last evidence."""
+    repo_root = find_repo_root()
+    drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
+    lab_root = labs_root or os.path.join(repo_root, "labs")
+    progress_root_dir = progress_dir or progress_root(repo_root)
+    problem_ids: dict[str, set[str]] = {}
+    for pattern in (os.path.join(drill_root, "**", "*.json"), os.path.join(lab_root, "LAB-*", "lab.config.json")):
+        for file_path in glob.glob(pattern, recursive=True):
+            try:
+                with open(file_path, encoding="utf-8") as file:
+                    doc = json.load(file)
+                drill_id = str(doc.get("drillId") or doc.get("labId") or "")
+                problems = doc.get("problems") or doc.get("milestones") or []
+                ids = {str(problem.get("id") or "") for problem in problems if isinstance(problem, dict)}
+                if drill_id:
+                    problem_ids[drill_id] = ids
+            except (OSError, ValueError):
+                continue
+
+    active: dict[str, dict[str, Any]] = {}
+    for key, item in saved.items():
+        drill_id, _, qid = key.partition("/")
+        if qid not in problem_ids.get(drill_id, set()):
+            continue
+        progress_path = os.path.join(progress_root_dir, f"{drill_id}.json")
+        try:
+            with open(progress_path, encoding="utf-8") as file:
+                progress_doc = json.load(file)
+            state = (progress_doc.get("problems") or {}).get(qid) or {}
+            if _cycle_started_after_evidence(state, item.get("lastReviewed", "")):
+                continue
+        except (OSError, ValueError, AttributeError):
+            pass
+        active[key] = item
+    return active
+
+
+def _lookup_problem_unit(drill_id: str, qid: str, data_root: str | None = None, labs_root: str | None = None) -> str:
+    """Resolve unit metadata for a newly reviewed item, including never-practised problems."""
+    repo_root = find_repo_root()
+    drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
+    lab_root = labs_root or os.path.join(repo_root, "labs")
+    candidates = glob.glob(os.path.join(drill_root, "**", "*.json"), recursive=True)
+    candidates += glob.glob(os.path.join(lab_root, "LAB-*", "lab.config.json"))
+    for file_path in candidates:
+        try:
+            with open(file_path, encoding="utf-8") as file:
+                doc = json.load(file)
+            if str(doc.get("drillId") or doc.get("labId") or "") != drill_id:
+                continue
+            problems = doc.get("problems") or doc.get("milestones") or []
+            for problem in problems:
+                if isinstance(problem, dict) and problem.get("id") == qid:
+                    units = problem.get("units") or []
+                    return str(
+                        problem.get("unitCode")
+                        or (units[0] if units else "")
+                        or doc.get("unitCode")
+                        or doc.get("chapterCode")
+                        or ""
+                    )
+        except (OSError, ValueError):
+            continue
+    return ""
+
+
 def get_review_items_schedule(
     data_root: str | None = None,
     progress_dir: str | None = None,
@@ -535,7 +659,12 @@ def get_review_items_schedule(
         progress_dir=resolved_progress,
         labs_root=labs_root,
     )
-    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    saved = _prune_saved_items(
+        load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root),
+        data_root,
+        resolved_progress,
+        labs_root,
+    )
     return _merge_saved_schedule(backfilled, saved)
 
 
@@ -630,7 +759,12 @@ def get_due_items(
     loaded = weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root)
     open_weak_traps = get_open_weak_traps(loaded)
     backfilled = _build_schedule_from_loaded(loaded)
-    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    saved = _prune_saved_items(
+        load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root),
+        data_root,
+        resolved_progress,
+        labs_root,
+    )
     schedule = _merge_saved_schedule(backfilled, saved)
     due = [it for it in schedule.values() if it["dueDate"] <= today_str and matches_scope(it, parsed_scope)]
     return interleave_due_items(due, limit=limit, open_weak_traps=open_weak_traps)
@@ -671,7 +805,7 @@ def record_review_result(
         else {
             "drillId": drill_id,
             "qid": qid,
-            "unitCode": "",
+            "unitCode": _lookup_problem_unit(drill_id, qid, data_root, labs_root),
             "subject": "PRG" if drill_id.startswith(("DRL-PRG-", "LAB-")) else "MTH",
             "commonTrapTag": None,
             "archetypeKey": None,
@@ -744,10 +878,21 @@ def main(argv: list[str] | None = None) -> int:
     backfilled = _build_schedule_from_loaded(loaded)
 
     if args.rebuild:
-        write_review_items(backfilled, progress_dir=resolved_progress, repo_root=repo_root)
-        schedule = backfilled
+        saved = _prune_saved_items(
+            load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root),
+            args.data_root,
+            resolved_progress,
+            None,
+        )
+        schedule = _merge_saved_schedule(backfilled, saved)
+        write_review_items(schedule, progress_dir=resolved_progress, repo_root=repo_root)
     else:
-        saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+        saved = _prune_saved_items(
+            load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root),
+            args.data_root,
+            resolved_progress,
+            None,
+        )
         schedule = _merge_saved_schedule(backfilled, saved)
 
     all_due = [it for it in schedule.values() if it["dueDate"] <= today_str]

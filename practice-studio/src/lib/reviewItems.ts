@@ -165,12 +165,26 @@ export function reviewItemKey(drillId: string, qid: string): string {
 }
 
 export function normalizeReviewDate(raw?: string | null, fallback?: string | null): string {
-  const cand = typeof raw === "string" ? raw.trim().slice(0, 10) : "";
-  if (DATE_RE.test(cand)) return cand;
-  const fb = typeof fallback === "string" ? fallback.trim().slice(0, 10) : "";
-  if (DATE_RE.test(fb)) return fb;
+  const localDate = (value?: string | null): string => {
+    if (typeof value !== "string" || !value.trim()) return "";
+    const text = value.trim();
+    if (DATE_RE.test(text)) return text;
+    const parsed = new Date(text);
+    if (Number.isNaN(parsed.getTime())) return "";
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, "0");
+    const d = String(parsed.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+  const cand = localDate(raw);
+  if (cand) return cand;
+  const fb = localDate(fallback);
+  if (fb) return fb;
   return formatLocalDate();
 }
+
+// Legacy progress without timestamps is due immediately; do not let mutable updatedAt postpone it.
+const LEGACY_UNDATED = "1970-01-01";
 
 export function addDays(dateStr: string, days: number): string {
   const norm = normalizeReviewDate(dateStr);
@@ -226,11 +240,10 @@ export function stepReviewSchedule(
 }
 
 export function extractReviewEvents(
-  state: Record<string, unknown> | null | undefined,
-  fallbackTs: string = ""
+  state: Record<string, unknown> | null | undefined
 ): ReviewEvent[] {
   if (!state || typeof state !== "object") return [];
-  const fallbackDate = normalizeReviewDate(fallbackTs);
+  const fallbackDate = LEGACY_UNDATED;
   const exampleViewedAt =
     typeof state.exampleViewedAt === "string" && state.exampleViewedAt.trim()
       ? state.exampleViewedAt.trim()
@@ -260,7 +273,7 @@ export function extractReviewEvents(
       state.score === 0.5;
     return substantive.map((att) => {
       const attTs = typeof att.ts === "string" ? att.ts.trim() : "";
-      const evDate = normalizeReviewDate(attTs, fallbackDate);
+      const evDate = attTs ? normalizeReviewDate(attTs) : LEGACY_UNDATED;
       const verdict = String(att.verdict || "");
       const correct = verdict === "correct";
       const hasExplicitHint =
@@ -294,10 +307,8 @@ export function extractReviewEvents(
   );
   if (validReviews.length > 0) {
     return validReviews.map((rev) => {
-      const evDate = normalizeReviewDate(
-        typeof rev.at === "string" ? rev.at : "",
-        fallbackDate
-      );
+      const revAt = typeof rev.at === "string" ? rev.at : "";
+      const evDate = revAt ? normalizeReviewDate(revAt) : LEGACY_UNDATED;
       const correct = rev.verdict === "pass";
       const hasExplicitHint =
         "hintsUsed" in rev || "assisted" in rev || "hintsRevealed" in rev;
@@ -390,6 +401,24 @@ function cleanRevisitNote(raw: unknown): string | null {
     return raw.trim();
   }
   return null;
+}
+
+function cycleStartedAfterEvidence(state: Record<string, unknown>, evidenceDate: string): boolean {
+  const cycle = typeof state.cycleStartedAt === "string" ? state.cycleStartedAt : "";
+  if (!cycle) return false;
+  const evidenceTimes: string[] = [];
+  for (const [field, timestampField] of [["attempts", "ts"], ["reviews", "at"]] as const) {
+    const records = Array.isArray(state[field]) ? (state[field] as Array<Record<string, unknown>>) : [];
+    for (const record of records) {
+      if (field === "attempts" && record?.kind === "variant") continue;
+      const timestamp = record?.[timestampField];
+      if (typeof timestamp === "string" && timestamp) evidenceTimes.push(timestamp);
+    }
+  }
+  const cycleMs = Date.parse(cycle);
+  const evidenceMs = evidenceTimes.map(Date.parse).filter(Number.isFinite);
+  if (Number.isFinite(cycleMs) && evidenceMs.length > 0) return cycleMs > Math.max(...evidenceMs);
+  return normalizeReviewDate(cycle) > evidenceDate;
 }
 
 /**
@@ -1211,7 +1240,7 @@ function buildScheduleFromLoaded(
   const schedule: Record<string, ReviewItem> = {};
   for (const item of loaded) {
     if (!item.drillId || !item.qid) continue;
-    let events = extractReviewEvents(item.state, item.ts);
+    let events = extractReviewEvents(item.state);
     if (events.length === 0) {
       events = [
         {
@@ -1223,6 +1252,7 @@ function buildScheduleFromLoaded(
     }
     const replayed = replayReviewEvents(events);
     if (!replayed) continue;
+    if (cycleStartedAfterEvidence(item.state, replayed.lastReviewed)) continue;
 
     const trapTag =
       item.trap ||
@@ -1313,13 +1343,19 @@ export function writeReviewItemsStore(
 
 function mergeSavedSchedule(
   backfilled: Record<string, ReviewItem>,
-  saved: Record<string, ReviewItem>
+  saved: Record<string, ReviewItem>,
+  drills?: Map<string, DrillMeta>,
+  loaded: LoadedProgressItem[] = []
 ): Record<string, ReviewItem> {
   if (Object.keys(saved).length === 0) {
     return backfilled;
   }
   const merged: Record<string, ReviewItem> = { ...backfilled };
+  const stateByKey = new Map(loaded.map((item) => [reviewItemKey(item.drillId, item.qid), item.state]));
   for (const [key, savedEntry] of Object.entries(saved)) {
+    const metadata = drills?.get(savedEntry.drillId);
+    if (drills && (!metadata || !metadata.problems.has(savedEntry.qid))) continue;
+    if (cycleStartedAfterEvidence(stateByKey.get(key) || {}, savedEntry.lastReviewed)) continue;
     const entry: ReviewItem = { ...savedEntry };
     const bf = backfilled[key];
     if (bf && (bf.lastReviewed || "") > (entry.lastReviewed || "")) {
@@ -1357,7 +1393,8 @@ export function getReviewItemsSchedule(
   const progressDir = options?.progressDir ?? getProgressDir();
   const backfilled = buildScheduleFromProgress({ ...options, progressDir });
   const saved = loadSavedReviewItems(progressDir);
-  return mergeSavedSchedule(backfilled, saved);
+  const { loaded, drills } = loadProgressContext(options);
+  return mergeSavedSchedule(backfilled, saved, drills, loaded);
 }
 
 export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsResult {
@@ -1370,7 +1407,7 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
   const openWeakTraps = computeOpenWeakTrapsFromLoaded(loaded);
   const backfilled = buildScheduleFromLoaded(loaded);
   const saved = loadSavedReviewItems(progressDir);
-  const schedule = mergeSavedSchedule(backfilled, saved);
+  const schedule = mergeSavedSchedule(backfilled, saved, drills, loaded);
 
   const allItems = Object.values(schedule);
   const allDue = allItems.filter((it) => it.dueDate <= today);
