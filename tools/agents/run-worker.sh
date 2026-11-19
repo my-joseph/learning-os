@@ -11,7 +11,7 @@
 #     killed. Here the fallback model runs ONLY when the first run failed for quota /
 #     rate-limit reasons, never after a kill, a timeout, or once a PR exists.
 #
-# Env (optional): MODELS="gemini-4-neon-high gemini-4-hydrogen-high gemini-4-argon-high",
+# Env (optional): MODELS="gemini-4-neon-high gemini-4-argon-high gpt-6-luna",
 #                 MAX_SECS=7200, IDLE_AFTER_PR=300, POLL=20,
 #                 DONE_FILE=<report path for read-only jobs>,
 #                 USAGE_LOG=<jsonl path; default <main checkout>/pilot/agent-usage.jsonl>
@@ -29,7 +29,11 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
-MODELS=${MODELS:-"gemini-4-neon-high gemini-4-hydrogen-high gemini-4-argon-high"}
+# Neon first; Argon and GPT Luna are the quota fallbacks (Hydrogen shares Neon's quota, so it is
+# useless as a fallback). gpt-* models run through the Codex CLI, everything else through agy.
+MODELS=${MODELS:-"gemini-4-neon-high gemini-4-argon-high gpt-6-luna"}
+CODEX_BIN=${CODEX_BIN:-/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex}
+CODEX_EFFORT=${CODEX_EFFORT:-high}
 MAX_SECS=${MAX_SECS:-7200}
 IDLE_AFTER_PR=${IDLE_AFTER_PR:-300}
 POLL=${POLL:-20}
@@ -82,7 +86,15 @@ set -m # background jobs get their own process group, so stop_tree reaches child
 for MODEL in $MODELS; do
   START_OFFSET=$(file_size)
   log "start model=$MODEL branch=$BRANCH"
-  agy -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions --output-format stream-json >>"$LOG" 2>&1 &
+  case "$MODEL" in
+    gpt-*)
+      "$CODEX_BIN" exec --json -m "$MODEL" -c model_reasoning_effort="$CODEX_EFFORT" \
+        --dangerously-bypass-approvals-and-sandbox -C "$WT" "$PROMPT" </dev/null >>"$LOG" 2>&1 &
+      ;;
+    *)
+      agy -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions --output-format stream-json >>"$LOG" 2>&1 &
+      ;;
+  esac
   PID=$!
   STARTED=$(date +%s)
   LAST_SIZE=$(file_size)

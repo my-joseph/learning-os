@@ -52,3 +52,24 @@ def test_main_appends_jsonl(tmp_path, monkeypatch, capsys):
     rec = json.loads(out.read_text().strip())
     assert rec["model"] == "m" and rec["total_tokens"] == 2
     assert "[usage] model=m total=2" in capsys.readouterr().out
+
+
+def test_codex_turn_usage():
+    lines = [
+        json.dumps({"type": "thread.started", "thread_id": "t1"}),
+        json.dumps(
+            {
+                "type": "turn.completed",
+                "usage": {
+                    "input_tokens": 100,
+                    "cached_input_tokens": 80,
+                    "output_tokens": 7,
+                    "reasoning_output_tokens": 3,
+                },
+            }
+        ),
+    ]
+    rec = summarize(lines)
+    assert rec["conversation_id"] == "t1"
+    assert rec["total_tokens"] == 107
+    assert rec["cache_read_tokens"] == 80 and rec["thinking_tokens"] == 3

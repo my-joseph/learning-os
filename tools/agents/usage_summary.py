@@ -1,4 +1,4 @@
-"""Sum agy stream-json token usage from a worker log segment (stdin).
+"""Sum agy stream-json / codex --json token usage from a worker log segment (stdin).
 
 Prints one summary line and optionally appends a JSON record to a JSONL file.
 Uses the final `result` event when present; otherwise sums per-step usage
@@ -28,7 +28,17 @@ def summarize(lines: list[str]) -> dict:
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if event.get("event") == "result":
+        if event.get("type") == "turn.completed" and isinstance(event.get("usage"), dict):
+            # Codex CLI: one usage block per turn; input_tokens includes cached input.
+            u = event["usage"]
+            steps["input_tokens"] += int(u.get("input_tokens") or 0)
+            steps["output_tokens"] += int(u.get("output_tokens") or 0)
+            steps["thinking_tokens"] += int(u.get("reasoning_output_tokens") or 0)
+            steps["cache_read_tokens"] += int(u.get("cached_input_tokens") or 0)
+            steps["total_tokens"] += int(u.get("input_tokens") or 0) + int(u.get("output_tokens") or 0)
+        elif event.get("type") == "thread.started":
+            conversation = event.get("thread_id", conversation)
+        elif event.get("event") == "result":
             result = event.get("result") or {}
             conversation = result.get("conversation_id", conversation)
         elif event.get("event") == "step_update":
