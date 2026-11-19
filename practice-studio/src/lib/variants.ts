@@ -130,15 +130,6 @@ export function findVariantsForProblem(
   return matches;
 }
 
-/** Cheap boolean check used to annotate drill payloads with `hasVariants`. */
-export function hasVariantsForProblem(
-  doc: Record<string, unknown>,
-  problem: Record<string, unknown>,
-  bankCache?: Map<string, Array<Record<string, unknown>>>
-): boolean {
-  return findVariantsForProblem(doc, problem, bankCache).length > 0;
-}
-
 /**
  * Pick one variant for `mode=example` (fully solved), preferring an unseen variant when available.
  */

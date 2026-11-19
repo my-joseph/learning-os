@@ -1,0 +1,47 @@
+import React, { useState, type ReactNode } from "react";
+
+interface CopyButtonProps {
+  text: string;
+  className: string;
+  children: ReactNode;
+  copiedContent: ReactNode;
+  timeoutMs?: number;
+  title?: string;
+  ariaLabel?: string;
+  requireClipboard?: boolean;
+}
+
+export function CopyButton({
+  text,
+  className,
+  children,
+  copiedContent,
+  timeoutMs = 1200,
+  title,
+  ariaLabel,
+  requireClipboard = false,
+}: CopyButtonProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      if (requireClipboard) return;
+    } else {
+      void navigator.clipboard.writeText(text);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), timeoutMs);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={title}
+      aria-label={ariaLabel}
+      className={className}
+    >
+      {copied ? copiedContent : children}
+    </button>
+  );
+}

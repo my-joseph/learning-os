@@ -17,8 +17,8 @@ const CodeDashboard = dynamic(
   () => import("@/components/code/CodeDashboard").then((mod) => mod.CodeDashboard),
   { ssr: true }
 );
-const ReviewPanel = dynamic(
-  () => import("@/components/shell/ReviewPanel").then((mod) => mod.ReviewPanel),
+const ReviewSyncPage = dynamic(
+  () => import("@/components/review-sync/ReviewSyncPage").then((mod) => mod.ReviewSyncPage),
   { ssr: false }
 );
 import { StudioShell } from "@/components/shell/StudioShell";
@@ -118,7 +118,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     currentDrill,
     setCurrentDrill,
     getLatestDrill,
-    activeSteps,
     currentProblemIndex,
     setCurrentProblemIndex,
     viewMode,
@@ -139,7 +138,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     handleRevisitNoteChange,
     handleSetupRevealed,
     handleSolutionRevealed,
-    handleToggleStepHighlight,
     handleMarkDivergedStep,
     handleSetScore,
     handleTestReportChange,
@@ -411,13 +409,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   unitCode={currentDrill.unitCode}
                   drillTitle={plainTitle(currentDrill.unitTitle) || currentDrill.unitCode}
                   mistakeTags={currentDrill.mistakeTags || []}
-                  activeStep={activeSteps[prob.id] ?? null}
                   onInputChange={(val) => handleInputChange(prob.id, val)}
                   onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
                   onSkip={(opts) => handleSkipProblem(prob.id, opts)}
-                  onToggleStepHighlight={(stepIdx) =>
-                    handleToggleStepHighlight(prob.id, stepIdx)
-                  }
                   onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
                   onSetScore={(score) => handleSetScore(prob.id, score)}
                   onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
@@ -456,13 +450,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 drillTitle={plainTitle(currentDrill.unitTitle) || currentDrill.unitCode}
                 labReadme={currentDrill.labReadme}
                 mistakeTags={currentDrill.mistakeTags || []}
-                activeStep={activeSteps[prob.id] ?? null}
                 onInputChange={(val) => handleInputChange(prob.id, val)}
                 onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
                 onSkip={(opts) => handleSkipProblem(prob.id, opts)}
-                onToggleStepHighlight={(stepIdx) =>
-                  handleToggleStepHighlight(prob.id, stepIdx)
-                }
                 onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
                 onSetScore={(score) => handleSetScore(prob.id, score)}
                 onTestReportChange={(rep, score) => handleTestReportChange(prob.id, rep, score)}
@@ -490,7 +480,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           initial="hidden"
           animate="shown"
         >
-          <ReviewPanel
+          <ReviewSyncPage
             currentDrill={currentDrill}
             statusOverride={statusOverride}
             isSyncing={isSyncing}

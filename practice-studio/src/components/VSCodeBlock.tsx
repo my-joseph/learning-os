@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Copy, Check, FileCode2 } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { renderShikiLineTokens, useShikiTokens } from "@/components/HighlightedCode";
 import {
   inferShikiLanguageFromFilename,
@@ -95,19 +96,11 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
   selectedLine = null,
   onSelectLine,
 }) => {
-  const [copied, setCopied] = useState(false);
-
   const trimmedCode = useMemo(() => code.trim(), [code]);
   const lines = useMemo(() => trimmedCode.split("\n"), [trimmedCode]);
   const highlightedLines = useShikiTokens(trimmedCode, language);
   const hasHighlightedTokens =
     Boolean(highlightedLines) && highlightedLines?.length === lines.length;
-
-  const handleCopy = () => {
-    void navigator.clipboard?.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
-  };
 
   const badge = getLanguageBadge(language, filename);
 
@@ -139,25 +132,21 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
             </span>
           )}
 
-          <button
-            type="button"
-            onClick={handleCopy}
+          <CopyButton
+            text={code}
             className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-2.5 py-1 rounded bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 transition-colors"
-          >
-            {copied ? (
+            copiedContent={
               <>
                 <Check className="w-3.5 h-3.5" />
-                <span className="font-sans text-xs">
-                  Copied
-                </span>
+                <span className="font-sans text-xs">Copied</span>
               </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5" />
-                <span className="font-sans text-xs">Copy</span>
-              </>
-            )}
-          </button>
+            }
+          >
+            <>
+              <Copy className="w-3.5 h-3.5" />
+              <span className="font-sans text-xs">Copy</span>
+            </>
+          </CopyButton>
         </div>
       </div>
 

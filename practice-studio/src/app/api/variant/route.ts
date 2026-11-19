@@ -64,19 +64,6 @@ function findExistingExampleEntry(
   return null;
 }
 
-export async function HEAD(req: NextRequest) {
-  const { drillId, qid } = resolveParams(req);
-  if (!drillId || !qid || !isSafeId(drillId) || !isSafeId(qid)) {
-    return new NextResponse(null, { status: 400 });
-  }
-  const loaded = loadProblemFromDisk(drillId, qid);
-  if (!loaded) {
-    return new NextResponse(null, { status: 404 });
-  }
-  const variants = findVariantsForProblem(loaded.doc, loaded.problem);
-  return new NextResponse(null, { status: variants.length > 0 ? 200 : 404 });
-}
-
 export async function GET(req: NextRequest) {
   const { drillId, qid, mode, token } = resolveParams(req);
 
@@ -326,7 +313,6 @@ export async function GET(req: NextRequest) {
 }
 
 const ALLOWED_ACTIONS = new Set([
-  "hint",
   "reveal-steps",
   "reset",
   "duration",
@@ -422,11 +408,7 @@ export async function POST(req: NextRequest) {
     );
     const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
 
-    if (action === "hint") {
-      if (!hasCorrectInCycle) {
-        updateVariantSession(drillId, unitCode, qid, variantToken, { hintIncrement: 1 });
-      }
-    } else if (action === "reveal-steps") {
+    if (action === "reveal-steps") {
       if (!hasCorrectInCycle) {
         updateVariantSession(drillId, unitCode, qid, variantToken, { stepsRevealed: true });
       }

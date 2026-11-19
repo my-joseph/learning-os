@@ -10,7 +10,6 @@ import { FormattedText } from "./FormattedText";
 interface StepRowProps {
   step: Step;
   index: number;
-  isActive: boolean;
   isDiverged?: boolean;
   onMarkDiverged?: () => void;
 }
@@ -18,7 +17,6 @@ interface StepRowProps {
 export const StepRow: React.FC<StepRowProps> = ({
   step,
   index,
-  isActive,
   isDiverged = false,
   onMarkDiverged,
 }) => {
@@ -32,13 +30,11 @@ export const StepRow: React.FC<StepRowProps> = ({
     : "md:grid-cols-1";
 
   return (
-    // Hover (or keyboard focus inside) focuses a step; other rows dim via globals.css.
+    // Hover focuses a step; other rows dim via globals.css.
     <div
-      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${gridCols} gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 transition-[colors,opacity] duration-150 border ${
+      className={`group step-row ${isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${gridCols} gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 transition-[colors,opacity] duration-150 border ${
         isDiverged
           ? `${statusTone.wrong.borderSoft} bg-white dark:bg-zinc-900`
-          : isActive
-          ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
           : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
       }`}
     >
@@ -52,8 +48,6 @@ export const StepRow: React.FC<StepRowProps> = ({
         className={`text-xs ${hasLatex ? "border-l pl-3" : ""} transition-colors ${
           isDiverged
             ? `${statusTone.wrong.border} text-zinc-900 dark:text-zinc-100`
-            : isActive
-            ? "border-accent text-zinc-900 dark:text-zinc-100"
             : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 group-hover:border-accent group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
         }`}
       >

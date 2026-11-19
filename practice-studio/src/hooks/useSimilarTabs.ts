@@ -12,7 +12,6 @@ import {
   deriveTabStatuses,
   deriveVariantStatus,
   isInCycle,
-  parseTabParam,
   pickNextUntriedOrWrongTab,
   resolveInitialTab,
   SimilarSlotNumber,
@@ -475,7 +474,6 @@ export function useSimilarTabs({
   const [loadingTabToken, setLoadingTabToken] = useState<string | null>(null);
   const [tabErrors, setTabErrors] = useState<Record<string, string>>({});
   const [loadingSteps, setLoadingSteps] = useState(false);
-  const [activeStep, setActiveStep] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState("");
 
   // Existing worked-example path (unchanged per binding scope change)
@@ -694,7 +692,7 @@ export function useSimilarTabs({
   const selectTab = useCallback(
     (
       nextTabId: SimilarTabId,
-      opts?: { selectOriginal?: boolean; forceRefetch?: boolean; fromDeepLink?: boolean }
+      opts?: { selectOriginal?: boolean }
     ) => {
       if (!isUnlockedRef.current && nextTabId !== "q") {
         return;
@@ -705,7 +703,6 @@ export function useSimilarTabs({
       }
 
       setShowingExample(false);
-      setActiveStep(null);
       setSelectedTab(nextTabId);
       syncTabUrlParam(nextTabId, isReviewSession);
 
@@ -739,7 +736,7 @@ export function useSimilarTabs({
       }
       pendingTabRef.current = null;
 
-      const cached = opts?.forceRefetch ? undefined : tabProblemsRef.current[targetTab.token];
+      const cached = tabProblemsRef.current[targetTab.token];
       if (cached) {
         const alreadySolved = cached.state.lastCheck?.verdict === "correct";
         setSimilarBaseMs(cached.state.durationMs || 0);
@@ -790,7 +787,6 @@ export function useSimilarTabs({
     setTabErrors({});
     setLoadingTabToken(null);
     setLoadingSteps(false);
-    setActiveStep(null);
     setExample(null);
     setExampleViewedAt(
       problem.state.exampleViewedAt &&
@@ -865,7 +861,7 @@ export function useSimilarTabs({
           similarParam: true,
         });
         if (targetId !== "q") {
-          selectTab(targetId, { fromDeepLink: true });
+          selectTab(targetId);
         }
       }
       return;
@@ -997,7 +993,7 @@ export function useSimilarTabs({
           similarParam: wantsDeepLink,
         });
         if (targetId !== "q") {
-          selectTab(targetId, { fromDeepLink: true });
+          selectTab(targetId);
         } else if (intent.tabParam !== null || intent.similarParam) {
           syncTabUrlParam("q", isReviewSession);
         }
@@ -1489,7 +1485,6 @@ export function useSimilarTabs({
   const handleSimilarReset = useCallback(() => {
     const tok = activeTokenRef.current;
     if (!drillId || !tok) return;
-    setActiveStep(null);
     setSimilarBaseMs(0);
     setSimilarElapsedMs(0);
     setIsSimilarPaused(false);
@@ -1571,7 +1566,6 @@ export function useSimilarTabs({
     setLoadingTabToken(null);
     setExample(null);
     setExampleViewedAt(null);
-    setActiveStep(null);
     setLoadingExample(false);
     setLoadingSteps(false);
     setSimilarBaseMs(0);
@@ -1600,8 +1594,6 @@ export function useSimilarTabs({
     exampleViewedAt,
     loadingExample,
     loadingSteps,
-    activeStep,
-    setActiveStep,
     announcement,
     similarTimerMs: similarBaseMs + similarElapsedMs,
     isSimilarPaused,
@@ -1621,6 +1613,5 @@ export function useSimilarTabs({
     handleSimilarSolutionRevealed,
     handleSimilarReset,
     resetAllVariantUi,
-    parseTabParam,
   };
 }

@@ -584,10 +584,6 @@ runCase("resetDrillForRetry and resetProblemForRetry start a new cycle while pre
     /handleResetAll[\s\S]*createTelemetryTimerState/.test(useDrillSrc),
     "handleResetAll must reset telemetry timer state"
   );
-  assert(
-    /handleResetAll[\s\S]*setActiveSteps\(\{\}\)/.test(useDrillSrc),
-    "handleResetAll must clear activeSteps"
-  );
 });
 
 runCase("review retry clears the answer but preserves progress history", () => {

@@ -328,11 +328,8 @@ async function main() {
       doc,
       "Q01",
       timer,
-      { Q01: 0, Q02: 1 },
       10_000
     );
-    assert.equal(singleReset.nextActiveSteps.Q01, null);
-    assert.equal(singleReset.nextActiveSteps.Q02, 1);
     assert.equal(singleReset.updatedDoc.problems[0].state.userInput, "");
     assert.equal(singleReset.updatedDoc.problems[0].state.score, null);
     assert.equal("steps" in singleReset.updatedDoc.problems[0], false);
@@ -354,7 +351,6 @@ async function main() {
     // Reset all while paused preserves paused state, resets visible fields, and keeps attempt history
     const pausedTimer = pauseTimer(timer, 12_000);
     const allReset = computeResetAllTransition(doc, pausedTimer, true, 15_000);
-    assert.deepEqual(allReset.nextActiveSteps, {});
     assert.equal(allReset.firstProblemId, "Q01");
     assert.equal(allReset.nextTimerState.paused, true, "Global pause state must be preserved across Reset all");
     assert.equal(allReset.updatedDoc.sessionSummary.practiceStatus, "Ready");

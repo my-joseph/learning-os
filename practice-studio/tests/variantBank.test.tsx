@@ -15,7 +15,6 @@ import { NextRequest } from "next/server";
 import { GET as drillGET } from "../src/app/api/drill/route";
 import {
   GET as variantGET,
-  HEAD as variantHEAD,
   POST as variantPOST,
 } from "../src/app/api/variant/route";
 import { POST as checkAnswerPOST } from "../src/app/api/check-answer/route";
@@ -261,7 +260,7 @@ async function runTests() {
 
   try {
     // -----------------------------------------------------------------------
-    // 1. /api/drill annotates `hasVariants`, HEAD /api/variant, and v1 modes removed
+    // 1. /api/drill annotates `hasVariants`, and v1 modes are removed
     // -----------------------------------------------------------------------
     {
       const drillRes = await drillGET(
@@ -273,16 +272,6 @@ async function runTests() {
       assert.equal(drillData.problems[0].similarCount, 3);
       assert.equal(drillData.problems[1].hasVariants, false);
       assert.equal(drillData.problems[1].similarCount, undefined);
-
-      const headHit = await variantHEAD(
-        new NextRequest("http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01")
-      );
-      assert.equal(headHit.status, 200);
-
-      const headMiss = await variantHEAD(
-        new NextRequest("http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q02")
-      );
-      assert.equal(headMiss.status, 404);
 
       // Legacy v1 modes `try` and `active` and `deactivate` action are removed (400).
       for (const legacyMode of ["try", "active"]) {
@@ -799,10 +788,8 @@ async function runTests() {
           unitCode="MTH-T01-C04"
           drillTitle="Fractions"
           mistakeTags={[]}
-          activeStep={null}
           onInputChange={noop}
           onCheckAnswer={noop}
-          onToggleStepHighlight={noop}
           onMarkDivergedStep={noop}
           onSetScore={noop}
           onToggleMistakeTag={noop}

@@ -72,40 +72,6 @@ export function countWrongAttempts(state?: ProblemState | null): number {
   return 0;
 }
 
-/** Count wrong substantive attempts across the original problem AND all its try variants. */
-export function countClusterWrongAttempts(state?: ProblemState | null): number {
-  if (!state) return 0;
-  let total = countWrongAttempts(state);
-  const variants = state.variants;
-  if (variants && typeof variants === "object") {
-    for (const rec of Object.values(variants)) {
-      if (!rec || typeof rec !== "object" || !Array.isArray(rec.attempts)) continue;
-      for (const att of rec.attempts) {
-        if (isWrongAttemptVerdict(att?.verdict)) {
-          total += 1;
-        }
-      }
-    }
-  }
-  return total;
-}
-
-/** Count wrong substantive attempts on the original problem made at or after `sinceIso` (or flagged `exampleViewed`). */
-export function countWrongAttemptsAfter(
-  state?: ProblemState | null,
-  sinceIso?: string | null
-): number {
-  if (!state || !sinceIso) return 0;
-  const attempts = Array.isArray(state.attempts) ? state.attempts : [];
-  return attempts.filter(
-    (a) =>
-      a &&
-      a.kind !== "variant" &&
-      isWrongAttemptVerdict(a.verdict) &&
-      (Boolean(a.exampleViewed) || (typeof a.ts === "string" && a.ts >= sinceIso))
-  ).length;
-}
-
 /**
  * Replace raw SymPy / Python / internal check error strings with calm learner-facing copy.
  */
