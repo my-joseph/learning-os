@@ -658,7 +658,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {onSkip && !hasAttempt && (
                   <button
                     type="button"
-                    onClick={onSkip}
+                    onClick={() => onSkip()}
                     className="inline-flex min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
                   >
                     <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
