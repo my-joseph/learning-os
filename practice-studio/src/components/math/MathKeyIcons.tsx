@@ -319,25 +319,25 @@ export const LnKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 );
 
 export const LogKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
-  <KeyIconFrame width={31} className={className}>
-    <GlyphText x={1.5} y={15.25} fontSize={9.5} letterSpacing="-0.02em">
+  <KeyIconFrame width={27} className={className}>
+    <GlyphText x={0.5} y={15.25} fontSize={9.5} letterSpacing="-0.04em">
       log
     </GlyphText>
-    <StrokePath d="M 18 7.5 C 16.4 9.8 16.4 14.2 18 16.5" strokeWidth={1.25} />
-    <Placeholder x={19.5} y={8.75} size={6.5} rx={1.3} />
-    <StrokePath d="M 27.75 7.5 C 29.35 9.8 29.35 14.2 27.75 16.5" strokeWidth={1.25} />
+    <StrokePath d="M 15 7.5 C 13.5 9.8 13.5 14.2 15 16.5" strokeWidth={1.25} />
+    <Placeholder x={16.25} y={8.75} size={5.5} rx={1.2} />
+    <StrokePath d="M 26 7.5 C 27.5 9.8 27.5 14.2 26 16.5" strokeWidth={1.25} />
   </KeyIconFrame>
 );
 
 export const LogBaseKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
-  <KeyIconFrame width={34} className={className}>
-    <GlyphText x={1} y={13} fontSize={8.5} letterSpacing="-0.03em">
+  <KeyIconFrame width={28} className={className}>
+    <GlyphText x={0.5} y={15.25} fontSize={9.5} letterSpacing="-0.04em">
       log
     </GlyphText>
-    <Placeholder x={14.5} y={13} size={5} rx={1.1} />
-    <StrokePath d="M 22.25 6.5 C 20.85 8.75 20.85 12.75 22.25 15" strokeWidth={1.25} />
-    <Placeholder x={23.5} y={7.75} size={6} rx={1.25} />
-    <StrokePath d="M 31 6.5 C 32.4 8.75 32.4 12.75 31 15" strokeWidth={1.25} />
+    <Placeholder x={12.75} y={12.5} size={4.5} rx={1} />
+    <StrokePath d="M 19 7.5 C 17.5 9.8 17.5 14.2 19 16.5" strokeWidth={1.25} />
+    <Placeholder x={19.75} y={8.75} size={5.25} rx={1.15} />
+    <StrokePath d="M 26.25 7.5 C 27.75 9.8 27.75 14.2 26.25 16.5" strokeWidth={1.25} />
   </KeyIconFrame>
 );
 

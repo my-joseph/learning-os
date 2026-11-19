@@ -106,53 +106,53 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
   return (
     <div className="flex flex-col items-center w-full select-none">
       {/* SVG Interactive Canvas */}
-      <div className="relative w-full bg-[#0a0d14] rounded-xl border border-[#232a3d] p-2 flex flex-col justify-center items-center overflow-hidden">
+      <div className="relative w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-2 flex flex-col justify-center items-center overflow-hidden">
         
         {/* Dynamic Tooltip / Parameter Inspector Bar */}
-        <div className="w-full mb-1.5 px-3 py-1.5 bg-[#121724]/90 backdrop-blur border border-emerald-500/25 rounded-lg text-xs flex justify-between items-center transition-all min-h-[36px]">
+        <div className="w-full mb-1.5 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 backdrop-blur border border-emerald-500/25 rounded-lg text-xs flex justify-between items-center transition-all min-h-[36px]">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="text-slate-200">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+            <span className="text-zinc-700 dark:text-zinc-200">
               {hovered === "trapezoid" ? (
                 <span>
-                  <strong className="text-emerald-300">Total Trapezoid Area:</strong> A = &frac12;(b&sub1; + b&sub2;)h = &frac12;({b1} + {b2})({h}) = <strong className="text-emerald-300">{totalArea}</strong>
+                  <strong className="text-emerald-700 dark:text-emerald-400">Total Trapezoid Area:</strong> A = &frac12;(b&sub1; + b&sub2;)h = &frac12;({b1} + {b2})({h}) = <strong className="text-emerald-700 dark:text-emerald-400">{totalArea}</strong>
                 </span>
               ) : hovered === "b1" ? (
                 <span>
-                  <strong className="text-sky-300">Top Base b&sub1; = {b1}</strong> &mdash; <span className="text-slate-400">Drag blue handle to resize top</span>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Top Base b&sub1; = {b1}</strong> &mdash; <span className="text-zinc-500 dark:text-zinc-400">Drag blue handle to resize top</span>
                 </span>
               ) : hovered === "b2" ? (
                 <span>
-                  <strong className="text-emerald-300">Bottom Base b&sub2; = {b2}</strong> &mdash; <span className="text-slate-400">Drag green handle to resize base</span>
+                  <strong className="text-emerald-700 dark:text-emerald-400">Bottom Base b&sub2; = {b2}</strong> &mdash; <span className="text-zinc-500 dark:text-zinc-400">Drag green handle to resize base</span>
                 </span>
               ) : hovered === "height" ? (
                 <span>
-                  <strong className="text-amber-300">Altitude / Height h = {h}</strong> (Perpendicular &perp; bases) &mdash; <span className="text-slate-400">Drag yellow handle to adjust</span>
+                  <strong className="text-amber-700 dark:text-amber-400">Altitude / Height h = {h}</strong> (Perpendicular &perp; bases) &mdash; <span className="text-zinc-500 dark:text-zinc-400">Drag yellow handle to adjust</span>
                 </span>
               ) : hovered === "subRect" ? (
                 <span>
-                  <strong className="text-teal-300">Divided Center Rectangle:</strong> Area = b&sub1; &times; h = {b1} &times; {h} = <strong className="text-teal-200">{rectArea}</strong>
+                  <strong className="text-emerald-700 dark:text-emerald-400">Divided Center Rectangle:</strong> Area = b&sub1; &times; h = {b1} &times; {h} = <strong className="text-emerald-700 dark:text-emerald-400">{rectArea}</strong>
                 </span>
               ) : hovered === "subTriLeft" ? (
                 <span>
-                  <strong className="text-indigo-300">Divided Left Triangle:</strong> Area &approx; &frac12; &times; {leftBaseVal} &times; {h} = <strong className="text-indigo-200">{leftTriArea}</strong>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Divided Left Triangle:</strong> Area &approx; &frac12; &times; {leftBaseVal} &times; {h} = <strong className="text-indigo-600 dark:text-indigo-400">{leftTriArea}</strong>
                 </span>
               ) : hovered === "subTriRight" ? (
                 <span>
-                  <strong className="text-purple-300">Divided Right Triangle:</strong> Area &approx; &frac12; &times; {rightBaseVal} &times; {h} = <strong className="text-purple-200">{rightTriArea}</strong>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Divided Right Triangle:</strong> Area &approx; &frac12; &times; {rightBaseVal} &times; {h} = <strong className="text-indigo-600 dark:text-indigo-400">{rightTriArea}</strong>
                 </span>
               ) : hovered === "rightAngle" ? (
                 <span>
-                  <strong className="text-amber-400">Right Angle &ang; = 90&deg;</strong> (Height meets base perpendicularly)
+                  <strong className="text-amber-700 dark:text-amber-400">Right Angle &ang; = 90&deg;</strong> (Height meets base perpendicularly)
                 </span>
               ) : (
-                <span className="text-slate-400">
-                  Drag <span className="text-sky-300 font-semibold">b&sub1;</span>, <span className="text-emerald-300 font-semibold">b&sub2;</span>, or <span className="text-amber-300 font-semibold">h</span>. Hover dashed sub-shapes to see area decomposition.
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  Drag <span className="text-indigo-600 dark:text-indigo-400 font-semibold">b&sub1;</span>, <span className="text-emerald-700 dark:text-emerald-400 font-semibold">b&sub2;</span>, or <span className="text-amber-700 dark:text-amber-400 font-semibold">h</span>. Hover dashed sub-shapes to see area decomposition.
                 </span>
               )}
             </span>
           </div>
-          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 shrink-0 hidden sm:inline-block">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-800/50 shrink-0 hidden sm:inline-block">
             2D Interactive
           </span>
         </div>
@@ -174,7 +174,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           </defs>
 
           {/* Background Grid Pattern */}
-          <g stroke="#161c2b" strokeWidth="0.8">
+          <g className="stroke-zinc-200 dark:stroke-zinc-800" strokeWidth="0.8">
             {Array.from({ length: 18 }).map((_, i) => (
               <line key={`gx-${i}`} x1={ox + i * scale} y1={25} x2={ox + i * scale} y2={oy + 15} />
             ))}
@@ -187,9 +187,9 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           {/* 1. Left Triangle Sub-Shape */}
           <polygon
             points={`${p1.x},${p1.y} ${altLeftX},${oy} ${p4.x},${p4.y}`}
-            fill={hovered === "subTriLeft" ? "rgba(99, 102, 241, 0.28)" : "transparent"}
+            fill="currentColor"
             stroke="none"
-            className="cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors text-indigo-600 dark:text-indigo-400 ${hovered === "subTriLeft" ? "fill-indigo-500/25" : "fill-transparent"}`}
             onPointerOver={() => setHovered("subTriLeft")}
             onPointerOut={() => setHovered(null)}
           />
@@ -197,9 +197,9 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           {/* 2. Middle Rectangle Sub-Shape */}
           <polygon
             points={`${altLeftX},${oy} ${altRightX},${oy} ${p3.x},${p3.y} ${p4.x},${p4.y}`}
-            fill={hovered === "subRect" ? "rgba(20, 184, 166, 0.22)" : "transparent"}
+            fill="currentColor"
             stroke="none"
-            className="cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors text-emerald-600 dark:text-emerald-400 ${hovered === "subRect" ? "fill-emerald-500/20" : "fill-transparent"}`}
             onPointerOver={() => setHovered("subRect")}
             onPointerOut={() => setHovered(null)}
           />
@@ -207,9 +207,9 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           {/* 3. Right Triangle Sub-Shape */}
           <polygon
             points={`${altRightX},${oy} ${p2.x},${p2.y} ${p3.x},${p3.y}`}
-            fill={hovered === "subTriRight" ? "rgba(168, 85, 247, 0.28)" : "transparent"}
+            fill="currentColor"
             stroke="none"
-            className="cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors text-indigo-600 dark:text-indigo-400 ${hovered === "subTriRight" ? "fill-indigo-500/25" : "fill-transparent"}`}
             onPointerOver={() => setHovered("subTriRight")}
             onPointerOut={() => setHovered(null)}
           />
@@ -217,11 +217,11 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           {/* Main Trapezoid Body */}
           <polygon
             points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`}
-            stroke={hovered === "trapezoid" ? "#34d399" : "#10b981"}
+            stroke="currentColor"
             strokeWidth={hovered === "trapezoid" ? 3 : 2}
-            fill={hovered === "trapezoid" ? "rgba(16, 185, 129, 0.2)" : "rgba(16, 185, 129, 0.08)"}
+            fill="currentColor"
             strokeLinejoin="round"
-            className="transition-colors cursor-pointer"
+            className={`transition-colors cursor-pointer text-emerald-600 dark:text-emerald-400 ${hovered === "trapezoid" ? "fill-emerald-500/20" : "fill-emerald-500/10"}`}
             onPointerOver={() => setHovered("trapezoid")}
             onPointerOut={() => setHovered(null)}
           />
@@ -239,17 +239,19 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               y1={p4.y}
               x2={altLeftX}
               y2={oy}
-              stroke={hovered === "height" ? "#fbbf24" : "#94a3b8"}
+              stroke="currentColor"
               strokeWidth={hovered === "height" ? 3 : 1.8}
               strokeDasharray="4 4"
               filter={hovered === "height" ? "url(#glow-trap)" : undefined}
+              className={hovered === "height" ? "text-amber-700 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
             />
             {/* Right Angle ∟ Marker */}
             <polyline
               points={`${altLeftX},${oy - 12} ${altLeftX + 12},${oy - 12} ${altLeftX + 12},${oy}`}
-              stroke={hovered === "height" ? "#fbbf24" : "#94a3b8"}
+              stroke="currentColor"
               strokeWidth={1.5}
               fill="none"
+              className={hovered === "height" ? "text-amber-700 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
             />
           </g>
 
@@ -259,9 +261,10 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
             y1={p3.y}
             x2={altRightX}
             y2={oy}
-            stroke="#475569"
+            stroke="currentColor"
             strokeWidth={1.2}
             strokeDasharray="3 3"
+            className="text-zinc-500 dark:text-zinc-400"
           />
 
           {/* Top Base b1 - Hover & Drag */}
@@ -277,9 +280,10 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               y1={p4.y}
               x2={p3.x}
               y2={p3.y}
-              stroke={hovered === "b1" ? "#38bdf8" : "#0284c7"}
+              stroke="currentColor"
               strokeWidth={hovered === "b1" ? 5 : 3.5}
               filter={hovered === "b1" ? "url(#glow-trap)" : undefined}
+              className="text-indigo-600 dark:text-indigo-400"
             />
             <text
               x={(p4.x + p3.x) / 2}
@@ -287,7 +291,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               textAnchor="middle"
               dominantBaseline="central"
               className={`font-mono text-xs font-bold transition-all ${
-                hovered === "b1" ? "fill-sky-300 font-extrabold text-sm" : "fill-sky-400"
+                hovered === "b1" ? "fill-indigo-600 dark:fill-indigo-400 font-extrabold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
               }`}
             >
               b&sub1; = {b1}
@@ -307,9 +311,10 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               y1={p1.y}
               x2={p2.x}
               y2={p2.y}
-              stroke={hovered === "b2" ? "#34d399" : "#059669"}
+              stroke="currentColor"
               strokeWidth={hovered === "b2" ? 5 : 3.5}
               filter={hovered === "b2" ? "url(#glow-trap)" : undefined}
+              className="text-emerald-600 dark:text-emerald-400"
             />
             <text
               x={(p1.x + p2.x) / 2}
@@ -317,7 +322,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               textAnchor="middle"
               dominantBaseline="central"
               className={`font-mono text-xs font-bold transition-all ${
-                hovered === "b2" ? "fill-emerald-300 font-extrabold text-sm" : "fill-emerald-400"
+                hovered === "b2" ? "fill-emerald-700 dark:fill-emerald-400 font-extrabold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
               }`}
             >
               b&sub2; = {b2}
@@ -333,7 +338,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
             onPointerOver={() => setHovered("height")}
             onPointerOut={() => setHovered(null)}
             className={`font-mono text-xs font-bold transition-all cursor-pointer ${
-              hovered === "height" ? "fill-amber-300 font-extrabold text-sm" : "fill-amber-400"
+              hovered === "height" ? "fill-amber-700 dark:fill-amber-400 font-extrabold text-sm" : "fill-amber-700 dark:fill-amber-400"
             }`}
           >
             h = {h}
@@ -351,10 +356,10 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               cx={p3.x}
               cy={p3.y}
               r={hovered === "b1" ? 9 : 7}
-              fill="#38bdf8"
-              stroke="#ffffff"
+              fill="currentColor"
+              stroke="currentColor"
               strokeWidth={2}
-              className="transition-all filter drop-shadow-[0_0_8px_rgba(56,189,248,0.9)]"
+              className="transition-all filter drop-shadow-[0_0_8px_rgba(79,70,229,0.35)] text-indigo-600 dark:text-indigo-400 stroke-white dark:stroke-zinc-950"
             />
           </g>
 
@@ -370,10 +375,10 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               cx={p2.x}
               cy={p2.y}
               r={hovered === "b2" ? 9 : 7}
-              fill="#10b981"
-              stroke="#ffffff"
+              fill="currentColor"
+              stroke="currentColor"
               strokeWidth={2}
-              className="transition-all filter drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]"
+              className="transition-all filter drop-shadow-[0_0_8px_rgba(16,185,129,0.35)] text-emerald-600 dark:text-emerald-400 stroke-white dark:stroke-zinc-950"
             />
           </g>
 
@@ -389,26 +394,26 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               cx={p4.x}
               cy={p4.y}
               r={hovered === "height" ? 9 : 7}
-              fill="#fbbf24"
-              stroke="#ffffff"
+              fill="currentColor"
+              stroke="currentColor"
               strokeWidth={2}
-              className="transition-all filter drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]"
+              className="transition-all filter drop-shadow-[0_0_8px_rgba(217,119,6,0.35)] text-amber-700 dark:text-amber-400 stroke-white dark:stroke-zinc-950"
             />
           </g>
         </svg>
       </div>
 
       {/* Live Telemetry & Equation Proof Bar */}
-      <div className="w-full mt-2 p-2.5 bg-[#121622] border border-[#232a3d] rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
+      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400">Formula:</span>
-          <span className="text-emerald-300 font-bold">&frac12; &times; (b&sub1; + b&sub2;) &times; h</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-slate-400">&frac12;({b1} + {b2})({h})</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-slate-400">&frac12;({b1 + b2})({h})</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-emerald-300 font-black text-sm">{totalArea}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Formula:</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-bold">&frac12; &times; (b&sub1; + b&sub2;) &times; h</span>
+          <span className="text-zinc-500 dark:text-zinc-400">=</span>
+          <span className="text-zinc-500 dark:text-zinc-400">&frac12;({b1} + {b2})({h})</span>
+          <span className="text-zinc-500 dark:text-zinc-400">=</span>
+          <span className="text-zinc-500 dark:text-zinc-400">&frac12;({b1 + b2})({h})</span>
+          <span className="text-zinc-500 dark:text-zinc-400">=</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-black text-sm">{totalArea}</span>
         </div>
 
         <button
@@ -423,7 +428,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
             isChanged
               ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
-              : "bg-[#1b2233] text-slate-500 cursor-not-allowed"
+              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
           }`}
         >
           <RotateCcw className="w-3 h-3" />

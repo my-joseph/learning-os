@@ -130,7 +130,6 @@
       "context": "",
       "prompt": "Which binomial is a factor of $f(x)=x^3-2x^2+x-2$?",
       "display": "f(k)=0 \\text{ iff } x-k \\text{ is a factor}",
-      "plainText": "Choose a factor of x^3-2x^2+x-2",
       "givens": {
         "b": -2,
         "d": -2,

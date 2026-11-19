@@ -264,7 +264,6 @@
       "context": "",
       "prompt": "For a function with $f(1) = 3$ and $f(4) = 12$, a student finds the average rate of change on $[1, 4]$:\nLine 1: $\\frac{12-3}{4-1}$\nLine 2: $\\frac{9}{3}$\nLine 3: $\\frac{9}{1+(-4)}$\nLine 4: $-3$\nWhich line is the first one that is wrong?",
       "display": "(f(4)-f(1))/(4-1)",
-      "plainText": "For a function with f(1) = 3 and f(4) = 12, a student finds the average rate of change on [1, 4]: Line 1: (12-3)/(4-1); Line 2: 9/3; Line 3: 9/(1+(-4)); Line 4: -3. Which line is the first one that is wrong?",
       "givens": {
         "a": 1,
         "b": 4,

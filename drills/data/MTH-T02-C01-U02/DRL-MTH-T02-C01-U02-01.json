@@ -483,7 +483,6 @@
       "verificationLevel": "partial",
       "prompt": "A student computed the larger root of $3x^2 - 7x - 6 = 0$ using the quadratic formula:\nLine 1: $x_+ = \\frac{-(-7) + \\sqrt{(-7)^2 - 4(3)(-6)}}{2(3)}$\nLine 2: $= \\frac{7 + \\sqrt{49 + 72}}{2}$\nLine 3: $= \\frac{7 + \\sqrt{121}}{2}$\nLine 4: $= \\frac{7 + 11}{2}$\nLine 5: $= 9$\nWhich line is the first one that is wrong?",
       "display": "3x^2 - 7x - 6 = 0",
-      "plainText": "3*x^2 - 7*x - 6 = 0",
       "givens": {
         "a": 3,
         "b": 7,

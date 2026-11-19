@@ -141,7 +141,6 @@
       "context": "",
       "prompt": "A student evaluated $3(2 + 5 \\times 4) - 9$ step by step:\nLine 1: $3(2 + 5 \\times 4) - 9 = 3 \\times 2 + 5 \\times 4 - 9$\nLine 2: $= 6 + 20 - 9$\nLine 3: $= 26 - 9$\nLine 4: $= 17$\nWhich line is the first one that is wrong?",
       "display": "3(2 + 5 \\times 4) - 9",
-      "plainText": "A student evaluated 3(2 + 5 * 4) - 9 step by step: Line 1: 3 * 2 + 5 * 4 - 9; Line 2: 6 + 20 - 9; Line 3: 26 - 9; Line 4: 17. Which line is the first one that is wrong?",
       "givens": {
         "k": 3,
         "a": 2,

@@ -1629,7 +1629,11 @@ TEMPLATES = [
 
                 if subject == "MATH":
                     self.assertTrue(p.get("display"), f"{fpath} {pid} missing display")
-                    self.assertTrue(p.get("plainText"), f"{fpath} {pid} missing plainText")
+                    # plainText is the CAS copy line for typed answers; choice problems omit it.
+                    if (p.get("answerSpec") or {}).get("type") == "choice":
+                        self.assertNotIn("plainText", p, f"{fpath} {pid} choice problem must not carry plainText")
+                    else:
+                        self.assertTrue(p.get("plainText"), f"{fpath} {pid} missing plainText")
                     self.assertTrue(p.get("answerDisplay"), f"{fpath} {pid} missing answerDisplay")
                     # Contract validation: two-way matching, safe parser trap evaluation
                     # Legacy drills predate the solution-leak gate (07 §4); it applies to new ingests.

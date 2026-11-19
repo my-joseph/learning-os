@@ -482,7 +482,6 @@
       "verificationLevel": "partial",
       "prompt": "A student simplified $6\\frac{1}{5} - 2\\frac{3}{5}$ step by step:\nLine 1: $6\\frac{1}{5} - 2\\frac{3}{5} = \\left(5 + \\frac{6}{5}\\right) - \\left(2 + \\frac{3}{5}\\right)$\nLine 2: $= (5 - 2) + \\left(\\frac{6}{5} + \\frac{3}{5}\\right)$\nLine 3: $= 3 + \\frac{9}{5}$\nLine 4: $= \\frac{24}{5}$\nWhich line is the first one that is wrong?",
       "display": "6\\frac{1}{5} - 2\\frac{3}{5}",
-      "plainText": "A student simplified 6 + 1/5 - (2 + 3/5) step by step: Line 1: (5 + 6/5) - (2 + 3/5); Line 2: (5 - 2) + (6/5 + 3/5); Line 3: 3 + 9/5; Line 4: 24/5. Which line is the first one that is wrong?",
       "givens": {
         "w1": 6,
         "a": 1,
