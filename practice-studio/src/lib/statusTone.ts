@@ -61,23 +61,26 @@ export const statusTone: Record<StatusTone, StatusToneRecipe> = {
     hoverBorderSoft: "hover:border-status-correct/40",
   },
   assisted: {
+    // Correct with help / after a wrong try / partial: same green as correct, but an
+    // OUTLINE with no fill (learner 2026-11-19). Tune via --status-assisted in globals.css.
     solidCircle:
-      "bg-status-assisted border-status-assisted text-status-on-assisted group-hover:brightness-95 dark:group-hover:brightness-125",
-    tabMark: "bg-status-assisted text-status-on-assisted",
-    softCard: "bg-status-assisted-soft border border-status-assisted",
-    choiceCard: "bg-status-assisted-soft border-status-assisted",
-    solidBadge: "bg-status-assisted text-status-on-assisted",
-    iconCircle: "bg-status-assisted/60 text-status-on-assisted",
+      "bg-transparent border-status-assisted text-status-assisted group-hover:bg-status-assisted/10",
+    tabMark: "bg-transparent border-[1.5px] border-status-assisted text-status-assisted",
+    softCard: "bg-transparent border border-status-assisted/50",
+    choiceCard: "bg-transparent border-status-assisted",
+    solidBadge: "bg-transparent border border-status-assisted text-status-assisted",
+    iconCircle: "bg-transparent border-[1.5px] border-status-assisted text-status-assisted",
     text: "text-status-on-assisted",
-    dot: "bg-status-assisted ring-1 ring-inset ring-status-on-assisted/30",
+    dot: "bg-transparent ring-[1.5px] ring-inset ring-status-assisted",
     selfScoreActive:
-      "border-status-assisted bg-status-assisted/45 text-status-on-assisted font-semibold",
-    tile: "bg-status-assisted text-status-on-assisted border-status-assisted hover:brightness-95 dark:hover:brightness-125",
+      "border-status-assisted text-status-on-assisted font-semibold bg-zinc-50 dark:bg-zinc-950",
+    tile: "bg-transparent text-status-on-assisted border-status-assisted hover:bg-status-assisted/10",
     border: "border-status-assisted",
-    borderSoft: "border-status-assisted/60",
+    borderSoft: "border-status-assisted/50",
     hoverText: "hover:text-status-on-assisted",
     hoverBorderSoft: "hover:border-status-assisted",
   },
+
   wrong: {
     solidCircle:
       "bg-status-wrong border-status-wrong text-status-on-wrong group-hover:brightness-95 dark:group-hover:brightness-110",

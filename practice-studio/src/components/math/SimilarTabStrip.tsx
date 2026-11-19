@@ -30,7 +30,7 @@ export interface SimilarTabStripProps {
  * - not tried / usedHelp (unanswered): plain outlined circle (no colour)
  * - skipped: dashed outlined circle
  * - correct: filled green circle with ✓
- * - assisted (used help + correct) / partial: filled pale-green circle with ✓ or –
+ * - assisted (used help + correct) / partial: green outline circle (no fill) with ✓ or –
  * - wrong: filled rose circle with ✗
  */
 function StatusMark({
