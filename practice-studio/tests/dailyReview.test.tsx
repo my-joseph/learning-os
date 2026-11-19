@@ -401,11 +401,11 @@ async function runTests() {
     assert.match(skippedHtml, /Show steps/);
 
     const reviewSource = fs.readFileSync("src/components/review/DailyReviewPage.tsx", "utf8");
-    const mathWorkspaceSource = fs.readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
+    const mathAnswerAreaSource = fs.readFileSync("src/components/math/MathAnswerArea.tsx", "utf8");
     const studioClientSource = fs.readFileSync("src/components/shell/StudioClient.tsx", "utf8");
     assert.match(reviewSource, /sessionStorage\.setItem\(reviewStorageKey/);
     assert.match(reviewSource, /sessionStorage\.getItem\(reviewStorageKey/);
-    assert.match(mathWorkspaceSource, /learningos:review-math-input-mode/);
+    assert.match(mathAnswerAreaSource, /learningos:review-math-input-mode/);
     assert.match(studioClientSource, /You missed this in today&apos;s review/);
     assert.match(studioClientSource, /resetAnswerForReviewRetry/);
 

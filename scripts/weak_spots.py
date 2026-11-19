@@ -75,13 +75,29 @@ def _first_ts(state: dict, fallback: str) -> str:
 
 
 def _is_assisted_state(state: dict) -> bool:
-    attempts = state.get("attempts") or []
+    attempts = [a for a in (state.get("attempts") or []) if isinstance(a, dict) and a.get("kind") != "variant"]
     return bool(
         state.get("setupRevealedBeforeAnswer")
         or state.get("solutionRevealedBeforeAnswer")
+        or state.get("exampleViewedAt")
         or (state.get("hintsRevealed") or 0) > 0
-        or any(isinstance(a, dict) and (a.get("setupRevealed") or a.get("solutionRevealed")) for a in attempts)
+        or any(a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in attempts)
     )
+
+
+def _collect_matched_traps(state: dict) -> list[str]:
+    """Collect matchedTrap tags from original attempts and server-stored variant attempts."""
+    matched = [a["matchedTrap"] for a in (state.get("attempts") or []) if isinstance(a, dict) and a.get("matchedTrap")]
+    variants = state.get("variants")
+    if isinstance(variants, dict):
+        for token in sorted(variants.keys()):
+            rec = variants.get(token)
+            if not isinstance(rec, dict):
+                continue
+            for a in rec.get("attempts") or []:
+                if isinstance(a, dict) and a.get("matchedTrap"):
+                    matched.append(a["matchedTrap"])
+    return matched
 
 
 def _prg_item_score(state: dict) -> float:
@@ -272,7 +288,7 @@ def load_items(
                         score=score,
                         skipped=bool(state.get("skipped")),
                         assisted=assisted,
-                        matched=[a["matchedTrap"] for a in state.get("attempts") or [] if a.get("matchedTrap")],
+                        matched=_collect_matched_traps(state),
                         subject="MTH",
                         passed=(score == 1.0),
                         revisit_note=revisit_note,

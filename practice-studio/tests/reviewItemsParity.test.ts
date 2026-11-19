@@ -843,7 +843,76 @@ async function runTests() {
       fs.rmSync(priTmp, { recursive: true, force: true });
     }
 
-    console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, and /api/review-items routes match");
+    // 8. Parity test: kind:"variant" never moves review level, and Q2 after exampleViewedAt counts as assisted
+    if (fs.existsSync(storeFile)) fs.unlinkSync(storeFile);
+    fs.writeFileSync(
+      path.join(progressDir, "DRL-MTH-T01-C04-U01-01.json"),
+      JSON.stringify({
+        drillId: "DRL-MTH-T01-C04-U01-01",
+        updatedAt: "2026-11-19T12:00:00Z",
+        problems: {
+          Q01: {
+            attempts: [
+              { verdict: "correct", ts: "2026-11-10T10:00:00Z" },
+              { verdict: "incorrect", ts: "2026-11-15T10:00:00Z", matchedTrap: "c04-divide-not-invert-trap" },
+              { verdict: "correct", ts: "2026-11-19T11:00:00Z", exampleViewed: true },
+            ],
+            exampleViewedAt: "2026-11-19T10:30:00Z",
+            variants: {
+              v1: {
+                variantId: "VAR-MTH-T01-C04-fraction-division-01",
+                role: "try",
+                servedAt: "2026-11-19T10:00:00Z",
+                attempts: [
+                  { verdict: "correct", ts: "2026-11-19T10:05:00Z", kind: "variant" },
+                  { verdict: "incorrect", ts: "2026-11-19T10:10:00Z", kind: "variant", matchedTrap: "c04-divide-not-invert-trap" },
+                ],
+              },
+            },
+            score: 0.5,
+            hintsRevealed: 0,
+          },
+        },
+      }),
+      "utf-8"
+    );
+    const tsVariantParity = buildScheduleFromProgress({
+      dataDir,
+      progressDir,
+      labsDir,
+      rootDir: root,
+    });
+    const pyVariantParityProc = spawnSync(
+      python,
+      [
+        "-m",
+        "scripts.review_items",
+        "--today",
+        "2026-11-19",
+        "--data-root",
+        dataDir,
+        "--progress-dir",
+        progressDir,
+        "--json",
+      ],
+      {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, PROGRESS_DIR: progressDir, DRILLS_DATA_DIR: dataDir, LABS_DIR: labsDir },
+      }
+    );
+    assert.equal(pyVariantParityProc.status, 0, pyVariantParityProc.stderr);
+    const pyVariantItems = (JSON.parse(pyVariantParityProc.stdout) as { items: ReviewItem[] }).items;
+    const pyVariantMap: Record<string, ReviewItem> = {};
+    for (const it of pyVariantItems) {
+      pyVariantMap[`${it.drillId}/${it.qid}`] = it;
+    }
+    assert.deepEqual(tsVariantParity, pyVariantMap, "TS and Python must match on variant + exampleViewedAt parity");
+    // Q01: 11-10 correct -> L2; 11-15 wrong -> L1; 11-19 correct AFTER exampleViewedAt -> assisted -> STAYS at L1 (due +1d = 11-20)
+    assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].level, 1);
+    assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].dueDate, "2026-11-20");
+
+    console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, variants, and /api/review-items routes match");
   } finally {
     if (prevProgressDir === undefined) delete process.env.PROGRESS_DIR;
     else process.env.PROGRESS_DIR = prevProgressDir;

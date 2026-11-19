@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { ChevronDown, Loader2, RotateCcw } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { FormattedText } from "@/components/FormattedText";
 import { StepRow } from "@/components/StepRow";
@@ -40,9 +40,10 @@ export interface ProblemAssistSectionProps {
   stepsUnopenedUnattempted: boolean;
   stepsRef?: React.RefObject<HTMLDivElement>;
   showStepsHeader?: boolean;
+  loadingSteps?: boolean;
   activeStep: number | null;
   onToggleStepHighlight: (stepIdx: number) => void;
-  onMarkDivergedStep: (stepIdx: number) => void;
+  onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
   onSkip?: () => void;
   skipLabel?: string;
@@ -68,6 +69,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   stepsUnopenedUnattempted,
   stepsRef,
   showStepsHeader = false,
+  loadingSteps = false,
   activeStep,
   onToggleStepHighlight,
   onMarkDivergedStep,
@@ -82,7 +84,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
 }) => {
   return (
     <div className="space-y-3 pt-1">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400 [&_button]:min-h-[32px] sm:[&_button]:min-h-0">
         {hasAttempt && (
           <button
             type="button"
@@ -190,19 +192,26 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                 )}
               </div>
             )}
-            <div>
-              {(problem.steps || []).map((st, sIdx) => (
-                <StepRow
-                  key={sIdx}
-                  step={st}
-                  index={sIdx}
-                  isActive={activeStep === sIdx}
-                  isDiverged={problem.state.divergedStep === sIdx}
-                  onToggleHighlight={() => onToggleStepHighlight(sIdx)}
-                  onMarkDiverged={() => onMarkDivergedStep(sIdx)}
-                />
-              ))}
-            </div>
+            {loadingSteps ? (
+              <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 py-1">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                <span>Loading steps…</span>
+              </div>
+            ) : (
+              <div>
+                {(problem.steps || []).map((st, sIdx) => (
+                  <StepRow
+                    key={sIdx}
+                    step={st}
+                    index={sIdx}
+                    isActive={activeStep === sIdx}
+                    isDiverged={onMarkDivergedStep ? problem.state.divergedStep === sIdx : false}
+                    onToggleHighlight={() => onToggleStepHighlight(sIdx)}
+                    onMarkDiverged={onMarkDivergedStep ? () => onMarkDivergedStep(sIdx) : undefined}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Reveal>

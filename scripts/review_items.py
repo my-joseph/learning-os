@@ -155,25 +155,36 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     if not isinstance(state, dict):
         return []
     fallback_date = _normalize_date(fallback_ts)
+    raw_example_at = state.get("exampleViewedAt")
+    example_viewed_at = raw_example_at.strip() if isinstance(raw_example_at, str) and raw_example_at.strip() else ""
     state_assisted = bool(
         state.get("setupRevealedBeforeAnswer")
         or state.get("solutionRevealedBeforeAnswer")
         or (state.get("hintsRevealed") or 0) > 0
     )
+    state_assisted_with_example = state_assisted or bool(example_viewed_at)
 
     attempts = state.get("attempts") or []
-    substantive = [a for a in attempts if isinstance(a, dict) and a.get("verdict") not in _NON_SUBSTANTIVE_VERDICTS]
+    substantive = [
+        a
+        for a in attempts
+        if isinstance(a, dict) and a.get("kind") != "variant" and a.get("verdict") not in _NON_SUBSTANTIVE_VERDICTS
+    ]
     events: list[dict[str, Any]] = []
     if substantive:
         single_half_score = (
             len(substantive) == 1 and substantive[0].get("verdict") == "correct" and state.get("score") == 0.5
         )
         for att in substantive:
-            ev_date = _normalize_date(str(att.get("ts") or ""), fallback_date)
+            att_ts = str(att.get("ts") or "").strip()
+            ev_date = _normalize_date(att_ts, fallback_date)
             verdict = str(att.get("verdict") or "")
             correct = verdict == "correct"
             has_explicit_hint = any(k in att for k in ("hintsUsed", "assisted", "hintsRevealed"))
-            att_revealed = bool(att.get("setupRevealed") or att.get("solutionRevealed"))
+            after_example = bool(
+                att.get("exampleViewed") or (example_viewed_at and (not att_ts or att_ts >= example_viewed_at))
+            )
+            att_revealed = bool(att.get("setupRevealed") or att.get("solutionRevealed") or after_example)
             if has_explicit_hint:
                 assisted = bool(
                     att.get("hintsUsed") or att.get("assisted") or (att.get("hintsRevealed") or 0) > 0 or att_revealed
@@ -194,12 +205,12 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
             if has_explicit_hint:
                 assisted = bool(rev.get("hintsUsed") or rev.get("assisted") or (rev.get("hintsRevealed") or 0) > 0)
             else:
-                assisted = state_assisted
+                assisted = state_assisted_with_example
             events.append({"date": ev_date, "correct": correct, "assisted": assisted})
         return events
 
     if state.get("skipped"):
-        return [{"date": fallback_date, "correct": False, "assisted": state_assisted}]
+        return [{"date": fallback_date, "correct": False, "assisted": state_assisted_with_example}]
 
     last_check = state.get("lastCheck")
     if isinstance(last_check, dict) and last_check.get("verdict") not in (
@@ -209,7 +220,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     ):
         verdict = str(last_check.get("verdict") or "")
         correct = verdict == "correct"
-        assisted = state_assisted or (correct and state.get("score") == 0.5)
+        assisted = state_assisted_with_example or (correct and state.get("score") == 0.5)
         return [{"date": fallback_date, "correct": correct, "assisted": assisted}]
 
     if state.get("score") is not None:
@@ -218,22 +229,25 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
         except (TypeError, ValueError):
             return []
         correct = sc > 0
-        assisted = state_assisted or (0 < sc < 1.0)
+        assisted = state_assisted_with_example or (0 < sc < 1.0)
         return [{"date": fallback_date, "correct": correct, "assisted": assisted}]
 
     return []
 
 
 def replay_events(events: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Replay chronological review events starting from Level 1."""
+    """Replay chronological review events starting from Level 1 (ignoring kind == 'variant' events)."""
     if not events:
+        return None
+    item_events = [ev for ev in events if isinstance(ev, dict) and ev.get("kind") != "variant"]
+    if not item_events:
         return None
     level = MIN_LEVEL
     last_reviewed = ""
     due_date = ""
     last_wrong_date: str | None = None
 
-    for ev in events:
+    for ev in item_events:
         ev_date = _normalize_date(str(ev.get("date") or ""))
         correct = bool(ev.get("correct"))
         assisted = bool(ev.get("assisted"))
@@ -256,7 +270,7 @@ def replay_events(events: list[dict[str, Any]]) -> dict[str, Any] | None:
         "level": level,
         "lastReviewed": last_reviewed,
         "dueDate": due_date,
-        "lastWrong": not bool(events[-1].get("correct")),
+        "lastWrong": not bool(item_events[-1].get("correct")),
     }
 
 
@@ -358,6 +372,8 @@ def estimate_median_duration_ms(
         per_attempt: list[float] = []
         for att in attempts:
             if not isinstance(att, dict):
+                continue
+            if att.get("kind") == "variant":
                 continue
             if att.get("verdict") in _NON_SUBSTANTIVE_VERDICTS:
                 continue
