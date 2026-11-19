@@ -13,6 +13,7 @@ export function useSidePanelData(
   refreshKey?: string | null
 ) {
   const [dueUnits, setDueUnits] = useState<DueTodayUnit[]>([]);
+  const [dueReviewCount, setDueReviewCount] = useState<number>(0);
   const [dueLoading, setDueLoading] = useState(true);
   const [dueError, setDueError] = useState<string | null>(null);
 
@@ -42,6 +43,31 @@ export function useSidePanelData(
       })
       .finally(() => {
         if (!cancelled) setDueLoading(false);
+      });
+
+    fetch("/api/review-items", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()) as {
+          totalDue?: number;
+          items?: unknown[];
+        };
+      })
+      .then((data) => {
+        if (!cancelled) {
+          const count =
+            typeof data.totalDue === "number"
+              ? data.totalDue
+              : Array.isArray(data.items)
+              ? data.items.length
+              : 0;
+          setDueReviewCount(Math.max(0, count));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDueReviewCount(0);
+        }
       });
 
     return () => {
@@ -89,6 +115,7 @@ export function useSidePanelData(
 
   return {
     dueUnits,
+    dueReviewCount,
     dueLoading,
     dueError,
     weakSpotUnits,
