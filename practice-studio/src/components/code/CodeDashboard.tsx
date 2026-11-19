@@ -168,6 +168,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const [openExplain, setOpenExplain] = useState(false);
   const [openReference, setOpenReference] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [expandedVisibleTests, setExpandedVisibleTests] = useState<Set<number>>(
+    () => new Set()
+  );
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
@@ -594,16 +597,54 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {problem.visibleTests && problem.visibleTests.length > 0 && (
                   <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
                     {problem.visibleTests.map((t, idx) => (
-                      <li key={t.id || idx} className="flex items-baseline gap-2">
-                        <span
-                          className="text-zinc-500 dark:text-zinc-400 font-mono text-xs select-none"
-                          aria-hidden="true"
-                        >
-                          •
-                        </span>
-                        <span>
-                          <FormattedText text={t.name} />
-                        </span>
+                      <li key={t.id || idx} className="space-y-1">
+                        <div className="flex items-start gap-2">
+                          <span
+                            className="mt-[5px] w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"
+                            aria-hidden="true"
+                          />
+                          {t.testCode ? (
+                            <button
+                              type="button"
+                              aria-expanded={expandedVisibleTests.has(idx)}
+                              aria-controls={`visible-test-code-${idx}`}
+                              onClick={() => {
+                                setExpandedVisibleTests((current) => {
+                                  const next = new Set(current);
+                                  if (next.has(idx)) next.delete(idx);
+                                  else next.add(idx);
+                                  return next;
+                                });
+                              }}
+                              className="inline-flex min-w-0 items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                            >
+                              <span>
+                                <FormattedText text={t.name} />
+                              </span>
+                              <ChevronDown
+                                aria-hidden="true"
+                                className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform duration-200 ${expandedVisibleTests.has(idx) ? "rotate-180" : ""}`}
+                              />
+                            </button>
+                          ) : (
+                            <span>
+                              <FormattedText text={t.name} />
+                            </span>
+                          )}
+                        </div>
+                        {t.testCode && (
+                          <div
+                            id={`visible-test-code-${idx}`}
+                            hidden={!expandedVisibleTests.has(idx)}
+                            className="ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                          >
+                            <HighlightedCode
+                              code={t.testCode}
+                              language={snippetLanguage}
+                              className="whitespace-pre-wrap break-words"
+                            />
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
