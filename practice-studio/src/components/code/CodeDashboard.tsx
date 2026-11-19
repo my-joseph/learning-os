@@ -508,19 +508,22 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {isReviewSession ? (
                 <>
                   {plainTitle(reviewUnitTitle) && (
-                    <span className="text-zinc-700 dark:text-zinc-300">
+                    <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300">
                       {plainTitle(reviewUnitTitle)}
                     </span>
                   )}
                   {typeof problem.level === "number" && problem.level > 0 && (
-                    <span title={problem.levelLabel?.trim() || undefined}>
+                    <span
+                      className="font-display tabular-nums"
+                      title={problem.levelLabel?.trim() || undefined}
+                    >
                       Difficulty {problem.level}
                     </span>
                   )}
                 </>
               ) : (
                 <>
-                  <span>
+                  <span className="font-display tabular-nums">
                     {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
                     {typeof totalQuestions === "number" && totalQuestions > 0
                       ? isLab
@@ -529,7 +532,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       : ""}
                   </span>
                   {typeof problem.level === "number" && problem.level > 0 && (
-                    <span title={problem.levelLabel?.trim() || undefined}>
+                    <span
+                      className="font-display tabular-nums"
+                      title={problem.levelLabel?.trim() || undefined}
+                    >
                       Level {problem.level}
                     </span>
                   )}
@@ -769,7 +775,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               <div
                 role="status"
                 aria-label="Check and review status"
-                className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-mono py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
+                className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-sans py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
               >
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Tests </span>
@@ -777,7 +783,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     {layeredStatus.testsSymbol}
                   </span>
                   {layeredStatus.testsCount && layeredStatus.tests !== "not_run" && (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-1">
+                    <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400 ml-1">
                       ({layeredStatus.testsCount.passed}/{layeredStatus.testsCount.total})
                     </span>
                   )}
@@ -799,7 +805,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <span className={statusSymbolColor(layeredStatus.review)}>
                     {layeredStatus.reviewSymbol}
                   </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-1">
+                  <span className="text-xs font-sans text-zinc-500 dark:text-zinc-400 ml-1">
                     ({layeredStatus.reviewLabel})
                   </span>
                 </span>
@@ -808,7 +814,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {(checkError || layeredStatus.failures.length > 0) && (
                 <ul
                   aria-label="Check failures"
-                  className={`border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-mono text-xs text-zinc-800 dark:text-zinc-200`}
+                  className={`min-w-0 max-w-full overflow-x-auto whitespace-pre-wrap break-words border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-sans text-xs text-zinc-800 dark:text-zinc-200`}
                 >
                   {checkError && <li>{sanitizeCodeCheckError(checkError)}</li>}
                   {layeredStatus.failures.map((line, idx) => (
@@ -915,7 +921,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               </div>
 
               {primaryAction.kind === "copy_review" && drillId && (
-                <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                <div className="text-xs font-sans text-zinc-500 dark:text-zinc-400">
                   {reviewRequestText}
                 </div>
               )}
@@ -959,8 +965,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                               : statusTone.wrong.border
                           }`}
                         >
-                          <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-                            <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+                            <span className="font-display tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
                               #{r.attempt ?? rIdx + 1} {r.verdict}
                             </span>
                             {r.at && (
@@ -970,19 +976,22 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                             )}
                             {r.tests && (
                               <span className="text-zinc-500 dark:text-zinc-400">
-                                tests {r.tests.passed}/{r.tests.total}
+                                tests{" "}
+                                <span className="font-display tabular-nums">
+                                  {r.tests.passed}/{r.tests.total}
+                                </span>
                               </span>
                             )}
                           </div>
                           {r.findings && r.findings.length > 0 ? (
-                            <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-mono">
+                            <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-sans">
                               {r.findings.map((f, fIdx) => (
                                 <li key={fIdx} className="flex items-start gap-2">
                                   <ListDot kind="info" />
-                                  <span>
-                                  {f.check} ({f.severity}
-                                  {f.line ? `, line ${f.line}` : ""}
-                                  {f.disputed ? ", disputed" : ""}): {f.note}
+                                  <span className="min-w-0 break-words">
+                                    <code className="font-mono">{f.check}</code> ({f.severity}
+                                    {f.line ? `, line ${f.line}` : ""}
+                                    {f.disputed ? ", disputed" : ""}): {f.note}
                                   </span>
                                 </li>
                               ))}

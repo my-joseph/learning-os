@@ -57,7 +57,7 @@ export const StepRow: React.FC<StepRowProps> = ({
             : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 group-hover:border-accent group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
         }`}
       >
-        <span className="font-medium text-zinc-500 dark:text-zinc-400 mr-1.5">
+        <span className="font-display tabular-nums font-medium text-zinc-500 dark:text-zinc-400 mr-1.5">
           Step {index + 1}:
         </span>
         <FormattedText text={step.explain} />

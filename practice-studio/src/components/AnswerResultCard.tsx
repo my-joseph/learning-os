@@ -170,7 +170,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                       )}
                     </span>
                     {model.attemptNumber !== null && !isReviewSession && (
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+                      <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
                         Attempt {model.attemptNumber}
                       </span>
                     )}

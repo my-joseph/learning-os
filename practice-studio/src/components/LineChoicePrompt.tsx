@@ -97,7 +97,7 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span
-                  className={`shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg text-xs font-mono font-semibold transition-colors ${lineNumCls}`}
+                  className={`shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg text-xs font-display font-semibold tabular-nums transition-colors ${lineNumCls}`}
                 >
                   {item.lineNumber}
                 </span>

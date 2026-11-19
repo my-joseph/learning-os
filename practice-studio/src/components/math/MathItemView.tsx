@@ -481,7 +481,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                       >
                         {copied ? (
                           <>
-                            <Check className={`w-3.5 h-3.5 ${statusTone.correct.text}`} />
+                            <Check className="w-3.5 h-3.5" />
                             <span>Copied</span>
                           </>
                         ) : (

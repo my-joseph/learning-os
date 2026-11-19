@@ -510,7 +510,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                     >
                       {copiedReview ? (
                         <>
-                          <Check className={`w-3.5 h-3.5 ${statusTone.correct.text}`} aria-hidden="true" />
+                          <Check className="w-3.5 h-3.5" aria-hidden="true" />
                           <span>Copied review request</span>
                         </>
                       ) : (

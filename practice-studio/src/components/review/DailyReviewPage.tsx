@@ -210,7 +210,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             {showProgressCounter && (
               <span
                 aria-label="Review progress"
-                className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums"
+                className="text-sm font-display tabular-nums text-zinc-500 dark:text-zinc-400"
               >
                 Review {currentIndex + 1} of {items.length}
               </span>
@@ -308,7 +308,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                     Review complete
                   </h2>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 tabular-nums">
+                  <p className="text-sm font-display tabular-nums text-zinc-600 dark:text-zinc-400">
                     {computedSummary.correctCount} / {computedSummary.totalCount} correct
                     {stillDueCount > 0 ? ` · Still due ${stillDueCount}` : ""}
                   </p>
@@ -320,7 +320,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved up
                   </div>
-                  <div className={`font-semibold ${statusTone.correct.text} tabular-nums`}>
+                  <div className={`font-display font-semibold ${statusTone.correct.text} tabular-nums`}>
                     {computedSummary.movedUpCount} moved up a level
                   </div>
                 </div>
@@ -329,7 +329,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved down
                   </div>
-                  <div className={`font-semibold ${statusTone.wrong.text} tabular-nums`}>
+                  <div className={`font-display font-semibold ${statusTone.wrong.text} tabular-nums`}>
                     {computedSummary.movedDownCount} moved down a level
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Next due
                   </div>
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  <div className="font-display font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                     {formatReviewDueDate(computedSummary.nextDueDate, today || undefined)}
                   </div>
                 </div>
