@@ -21,6 +21,11 @@ import { SimilarTabStrip } from "../src/components/math/SimilarTabStrip";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import {
+  applySimilarCheckToLatestProblem,
+  applySimilarHintToLatestProblem,
+  shouldPersistVariantStepsReveal,
+} from "../src/hooks/useSimilarTabs";
+import {
   applyCheckResult,
   resetAnswerForReviewRetry,
 } from "../src/lib/applyCheckResult";
@@ -1541,6 +1546,100 @@ async function testReviewCycleIsolation() {
     else process.env.PROGRESS_DIR = prevProgress;
     fs.rmSync(base, { recursive: true, force: true });
   }
+}
+
+// ---------------------------------------------------------------------------
+// 7. useSimilarTabs async race & cached-steps server persistence regressions
+//    (similar.md B1, B2, B5)
+// ---------------------------------------------------------------------------
+{
+  // B1: Set-up or hint opened while /api/check-answer is in flight is preserved in post-await state
+  const latestAfterMidCheckSetup = makeProblem({
+    id: "vtok1",
+    state: baseState({
+      userInput: "7/30",
+      hintsRevealed: 1,
+      setupRevealedBeforeAnswer: true,
+      attempts: [],
+    }),
+  });
+  const checkedRes = applySimilarCheckToLatestProblem(
+    latestAfterMidCheckSetup,
+    "7/30",
+    { verdict: "correct", message: "Correct", components: [], diagnostics: [] },
+    1_200,
+    "2026-11-20T01:00:00.000Z",
+    "2026-11-20T00:59:00.000Z"
+  );
+  assert.equal(checkedRes.nextProblem.state.score, 0.5, "mid-check hint/setup must cap score at 0.5");
+  assert.equal(checkedRes.nextProblem.state.hintsRevealed, 1);
+  assert.equal(checkedRes.nextProblem.state.setupRevealedBeforeAnswer, true);
+  assert.equal(checkedRes.nextRecord.hintsRevealed, 1);
+  assert.equal(checkedRes.nextRecord.setupRevealed, true);
+  assert.equal(checkedRes.nextRecord.servedAt, "2026-11-20T00:59:00.000Z");
+  assert.equal(checkedRes.nextRecord.attempts[0].setupRevealed, true);
+  assert.equal(deriveVariantStatus(checkedRes.nextRecord, null), "assisted");
+
+  // B5: Check completing while /api/reveal?part=hint is in flight is not dropped by hint sync
+  const latestAfterConcurrentWrong = makeProblem({
+    id: "vtok1",
+    state: baseState({
+      userInput: "1/2",
+      score: 0,
+      hintsRevealed: 0,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:05.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const hintedAfterWrong = applySimilarHintToLatestProblem(
+    latestAfterConcurrentWrong,
+    "Cancel common factors.",
+    "2026-11-20T01:00:06.000Z",
+    "2026-11-20T00:59:00.000Z"
+  );
+  assert.equal(hintedAfterWrong.didIncrement, true);
+  assert.equal(hintedAfterWrong.nextRecord.attempts.length, 1, "hint reveal must preserve concurrent attempt");
+  assert.equal(hintedAfterWrong.nextRecord.hintsRevealed, 1);
+  assert.equal(deriveVariantStatus(hintedAfterWrong.nextRecord, null), "wrong");
+
+  const latestAfterConcurrentCorrect = makeProblem({
+    id: "vtok1",
+    state: baseState({
+      userInput: "7/30",
+      score: 1,
+      hintsRevealed: 0,
+      attempts: [{ input: "7/30", ts: "2026-11-20T01:00:05.000Z", verdict: "correct", kind: "variant" }],
+    }),
+  });
+  const hintedAfterCorrect = applySimilarHintToLatestProblem(
+    latestAfterConcurrentCorrect,
+    "Cancel common factors.",
+    "2026-11-20T01:00:06.000Z"
+  );
+  assert.equal(hintedAfterCorrect.didIncrement, false, "hint finishing after correct check must not increment hintsRevealed");
+  assert.equal(hintedAfterCorrect.nextRecord.attempts.length, 1);
+  assert.equal(deriveVariantStatus(hintedAfterCorrect.nextRecord, null), "correct");
+
+  // B2: Reopened similar tab with a wrong attempt and cached steps still persists reveal-steps to server
+  const reopenedWrongWithCachedSteps = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 0,
+      solutionRevealedBeforeAnswer: false,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  assert.equal(
+    shouldPersistVariantStepsReveal(reopenedWrongWithCachedSteps),
+    true,
+    "Show steps before a correct answer must persist to server even when steps are already cached"
+  );
+  const hookSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
+  assert.match(
+    hookSrc,
+    /if \(!needsFetchSteps\)[\s\S]{0,650}action:\s*"reveal-steps"/,
+    "handleSimilarSolutionRevealed must POST action:'reveal-steps' even when steps are already cached"
+  );
 }
 
 testV1Migration()

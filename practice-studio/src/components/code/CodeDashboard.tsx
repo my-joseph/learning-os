@@ -62,6 +62,7 @@ import {
 } from "@/lib/codeStatus";
 import { plainTitle } from "@/lib/titleText";
 import { ListDot } from "@/components/ui/ListDot";
+import type { SkipOptions } from "@/hooks/types";
 
 export interface CodeDashboardProps {
   problem: Problem;
@@ -74,11 +75,11 @@ export interface CodeDashboardProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
-  onSkip?: () => void;
+  onSkip?: (opts?: SkipOptions) => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
-  onTestReportChange?: (report: TestRunReport) => void;
+  onTestReportChange?: (report: TestRunReport, score?: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
@@ -324,9 +325,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
         if (res.ok) {
           const report: TestRunReport = await res.json();
+          const nextScore = getPrgScore(report, cycleReviews(problem.state));
           setTestReport(report);
-          onTestReportChange?.(report);
-          onSetScore(getPrgScore(report, problem.state.reviews));
+          if (onTestReportChange) {
+            onTestReportChange(report, nextScore);
+          } else {
+            onSetScore(nextScore);
+          }
           return;
         }
       }
@@ -344,9 +349,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           hiddenTotal: problem.hiddenTestCount ?? 0,
           executionTimeMs: 0,
         };
+        const nextScore = getPrgScore(fallbackReport, cycleReviews(problem.state));
         setTestReport(fallbackReport);
-        onTestReportChange?.(fallbackReport);
-        onSetScore(getPrgScore(fallbackReport, problem.state.reviews));
+        if (onTestReportChange) {
+          onTestReportChange(fallbackReport, nextScore);
+        } else {
+          onSetScore(nextScore);
+        }
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
@@ -1194,14 +1203,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onSkip={
                 onSkip
                   ? () => {
-                      if (!isReviewSession && !showHint && onHintRevealed) {
-                        onHintRevealed();
-                      }
+                      const countHint = Boolean(!isReviewSession && !showHint && onHintRevealed);
                       if (!isReviewSession) {
                         setShowHint(true);
                         setShowSolution(true);
                       }
-                      onSkip();
+                      onSkip({ countHint });
                     }
                   : undefined
               }

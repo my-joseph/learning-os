@@ -73,19 +73,24 @@ export function mergeRevealedPatchIntoDrill(
   };
 }
 
-/** Save updated progress to `/api/save-state` and fetch each requested `/api/reveal` part, returning the problem patch. */
+/** Save updated progress (via the ordered save queue when supplied) and fetch each requested `/api/reveal` part, returning the problem patch. */
 export async function executeSaveAndReveal(
   updatedDoc: DrillDocument,
   probId: string,
   parts: RevealPart[],
-  fetchFn: typeof fetch = fetch
+  fetchFn: typeof fetch = fetch,
+  saveFn?: (doc: DrillDocument) => Promise<boolean>
 ): Promise<Partial<Problem>> {
   try {
-    await fetchFn("/api/save-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedDoc),
-    });
+    if (saveFn) {
+      await saveFn(updatedDoc);
+    } else {
+      await fetchFn("/api/save-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedDoc),
+      });
+    }
   } catch {
     // ignore transient save error
   }
@@ -112,6 +117,59 @@ export async function executeSaveAndReveal(
     }
   }
   return patch;
+}
+
+/** Pure transition for recording a PRG test run report and optional score in one atomic update. */
+export function computeTestRunTransition(
+  currentDrill: DrillDocument,
+  probId: string,
+  report: TestRunReport,
+  score?: number | null
+): DrillDocument | null {
+  const exists = currentDrill.problems.some((p) => p.id === probId);
+  if (!exists) return null;
+  return {
+    ...currentDrill,
+    problems: currentDrill.problems.map((p) =>
+      p.id === probId
+        ? {
+            ...p,
+            state: {
+              ...p.state,
+              lastTestReport: report,
+              ...(score !== undefined ? { score, skipped: false } : {}),
+            },
+          }
+        : p
+    ),
+  };
+}
+
+/** Pure transition when the learner opens a checkpoint hint before answering correctly in the current cycle. */
+export function computeHintRevealTransition(
+  currentDrill: DrillDocument,
+  probId: string
+): DrillDocument | null {
+  const target = currentDrill.problems.find((p) => p.id === probId);
+  if (!target) return null;
+  const hasCorrect =
+    target.state.score === 1 ||
+    cycleOriginalAttempts(target.state).some((a) => a.verdict === "correct");
+  if (hasCorrect) return null;
+  return {
+    ...currentDrill,
+    problems: currentDrill.problems.map((p) =>
+      p.id === probId
+        ? {
+            ...p,
+            state: {
+              ...p.state,
+              hintsRevealed: (p.state.hintsRevealed || 0) + 1,
+            },
+          }
+        : p
+    ),
+  };
 }
 
 /** Pure transition for checking an answer: consumes attempt timer, updates problem state, and selects parts to reveal. */
@@ -358,6 +416,7 @@ export function computeResetAllTransition(
 
 interface UseDrillOptions {
   triggerAutoSave: (doc: DrillDocument) => void;
+  saveNow?: (doc?: DrillDocument) => Promise<boolean>;
   setStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
   onDrillLoaded?: (doc: DrillDocument) => void;
   onQuestionChange?: (drillId: string, problemId: string) => void;
@@ -366,16 +425,83 @@ interface UseDrillOptions {
 /** Manage active drill loading, problem navigation, telemetry timer, and problem state updates. */
 export function useDrill({
   triggerAutoSave,
+  saveNow,
   setStatus,
   onDrillLoaded,
   onQuestionChange,
 }: UseDrillOptions) {
-  const [currentDrill, setCurrentDrill] = useState<DrillDocument | null>(null);
+  const [currentDrill, setCurrentDrillState] = useState<DrillDocument | null>(null);
+  const drillRef = useRef<DrillDocument | null>(null);
+  const loadSeqRef = useRef<number>(0);
   const [activeSteps, setActiveSteps] = useState<{ [probId: string]: number | null }>({});
   const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>("quiz");
   const [isLoadingDrill, setIsLoadingDrill] = useState<boolean>(true);
   const [drillNotFound, setDrillNotFound] = useState<boolean>(false);
+
+  const setCurrentDrill: React.Dispatch<React.SetStateAction<DrillDocument | null>> = useCallback(
+    (action) => {
+      if (typeof action === "function") {
+        const next = action(drillRef.current);
+        drillRef.current = next;
+        setCurrentDrillState(() => next);
+      } else {
+        drillRef.current = action;
+        setCurrentDrillState(action);
+      }
+    },
+    []
+  );
+
+  const getLatestDrill = useCallback(() => drillRef.current, []);
+
+  const persistNow = useCallback(
+    async (doc: DrillDocument): Promise<boolean> => {
+      if (saveNow) return saveNow(doc);
+      try {
+        const res = await fetch("/api/save-state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(doc),
+        });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    },
+    [saveNow]
+  );
+
+  /**
+   * Apply a problem/drill transition against the latest in-memory document (`drillRef.current`),
+   * update React state functionally with zero side effects inside the updater, and enqueue at
+   * most one save outside the updater.
+   */
+  const commitDrillUpdate = useCallback(
+    (
+      expectedDrillId: string | null,
+      compute: (latest: DrillDocument) => DrillDocument | null,
+      saveMode: "debounce" | "immediate" | "none" = "debounce"
+    ): DrillDocument | null => {
+      const latest = drillRef.current;
+      if (!latest) return null;
+      if (expectedDrillId && latest.drillId !== expectedDrillId) return null;
+      const next = compute(latest);
+      if (!next || next === latest) return null;
+      drillRef.current = next;
+      setCurrentDrillState((prev) => {
+        if (!prev || prev.drillId !== next.drillId) return prev;
+        return next;
+      });
+      if (saveMode === "debounce") {
+        triggerAutoSave(next);
+      } else if (saveMode === "immediate") {
+        void persistNow(next);
+      }
+      return next;
+    },
+    [persistNow, triggerAutoSave]
+  );
 
   // Minimal telemetry: robust timer measuring visible active problem time & hint telemetry
   const timerStateRef = useRef<TelemetryTimerState>(createTelemetryTimerState());
@@ -470,30 +596,34 @@ export function useDrill({
     [commitTimerState]
   );
 
-  const handleExampleViewed = useCallback((probId: string, viewedAt: string) => {
-    setCurrentDrill((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        problems: prev.problems.map((p) =>
-          p.id === probId
-            ? {
-                ...p,
-                state: {
-                  ...p.state,
-                  exampleViewedAt:
-                    p.state.exampleViewedAt &&
-                    (!p.state.cycleStartedAt ||
-                      p.state.exampleViewedAt >= p.state.cycleStartedAt)
-                      ? p.state.exampleViewedAt
-                      : viewedAt,
-                },
-              }
-            : p
-        ),
-      };
-    });
-  }, []);
+  const handleExampleViewed = useCallback(
+    (probId: string, viewedAt: string) => {
+      commitDrillUpdate(
+        null,
+        (prev) => ({
+          ...prev,
+          problems: prev.problems.map((p) =>
+            p.id === probId
+              ? {
+                  ...p,
+                  state: {
+                    ...p.state,
+                    exampleViewedAt:
+                      p.state.exampleViewedAt &&
+                      (!p.state.cycleStartedAt ||
+                        p.state.exampleViewedAt >= p.state.cycleStartedAt)
+                        ? p.state.exampleViewedAt
+                        : viewedAt,
+                  },
+                }
+              : p
+          ),
+        }),
+        "none"
+      );
+    },
+    [commitDrillUpdate]
+  );
 
   const handleSimilarProgressSync = useCallback(
     (
@@ -504,9 +634,9 @@ export function useDrill({
         variantRecord?: VariantSessionRecord;
       }
     ) => {
-      setCurrentDrill((prev) => {
-        if (!prev) return prev;
-        return {
+      commitDrillUpdate(
+        null,
+        (prev) => ({
           ...prev,
           problems: prev.problems.map((p) => {
             if (p.id !== probId) return p;
@@ -522,45 +652,27 @@ export function useDrill({
             }
             return { ...p, state: nextState };
           }),
-        };
-      });
+        }),
+        "none"
+      );
     },
-    []
+    [commitDrillUpdate]
   );
 
   const handleHintRevealed = useCallback(
     (probId: string) => {
-      setCurrentDrill((prev) => {
-        if (!prev) return prev;
-        const target = prev.problems.find((p) => p.id === probId);
-        if (!target) return prev;
-        const hasCorrect =
-          target.state.score === 1 ||
-          Boolean(target.state.attempts?.some((a) => a.verdict === "correct"));
-        if (hasCorrect) return prev;
-        const updated: DrillDocument = {
-          ...prev,
-          problems: prev.problems.map((p) =>
-            p.id === probId
-              ? {
-                  ...p,
-                  state: {
-                    ...p.state,
-                    hintsRevealed: (p.state.hintsRevealed || 0) + 1,
-                  },
-                }
-              : p
-          ),
-        };
-        triggerAutoSave(updated);
-        return updated;
-      });
+      commitDrillUpdate(
+        null,
+        (latest) => computeHintRevealTransition(latest, probId),
+        "debounce"
+      );
     },
-    [triggerAutoSave]
+    [commitDrillUpdate]
   );
 
   const loadDrill = useCallback(
     async (id: string, initialQuestionId?: string | null) => {
+      const seq = ++loadSeqRef.current;
       setIsLoadingDrill(true);
       setDrillNotFound(false);
       try {
@@ -568,6 +680,7 @@ export function useDrill({
           ? `/api/lab?id=${encodeURIComponent(id)}`
           : `/api/drill?id=${encodeURIComponent(id)}`;
         const res = await fetch(endpoint);
+        if (seq !== loadSeqRef.current) return;
         if (res.status === 404 || res.status === 400) {
           setCurrentDrill(null);
           setDrillNotFound(true);
@@ -575,6 +688,7 @@ export function useDrill({
         }
         if (!res.ok) throw new Error(isLabId(id) ? "Could not load lab" : "Could not load drill");
         const rawPayload = await res.json();
+        if (seq !== loadSeqRef.current) return;
         const doc: DrillDocument = isLabId(id)
           ? labToDrillDocument(rawPayload as LabDetailResponse)
           : (rawPayload as DrillDocument);
@@ -593,26 +707,30 @@ export function useDrill({
         onDrillLoaded?.(normalizedDoc);
         setActiveSteps({});
       } catch (err: unknown) {
+        if (seq !== loadSeqRef.current) return;
         const errMsg = err instanceof Error ? err.message : String(err);
         setStatus({ text: `Failed to load ${id}: ${errMsg}`, type: "fail" });
       } finally {
-        setIsLoadingDrill(false);
+        if (seq === loadSeqRef.current) {
+          setIsLoadingDrill(false);
+        }
       }
     },
-    [commitTimerState, onDrillLoaded, setStatus]
+    [commitTimerState, onDrillLoaded, setCurrentDrill, setStatus]
   );
 
   const updateProblem = useCallback(
     (probId: string, updater: (prob: Problem) => Problem) => {
-      if (!currentDrill) return;
-      const updated: DrillDocument = {
-        ...currentDrill,
-        problems: currentDrill.problems.map((p) => (p.id === probId ? updater(p) : p)),
-      };
-      setCurrentDrill(updated);
-      triggerAutoSave(updated);
+      commitDrillUpdate(
+        null,
+        (latest) => ({
+          ...latest,
+          problems: latest.problems.map((p) => (p.id === probId ? updater(p) : p)),
+        }),
+        "debounce"
+      );
     },
-    [currentDrill, triggerAutoSave]
+    [commitDrillUpdate]
   );
 
   const saveAndReveal = useCallback(
@@ -621,192 +739,274 @@ export function useDrill({
       probId: string,
       parts: RevealPart[]
     ) => {
-      const patch = await executeSaveAndReveal(updatedDoc, probId, parts);
+      const patch = await executeSaveAndReveal(updatedDoc, probId, parts, fetch, persistNow);
       if (Object.keys(patch).length > 0) {
-        setCurrentDrill((prev) =>
-          mergeRevealedPatchIntoDrill(prev, updatedDoc.drillId, probId, patch)
+        commitDrillUpdate(
+          updatedDoc.drillId,
+          (latest) => mergeRevealedPatchIntoDrill(latest, updatedDoc.drillId, probId, patch),
+          "none"
         );
       }
     },
-    []
+    [commitDrillUpdate, persistNow]
   );
 
-  const handleCheckAnswer = async (probId: string, inputOverride?: string) => {
-    if (!currentDrill) return;
-    const p = currentDrill.problems.find((item) => item.id === probId);
-    if (!p) return;
+  const handleCheckAnswer = useCallback(
+    async (probId: string, inputOverride?: string) => {
+      const snap = drillRef.current;
+      if (!snap) return;
+      const p = snap.problems.find((item) => item.id === probId);
+      if (!p) return;
 
-    const inputVal = (
-      inputOverride !== undefined ? inputOverride : p.state.userInput
-    ).trim();
-    if (!inputVal) return;
+      const targetDrillId = snap.drillId;
+      const targetSubject = snap.subject;
+      const inputVal = (
+        inputOverride !== undefined ? inputOverride : p.state.userInput
+      ).trim();
+      if (!inputVal) return;
 
-    try {
-      const res = await fetch("/api/check-answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          drillId: currentDrill.drillId,
-          problemId: p.id,
-          subject: currentDrill.subject,
-          input: inputVal,
-        }),
-      });
+      try {
+        const res = await fetch("/api/check-answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId: targetDrillId,
+            problemId: p.id,
+            subject: targetSubject,
+            input: inputVal,
+          }),
+        });
 
-      const rawResult: CheckResult = await res.json();
-      const now = Date.now();
-      const transition = computeCheckAnswerTransition(
-        currentDrill,
-        probId,
-        inputVal,
-        rawResult,
-        timerStateRef.current,
-        now
-      );
-      if (!transition) return;
-      if (transition.result.message !== rawResult.message) {
-        console.error("[check-answer] raw error:", rawResult.message);
+        const rawResult: CheckResult = await res.json();
+        const now = Date.now();
+        let computedTransition: ReturnType<typeof computeCheckAnswerTransition> = null;
+        const nextDoc = commitDrillUpdate(
+          targetDrillId,
+          (latest) => {
+            const transition = computeCheckAnswerTransition(
+              latest,
+              probId,
+              inputVal,
+              rawResult,
+              timerStateRef.current,
+              now
+            );
+            computedTransition = transition;
+            return transition ? transition.updatedDoc : null;
+          },
+          "none"
+        );
+        const applied = computedTransition as ReturnType<typeof computeCheckAnswerTransition>;
+        if (!applied || !nextDoc) return;
+        if (applied.result.message !== rawResult.message) {
+          console.error("[check-answer] raw error:", rawResult.message);
+        }
+
+        commitTimerState(applied.nextTimerState, now);
+        if (applied.partsToReveal.length > 0) {
+          void saveAndReveal(nextDoc, probId, applied.partsToReveal);
+        } else {
+          triggerAutoSave(nextDoc);
+        }
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        setStatus({ text: `SymPy Check error: ${errMsg}`, type: "fail" });
       }
+    },
+    [commitDrillUpdate, commitTimerState, saveAndReveal, setStatus, triggerAutoSave]
+  );
 
-      commitTimerState(transition.nextTimerState, now);
-      setCurrentDrill(transition.updatedDoc);
-      triggerAutoSave(transition.updatedDoc);
-      if (transition.partsToReveal.length > 0) {
-        void saveAndReveal(transition.updatedDoc, probId, transition.partsToReveal);
-      }
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      setStatus({ text: `SymPy Check error: ${errMsg}`, type: "fail" });
-    }
-  };
+  const handleInputChange = useCallback(
+    (probId: string, val: string) => {
+      updateProblem(probId, (p) => ({ ...p, state: { ...p.state, userInput: val } }));
+    },
+    [updateProblem]
+  );
 
-  const handleInputChange = (probId: string, val: string) => {
-    updateProblem(probId, (p) => ({ ...p, state: { ...p.state, userInput: val } }));
-  };
+  const handleMistakeNoteChange = useCallback(
+    (probId: string, note: string) => {
+      updateProblem(probId, (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }));
+    },
+    [updateProblem]
+  );
 
-  const handleMistakeNoteChange = (probId: string, note: string) => {
-    updateProblem(probId, (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }));
-  };
-
-  const handleRevisitNoteChange = (probId: string, note: string) => {
-    updateProblem(probId, (p) => ({ ...p, state: { ...p.state, revisitNote: note } }));
-  };
+  const handleRevisitNoteChange = useCallback(
+    (probId: string, note: string) => {
+      updateProblem(probId, (p) => ({ ...p, state: { ...p.state, revisitNote: note } }));
+    },
+    [updateProblem]
+  );
 
   // Equation set-up opened by the learner. Only counts as assistance before the first substantive check.
-  const handleSetupRevealed = (probId: string) => {
-    if (!currentDrill) return;
-    const transition = computeSetupRevealTransition(currentDrill, probId);
-    if (!transition) return;
-    if (transition.shouldMarkAssisted) {
-      setCurrentDrill(transition.updatedDoc);
-      triggerAutoSave(transition.updatedDoc);
-    }
-    if (transition.partsToReveal.length > 0) {
-      void saveAndReveal(transition.updatedDoc, probId, transition.partsToReveal);
-    }
-  };
+  const handleSetupRevealed = useCallback(
+    (probId: string) => {
+      const latest = drillRef.current;
+      if (!latest) return;
+      const transition = computeSetupRevealTransition(latest, probId);
+      if (!transition) return;
+      let docForSave = latest;
+      if (transition.shouldMarkAssisted) {
+        const nextDoc = commitDrillUpdate(
+          latest.drillId,
+          (cur) => computeSetupRevealTransition(cur, probId)?.updatedDoc ?? null,
+          transition.partsToReveal.length > 0 ? "none" : "debounce"
+        );
+        if (nextDoc) docForSave = nextDoc;
+      }
+      if (transition.partsToReveal.length > 0) {
+        void saveAndReveal(docForSave, probId, transition.partsToReveal);
+      }
+    },
+    [commitDrillUpdate, saveAndReveal]
+  );
 
   // Step-by-step solution opened by the learner before their first correct answer.
-  const handleSolutionRevealed = (probId: string) => {
-    if (!currentDrill) return;
-    const transition = computeSolutionRevealTransition(currentDrill, probId);
-    if (!transition) return;
-    if (transition.shouldMarkAssisted) {
-      setCurrentDrill(transition.updatedDoc);
-      triggerAutoSave(transition.updatedDoc);
-    }
-    if (transition.partsToReveal.length > 0) {
-      void saveAndReveal(transition.updatedDoc, probId, transition.partsToReveal);
-    }
-  };
+  const handleSolutionRevealed = useCallback(
+    (probId: string) => {
+      const latest = drillRef.current;
+      if (!latest) return;
+      const transition = computeSolutionRevealTransition(latest, probId);
+      if (!transition) return;
+      let docForSave = latest;
+      if (transition.shouldMarkAssisted) {
+        const nextDoc = commitDrillUpdate(
+          latest.drillId,
+          (cur) => computeSolutionRevealTransition(cur, probId)?.updatedDoc ?? null,
+          transition.partsToReveal.length > 0 ? "none" : "debounce"
+        );
+        if (nextDoc) docForSave = nextDoc;
+      }
+      if (transition.partsToReveal.length > 0) {
+        void saveAndReveal(docForSave, probId, transition.partsToReveal);
+      }
+    },
+    [commitDrillUpdate, saveAndReveal]
+  );
 
-  const handleToggleStepHighlight = (probId: string, stepIdx: number) => {
+  const handleToggleStepHighlight = useCallback((probId: string, stepIdx: number) => {
     setActiveSteps((prev) => ({
       ...prev,
       [probId]: prev[probId] === stepIdx ? null : stepIdx,
     }));
-  };
+  }, []);
 
-  const handleMarkDivergedStep = (probId: string, stepIdx: number) => {
-    updateProblem(probId, (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }));
-  };
+  const handleMarkDivergedStep = useCallback(
+    (probId: string, stepIdx: number) => {
+      updateProblem(probId, (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }));
+    },
+    [updateProblem]
+  );
 
-  const handleSetScore = (probId: string, score: number | null) => {
-    updateProblem(probId, (p) => ({ ...p, state: { ...p.state, score, skipped: false } }));
-  };
+  const handleSetScore = useCallback(
+    (probId: string, score: number | null) => {
+      updateProblem(probId, (p) => ({ ...p, state: { ...p.state, score, skipped: false } }));
+    },
+    [updateProblem]
+  );
 
-  const handleTestReportChange = (probId: string, report: TestRunReport) => {
-    updateProblem(probId, (p) => ({
-      ...p,
-      state: { ...p.state, lastTestReport: report },
-    }));
-  };
+  const handleTestReportChange = useCallback(
+    (probId: string, report: TestRunReport, score?: number | null) => {
+      commitDrillUpdate(
+        null,
+        (latest) => computeTestRunTransition(latest, probId, report, score),
+        "debounce"
+      );
+    },
+    [commitDrillUpdate]
+  );
 
-  const handleToggleMistakeTag = (probId: string, tagId: string) => {
-    updateProblem(probId, (p) => {
-      const list = p.state.mistakes || [];
-      const next = list.includes(tagId) ? list.filter((t) => t !== tagId) : [...list, tagId];
-      return {
-        ...p,
-        state: { ...p.state, mistakes: next },
-      };
-    });
-  };
+  const handleToggleMistakeTag = useCallback(
+    (probId: string, tagId: string) => {
+      updateProblem(probId, (p) => {
+        const list = p.state.mistakes || [];
+        const next = list.includes(tagId) ? list.filter((t) => t !== tagId) : [...list, tagId];
+        return {
+          ...p,
+          state: { ...p.state, mistakes: next },
+        };
+      });
+    },
+    [updateProblem]
+  );
 
-  const handleSkipProblem = (probId: string, opts: SkipOptions = {}) => {
-    if (!currentDrill) return;
-    const now = Date.now();
-    const transition = computeSkipProblemTransition(
-      currentDrill,
-      probId,
-      timerStateRef.current,
-      now,
-      opts
-    );
-    if (!transition) return;
-    commitTimerState(transition.nextTimerState, now);
-    setCurrentDrill(transition.updatedDoc);
-    triggerAutoSave(transition.updatedDoc);
-    void saveAndReveal(transition.updatedDoc, probId, transition.partsToReveal);
-  };
+  const handleSkipProblem = useCallback(
+    (probId: string, opts: SkipOptions = {}) => {
+      const now = Date.now();
+      let computed: ReturnType<typeof computeSkipProblemTransition> = null;
+      const nextDoc = commitDrillUpdate(
+        null,
+        (latest) => {
+          const transition = computeSkipProblemTransition(
+            latest,
+            probId,
+            timerStateRef.current,
+            now,
+            opts
+          );
+          computed = transition;
+          return transition ? transition.updatedDoc : null;
+        },
+        "none"
+      );
+      const applied = computed as ReturnType<typeof computeSkipProblemTransition>;
+      if (!applied || !nextDoc) return;
+      commitTimerState(applied.nextTimerState, now);
+      void saveAndReveal(nextDoc, probId, applied.partsToReveal);
+    },
+    [commitDrillUpdate, commitTimerState, saveAndReveal]
+  );
 
-  const handleResetProblem = (probId: string) => {
-    if (!currentDrill) return;
-    const now = Date.now();
-    const transition = computeResetProblemTransition(
-      currentDrill,
-      probId,
-      timerStateRef.current,
-      activeSteps,
-      now
-    );
-    commitTimerState(transition.nextTimerState, now);
-    setActiveSteps(transition.nextActiveSteps);
-    setCurrentDrill(transition.updatedDoc);
-    triggerAutoSave(transition.updatedDoc);
-  };
+  const handleResetProblem = useCallback(
+    (probId: string) => {
+      const now = Date.now();
+      let computed: ReturnType<typeof computeResetProblemTransition> | null = null;
+      const nextDoc = commitDrillUpdate(
+        null,
+        (latest) => {
+          const transition = computeResetProblemTransition(
+            latest,
+            probId,
+            timerStateRef.current,
+            {},
+            now
+          );
+          computed = transition;
+          return transition.updatedDoc;
+        },
+        "immediate"
+      );
+      const applied = computed as ReturnType<typeof computeResetProblemTransition> | null;
+      if (!applied || !nextDoc) return;
+      commitTimerState(applied.nextTimerState, now);
+      setActiveSteps((prev) => ({ ...prev, [probId]: null }));
+    },
+    [commitDrillUpdate, commitTimerState]
+  );
 
-  const handleResetAll = async () => {
-    if (!currentDrill) return;
-
-    const variantReset = await fetch("/api/variant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ drillId: currentDrill.drillId, action: "reset-all" }),
-    });
-    if (!variantReset.ok) return;
-
+  const handleResetAll = useCallback(async () => {
     const now = Date.now();
     const isVisible = typeof document !== "undefined" ? !document.hidden : true;
-    const transition = computeResetAllTransition(
-      currentDrill,
-      timerStateRef.current,
-      isVisible,
-      now
+    let computed: ReturnType<typeof computeResetAllTransition> | null = null;
+    const nextDoc = commitDrillUpdate(
+      null,
+      (latest) => {
+        const transition = computeResetAllTransition(
+          latest,
+          timerStateRef.current,
+          isVisible,
+          now
+        );
+        computed = transition;
+        return transition.updatedDoc;
+      },
+      "none"
     );
+    const applied = computed as ReturnType<typeof computeResetAllTransition> | null;
+    if (!applied || !nextDoc) return;
+
     commitTimerState(
       createTelemetryTimerState(
-        transition.firstProblemId,
+        applied.firstProblemId,
         isVisible,
         timerStateRef.current.paused,
         now
@@ -814,15 +1014,14 @@ export function useDrill({
       now
     );
     setActiveSteps({});
-    setCurrentDrill(transition.updatedDoc);
     setCurrentProblemIndex(0);
     setViewMode("quiz");
-    triggerAutoSave(transition.updatedDoc);
-    if (transition.firstProblemId) {
-      onQuestionChange?.(transition.updatedDoc.drillId, transition.firstProblemId);
+    if (applied.firstProblemId) {
+      onQuestionChange?.(nextDoc.drillId, applied.firstProblemId);
     }
-    setStatus(transition.statusMessage);
-  };
+    setStatus(applied.statusMessage);
+    await persistNow(nextDoc);
+  }, [commitDrillUpdate, commitTimerState, onQuestionChange, persistNow, setStatus]);
 
   const selectQuestionIndex = useCallback(
     (nextIdx: number) => {
@@ -917,6 +1116,7 @@ export function useDrill({
   return {
     currentDrill,
     setCurrentDrill,
+    getLatestDrill,
     activeSteps,
     currentProblemIndex,
     setCurrentProblemIndex,

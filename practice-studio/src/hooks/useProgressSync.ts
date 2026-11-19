@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { DrillDocument, SessionSummary } from "@/types/drill";
 import { plainTitle } from "@/lib/titleText";
 import { isLabId } from "@/lib/routes";
+import { createSaveQueue, type SaveQueue } from "@/lib/saveQueue";
 import {
   buildSyncPayload,
   computeSessionMetrics,
@@ -308,51 +309,40 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
   const [statusOverride, setStatusOverride] = useState<PracticeStatusOverride>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>(INITIAL_SYNC_STATE);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingDocRef = useRef<DrillDocument | null>(null);
+  const saveQueueRef = useRef<SaveQueue | null>(null);
+
+  const getSaveQueue = useCallback((): SaveQueue => {
+    if (!saveQueueRef.current) {
+      saveQueueRef.current = createSaveQueue();
+    }
+    return saveQueueRef.current;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      saveQueueRef.current?.dispose();
+    };
+  }, []);
 
   const resetSyncState = useCallback(() => {
     setSyncState(INITIAL_SYNC_STATE);
   }, []);
 
   const flushAutoSave = useCallback(async () => {
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = null;
-    }
-    const doc = pendingDocRef.current;
-    if (!doc) return;
-    pendingDocRef.current = null;
-    try {
-      await fetch("/api/save-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(doc),
-      });
-    } catch {
-      // silent fail on transient autosave
-    }
-  }, []);
+    await getSaveQueue().flush();
+  }, [getSaveQueue]);
 
-  const triggerAutoSave = useCallback((updatedDoc: DrillDocument) => {
-    pendingDocRef.current = updatedDoc;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      saveTimerRef.current = null;
-      const docToSave = pendingDocRef.current;
-      pendingDocRef.current = null;
-      if (!docToSave) return;
-      try {
-        await fetch("/api/save-state", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(docToSave),
-        });
-      } catch {
-        // silent fail on transient autosave
-      }
-    }, 400);
-  }, []);
+  const saveNow = useCallback(
+    (doc?: DrillDocument) => getSaveQueue().saveNow(doc),
+    [getSaveQueue]
+  );
+
+  const triggerAutoSave = useCallback(
+    (updatedDoc: DrillDocument) => {
+      getSaveQueue().enqueue(updatedDoc);
+    },
+    [getSaveQueue]
+  );
 
   const confirmSyncToNotion = useCallback(
     async (
@@ -406,6 +396,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
     syncState,
     resetSyncState,
     triggerAutoSave,
+    saveNow,
     flushAutoSave,
     confirmSyncToNotion,
   };
