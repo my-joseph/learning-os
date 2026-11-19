@@ -1,0 +1,761 @@
+{
+  "unitCode": "MTH-T02-C04-U04",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-01",
+      "sourceArchetype": "t02-c04-u04-long-divide-polynomial",
+      "archetypeKey": "t02-c04-u04-long-divide-polynomial",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Divide $6x^3 + 5x^2 - 9x + 7$ by $3x - 2$. Write the full result as a quotient plus a remainder over the divisor.",
+      "display": "f(x) = d(x)q(x) + r(x)",
+      "plainText": "(6*x^3 + 5*x^2 - 9*x + 7) / (3*x - 2)",
+      "givens": {
+        "a": 6,
+        "b": 5,
+        "c": -9,
+        "d": 7,
+        "lead_divisor": 3,
+        "divisor_constant": -2
+      },
+      "constants": {
+        "quotient_const": 1
+      },
+      "trapGivens": [
+        2,
+        3,
+        1
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "2*x^2 + 3*x - 1 + 5/(3*x - 2)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "2x^2 + 3x - 1 + 5/(3x - 2)",
+      "answerDisplay": "2x^2 + 3x - 1 + \\frac{5}{3x - 2}",
+      "inputHint": "Write the quotient polynomial and any remainder fraction.",
+      "commonTrapTag": "t02-c04-u04-stop-before-remainder-trap",
+      "trapDerivation": "2*x^2 + 3*x - 1",
+      "trapValue": "2*x^2 + 3*x - 1",
+      "verify": {
+        "source": "2*x^2 + 3*x - 1 + 5/(3*x - 2)",
+        "trapValue": "2*x^2 + 3*x - 1"
+      },
+      "checkpointHint": "Continue dividing until the remaining expression has smaller degree than the divisor, then include the remainder over the divisor.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{6x^3}{3x} = 2x^2",
+          "explain": "Divide the leading terms to find the first quotient term."
+        },
+        {
+          "latex": "(6x^3 + 5x^2 - 9x + 7) - 2x^2(3x - 2) = 9x^2 - 9x + 7",
+          "explain": "Subtract 2x^2 times the divisor from the dividend.",
+          "eq": [
+            "(6*x^3 + 5*x^2 - 9*x + 7) - 2*x^2*(3*x - 2)",
+            "9*x^2 - 9*x + 7"
+          ]
+        },
+        {
+          "latex": "\\frac{9x^2}{3x} = 3x",
+          "explain": "Divide the new leading term by 3x."
+        },
+        {
+          "latex": "(9x^2 - 9x + 7) - 3x(3x - 2) = -3x + 7",
+          "explain": "Subtract 3x times the divisor from the current residual.",
+          "eq": [
+            "(9*x^2 - 9*x + 7) - 3*x*(3*x - 2)",
+            "-3*x + 7"
+          ]
+        },
+        {
+          "latex": "\\frac{-3x}{3x} = -1",
+          "explain": "Divide the remaining linear term by 3x."
+        },
+        {
+          "latex": "(-3x + 7) - (-1)(3x - 2) = 5",
+          "explain": "Subtract to obtain the constant remainder 5.",
+          "eq": [
+            "(-3*x + 7) - (-1)*(3*x - 2)",
+            "5"
+          ]
+        },
+        {
+          "latex": "\\frac{6x^3 + 5x^2 - 9x + 7}{3x - 2} = 2x^2 + 3x - 1 + \\frac{5}{3x - 2}",
+          "explain": "Combine the quotient polynomial with the remainder over the divisor.",
+          "val": "2*x^2 + 3*x - 1 + 5/(3*x - 2)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-stop-before-remainder-trap|direct|(#*x^# + #*x^# - #*x + #) / (#*x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-02",
+      "sourceArchetype": "t02-c04-u04-long-divide-polynomial",
+      "archetypeKey": "t02-c04-u04-long-divide-polynomial",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Divide $2x^3 - 5x^2 + 7$ by $x - 3$. Write the full result as a quotient plus a remainder over the divisor.",
+      "display": "f(x) = d(x)q(x) + r(x)",
+      "plainText": "(2*x^3 - 5*x^2 + 7) / (x - 3)",
+      "givens": {
+        "a": 2,
+        "b": -5,
+        "d": 7,
+        "divisor_constant": -3
+      },
+      "constants": {
+        "zero_placeholder": 0
+      },
+      "trapGivens": [
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "2*x^2 + x + 3 + 16/(x - 3)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "2x^2 + x + 3 + 16/(x - 3)",
+      "answerDisplay": "2x^2 + x + 3 + \\frac{16}{x - 3}",
+      "inputHint": "Write the quotient polynomial and any remainder fraction.",
+      "commonTrapTag": "t02-c04-u04-stop-before-remainder-trap",
+      "trapDerivation": "2*x^2 + x + 3",
+      "trapValue": "2*x^2 + x + 3",
+      "verify": {
+        "source": "2*x^2 + x + 3 + 16/(x - 3)",
+        "trapValue": "2*x^2 + x + 3"
+      },
+      "checkpointHint": "Keep a zero placeholder for any missing power and attach the final remainder fraction to the quotient.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{2x^3}{x} = 2x^2",
+          "explain": "Divide the leading terms for the first quotient term."
+        },
+        {
+          "latex": "(2x^3 - 5x^2 + 0x + 7) - 2x^2(x - 3) = x^2 + 0x + 7",
+          "explain": "Subtract 2x^2(x - 3) while keeping the missing linear term aligned.",
+          "eq": [
+            "(2*x^3 - 5*x^2 + 7) - 2*x^2*(x - 3)",
+            "x^2 + 7"
+          ]
+        },
+        {
+          "latex": "\\frac{x^2}{x} = x",
+          "explain": "Divide the new leading term by x."
+        },
+        {
+          "latex": "(x^2 + 0x + 7) - x(x - 3) = 3x + 7",
+          "explain": "Subtract x(x - 3) from the current residual.",
+          "eq": [
+            "(x^2 + 7) - x*(x - 3)",
+            "3*x + 7"
+          ]
+        },
+        {
+          "latex": "\\frac{3x}{x} = 3",
+          "explain": "Divide the linear term by x."
+        },
+        {
+          "latex": "(3x + 7) - 3(x - 3) = 16",
+          "explain": "Subtract 3(x - 3) to obtain the constant remainder 16.",
+          "eq": [
+            "(3*x + 7) - 3*(x - 3)",
+            "16"
+          ]
+        },
+        {
+          "latex": "\\frac{2x^3 - 5x^2 + 7}{x - 3} = 2x^2 + x + 3 + \\frac{16}{x - 3}",
+          "explain": "Write the quotient plus the remainder over the divisor.",
+          "val": "2*x^2 + x + 3 + 16/(x - 3)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-stop-before-remainder-trap|direct|(#*x^# - #*x^# + #) / (x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-03",
+      "sourceArchetype": "t02-c04-u04-long-divide-polynomial",
+      "archetypeKey": "t02-c04-u04-long-divide-polynomial",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Divide $3x^3 + 10x^2 + 2x - 9$ by $x + 2$. Write the full result as a quotient plus a remainder over the divisor.",
+      "display": "f(x) = d(x)q(x) + r(x)",
+      "plainText": "(3*x^3 + 10*x^2 + 2*x - 9) / (x + 2)",
+      "givens": {
+        "a": 3,
+        "b": 10,
+        "c": 2,
+        "d": -9,
+        "divisor_constant": 2
+      },
+      "constants": {
+        "q_lin": 4,
+        "q_const": 6
+      },
+      "trapGivens": [
+        3,
+        4,
+        6
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "3*x^2 + 4*x - 6 + 3/(x + 2)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "3x^2 + 4x - 6 + 3/(x + 2)",
+      "answerDisplay": "3x^2 + 4x - 6 + \\frac{3}{x + 2}",
+      "inputHint": "Write the quotient polynomial and any remainder fraction.",
+      "commonTrapTag": "t02-c04-u04-stop-before-remainder-trap",
+      "trapDerivation": "3*x^2 + 4*x - 6",
+      "trapValue": "3*x^2 + 4*x - 6",
+      "verify": {
+        "source": "3*x^2 + 4*x - 6 + 3/(x + 2)",
+        "trapValue": "3*x^2 + 4*x - 6"
+      },
+      "checkpointHint": "Subtract each full product row carefully and remember to include the final remainder fraction.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{3x^3}{x} = 3x^2",
+          "explain": "Divide the leading terms to obtain the first quotient term."
+        },
+        {
+          "latex": "(3x^3 + 10x^2 + 2x - 9) - 3x^2(x + 2) = 4x^2 + 2x - 9",
+          "explain": "Subtract 3x^2(x + 2) from the dividend.",
+          "eq": [
+            "(3*x^3 + 10*x^2 + 2*x - 9) - 3*x^2*(x + 2)",
+            "4*x^2 + 2*x - 9"
+          ]
+        },
+        {
+          "latex": "\\frac{4x^2}{x} = 4x",
+          "explain": "Divide the new leading term by x."
+        },
+        {
+          "latex": "(4x^2 + 2x - 9) - 4x(x + 2) = -6x - 9",
+          "explain": "Subtract 4x(x + 2) from the current residual.",
+          "eq": [
+            "(4*x^2 + 2*x - 9) - 4*x*(x + 2)",
+            "-6*x - 9"
+          ]
+        },
+        {
+          "latex": "\\frac{-6x}{x} = -6",
+          "explain": "Divide the linear term by x."
+        },
+        {
+          "latex": "(-6x - 9) - (-6)(x + 2) = 3",
+          "explain": "Subtract -6(x + 2) to obtain the constant remainder 3.",
+          "eq": [
+            "(-6*x - 9) - (-6)*(x + 2)",
+            "3"
+          ]
+        },
+        {
+          "latex": "\\frac{3x^3 + 10x^2 + 2x - 9}{x + 2} = 3x^2 + 4x - 6 + \\frac{3}{x + 2}",
+          "explain": "Write the full result with the remainder over the divisor.",
+          "val": "3*x^2 + 4*x - 6 + 3/(x + 2)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-long-divide-polynomial-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-stop-before-remainder-trap|direct|(#*x^# + #*x^# + #*x - #) / (x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-01",
+      "sourceArchetype": "t02-c04-u04-synthetic-divide-linear-factor",
+      "archetypeKey": "t02-c04-u04-synthetic-divide-linear-factor",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Use synthetic division to divide $x^3 + 5x^2 - 2x - 9$ by $x + 3$. Give the quotient polynomial.",
+      "display": "x^3 + 5x^2 - 2x - 9;\\quad d(x) = x + 3",
+      "plainText": "(x^3 + 5*x^2 - 2*x - 9) divided by (x + 3)",
+      "givens": {
+        "b": 5,
+        "c": -2,
+        "d": -9,
+        "divisor_const": 3
+      },
+      "constants": {
+        "trap_lin": 8,
+        "trap_const": 22
+      },
+      "trapGivens": [
+        8,
+        22
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "x^2 + 2*x - 8",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "x^2 + 2x - 8",
+      "answerDisplay": "x^2 + 2x - 8",
+      "inputHint": "Enter the quotient as a polynomial in descending powers.",
+      "commonTrapTag": "t02-c04-u04-synthetic-sign-reversal-trap",
+      "trapDerivation": "x^2 + 8*x + 22",
+      "trapValue": "x^2 + 8*x + 22",
+      "verify": {
+        "source": "x^2 + 2*x - 8",
+        "trapValue": "x^2 + 8*x + 22"
+      },
+      "checkpointHint": "Use the zero of the linear divisor as the synthetic input before multiplying and adding across columns.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "k = -3",
+          "explain": "Solve x + 3 = 0 to find the synthetic division input."
+        },
+        {
+          "latex": "-3 \\;|\\; 1 \\quad 5 \\quad -2 \\quad -9",
+          "explain": "Write the dividend coefficients in descending order of degree."
+        },
+        {
+          "latex": "-3 \\;|\\; 1 \\quad 2 \\quad -8 \\quad 15",
+          "explain": "Bring down 1, then repeatedly multiply by -3 and add down each column.",
+          "eq": [
+            "(x + 3)*(x^2 + 2*x - 8) + 15",
+            "x^3 + 5*x^2 - 2*x - 9"
+          ]
+        },
+        {
+          "latex": "q(x) = x^2 + 2x - 8",
+          "explain": "Read the first three bottom entries as the quotient polynomial.",
+          "val": "x^2 + 2*x - 8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-synthetic-sign-reversal-trap|direct|(x^# + #*x^# - #*x - #) divided by (x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-02",
+      "sourceArchetype": "t02-c04-u04-synthetic-divide-linear-factor",
+      "archetypeKey": "t02-c04-u04-synthetic-divide-linear-factor",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Use synthetic division to divide $3x^3 - 7x^2 + 4x - 5$ by $x - 3$. Give the quotient polynomial.",
+      "display": "3x^3 - 7x^2 + 4x - 5;\\quad d(x) = x - 3",
+      "plainText": "(3*x^3 - 7*x^2 + 4*x - 5) divided by (x - 3)",
+      "givens": {
+        "a": 3,
+        "b": -7,
+        "c": 4,
+        "d": -5
+      },
+      "constants": {
+        "trap_lin": 16,
+        "trap_const": 52
+      },
+      "trapGivens": [
+        3,
+        16,
+        52
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "3*x^2 + 2*x + 10",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "3x^2 + 2x + 10",
+      "answerDisplay": "3x^2 + 2x + 10",
+      "inputHint": "Enter the quotient as a polynomial in descending powers.",
+      "commonTrapTag": "t02-c04-u04-synthetic-sign-reversal-trap",
+      "trapDerivation": "3*x^2 - 16*x + 52",
+      "trapValue": "3*x^2 - 16*x + 52",
+      "verify": {
+        "source": "3*x^2 + 2*x + 10",
+        "trapValue": "3*x^2 - 16*x + 52"
+      },
+      "checkpointHint": "Set the linear divisor equal to zero to obtain the correct sign for the synthetic input.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "k = 3",
+          "explain": "Solve x - 3 = 0 to identify the synthetic input."
+        },
+        {
+          "latex": "3 \\;|\\; 3 \\quad -7 \\quad 4 \\quad -5",
+          "explain": "List the coefficients of the dividend in descending powers."
+        },
+        {
+          "latex": "3 \\;|\\; 3 \\quad 2 \\quad 10 \\quad 25",
+          "explain": "Bring down 3, then multiply by 3 and add across each column.",
+          "eq": [
+            "(x - 3)*(3*x^2 + 2*x + 10) + 25",
+            "3*x^3 - 7*x^2 + 4*x - 5"
+          ]
+        },
+        {
+          "latex": "q(x) = 3x^2 + 2x + 10",
+          "explain": "Read the quotient coefficients before the remainder.",
+          "val": "3*x^2 + 2*x + 10"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-synthetic-sign-reversal-trap|direct|(#*x^# - #*x^# + #*x - #) divided by (x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-03",
+      "sourceArchetype": "t02-c04-u04-synthetic-divide-linear-factor",
+      "archetypeKey": "t02-c04-u04-synthetic-divide-linear-factor",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Use synthetic division to divide $4x^3 + 3x^2 - 6x + 5$ by $x + 2$. Give the quotient polynomial.",
+      "display": "4x^3 + 3x^2 - 6x + 5;\\quad d(x) = x + 2",
+      "plainText": "(4*x^3 + 3*x^2 - 6*x + 5) divided by (x + 2)",
+      "givens": {
+        "a": 4,
+        "b": 3,
+        "c": -6,
+        "d": 5,
+        "divisor_const": 2
+      },
+      "constants": {
+        "trap_lin": 11,
+        "trap_const": 16
+      },
+      "trapGivens": [
+        4,
+        11,
+        16
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "4*x^2 - 5*x + 4",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "4x^2 - 5x + 4",
+      "answerDisplay": "4x^2 - 5x + 4",
+      "inputHint": "Enter the quotient as a polynomial in descending powers.",
+      "commonTrapTag": "t02-c04-u04-synthetic-sign-reversal-trap",
+      "trapDerivation": "4*x^2 + 11*x + 16",
+      "trapValue": "4*x^2 + 11*x + 16",
+      "verify": {
+        "source": "4*x^2 - 5*x + 4",
+        "trapValue": "4*x^2 + 11*x + 16"
+      },
+      "checkpointHint": "Reverse the sign of the constant in the monic linear divisor before running the synthetic row.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "k = -2",
+          "explain": "Solve x + 2 = 0 to get the synthetic division input."
+        },
+        {
+          "latex": "-2 \\;|\\; 4 \\quad 3 \\quad -6 \\quad 5",
+          "explain": "Write the dividend coefficients in descending powers."
+        },
+        {
+          "latex": "-2 \\;|\\; 4 \\quad -5 \\quad 4 \\quad -3",
+          "explain": "Bring down 4, then multiply by -2 and add down each column.",
+          "eq": [
+            "(x + 2)*(4*x^2 - 5*x + 4) - 3",
+            "4*x^3 + 3*x^2 - 6*x + 5"
+          ]
+        },
+        {
+          "latex": "q(x) = 4x^2 - 5x + 4",
+          "explain": "Read the quotient polynomial from the first three bottom entries.",
+          "val": "4*x^2 - 5*x + 4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-synthetic-divide-linear-factor-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u04-synthetic-sign-reversal-trap|direct|(#*x^# + #*x^# - #*x + #) divided by (x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-01",
+      "sourceArchetype": "t02-c04-u04-reconstruct-dividend-from-division",
+      "archetypeKey": "t02-c04-u04-reconstruct-dividend-from-division",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $3x^3 + bx^2 - 7x + 10$ divided by $x - 2$ has quotient $3x^2 + 4x + 1$ and remainder $12$. Find $b$.",
+      "display": "f(x) = (x - 2)(3x^2 + 4x + 1) + 12",
+      "plainText": "f(x) = (x - 2)*(3*x^2 + 4*x + 1) + 12",
+      "givens": {
+        "a": 3,
+        "lin_dividend": -7,
+        "const_dividend": 10,
+        "k": -2,
+        "bq": 4,
+        "cq": 1,
+        "r": 12
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-2",
+        "tolerance": 0
+      },
+      "answerPlain": "-2",
+      "answerDisplay": "-2",
+      "inputHint": "Enter the signed coefficient.",
+      "commonTrapTag": "t02-c04-u04-multiply-only-leading-terms-trap",
+      "trapDerivation": "4*1",
+      "trapValue": "4",
+      "verify": {
+        "source": "4 + (-2)*3",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Collect every cross-product between the divisor and quotient that produces the squared term.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "f(x) = (x - 2)(3x^2 + 4x + 1) + 12",
+          "explain": "Write dividend equals divisor times quotient plus remainder."
+        },
+        {
+          "latex": "x(3x^2 + 4x + 1) = 3x^3 + 4x^2 + x",
+          "explain": "Distribute the x term of the divisor across the quotient."
+        },
+        {
+          "latex": "-2(3x^2 + 4x + 1) = -6x^2 - 8x - 2",
+          "explain": "Distribute the constant term of the divisor across the quotient."
+        },
+        {
+          "latex": "b = 4 - 6",
+          "explain": "Combine both squared-term coefficients."
+        },
+        {
+          "latex": "b = -2",
+          "explain": "Simplify to find the coefficient b.",
+          "eq": [
+            "4 - 6",
+            "-2"
+          ],
+          "val": "-2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u04-multiply-only-leading-terms-trap|reverse|f(x) = (x - #)*(#*x^# + #*x + #) + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-02",
+      "sourceArchetype": "t02-c04-u04-reconstruct-dividend-from-division",
+      "archetypeKey": "t02-c04-u04-reconstruct-dividend-from-division",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $x^3 + bx^2 + 11x + 11$ divided by $x + 3$ has quotient $x^2 + 2x + 5$ and remainder $-4$. Find $b$.",
+      "display": "f(x) = (x + 3)(x^2 + 2x + 5) - 4",
+      "plainText": "f(x) = (x + 3)*(x^2 + 2*x + 5) - 4",
+      "givens": {
+        "lin_dividend": 11,
+        "k": 3,
+        "bq": 2,
+        "cq": 5,
+        "r": -4
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the signed coefficient.",
+      "commonTrapTag": "t02-c04-u04-multiply-only-leading-terms-trap",
+      "trapDerivation": "2*1",
+      "trapValue": "2",
+      "verify": {
+        "source": "2 + 3*1",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Expand both terms of the linear divisor against the quotient so no squared cross-term is missed.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "f(x) = (x + 3)(x^2 + 2x + 5) - 4",
+          "explain": "Express the dividend from the division algorithm."
+        },
+        {
+          "latex": "x(x^2 + 2x + 5) = x^3 + 2x^2 + 5x",
+          "explain": "Distribute x across the quotient."
+        },
+        {
+          "latex": "3(x^2 + 2x + 5) = 3x^2 + 6x + 15",
+          "explain": "Distribute 3 across the quotient."
+        },
+        {
+          "latex": "b = 2 + 3",
+          "explain": "Add the two contributions to the x-squared coefficient."
+        },
+        {
+          "latex": "b = 5",
+          "explain": "Simplify to obtain b.",
+          "eq": [
+            "2 + 3",
+            "5"
+          ],
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u04-multiply-only-leading-terms-trap|reverse|f(x) = (x + #)*(x^# + #*x + #) - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-03",
+      "sourceArchetype": "t02-c04-u04-reconstruct-dividend-from-division",
+      "archetypeKey": "t02-c04-u04-reconstruct-dividend-from-division",
+      "unitCode": "MTH-T02-C04-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $3x^3 + bx^2 - 7x + 9$ divided by $x + 4$ has quotient $3x^2 - 2x + 1$ and remainder $5$. Find $b$.",
+      "display": "f(x) = (x + 4)(3x^2 - 2x + 1) + 5",
+      "plainText": "f(x) = (x + 4)*(3*x^2 - 2*x + 1) + 5",
+      "givens": {
+        "a": 3,
+        "lin_dividend": -7,
+        "const_dividend": 9,
+        "k": 4,
+        "bq": -2,
+        "cq": 1,
+        "r": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "10",
+        "tolerance": 0
+      },
+      "answerPlain": "10",
+      "answerDisplay": "10",
+      "inputHint": "Enter the signed coefficient.",
+      "commonTrapTag": "t02-c04-u04-multiply-only-leading-terms-trap",
+      "trapDerivation": "-2*1",
+      "trapValue": "-2",
+      "verify": {
+        "source": "-2 + 4*3",
+        "trapValue": "-2"
+      },
+      "checkpointHint": "Multiply every term of the divisor by the quotient to capture both contributions to the quadratic term.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "steps": [
+        {
+          "latex": "f(x) = (x + 4)(3x^2 - 2x + 1) + 5",
+          "explain": "Reconstruct the dividend using divisor times quotient plus remainder."
+        },
+        {
+          "latex": "x(3x^2 - 2x + 1) = 3x^3 - 2x^2 + x",
+          "explain": "Distribute x across the quotient."
+        },
+        {
+          "latex": "4(3x^2 - 2x + 1) = 12x^2 - 8x + 4",
+          "explain": "Distribute 4 across the quotient."
+        },
+        {
+          "latex": "b = -2 + 12",
+          "explain": "Combine both squared-term coefficients."
+        },
+        {
+          "latex": "b = 10",
+          "explain": "Simplify to find the coefficient b.",
+          "eq": [
+            "-2 + 12",
+            "10"
+          ],
+          "val": "10"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U04-t02-c04-u04-reconstruct-dividend-from-division-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u04-multiply-only-leading-terms-trap|reverse|f(x) = (x + #)*(#*x^# - #*x + #) + #"
+    }
+  ]
+}
