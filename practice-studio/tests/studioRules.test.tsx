@@ -7,6 +7,7 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
+import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import {
   getPrgScore,
@@ -503,5 +504,36 @@ const labRouteNotFoundHtml = renderToStaticMarkup(
   <DrillNotFoundCard drillId="DOES-NOT-EXIST" isLab={true} />
 );
 assert.match(labRouteNotFoundHtml, /<h1[^>]*>Lab not found<\/h1>/);
+
+// Verify GeneratePopover uses workspace item nouns and includes Level 5 (A-10)
+const mathGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={true}
+    onClose={noop}
+    workspace="math"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={noop}
+  />
+);
+assert.match(mathGenerateHtml, />5 questions<\/option>/);
+assert.doesNotMatch(mathGenerateHtml, />5 Qs<\/option>/);
+assert.match(mathGenerateHtml, />Level 5<\/option>/);
+
+const codeGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={true}
+    onClose={noop}
+    workspace="code"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={noop}
+  />
+);
+assert.match(codeGenerateHtml, />5 problems<\/option>/);
+assert.doesNotMatch(codeGenerateHtml, />5 Qs<\/option>/);
+assert.match(codeGenerateHtml, />Level 5<\/option>/);
 
 console.log("studio rules tests passed");
