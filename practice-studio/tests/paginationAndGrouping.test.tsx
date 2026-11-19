@@ -134,7 +134,7 @@ const drillReviewTiles = renderToStaticMarkup(
 );
 assert.match(
   drillReviewTiles,
-  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*min-w-\[1\.75rem\] h-7[^"]*ring-2 ring-indigo-600/
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*min-w-8 h-8[^"]*ring-2 ring-indigo-600/
 );
 
 const labQuizStepper = renderToStaticMarkup(
@@ -149,7 +149,7 @@ const labQuizStepper = renderToStaticMarkup(
 );
 assert.match(labQuizStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.doesNotMatch(labQuizStepper, /aria-label="Questions"/);
-assert.doesNotMatch(labQuizStepper, /min-w-\[1\.75rem\] h-7/);
+assert.doesNotMatch(labQuizStepper, /min-w-8 h-8/);
 assert.match(labQuizStepper, /aria-label="M1 — not passed yet"[^>]*aria-current="step"/);
 assert.match(labQuizStepper, /aria-label="M2 — not passed yet"/);
 assert.doesNotMatch(labQuizStepper, />Review<\/span>/); // icon-only Review step
