@@ -103,11 +103,10 @@ const drillQuizTiles = renderToStaticMarkup(
     onToggleViewMode={noop}
   />
 );
-assert.match(drillQuizTiles, /role="navigation"[^>]*aria-label="Questions"/);
-assert.match(drillQuizTiles, /justify-center[^>]*w-max mx-auto|w-max mx-auto/);
+assert.match(drillQuizTiles, /<nav[^>]*aria-label="Questions"/);
 assert.doesNotMatch(drillQuizTiles, /aria-label="Lab milestones"/);
-assert.match(drillQuizTiles, /aria-label="Review &amp; sync"/);
-assert.match(drillQuizTiles, /title="Review &amp; sync"/);
+assert.match(drillQuizTiles, /aria-label="Review &amp; sync, 0 of 2 answered"/);
+assert.match(drillQuizTiles, /title="Review &amp; sync, 0 of 2 answered"/);
 assert.doesNotMatch(drillQuizTiles, />Review<\/span>/);
 
 const codeQuizTiles = renderToStaticMarkup(
@@ -120,8 +119,8 @@ const codeQuizTiles = renderToStaticMarkup(
     onToggleViewMode={noop}
   />
 );
-assert.match(codeQuizTiles, /role="navigation"[^>]*aria-label="Problems"/);
-assert.match(codeQuizTiles, /aria-label="Problem 1 — Unanswered"/);
+assert.match(codeQuizTiles, /<nav[^>]*aria-label="Problems"/);
+assert.match(codeQuizTiles, /aria-label="Problem 1, Level 1, not tried, current"/);
 
 const drillReviewTiles = renderToStaticMarkup(
   <QuizPaginationBar
@@ -134,7 +133,7 @@ const drillReviewTiles = renderToStaticMarkup(
 );
 assert.match(
   drillReviewTiles,
-  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*min-w-8 h-8[^"]*ring-2 ring-indigo-600/
+  /aria-label="Review &amp; sync, 0 of 2 answered"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync, 0 of 2 answered"[\s\S]*ring-indigo-600\/15/
 );
 
 const labQuizStepper = renderToStaticMarkup(
@@ -149,10 +148,12 @@ const labQuizStepper = renderToStaticMarkup(
 );
 assert.match(labQuizStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.doesNotMatch(labQuizStepper, /aria-label="Questions"/);
-assert.doesNotMatch(labQuizStepper, /min-w-8 h-8/);
-assert.match(labQuizStepper, /aria-label="M1 — not passed yet"[^>]*aria-current="step"/);
-assert.match(labQuizStepper, /aria-label="M2 — not passed yet"/);
-assert.doesNotMatch(labQuizStepper, />Review<\/span>/); // icon-only Review step
+assert.match(
+  labQuizStepper,
+  /aria-label="Milestone 1, Algebra, not started, current"[^>]*aria-current="step"/
+);
+assert.match(labQuizStepper, /aria-label="Milestone 2, Algebra, not started"/);
+assert.doesNotMatch(labQuizStepper, />Review<\/span>/);
 
 const labReviewStepper = renderToStaticMarkup(
   <QuizPaginationBar
@@ -167,11 +168,11 @@ const labReviewStepper = renderToStaticMarkup(
 assert.match(labReviewStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.match(
   labReviewStepper,
-  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+  /aria-label="Review &amp; sync, 0 of 2 passed"[^>]*aria-pressed="true"[^>]*aria-current="step"/
 );
 assert.match(
   labReviewStepper,
-  /aria-label="Review &amp; sync"[\s\S]*ring-2 ring-indigo-600/
+  /aria-label="Review &amp; sync, 0 of 2 passed"[\s\S]*ring-indigo-600\/15/
 );
 
 // ---------------------------------------------------------------------------

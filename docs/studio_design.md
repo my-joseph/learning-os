@@ -12,7 +12,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Layout
 - Workspace switch (`Math` / `Programming`, icon-only): fixed vertical rail on the left-middle edge on `>=1024 px`, and an inline icon-only switch in the header below `1024 px`.
 - Shell: one slim header row — drill switcher + Generate button, then right-aligned mobile side-drawer icon (`<1024 px`), theme toggle, Notion link, and Reset all icon button.
-- Tiles row under the header: centred horizontally inside the header card (scrolls from the left when overflowing on narrow screens); one small square per question/milestone plus an icon-only Review tile.
+- Stepper row under the header: centred horizontally inside the header card; numbered circles (`"01"`, `"02"`, …) joined by connector lines (indigo up to the current step, zinc after), with `"Question N"` / `"Level N"` (or `"Problem N"` for code drills; milestone name / `"Tests passing"` | `"In progress"` | `"Not started"` for labs) below on desktop (`>=640 px`), plus a trailing clipboard `Review & sync` step. On mobile (`<640 px`) labels hide, tap targets stay `44 px`, and the strip scrolls horizontally with the current step centred and edge fades.
 - Main column max-width ~720 px, centred. Side panel (Due today & weak spots) collapses into a drawer below `1024 px` and is closed by default while answering.
 
 ## Colour (Tailwind tokens; light / dark)
@@ -21,7 +21,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Typography (learner decision 2026-11-19): **Source Sans Pro** for all UI and prompt text (`font-sans`, weights 400/600/700 — no 500, so `font-medium` renders as 400); **Roboto Slab** as the secondary/display accent (`font-display`) for every non-code label or number that used to be mono — scores, Q1/Q2 labels, counts, timers, curriculum IDs (`MTH-…`, `PRG-…`, `DRL-…`); **Geist Mono** (`font-mono`) only for code (snippets, examples, tests, function names, typed code answers); KaTeX fonts for math.
 - Lists: every bulleted list uses the shared `ListDot`, centred on the first text line; no "•" glyphs or `list-disc`. Three kinds, picked from the heading above the list (`listKindForHeading`): **task** = filled indigo dot (Requirements, Your task, rules, Visible tests); **info** = filled zinc dot (Observed symptoms, notes, review findings, any other heading); **limit** = hollow indigo ring (Return contract, Constraints, Input shape).
 - Focus indicators: keyboard `focus-visible` indigo rings only (`indigo-600` light / `indigo-400` dark); suppress mouse-click focus rings and browser default outlines.
-- Status only, never decoration: correct `emerald-700`/`emerald-400`, assisted/partial `amber-700`/`amber-400`, wrong `rose-600`/`rose-400`. Status colour appears on tiles, icons, unrounded left borders, or light status tints (`bg-*-50` / `dark:bg-*-500/10`) on result cards and selected choice states — never as a left-accent border on rounded boxes or saturated full-card fills.
+- Status only, never decoration: correct `emerald-700`/`emerald-400` (correct = indigo in the stepper only), assisted/partial `amber-700`/`amber-400`, wrong `rose-600`/`rose-400`. Status colour appears on stepper circles, icons, unrounded left borders, or light status tints (`bg-*-50` / `dark:bg-*-500/10`) on result cards and selected choice states — never as a left-accent border on rounded boxes or saturated full-card fills.
 - Default theme follows `prefers-color-scheme`; the toggle overrides it. Contrast AA (`>= 4.5:1`) everywhere.
 
 ## Type
@@ -36,4 +36,4 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Workspaces
 - **Math**: prompt → figure → answer input with `=` inside the field → feedback → (Try again + swap-in-place similar question / progressive worked example ladder | Hint / set-up / steps after reveal). Self-score buttons only after an attempt.
 - **Programming** (dashboard, no editor): brief → visible tests → status line `Tests  Lint  Types  Review` (✓ / ✗ / –) → primary action (Open in VS Code, or Copy `ตรวจโค้ด <ID> <QID>` once tests pass) → review history and explain question in collapsible sections → reference locked until review = pass.
-- **Labs**: same as Programming, tiles are milestones M1…Mn.
+- **Labs**: same as Programming; the horizontal stepper shows each milestone's name and status (`Tests passing` / `In progress` / `Not started`), with a filled indigo check once every layer passes.

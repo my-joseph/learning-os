@@ -495,22 +495,26 @@ async function testSyntheticLabAndProgress() {
       />
     );
     assert.match(stepperHtml, /<nav[^>]*aria-label="Lab milestones"/);
-    assert.match(stepperHtml, /mx-auto/, "Lab milestone stepper must be centred inside header");
-    assert.match(stepperHtml, />M1</);
-    assert.match(stepperHtml, />M2</);
-    assert.match(stepperHtml, />M3</);
-    assert.doesNotMatch(stepperHtml, />Review<\/span>/); // icon-only Review step
-    assert.match(stepperHtml, /aria-label="Review &amp; sync"/);
-    assert.match(stepperHtml, /aria-label="M1 — passed"/);
-    assert.match(stepperHtml, /aria-label="M2 — not passed yet"[^>]*aria-current="step"/);
-    assert.match(stepperHtml, /aria-label="M3 — not passed yet"/);
-    assert.match(stepperHtml, /bg-indigo-600/, "M1 (passed) dot and line must be indigo");
-    assert.match(stepperHtml, /border-zinc-300/, "M3 (not passed yet) dot must be hollow grey");
-    assert.match(stepperHtml, /ring-2 ring-indigo-600/, "Current milestone must have indigo ring");
-    assert.match(stepperHtml, /aria-label="Review &amp; sync"/);
-    assert.doesNotMatch(stepperHtml, /overflow-x-auto/, "3 milestones fit without horizontal scroll");
+    assert.match(stepperHtml, /first:ml-auto/, "Lab milestone stepper must be centred inside header");
+    assert.match(stepperHtml, />Contracts</);
+    assert.match(stepperHtml, />Pool</);
+    assert.match(stepperHtml, />Abort</);
+    assert.match(stepperHtml, />Tests passing</);
+    assert.match(stepperHtml, />Not started</);
+    assert.doesNotMatch(stepperHtml, />Review<\/span>/);
+    assert.match(stepperHtml, /aria-label="Review &amp; sync, 1 of 3 passed"/);
+    assert.match(stepperHtml, /aria-label="Milestone 1, Contracts, tests passing, passed"/);
+    assert.match(
+      stepperHtml,
+      /aria-label="Milestone 2, Pool, tests passing, current"[^>]*aria-current="step"/
+    );
+    assert.match(stepperHtml, /aria-label="Milestone 3, Abort, not started"/);
+    assert.match(stepperHtml, /bg-indigo-600/, "M1 (passed) circle and active connector must be indigo");
+    assert.match(stepperHtml, /border-zinc-300/, "M3 (not started) circle must be hollow grey");
+    assert.match(stepperHtml, /ring-4 ring-indigo-600\/15/, "Current milestone must have indigo halo");
+    assert.match(stepperHtml, /overflow-x-auto/);
 
-    // Verify regressed milestone renders amber dot while keeping indigo connector line
+    // Verify regressed milestone renders amber circle
     const regressedProblems = drillDoc.problems.map((p, i) =>
       i === 1
         ? {
@@ -542,11 +546,14 @@ async function testSyntheticLabAndProgress() {
         onToggleViewMode={noop}
       />
     );
-    assert.match(regressedStepperHtml, /aria-label="M2 — regressed"/);
-    assert.match(regressedStepperHtml, /bg-amber-600/, "Regressed milestone dot must be amber");
-    assert.match(regressedStepperHtml, /aria-label="M3 — not passed yet"[^>]*aria-current="step"/);
+    assert.match(regressedStepperHtml, /aria-label="Milestone 2, Pool, in progress, regressed"/);
+    assert.match(regressedStepperHtml, /bg-amber-600/, "Regressed milestone circle must be amber");
+    assert.match(
+      regressedStepperHtml,
+      /aria-label="Milestone 3, Abort, not started, current"[^>]*aria-current="step"/
+    );
 
-    // >8 milestones enable horizontal scroll
+    // >8 milestones stay inside the horizontal scroll strip
     const manyMilestones = Array.from({ length: 9 }, (_, i) => ({
       ...drillDoc.problems[0],
       id: `M${i + 1}`,
@@ -576,7 +583,7 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(
       labReviewStepperHtml,
-      /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+      /aria-label="Review &amp; sync, 1 of 3 passed"[^>]*aria-pressed="true"[^>]*aria-current="step"/
     );
 
     // Render CodeDashboard for M2 (revise, tests passed)

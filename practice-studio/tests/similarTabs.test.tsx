@@ -563,13 +563,13 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   );
   assert.match(
     pagHtml,
-    /title="Question 1 — Correct on first attempt \(1\), practised 2 similar"/
+    /title="Question 1, Level 1, correct, practised 2 similar, current"/
   );
   assert.match(
     pagHtml,
-    /aria-label="Question 1 — Correct on first attempt \(1\), practised 2 similar"/
+    /aria-label="Question 1, Level 1, correct, practised 2 similar, current"/
   );
-  assert.match(pagHtml, /bg-emerald-700/, "tile colour must come from R only (emerald for 1.0)");
+  assert.match(pagHtml, /bg-indigo-600/, "stepper circle colour must come from R only (indigo for 1.0)");
 }
 
 // ---------------------------------------------------------------------------
