@@ -133,7 +133,7 @@ function HoverRowCode({ code }: { code: string }) {
   // changes width (no jitter) and nothing is reserved when not hovered.
   return (
     <span className="relative w-0 shrink-0 self-stretch">
-      <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden group-hover:block group-focus-visible:block whitespace-nowrap rounded px-1 bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
+      <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden group-hover:block group-focus-visible:block whitespace-nowrap rounded px-1 bg-zinc-100 dark:bg-zinc-800 font-display text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
         {code}
       </span>
     </span>
@@ -142,7 +142,7 @@ function HoverRowCode({ code }: { code: string }) {
 
 function CountPill({ count }: { count: number }) {
   return (
-    <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+    <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
       {count}
     </span>
   );
@@ -694,7 +694,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         }`}
                       >
                         <span>{tab.label}</span>
-                        <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400">
                           {tab.count}
                         </span>
                       </button>
