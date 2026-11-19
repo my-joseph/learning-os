@@ -728,6 +728,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     pagHtml,
     /aria-label="Question 1, Level 1, correct, practised 2 similar, current"/
   );
+  assert.match(pagHtml, /lucide-check/);
   assert.match(pagHtml, /bg-emerald-600/, "stepper circle colour must come from R only (emerald for 1.0)");
 }
 

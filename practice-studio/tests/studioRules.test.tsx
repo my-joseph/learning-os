@@ -109,7 +109,11 @@ assert.match(stepper, /bg-emerald-600/);
 assert.match(stepper, /bg-indigo-600/);
 assert.match(stepper, /overflow-x-auto/);
 assert.match(stepper, /justify-center/);
-assert.match(stepper, /Review &amp; sync/);
+assert.match(stepper, /^\s*Review$/m);
+assert.match(stepper, /w-\[22px\] h-\[22px\] sm:w-6 sm:h-6/);
+assert.match(stepper, /text-\[10px\] sm:text-\[11px\]/);
+assert.match(stepper, /group-focus-visible:outline/);
+assert.doesNotMatch(stepper, /focus-visible:ring-2/);
 assert.match(studioShell, /<h1 className="sr-only"/);
 assert.match(studioShell, /fixed left-3 top-1\/2/);
 assert.match(studioShell, /Due today &amp; weak spots/);
@@ -527,9 +531,10 @@ const quizTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   quizTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync, 0 of 1 answered"[^>]*aria-pressed="false"[^>]*title="Review &amp; sync, 0 of 1 answered"[^>]*>.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="false"[^>]*title="Review &amp; sync"[^>]*>.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
 );
-assert.doesNotMatch(quizTilesHtml, />Review<\/span>/);
+assert.match(quizTilesHtml, />Review<\/span>/);
+assert.doesNotMatch(quizTilesHtml, /of 1 answered|&amp; sync<\/span>/);
 
 const reviewTilesHtml = renderToStaticMarkup(
   <QuizPaginationBar
@@ -542,7 +547,7 @@ const reviewTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   reviewTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync, 0 of 1 answered"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync, 0 of 1 answered"[^>]*>.*ring-indigo-600\/15.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*>.*ring-indigo-600\/15.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
 );
 
 // Verify DrillNotFoundCard renders visible h1 for drills and labs

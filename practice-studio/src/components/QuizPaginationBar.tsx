@@ -36,7 +36,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   const steps = labMode
     ? buildLabSteps(problems)
     : buildDrillSteps(problems, workspace);
-  const review = buildReviewStepMeta(steps, labMode);
+  const review = buildReviewStepMeta();
   const navLabel = labMode
     ? "Lab milestones"
     : workspace === "code"

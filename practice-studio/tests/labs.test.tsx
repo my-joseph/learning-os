@@ -499,10 +499,9 @@ async function testSyntheticLabAndProgress() {
     assert.match(stepperHtml, />Contracts</);
     assert.match(stepperHtml, />Pool</);
     assert.match(stepperHtml, />Abort</);
-    assert.match(stepperHtml, />Tests passing</);
-    assert.match(stepperHtml, />Not started</);
-    assert.doesNotMatch(stepperHtml, />Review<\/span>/);
-    assert.match(stepperHtml, /aria-label="Review &amp; sync, 1 of 3 passed"/);
+    assert.doesNotMatch(stepperHtml, />Tests passing|>In progress|>Not started<\/span>/);
+    assert.match(stepperHtml, />Review<\/span>/);
+    assert.match(stepperHtml, /aria-label="Review &amp; sync"/);
     assert.match(stepperHtml, /aria-label="Milestone 1, Contracts, tests passing, passed"/);
     assert.match(
       stepperHtml,
@@ -510,6 +509,7 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(stepperHtml, /aria-label="Milestone 3, Abort, not started"/);
     assert.match(stepperHtml, /bg-emerald-600/, "M1 (passed) circle must be emerald green");
+    assert.match(stepperHtml, />M2<\/span>/, "untried milestones show their M number");
     assert.match(stepperHtml, /bg-indigo-600/, "Active connector must remain indigo");
     assert.match(stepperHtml, /border-zinc-300/, "M3 (not started) circle must be hollow grey");
     assert.match(stepperHtml, /ring-4 ring-indigo-600\/15/, "Current milestone must have indigo halo");
@@ -548,6 +548,7 @@ async function testSyntheticLabAndProgress() {
       />
     );
     assert.match(regressedStepperHtml, /aria-label="Milestone 2, Pool, in progress, regressed"/);
+    assert.match(regressedStepperHtml, />M2<\/span>/);
     assert.match(regressedStepperHtml, /bg-amber-600/, "Regressed milestone circle must be amber");
     assert.match(
       regressedStepperHtml,
@@ -584,7 +585,7 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(
       labReviewStepperHtml,
-      /aria-label="Review &amp; sync, 1 of 3 passed"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+      /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
     );
 
     // Render CodeDashboard for M2 (revise, tests passed)

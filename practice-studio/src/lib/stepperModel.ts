@@ -24,14 +24,13 @@ export type LabStatusLine = "Tests passing" | "In progress" | "Not started";
 
 export interface StepItem {
   key: string;
+  circleLabel: string;
   title: string;
-  secondary: string;
   result: StepResult;
   ariaLabel: string;
 }
 
 export interface ReviewStepMeta {
-  secondary: string;
   ariaLabel: string;
 }
 
@@ -110,11 +109,12 @@ export function buildDrillSteps(
   const noun = workspace === "code" ? "Problem" : "Question";
   return problems.map((problem, idx) => {
     const result = drillStepResult(problem);
+    const levelLabelMatch = problem.levelLabel?.match(/Level\s+\d+/i);
     const levelText =
       typeof problem.level === "number"
         ? `Level ${problem.level}`
-        : problem.levelLabel || "Level 1";
-    const title = `${noun} ${idx + 1}`;
+        : levelLabelMatch?.[0] || "Level 1";
+    const title = levelText;
     const practisedSimilar =
       workspace !== "code" ? countPractisedSimilar(problem.state) : 0;
     const similarSuffix =
@@ -123,8 +123,8 @@ export function buildDrillSteps(
 
     return {
       key: problem.id,
+      circleLabel: `Q${idx + 1}`,
       title,
-      secondary: levelText,
       result,
       ariaLabel,
     };
@@ -147,37 +147,15 @@ export function buildLabSteps(problems: Problem[]): StepItem[] {
 
     return {
       key: problem.id,
+      circleLabel: `M${idx + 1}`,
       title: name,
-      secondary,
       result,
       ariaLabel,
     };
   });
 }
 
-/** Build the secondary line and accessible name for the trailing Review & sync step. */
-export function buildReviewStepMeta(
-  steps: readonly StepItem[],
-  isLab: boolean
-): ReviewStepMeta {
-  const total = steps.length;
-  if (isLab) {
-    const passed = steps.filter((s) => s.result === "passed").length;
-    const secondary = `${passed} of ${total} passed`;
-    return {
-      secondary,
-      ariaLabel: `Review & sync, ${secondary}`,
-    };
-  }
-  const answered = steps.filter(
-    (s) =>
-      s.result !== "notTried" &&
-      s.result !== "skipped" &&
-      s.result !== "usedHelp"
-  ).length;
-  const secondary = `${answered} of ${total} answered`;
-  return {
-    secondary,
-    ariaLabel: `Review & sync, ${secondary}`,
-  };
+/** Build the visible label and accessible name for the trailing Review step. */
+export function buildReviewStepMeta(): ReviewStepMeta {
+  return { ariaLabel: "Review & sync" };
 }
