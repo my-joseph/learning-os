@@ -145,7 +145,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
             Due today
           </h2>
           {!dueLoading && dueReviewCount + otherWorkspaceDueCount > 0 && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums shrink-0">
+            <span className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
               {dueReviewCount + otherWorkspaceDueCount} total across workspaces
             </span>
           )}
@@ -166,7 +166,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           </p>
         ) : dueReviewCount > 0 ? (
           <div className="space-y-2.5 min-w-0">
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed tabular-nums break-words">
+            <p className="font-display tabular-nums text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed break-words">
               <span className="font-medium text-zinc-800 dark:text-zinc-200">
                 {dueReviewCount} due · next {sessionSize} · ~{sessionMinutes} min
               </span>
@@ -197,7 +197,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               Nothing due today — you&apos;re all caught up.
             </p>
             {nextDueDate && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+              <p className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
                 Next due: {nextDueDate}
               </p>
             )}
@@ -205,7 +205,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               <Link
                 href={otherReviewHref}
                 onClick={onNavigate}
-                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs tabular-nums hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs font-display tabular-nums hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
                 {otherWorkspaceDueCount} due in the other workspace
               </Link>
@@ -272,13 +272,13 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                 <div className="flex items-baseline justify-between gap-2 min-w-0">
                   <span
                     className={`text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words min-w-0 ${
-                      spot.name ? "" : "font-mono"
+                      spot.name ? "" : "font-display"
                     }`}
                     title={spot.name ? spot.id : undefined}
                   >
                     {spot.name ?? spot.id}
                   </span>
-                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums shrink-0">
+                  <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
                     {spot.matches}x
                   </span>
                 </div>

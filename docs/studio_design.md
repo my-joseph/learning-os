@@ -48,7 +48,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 | `--accent` | `accent` | Brand primary accent (exposed for gradual migration; used on active step highlight) | `79 70 229` (`#4f46e5`, indigo-600) | `129 140 248` (`#818cf8`, indigo-400) |
 
 ## Type
-- Geist Sans for UI and prose, Geist Mono for code and IDs, KaTeX for math.
+- Source Sans Pro (`font-sans`) for UI and prose, Roboto Slab (`font-display`) for non-code labels and numbers, Geist Mono (`font-mono`) only for code, and KaTeX for math.
 - Scale: question prompt `text-base` (16 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). No uppercase/all-caps labels; at most two font weights on screen.
 
 ## Spacing and motion

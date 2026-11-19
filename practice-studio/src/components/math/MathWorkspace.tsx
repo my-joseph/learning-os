@@ -262,18 +262,18 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         {isReviewSession ? (
           <>
             {(plainTitle(reviewUnitTitle) || unitCode) && (
-              <span className="text-zinc-700 dark:text-zinc-300 truncate">
+              <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300 truncate">
                 {plainTitle(reviewUnitTitle) || unitCode}
               </span>
             )}
             {typeof problem.level === "number" && problem.level > 0 && (
-              <span className="shrink-0" title={problem.levelLabel?.trim() || undefined}>
+              <span className="shrink-0 font-display tabular-nums" title={problem.levelLabel?.trim() || undefined}>
                 Difficulty {problem.level}
               </span>
             )}
           </>
         ) : (
-          <span className="truncate">
+          <span className="truncate font-display tabular-nums">
             Question {questionNumber}
             {typeof totalQuestions === "number" && totalQuestions > 0
               ? ` of ${totalQuestions}`
