@@ -51,9 +51,7 @@ export interface LabMilestoneDetail {
   checkCommand: string;
   mainFile: string | null;
   vscodeFolderUrl: string;
-  cursorFolderUrl: string;
   vscodeUrl: string | null;
-  cursorUrl: string | null;
   reviewStatus: ReviewStatus;
   state: ProblemState;
 }
@@ -107,7 +105,6 @@ export interface LabDetailResponse {
   readme: string;
   workspaceDir: string;
   vscodeFolderUrl: string;
-  cursorFolderUrl: string;
   testCommand: string;
   checkCommand: string;
   unitNotionUrl: string | null;
@@ -331,9 +328,7 @@ export function labToDrillDocument(lab: LabDetailResponse): DrillDocument {
         ? `${lab.workspaceDir}/${ms.mainFile}`
         : `${lab.workspaceDir}/src`,
       vscodeFolderUrl: ms.vscodeFolderUrl || lab.vscodeFolderUrl,
-      cursorFolderUrl: ms.cursorFolderUrl || lab.cursorFolderUrl,
       ...(ms.vscodeUrl ? { vscodeUrl: ms.vscodeUrl } : {}),
-      ...(ms.cursorUrl ? { cursorUrl: ms.cursorUrl } : {}),
       answerSpec: { type: "code_output" },
       checkpointHint: "",
       state: ms.state,

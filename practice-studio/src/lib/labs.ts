@@ -26,9 +26,6 @@ export {
   ALWAYS_STRIPPED_LAB_FIELDS,
   ALWAYS_STRIPPED_MILESTONE_FIELDS,
   labToDrillDocument,
-  parseReadmeMilestones,
-  sanitizeLabReadme,
-  summarizeLabProgress,
   type LabDetailResponse,
   type LabListItem,
   type LabMilestoneDetail,
@@ -142,15 +139,15 @@ function extractVisibleTestCases(
 function resolveMilestoneMainFile(
   labDir: string,
   ms: Record<string, unknown>
-): { mainFile: string | null; vscodeUrl: string | null; cursorUrl: string | null } {
+): { mainFile: string | null; vscodeUrl: string | null } {
   const rawMain =
     ms.mainFile ?? ms.file ?? ms.sourceFile ?? ms.entryFile ?? null;
   if (typeof rawMain !== "string" || !rawMain.trim()) {
-    return { mainFile: null, vscodeUrl: null, cursorUrl: null };
+    return { mainFile: null, vscodeUrl: null };
   }
   const candidate = rawMain.trim().replace(/^\/+/, "");
   if (FORBIDDEN_LAB_LINE_RE.test(candidate)) {
-    return { mainFile: null, vscodeUrl: null, cursorUrl: null };
+    return { mainFile: null, vscodeUrl: null };
   }
   const absTarget = path.resolve(labDir, candidate);
   const relToLab = path.relative(labDir, absTarget);
@@ -161,14 +158,13 @@ function resolveMilestoneMainFile(
     relToLab.split(/[\\/]+/).includes("_reference") ||
     relToLab.split(/[\\/]+/).includes(".canonical")
   ) {
-    return { mainFile: null, vscodeUrl: null, cursorUrl: null };
+    return { mainFile: null, vscodeUrl: null };
   }
   const cleanRel = relToLab.replace(/\\/g, "/");
   const absNormalized = absTarget.startsWith("/") ? absTarget : `/${absTarget}`;
   return {
     mainFile: cleanRel,
     vscodeUrl: `vscode://file${absNormalized}`,
-    cursorUrl: `cursor://file${absNormalized}`,
   };
 }
 
@@ -377,7 +373,6 @@ export function loadLabDetailFromDisk(
 
   const absLabDir = labDir.startsWith("/") ? labDir : `/${labDir}`;
   const vscodeFolderUrl = `vscode://file${absLabDir}`;
-  const cursorFolderUrl = `cursor://file${absLabDir}`;
 
   const progressFile = readProgress(canonicalId);
   const rawMilestones = Array.isArray(rawConfig.milestones)
@@ -424,7 +419,7 @@ export function loadLabDetailFromDisk(
     const testCommand = `npm run test:${lowerMid}`;
     const checkCommand = `npm run check:${lowerMid}`;
 
-    const { mainFile, vscodeUrl, cursorUrl } = resolveMilestoneMainFile(
+    const { mainFile, vscodeUrl } = resolveMilestoneMainFile(
       labDir,
       ms
     );
@@ -448,9 +443,7 @@ export function loadLabDetailFromDisk(
       checkCommand,
       mainFile,
       vscodeFolderUrl,
-      cursorFolderUrl,
       vscodeUrl,
-      cursorUrl,
       reviewStatus,
       state,
     };
@@ -504,7 +497,6 @@ export function loadLabDetailFromDisk(
     readme,
     workspaceDir: labDir,
     vscodeFolderUrl,
-    cursorFolderUrl,
     testCommand: "npm test",
     checkCommand: "npm run check",
     unitNotionUrl: resolveNotionUrlForLab(canonicalId, unitCode, chapterCode),

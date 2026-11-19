@@ -77,7 +77,7 @@ function isNewerDrill(candidate: DrillCandidate, existing: DrillCandidate | unde
 }
 
 /** Find the latest drill ID for each unitCode under `dataDir` (prefers unit drills over chapter mixed drills). */
-export function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
+function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
   const direct = new Map<string, DrillCandidate>();
   const covered = new Map<string, DrillCandidate>();
   if (!fs.existsSync(dataDir)) {
@@ -135,7 +135,7 @@ export function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
   return result;
 }
 
-export function readReviewSchedule(progressDir: string = getProgressDir()): Record<string, ReviewScheduleEntry> {
+function readReviewSchedule(progressDir: string = getProgressDir()): Record<string, ReviewScheduleEntry> {
   const cachePath = path.join(progressDir, "_review_schedule.json");
   if (!fs.existsSync(cachePath)) return {};
   try {

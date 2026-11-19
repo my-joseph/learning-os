@@ -305,7 +305,7 @@ export function normalizeLabPickerItems(labs: readonly LabListItem[]): PickerIte
 }
 
 /** Tokenized case-insensitive match across titles, unit/chapter/topic codes, and full IDs. */
-export function matchesSearchTokens(
+function matchesSearchTokens(
   fields: readonly (string | null | undefined)[],
   query: string
 ): boolean {
@@ -406,7 +406,7 @@ export function filterPickerItems(
   });
 }
 
-export function isUnfinishedPracticeStatus(status: PickerStatus): boolean {
+function isUnfinishedPracticeStatus(status: PickerStatus): boolean {
   return status === "In Progress" || status === "Needs Retry";
 }
 

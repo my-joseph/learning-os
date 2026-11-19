@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
             {
               name: "Empty Code",
               passed: false,
-              error: "No implementation found. Write your solution in VS Code / Cursor or in the editor.",
+              error: "No implementation found. Write your solution in your local editor.",
             },
           ],
           hiddenPassed: 0,

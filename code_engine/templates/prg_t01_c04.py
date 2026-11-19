@@ -20,7 +20,7 @@ And the 7 Core Engineering Competencies:
 - Performance & Optimization
 
 All problems are execution-verified against Node.js test runner during generation.
-Materializes starter files and test files in drills/workspace/ for real Cursor/VS Code work.
+Materializes starter files and test files in drills/workspace/ for local IDE work.
 """
 
 import random
@@ -211,7 +211,7 @@ module.exports = { debounce };
         },
         "answerPlain": "debounce implementation",
         "answerDisplay": "debounce(fn, delay)",
-        "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
+        "inputHint": "Implement in your local editor and run tests in terminal",
         "checkpointHint": ("Store timer in closure scope and invoke clearTimeout(timer) before scheduling setTimeout."),
         "commonTrapTag": "timer-cancellation-flaw",
         "steps": [
@@ -354,7 +354,7 @@ module.exports = { groupBy };
         },
         "answerPlain": "groupBy implementation",
         "answerDisplay": "groupBy(collection, iteratee)",
-        "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
+        "inputHint": "Implement in your local editor and run tests in terminal",
         "checkpointHint": ("Check if iteratee is typeof function vs string property, and reduce over collection."),
         "commonTrapTag": "empty-input-handling",
         "steps": [
@@ -582,7 +582,7 @@ module.exports = { calculateOrderTotal };
         },
         "answerPlain": "calculateOrderTotal implementation",
         "answerDisplay": "calculateOrderTotal(order)",
-        "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
+        "inputHint": "Implement in your local editor and run tests in terminal",
         "checkpointHint": (
             "Apply discounts before tax and shipping, and calculate tax only on the discounted taxable amount."
         ),
@@ -1394,7 +1394,7 @@ module.exports = { memoize };
         },
         "answerPlain": "memoize implementation",
         "answerDisplay": "memoize(fn, resolver)",
-        "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
+        "inputHint": "Implement in your local editor and run tests in terminal",
         "checkpointHint": (
             "Use Map.prototype.has(key) rather than checking if cache[key] is truthy to avoid re-evaluating falsy values."
         ),
