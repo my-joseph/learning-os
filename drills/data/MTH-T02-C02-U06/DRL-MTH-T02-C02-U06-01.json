@@ -1432,7 +1432,7 @@
       "trapDerivation": "(-(4-2)/3,(4+2)/3)",
       "trapValue": "(-2/3,2)",
       "verify": {
-        "source": "2/3",
+        "source": "[-2/3, 2]",
         "trapValue": "(-2/3,2)"
       },
       "checkpointHint": "Translate a distance bound into both a lower and upper bound, keeping the endpoint rule from the inequality sign.",
