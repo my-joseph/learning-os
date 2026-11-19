@@ -6,6 +6,9 @@ import fs from "fs";
  * Supports both standalone execution (inside practice-studio/) and parent repo execution.
  */
 export function getWorkspaceRoot(): string {
+  if (process.env.LEARNINGOS_ROOT) {
+    return path.resolve(process.env.LEARNINGOS_ROOT);
+  }
   const cwd = process.cwd();
   const parent = path.resolve(cwd, "..");
 
@@ -74,13 +77,122 @@ export function isSafeId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(value);
 }
 
+/** True when LEARNINGOS_PILOT is enabled ('1', 'true', 'yes'); mirrors progress_store.pilot_mode(). */
+export function isPilotMode(): boolean {
+  const pilot = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
+  return pilot === "1" || pilot === "true" || pilot === "yes";
+}
+
+/** Base directory holding materialized drill workspaces (`pilot/workspace` in pilot mode, else `drills/workspace`). */
+export function getDrillWorkspacesDir(rootDir: string = getWorkspaceRoot()): string {
+  const sub = isPilotMode()
+    ? path.join("pilot", "workspace")
+    : path.join("drills", "workspace");
+  return path.resolve(rootDir, sub);
+}
+
+/** Materialized workspace directory for a single drill (`<wsBase>/<drillId>`). */
+export function getDrillWorkspaceDir(
+  drillId: string,
+  rootDir: string = getWorkspaceRoot()
+): string | null {
+  if (!isSafeId(drillId)) return null;
+  return path.join(getDrillWorkspacesDir(rootDir), drillId);
+}
+
+function isStrictlyInsideDir(baseDir: string, targetPath: string): boolean {
+  const rel = path.relative(baseDir, targetPath);
+  return rel !== "" && !rel.startsWith("..") && !path.isAbsolute(rel);
+}
+
+/**
+ * Resolves a file path and guarantees it stays strictly inside the given drill's
+ * workspace directory (`<root>/drills/workspace/<drillId>/` or
+ * `<root>/pilot/workspace/<drillId>/` in pilot mode), rejecting `..` traversal,
+ * hidden/reference paths, and symlink escapes (including dangling symlinks).
+ */
+export function resolveInsideDrillWorkspace(
+  relOrAbs: string,
+  drillId: string,
+  rootDir: string = getWorkspaceRoot()
+): string | null {
+  if (typeof relOrAbs !== "string" || !relOrAbs.trim() || relOrAbs.includes("\0")) {
+    return null;
+  }
+  const wsDir = getDrillWorkspaceDir(drillId, rootDir);
+  if (!wsDir) return null;
+
+  const root = path.resolve(rootDir);
+  const candidate = path.resolve(root, relOrAbs);
+  if (!isStrictlyInsideDir(wsDir, candidate)) return null;
+
+  const rel = path.relative(wsDir, candidate);
+  const segments = rel.split(/[\\/]+/);
+  if (segments.includes("_reference") || segments.includes(".canonical")) return null;
+  const base = path.basename(candidate);
+  if (base.startsWith(".env") || base.includes(".hidden.")) return null;
+
+  const realRoot = fs.existsSync(root) ? fs.realpathSync(root) : root;
+  const wsRelFromRoot = path.relative(root, wsDir);
+  const expectedRealWsDir = path.join(realRoot, wsRelFromRoot);
+
+  // Verify no existing ancestor between root and wsDir is a symlink redirecting outside its canonical path.
+  let ancestorCursor = root;
+  for (const seg of wsRelFromRoot.split(/[\\/]+/)) {
+    ancestorCursor = path.join(ancestorCursor, seg);
+    let st: fs.Stats;
+    try {
+      st = fs.lstatSync(ancestorCursor);
+    } catch {
+      break;
+    }
+    if (st.isSymbolicLink()) {
+      return null;
+    }
+  }
+
+  if (!fs.existsSync(wsDir)) {
+    return path.join(expectedRealWsDir, rel);
+  }
+
+  const realWsDir = fs.realpathSync(wsDir);
+  if (realWsDir !== expectedRealWsDir) return null;
+
+  // Walk every segment inside wsDir to reject symlink escapes and dangling symlinks.
+  let segCursor = wsDir;
+  for (const seg of segments) {
+    segCursor = path.join(segCursor, seg);
+    let st: fs.Stats;
+    try {
+      st = fs.lstatSync(segCursor);
+    } catch {
+      break;
+    }
+    if (st.isSymbolicLink()) {
+      try {
+        const realSeg = fs.realpathSync(segCursor);
+        if (!isStrictlyInsideDir(realWsDir, realSeg)) return null;
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  if (fs.existsSync(candidate)) {
+    const realTarget = fs.realpathSync(candidate);
+    if (!isStrictlyInsideDir(realWsDir, realTarget)) return null;
+    return realTarget;
+  }
+
+  return path.join(realWsDir, rel);
+}
+
 /** Where learner progress lives (progress/<DRILL_ID>.json); mirrors progress_store.py. */
 export function getProgressDir(): string {
   if (process.env.PROGRESS_DIR) {
     return path.resolve(process.env.PROGRESS_DIR);
   }
-  const pilot = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
-  if (pilot === "1" || pilot === "true" || pilot === "yes") {
+  if (isPilotMode()) {
     return path.join(getWorkspaceRoot(), "pilot", "progress");
   }
   return path.join(getWorkspaceRoot(), "progress");
