@@ -1,4 +1,6 @@
 import type { ProblemState } from "../types/drill";
+import { cycleReviews } from "./reviewGuard";
+import { cycleOriginalAttempts } from "./similarTabs";
 import { statusTone } from "./statusTone";
 
 export type ReviewOutcome =
@@ -64,7 +66,7 @@ export function classifyReviewOutcome(state?: ProblemState | null): ReviewOutcom
     state.setupRevealedBeforeAnswer ||
       state.solutionRevealedBeforeAnswer ||
       (state.hintsRevealed ?? 0) > 0 ||
-      state.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
+      cycleOriginalAttempts(state).some((a) => a.setupRevealed || a.solutionRevealed)
   );
 
   if (typeof state.score === "number") {
@@ -73,7 +75,8 @@ export function classifyReviewOutcome(state?: ProblemState | null): ReviewOutcom
     return "wrong";
   }
 
-  const latestReview = state.reviews?.[state.reviews.length - 1];
+  const currentReviews = cycleReviews(state);
+  const latestReview = currentReviews[currentReviews.length - 1];
   if (latestReview?.verdict === "pass") return "correct_first";
   if (latestReview?.verdict === "revise") return "assisted_or_partial";
 

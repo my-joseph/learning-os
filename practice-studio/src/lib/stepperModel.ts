@@ -1,5 +1,6 @@
 import type { Problem } from "../types/drill";
 import type { Workspace } from "./routes";
+import { cycleReviews } from "./reviewGuard";
 import { countPractisedSimilar, cycleOriginalAttempts } from "./similarTabs";
 import { deriveCodeStatus, deriveMilestoneStepperState } from "./codeStatus";
 
@@ -83,8 +84,8 @@ export function labStatusLine(problem: Problem): LabStatusLine {
   const hasActivity =
     status.tests !== "not_run" ||
     Boolean(state?.lastTestReport) ||
-    (state?.reviews?.length ?? 0) > 0 ||
-    (state?.attempts?.length ?? 0) > 0 ||
+    cycleReviews(state).length > 0 ||
+    cycleOriginalAttempts(state).length > 0 ||
     Boolean(state?.userCode && state.userCode.trim().length > 0);
 
   return hasActivity ? "In progress" : "Not started";

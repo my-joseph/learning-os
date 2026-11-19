@@ -471,7 +471,19 @@ runCase("Raw SymPy/Python error in invalid input is sanitized to calm learner co
   assert(!canRevealVerifiedAnswer(st), "Sanitized invalid input must not unlock verified answer");
 });
 
-runCase("resetDrillForRetry clears the exact same problem state fields as resetProblemForRetry", () => {
+runCase("resetDrillForRetry and resetProblemForRetry start a new cycle while preserving history", () => {
+  const sampleReview = {
+    at: "2026-11-18T10:05:00Z",
+    attempt: 1,
+    codeHash: "sha256:abc",
+    code: "// edited",
+    tests: { passed: 1, total: 1, failed: [] },
+    lint: [],
+    typecheck: [],
+    findings: [],
+    verdict: "pass" as const,
+    explain: null,
+  };
   const dirtyProblem = createBaseProblem({
     display: "2x = 720",
     plainText: "2*x = 720",
@@ -485,7 +497,8 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
       divergedStep: 0,
       mistakes: ["sign-error"],
       mistakeNote: "Flipped sign",
-      skipped: false,
+      revisitNote: "Double-check negative signs",
+      skipped: true,
       lastCheck: correctResult,
       lastTestReport: {
         allPassed: true,
@@ -498,6 +511,7 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
         executionTimeMs: 5,
       },
       attempts: [{ input: "360", ts: "2026-11-18T10:00:00Z", verdict: "correct" }],
+      reviews: [sampleReview],
       hintsRevealed: 2,
       setupRevealedBeforeAnswer: true,
       solutionRevealedBeforeAnswer: true,
@@ -505,7 +519,8 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
     },
   });
 
-  const singleReset = resetProblemForRetry(dirtyProblem);
+  const resetTs = "2026-11-20T01:00:00.000Z";
+  const singleReset = resetProblemForRetry(dirtyProblem, resetTs);
   const sampleDoc: DrillDocument = {
     schemaVersion: "2.0",
     drillId: "DRL-MTH-TEST-01",
@@ -531,12 +546,25 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
     localFilePath: "",
   };
 
-  const allReset = resetDrillForRetry(sampleDoc);
+  const allReset = resetDrillForRetry(sampleDoc, resetTs);
   assert(
     JSON.stringify(allReset.problems[0]) === JSON.stringify(singleReset),
     "resetDrillForRetry must match resetProblemForRetry field-for-field"
   );
-  assert(singleReset.state.attempts?.length === 0, "attempts must be cleared");
+  // History is preserved
+  assert(singleReset.state.attempts?.length === 1, "attempt history must be preserved on reset");
+  assert(singleReset.state.mistakes.includes("sign-error"), "mistakes must be preserved on reset");
+  assert(singleReset.state.mistakeNote === "Flipped sign", "mistakeNote must be preserved on reset");
+  assert(singleReset.state.revisitNote === "Double-check negative signs", "revisitNote must be preserved on reset");
+  assert(singleReset.state.reviews?.length === 1, "reviews must be preserved on reset");
+  assert(singleReset.state.cycleStartedAt === resetTs, "cycleStartedAt must be stamped to reset time");
+  // Visible active state is cleared
+  assert(singleReset.state.userInput === "", "userInput must be cleared");
+  assert(singleReset.state.score === null, "score must be null");
+  assert(singleReset.state.divergedStep === null, "divergedStep must be null");
+  assert(singleReset.state.skipped === false, "skipped must be false");
+  assert(singleReset.state.lastCheck === null, "lastCheck must be null");
+  assert(singleReset.state.lastTestReport === null, "lastTestReport must be null");
   assert(singleReset.state.hintsRevealed === 0, "hintsRevealed must be 0");
   assert(singleReset.state.setupRevealedBeforeAnswer === false, "setupRevealedBeforeAnswer must be false");
   assert(singleReset.state.solutionRevealedBeforeAnswer === false, "solutionRevealedBeforeAnswer must be false");
@@ -545,8 +573,11 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
   assert(!("display" in singleReset), "display must be stripped");
   assert(!("steps" in singleReset), "steps must be stripped");
   assert(!("answerDisplay" in singleReset), "answerDisplay must be stripped");
+  assert(!("solutionCode" in singleReset), "solutionCode must be stripped");
   assert(allReset.sessionSummary.practiceStatus === "Ready", "sessionSummary status must reset to Ready");
   assert(allReset.sessionSummary.attemptDate === null, "attemptDate must reset to null");
+  // Cycle-aware readers treat reset state as unattempted
+  assert(!canRevealVerifiedAnswer(singleReset.state), "reset problem with prior attempts/reviews must count as unattempted in new cycle");
 
   const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");
   assert(

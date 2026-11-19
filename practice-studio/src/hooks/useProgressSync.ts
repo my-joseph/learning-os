@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { DrillDocument, SessionSummary } from "@/types/drill";
 import { plainTitle } from "@/lib/titleText";
 import { isLabId } from "@/lib/routes";
+import { createSaveQueue, type SaveQueue } from "@/lib/saveQueue";
 import {
   buildSyncPayload,
   computeSessionMetrics,
@@ -46,8 +47,28 @@ interface UseProgressSyncOptions {
 }
 
 interface ConfirmSyncCallbacks {
+  getLatestDrill?: () => DrillDocument | null;
   onDrillUpdated: (doc: DrillDocument) => void;
   onSynced: (drillId: string) => Promise<void>;
+}
+
+/**
+ * Merge a Notion sync stamp (`sessionSummary`) into the latest in-memory drill document.
+ * Returns null if the learner has switched to a different drill, preserving any edits
+ * made while the sync was in flight.
+ */
+export function mergeSyncStampIntoLatestDrill(
+  latestDrill: DrillDocument | null,
+  syncedDrillId: string,
+  stampedSummary: SessionSummary
+): DrillDocument | null {
+  if (!latestDrill || latestDrill.drillId !== syncedDrillId) {
+    return null;
+  }
+  return {
+    ...latestDrill,
+    sessionSummary: stampedSummary,
+  };
 }
 
 export interface SyncResponseLike {
@@ -95,7 +116,9 @@ export interface ExecuteNotionSyncResult {
   syncState: SyncState;
   toast: StatusMessage | null;
   stampedDoc: DrillDocument | null;
+  stampedSummary?: SessionSummary | null;
   postedPayload: DrillDocument | null;
+  ignored?: boolean;
 }
 
 /**
@@ -107,6 +130,8 @@ export async function executeNotionSync(options: {
   currentDrill: DrillDocument;
   statusOverride: PracticeStatusOverride;
   fetchFn?: typeof fetch;
+  getLatestDrill?: () => DrillDocument | null;
+  saveDoc?: (doc: DrillDocument) => Promise<boolean>;
   isOffline?: boolean;
   nowIso?: string;
   attemptDate?: string;
@@ -115,6 +140,8 @@ export async function executeNotionSync(options: {
     currentDrill,
     statusOverride,
     fetchFn = fetch,
+    getLatestDrill,
+    saveDoc,
     isOffline = typeof navigator !== "undefined" && navigator.onLine === false,
     nowIso = new Date().toISOString(),
     attemptDate,
@@ -257,7 +284,7 @@ export async function executeNotionSync(options: {
     };
   }
 
-  // Real successful Notion sync: stamp metadata and persist locally via /api/save-state.
+  // Real successful Notion sync: merge stamp metadata into the LATEST drill doc (never overwrite with click-time copy).
   const drillPageId =
     typeof data.drillPageId === "string" && data.drillPageId.trim()
       ? data.drillPageId.trim()
@@ -270,25 +297,48 @@ export async function executeNotionSync(options: {
     syncedFingerprint: summaryFingerprint(fullDocToSync.sessionSummary),
   };
 
-  const stampedDoc: DrillDocument = {
-    ...fullDocToSync,
-    sessionSummary: stampedSummary,
-  };
-
-  try {
-    await fetchFn("/api/save-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(stampedDoc),
-    });
-  } catch {
-    // Non-fatal: Notion sync succeeded; local save can be retried on next edit.
-  }
-
   const unitReviews =
     data.unitReviews && typeof data.unitReviews === "object"
       ? data.unitReviews
       : undefined;
+
+  const latestTarget = getLatestDrill
+    ? mergeSyncStampIntoLatestDrill(getLatestDrill(), currentDrill.drillId, stampedSummary)
+    : {
+        ...fullDocToSync,
+        sessionSummary: stampedSummary,
+      };
+
+  // Learner switched to a different drill while the sync was in flight: ignore result.
+  if (!latestTarget) {
+    return {
+      syncState: {
+        phase: "synced",
+        at: nowIso,
+        unitReviews,
+        drillPageId,
+      },
+      toast,
+      stampedDoc: null,
+      stampedSummary: null,
+      postedPayload: fullDocToSync,
+      ignored: true,
+    };
+  }
+
+  try {
+    if (saveDoc) {
+      await saveDoc(latestTarget);
+    } else {
+      await fetchFn("/api/save-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(latestTarget),
+      });
+    }
+  } catch {
+    // Non-fatal: Notion sync succeeded; local save can be retried on next edit.
+  }
 
   return {
     syncState: {
@@ -298,73 +348,71 @@ export async function executeNotionSync(options: {
       drillPageId,
     },
     toast,
-    stampedDoc,
+    stampedDoc: latestTarget,
+    stampedSummary,
     postedPayload: fullDocToSync,
   };
 }
 
-/** Manage debounced local progress autosave and Notion sync payloads. */
+/** Manage ordered local progress autosave and Notion sync payloads. */
 export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
   const [statusOverride, setStatusOverride] = useState<PracticeStatusOverride>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>(INITIAL_SYNC_STATE);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingDocRef = useRef<DrillDocument | null>(null);
+  const saveQueueRef = useRef<SaveQueue | null>(null);
+  const syncingRef = useRef(false);
+  const syncGenRef = useRef(0);
+
+  const getSaveQueue = useCallback((): SaveQueue => {
+    if (!saveQueueRef.current) {
+      saveQueueRef.current = createSaveQueue();
+    }
+    return saveQueueRef.current;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      saveQueueRef.current?.dispose();
+    };
+  }, []);
 
   const resetSyncState = useCallback(() => {
+    syncGenRef.current += 1;
+    syncingRef.current = false;
+    setIsSyncing(false);
     setSyncState(INITIAL_SYNC_STATE);
   }, []);
 
   const flushAutoSave = useCallback(async () => {
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = null;
-    }
-    const doc = pendingDocRef.current;
-    if (!doc) return;
-    pendingDocRef.current = null;
-    try {
-      await fetch("/api/save-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(doc),
-      });
-    } catch {
-      // silent fail on transient autosave
-    }
-  }, []);
+    await getSaveQueue().flush();
+  }, [getSaveQueue]);
 
-  const triggerAutoSave = useCallback((updatedDoc: DrillDocument) => {
-    pendingDocRef.current = updatedDoc;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      saveTimerRef.current = null;
-      const docToSave = pendingDocRef.current;
-      pendingDocRef.current = null;
-      if (!docToSave) return;
-      try {
-        await fetch("/api/save-state", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(docToSave),
-        });
-      } catch {
-        // silent fail on transient autosave
-      }
-    }, 400);
-  }, []);
+  const saveNow = useCallback(
+    (doc?: DrillDocument) => getSaveQueue().saveNow(doc),
+    [getSaveQueue]
+  );
+
+  const triggerAutoSave = useCallback(
+    (updatedDoc: DrillDocument) => {
+      getSaveQueue().enqueue(updatedDoc);
+    },
+    [getSaveQueue]
+  );
 
   const confirmSyncToNotion = useCallback(
     async (
       currentDrill: DrillDocument | null,
-      { onDrillUpdated, onSynced }: ConfirmSyncCallbacks
+      { getLatestDrill, onDrillUpdated, onSynced }: ConfirmSyncCallbacks
     ) => {
-      if (!currentDrill || isLabId(currentDrill.drillId)) return;
+      if (syncingRef.current || !currentDrill || isLabId(currentDrill.drillId)) return;
 
+      const syncedDrillId = currentDrill.drillId;
+      const syncGen = syncGenRef.current;
       const { liveScore, maxScore } = computeSessionMetrics(currentDrill, statusOverride);
       const drillLabel =
         plainTitle(currentDrill.unitTitle) || currentDrill.unitCode || currentDrill.drillId;
 
+      syncingRef.current = true;
       setIsSyncing(true);
       setSyncState({ phase: "syncing" });
       setStatus({
@@ -374,10 +422,28 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
 
       try {
         await flushAutoSave();
+        if (
+          syncGenRef.current !== syncGen ||
+          (getLatestDrill && getLatestDrill()?.drillId !== syncedDrillId)
+        ) {
+          return;
+        }
+        const docToSync = getLatestDrill?.() ?? currentDrill;
         const result = await executeNotionSync({
-          currentDrill,
+          currentDrill: docToSync,
           statusOverride,
+          getLatestDrill,
+          saveDoc: saveNow,
         });
+
+        // Ignore the result if the learner switched drills while the sync ran.
+        if (
+          result.ignored ||
+          syncGenRef.current !== syncGen ||
+          (getLatestDrill && getLatestDrill()?.drillId !== syncedDrillId)
+        ) {
+          return;
+        }
 
         setSyncState(result.syncState);
         if (result.toast) {
@@ -385,18 +451,21 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         }
         if (result.stampedDoc) {
           onDrillUpdated(result.stampedDoc);
-          await onSynced(currentDrill.drillId);
+          await onSynced(syncedDrillId);
         } else if (
           result.syncState.phase === "degraded" ||
           result.syncState.phase === "dryRun"
         ) {
-          await onSynced(currentDrill.drillId);
+          await onSynced(syncedDrillId);
         }
       } finally {
-        setIsSyncing(false);
+        if (syncGenRef.current === syncGen) {
+          syncingRef.current = false;
+          setIsSyncing(false);
+        }
       }
     },
-    [flushAutoSave, setStatus, statusOverride]
+    [flushAutoSave, saveNow, setStatus, statusOverride]
   );
 
   return {
@@ -406,6 +475,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
     syncState,
     resetSyncState,
     triggerAutoSave,
+    saveNow,
     flushAutoSave,
     confirmSyncToNotion,
   };

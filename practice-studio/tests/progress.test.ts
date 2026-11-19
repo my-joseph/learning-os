@@ -114,5 +114,198 @@ assert(
   "writeProgress keeps reviews when updating revisitNote",
 );
 
+// 9. Stale autosave sending `reviews: []` or older subset must NEVER drop server reviews
+const serverReviews = [
+  {
+    ...sampleReview[0],
+    at: "2026-11-16T10:00:00Z",
+    attempt: 1,
+    verdict: "revise",
+    explain: "Server-recorded explanation",
+  },
+  {
+    ...sampleReview[0],
+    at: "2026-11-16T10:05:00Z",
+    attempt: 2,
+    verdict: "pass",
+    explain: null,
+  },
+];
+const prgServerDoc = prgDoc();
+prgServerDoc.drillId = "DRL-PRG-MERGE-01";
+prgServerDoc.problems[0].state = {
+  userInput: "",
+  score: 1,
+  reviews: serverReviews,
+  attempts: [
+    { input: "a", ts: "2026-11-16T10:00:00Z", verdict: "incorrect" },
+    { input: "b", ts: "2026-11-16T10:05:00Z", verdict: "correct" },
+  ],
+  mistakes: ["QC-NAMING"],
+  mistakeNote: "Rename loop variable",
+  revisitNote: "Check edge cases first",
+};
+writeProgress({ ...prgServerDoc, sessionSummary: { score: 1 } });
+
+// Stale tab autosaves with reviews: [] (e.g. labModel default), only the first attempt, and empty notes/tags
+const staleAutosave = prgDoc();
+staleAutosave.drillId = "DRL-PRG-MERGE-01";
+staleAutosave.problems[0].state = {
+  userInput: "draft",
+  score: 0.5,
+  reviews: [],
+  attempts: [{ input: "a", ts: "2026-11-16T10:00:00Z", verdict: "incorrect" }],
+  mistakes: [],
+  mistakeNote: "",
+  revisitNote: "",
+};
+writeProgress({ ...staleAutosave, sessionSummary: { score: 0.5 } });
+
+const afterStale = readProgress("DRL-PRG-MERGE-01")?.problems?.Q01 as {
+  reviews: Array<{ at: string; verdict: string; explain: string | null }>;
+  attempts: Array<{ ts: string; verdict: string }>;
+  mistakes: string[];
+  mistakeNote: string;
+  revisitNote: string;
+};
+assert(afterStale.reviews.length === 2, "stale autosave with reviews:[] must keep all server reviews");
+assert(
+  afterStale.reviews[0].explain === "Server-recorded explanation",
+  "stale autosave must keep server explain field on existing review",
+);
+assert(afterStale.reviews[1].verdict === "pass", "stale autosave must keep newer server review");
+assert(afterStale.attempts.length === 2, "stale autosave must keep server attempts by ts");
+assert(afterStale.attempts[1].ts === "2026-11-16T10:05:00Z", "merged attempts stay in chronological order");
+assert(afterStale.mistakes.length === 1 && afterStale.mistakes[0] === "QC-NAMING", "empty mistakes keeps server mistakes");
+assert(afterStale.mistakeNote === "Rename loop variable", "empty mistakeNote keeps server mistakeNote");
+assert(afterStale.revisitNote === "Check edge cases first", "empty revisitNote keeps server revisitNote");
+
+// Also verify stale client sending older copy of r1 (explain: null) without r2 keeps both r1's explain and r2
+const stalePartialReviews = prgDoc();
+stalePartialReviews.drillId = "DRL-PRG-MERGE-01";
+stalePartialReviews.problems[0].state = {
+  userInput: "draft",
+  score: 1,
+  reviews: [{ ...serverReviews[0], explain: null }],
+  attempts: [
+    { input: "a", ts: "2026-11-16T10:00:00Z", verdict: "incorrect" },
+    { input: "c", ts: "2026-11-16T10:03:00Z", verdict: "incorrect" },
+  ],
+};
+writeProgress({ ...stalePartialReviews, sessionSummary: { score: 1 } });
+const afterPartial = readProgress("DRL-PRG-MERGE-01")?.problems?.Q01 as {
+  reviews: Array<{ at: string; explain: string | null }>;
+  attempts: Array<{ ts: string }>;
+};
+assert(afterPartial.reviews.length === 2, "partial client reviews keeps server reviews");
+assert(afterPartial.reviews[0].explain === "Server-recorded explanation", "server review copy wins on key match");
+assert(
+  afterPartial.attempts.map((a) => a.ts).join(",") ===
+    "2026-11-16T10:00:00Z,2026-11-16T10:03:00Z,2026-11-16T10:05:00Z",
+  "merged attempts union by ts and keep chronological order",
+);
+
+// 10. reviewMerge NEVER overwrites original score, hintsRevealed, setup/solution flags, skipped, lastCheck, lastTestReport, durationMs
+const originalDrill = {
+  drillId: "DRL-MTH-REVMERGE-01",
+  unitCode: "MTH-REV",
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        userInput: "5",
+        score: 0.5,
+        hintsRevealed: 1,
+        setupRevealedBeforeAnswer: true,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        lastCheck: { verdict: "correct", message: "Correct", components: [], diagnostics: [] },
+        lastTestReport: {
+          allPassed: true,
+          score: 1,
+          passedCount: 3,
+          totalCount: 3,
+          visibleResults: [],
+          hiddenPassed: 1,
+          hiddenTotal: 1,
+          executionTimeMs: 12,
+        },
+        durationMs: 15_000,
+        mistakes: ["sign-error"],
+        mistakeNote: "Initial note",
+        revisitNote: "",
+        attempts: [{ input: "5", ts: "2026-11-18T10:00:00Z", verdict: "correct", setupRevealed: true }],
+      },
+    },
+  ],
+  sessionSummary: { score: 0.5, practiceStatus: "Needs Retry" },
+};
+writeProgress(originalDrill);
+
+// Scenario A & B combined: /review skips item with clean state (score: 0, hintsRevealed: 0, setupRevealedBeforeAnswer: false,
+// solutionRevealedBeforeAnswer: true, skipped: true, lastTestReport: null, durationMs: 2000) and adds revisitNote + new tag
+writeProgress({
+  drillId: "DRL-MTH-REVMERGE-01",
+  unitCode: "MTH-REV",
+  reviewMerge: true,
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        userInput: "(Skipped)",
+        score: 0,
+        hintsRevealed: 0,
+        setupRevealedBeforeAnswer: false,
+        solutionRevealedBeforeAnswer: true,
+        skipped: true,
+        lastCheck: { verdict: "skipped", message: "Skipped", components: [], diagnostics: [] },
+        lastTestReport: null,
+        durationMs: 2_000,
+        mistakes: ["concept-gap"],
+        mistakeNote: "",
+        revisitNote: "Check formula before substituting",
+        attempts: [{ input: "(Skipped)", ts: "2026-11-19T12:00:00Z", verdict: "skipped" }],
+        cycleStartedAt: "2026-11-19T11:59:00Z",
+      },
+    },
+  ],
+});
+
+const afterRevMerge = readProgress("DRL-MTH-REVMERGE-01")?.problems?.Q01 as {
+  userInput: string;
+  score: number;
+  hintsRevealed: number;
+  setupRevealedBeforeAnswer: boolean;
+  solutionRevealedBeforeAnswer: boolean;
+  skipped: boolean;
+  lastCheck: { verdict: string };
+  lastTestReport: { passedCount: number } | null;
+  durationMs: number;
+  mistakes: string[];
+  mistakeNote: string;
+  revisitNote: string;
+  attempts: Array<{ ts: string; verdict: string }>;
+  reviewStepsRevealedAt?: string;
+};
+assert(afterRevMerge.score === 0.5, "reviewMerge must leave original score untouched");
+assert(afterRevMerge.hintsRevealed === 1, "reviewMerge must leave original hintsRevealed untouched");
+assert(afterRevMerge.setupRevealedBeforeAnswer === true, "reviewMerge must leave original setupRevealedBeforeAnswer untouched");
+assert(afterRevMerge.solutionRevealedBeforeAnswer === false, "reviewMerge must leave original solutionRevealedBeforeAnswer untouched");
+assert(afterRevMerge.skipped === false, "reviewMerge must leave original skipped untouched");
+assert(afterRevMerge.lastCheck.verdict === "correct", "reviewMerge must leave original lastCheck untouched");
+assert(afterRevMerge.lastTestReport?.passedCount === 3, "reviewMerge must leave original lastTestReport untouched");
+assert(afterRevMerge.durationMs === 15_000, "reviewMerge must leave original durationMs untouched");
+assert(afterRevMerge.userInput === "5", "reviewMerge must leave original userInput untouched");
+assert(afterRevMerge.attempts.length === 2, "reviewMerge must append new review attempt");
+assert(afterRevMerge.attempts[1].verdict === "skipped", "appended review attempt preserved");
+assert(afterRevMerge.mistakes.includes("sign-error") && afterRevMerge.mistakes.includes("concept-gap"), "reviewMerge unions mistake tags");
+assert(afterRevMerge.mistakeNote === "Initial note", "reviewMerge keeps original mistakeNote when review note is empty");
+assert(afterRevMerge.revisitNote === "Check formula before substituting", "reviewMerge fills revisitNote");
+assert(Boolean(afterRevMerge.reviewStepsRevealedAt), "reviewMerge records cycle-scoped reviewStepsRevealedAt without mutating original flag");
+
+// 11. Atomic writes leave no leftover .tmp files
+const leftoverTmp = fs.readdirSync(tmp).filter((f) => f.endsWith(".tmp"));
+assert(leftoverTmp.length === 0, "atomic progress writes must not leave .tmp files behind");
+
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log("ALL 8 PROGRESS CHECKS PASSED");
+console.log("ALL PROGRESS CHECKS PASSED");

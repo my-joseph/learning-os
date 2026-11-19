@@ -26,7 +26,10 @@ import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
-import { useProgressSync } from "@/hooks/useProgressSync";
+import {
+  useProgressSync,
+  mergeSyncStampIntoLatestDrill,
+} from "@/hooks/useProgressSync";
 import { useDrill } from "@/hooks/useDrill";
 import { useDrillList } from "@/hooks/useDrillList";
 import {
@@ -84,6 +87,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     syncState,
     resetSyncState,
     triggerAutoSave,
+    saveNow,
     flushAutoSave,
     confirmSyncToNotion,
   } = useProgressSync({ setStatus });
@@ -113,6 +117,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const {
     currentDrill,
     setCurrentDrill,
+    getLatestDrill,
     activeSteps,
     currentProblemIndex,
     setCurrentProblemIndex,
@@ -147,6 +152,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     handleSelectQuestion,
   } = useDrill({
     triggerAutoSave,
+    saveNow,
     setStatus,
     onDrillLoaded: handleDrillLoaded,
     onQuestionChange: handleQuestionUrlSync,
@@ -210,20 +216,34 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   }, [qParam, currentDrill, drillId, setCurrentProblemIndex]);
 
   const handleConfirmSyncToNotion = () =>
-    confirmSyncToNotion(currentDrill, {
-      onDrillUpdated: setCurrentDrill,
+    confirmSyncToNotion(getLatestDrill() ?? currentDrill, {
+      getLatestDrill,
+      onDrillUpdated: (stampedDoc) =>
+        setCurrentDrill(
+          (prev) =>
+            mergeSyncStampIntoLatestDrill(
+              prev,
+              stampedDoc.drillId,
+              stampedDoc.sessionSummary
+            ) ?? prev
+        ),
       onSynced: () => loadDrillsList(),
     });
 
   const handleStatusOverrideChange = (override: "Graded" | "Needs Retry") => {
     setStatusOverride(override);
-    if (!currentDrill) return;
-    const updated = {
-      ...currentDrill,
-      sessionSummary: { ...currentDrill.sessionSummary, statusOverride: override },
-    };
-    setCurrentDrill(updated);
-    triggerAutoSave(updated);
+    let updated: DrillDocument | null = null;
+    setCurrentDrill((prev) => {
+      if (!prev) return prev;
+      updated = {
+        ...prev,
+        sessionSummary: { ...prev.sessionSummary, statusOverride: override },
+      };
+      return updated;
+    });
+    if (updated) {
+      triggerAutoSave(updated);
+    }
   };
 
   const handleTrySimilarQuestion = (probId: string, idx: number) => {
@@ -244,17 +264,22 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const handleReviewRetry = () => {
     const problem = currentDrill?.problems[currentProblemIndex];
     if (!currentDrill || !problem) return;
-    const updated = {
-      ...currentDrill,
-      problems: currentDrill.problems.map((candidate) =>
-        candidate.id === problem.id
-          ? { ...candidate, state: resetAnswerForReviewRetry(candidate.state) }
-          : candidate
-      ),
-    };
-    setCurrentDrill(updated);
-    triggerAutoSave(updated);
-    void flushAutoSave();
+    let updatedDoc: DrillDocument | null = null;
+    setCurrentDrill((prev) => {
+      if (!prev) return prev;
+      updatedDoc = {
+        ...prev,
+        problems: prev.problems.map((candidate) =>
+          candidate.id === problem.id
+            ? { ...candidate, state: resetAnswerForReviewRetry(candidate.state) }
+            : candidate
+        ),
+      };
+      return updatedDoc;
+    });
+    if (updatedDoc) {
+      void saveNow(updatedDoc);
+    }
     setReviewRetryStarted(true);
     requestAnimationFrame(() => {
       document.querySelector<HTMLElement>('[aria-label^="Answer for"]')?.focus();
@@ -434,13 +459,13 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 activeStep={activeSteps[prob.id] ?? null}
                 onInputChange={(val) => handleInputChange(prob.id, val)}
                 onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
-                onSkip={() => handleSkipProblem(prob.id)}
+                onSkip={(opts) => handleSkipProblem(prob.id, opts)}
                 onToggleStepHighlight={(stepIdx) =>
                   handleToggleStepHighlight(prob.id, stepIdx)
                 }
                 onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
                 onSetScore={(score) => handleSetScore(prob.id, score)}
-                onTestReportChange={(rep) => handleTestReportChange(prob.id, rep)}
+                onTestReportChange={(rep, score) => handleTestReportChange(prob.id, rep, score)}
                 onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}

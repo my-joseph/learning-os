@@ -6,8 +6,8 @@ import type {
 } from "../types/drill";
 import type { WeakSpotUnit } from "./dueToday";
 import { parseLineChoicePrompt } from "./lineChoicePrompt";
-import { countWrongAttempts, isSubstantiveVerdict } from "./reviewGuard";
-import { countPractisedSimilar } from "./similarTabs";
+import { countWrongAttempts, cycleReviews, isSubstantiveVerdict } from "./reviewGuard";
+import { countPractisedSimilar, cycleOriginalAttempts } from "./similarTabs";
 import {
   classifyReviewOutcome,
   getQuestionLabel,
@@ -117,7 +117,7 @@ export function normaliseTestReport(report?: unknown): NormalisedTestReport {
  * preserving `rawVerdict` for muted display.
  */
 export function latestReviewVerdict(state?: ProblemState | null): NormalisedReviewVerdict {
-  const reviews = Array.isArray(state?.reviews) ? state!.reviews : [];
+  const reviews = cycleReviews(state);
   if (reviews.length === 0) {
     return {
       status: "not_requested",
@@ -195,7 +195,7 @@ export function latestReviewVerdict(state?: ProblemState | null): NormalisedRevi
  * Zero-leak: never reads `problem.commonTrapTag`.
  */
 export function matchedTraps(state?: ProblemState | null): string[] {
-  const attempts = Array.isArray(state?.attempts) ? state!.attempts : [];
+  const attempts = cycleOriginalAttempts(state);
   const seen = new Set<string>();
   const traps: string[] = [];
   for (const a of attempts) {
@@ -252,7 +252,7 @@ export function lastAnswerText(problem: Problem): string | null {
   const state = problem.state;
   if (!state) return null;
 
-  const attempts = Array.isArray(state.attempts) ? state.attempts : [];
+  const attempts = cycleOriginalAttempts(state);
   let raw: string | null = null;
 
   for (let i = attempts.length - 1; i >= 0; i -= 1) {
@@ -371,7 +371,7 @@ export function rowReason(
     const hints = state?.hintsRevealed ?? 0;
     const gotCorrect =
       (state?.score ?? 0) >= 1 ||
-      Boolean(state?.attempts?.some((a) => a.verdict === "correct"));
+      cycleOriginalAttempts(state).some((a) => a.verdict === "correct");
 
     if (hints > 0 && gotCorrect) {
       return withPractised(`Correct after ${hints} ${hints === 1 ? "hint" : "hints"}`);
@@ -437,7 +437,7 @@ export function countRightItems(problems: readonly Problem[]): number {
     } else if (
       outcome === "assisted_or_partial" &&
       ((p.state?.score ?? 0) >= 1 ||
-        Boolean(p.state?.attempts?.some((a) => a.verdict === "correct")))
+        cycleOriginalAttempts(p.state).some((a) => a.verdict === "correct"))
     ) {
       right += 1;
     }

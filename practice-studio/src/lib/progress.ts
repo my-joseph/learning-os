@@ -31,6 +31,151 @@ function progressFile(drillId: string): string {
   return path.join(getProgressDir(), `${drillId}.json`);
 }
 
+/** Write JSON atomically using a unique sibling temp file + rename so concurrent readers never see a half-written file. */
+function writeJsonAtomic(filePath: string, data: unknown): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const suffix = `${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`;
+  const tmpPath = `${filePath}.${suffix}.tmp`;
+  try {
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+    fs.renameSync(tmpPath, filePath);
+  } catch (err) {
+    try {
+      if (fs.existsSync(tmpPath)) {
+        fs.unlinkSync(tmpPath);
+      }
+    } catch {
+      // ignore cleanup error
+    }
+    throw err;
+  }
+}
+
+const ISO_DATE_PREFIX_RE = /^\d{4}-\d{2}-\d{2}/;
+
+function isEmptyValue(v: unknown): boolean {
+  return v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
+}
+
+function attemptKey(a: unknown): string {
+  if (a && typeof a === "object") {
+    const ts = (a as Record<string, unknown>).ts;
+    if (typeof ts === "string" && ts.length > 0) {
+      return `ts:${ts}`;
+    }
+  }
+  return `raw:${JSON.stringify(a)}`;
+}
+
+/** Union attempt lists by `ts` (falling back to serialized equality), preserving order and keeping chronological order when all carry ISO timestamps. */
+function mergeAttempts(
+  prevRaw: unknown,
+  nextRaw: unknown
+): Array<Record<string, unknown>> | undefined {
+  const prev = Array.isArray(prevRaw)
+    ? (prevRaw.filter((a) => a && typeof a === "object") as Array<Record<string, unknown>>)
+    : [];
+  const next = Array.isArray(nextRaw)
+    ? (nextRaw.filter((a) => a && typeof a === "object") as Array<Record<string, unknown>>)
+    : [];
+  if (prev.length === 0 && next.length === 0) {
+    return Array.isArray(nextRaw) ? [] : Array.isArray(prevRaw) ? [] : undefined;
+  }
+  const seen = new Set<string>();
+  const merged: Array<Record<string, unknown>> = [];
+  for (const item of prev) {
+    const key = attemptKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  let addedFromNext = false;
+  for (const item of next) {
+    const key = attemptKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+      addedFromNext = true;
+    }
+  }
+  if (
+    addedFromNext &&
+    prev.length > 0 &&
+    merged.every((a) => typeof a.ts === "string" && ISO_DATE_PREFIX_RE.test(a.ts))
+  ) {
+    merged.sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+  }
+  return merged;
+}
+
+function reviewKey(r: unknown): string {
+  if (r && typeof r === "object") {
+    const rec = r as Record<string, unknown>;
+    if (typeof rec.id === "string" && rec.id) return `id:${rec.id}`;
+    const ts =
+      (typeof rec.at === "string" && rec.at) ||
+      (typeof rec.ts === "string" && rec.ts) ||
+      "";
+    const verdict = typeof rec.verdict === "string" ? rec.verdict : "";
+    const attempt = typeof rec.attempt === "number" ? String(rec.attempt) : "";
+    if (ts) return `ts:${ts}|attempt:${attempt}|verdict:${verdict}`;
+    if (attempt) return `attempt:${attempt}|hash:${String(rec.codeHash || "")}|verdict:${verdict}`;
+  }
+  return `raw:${JSON.stringify(r)}`;
+}
+
+/** Union server-owned `reviews[]` with incoming reviews by id/at/ts; server copies win on key collision so explain/dispute updates are never lost. */
+function mergeReviews(prevRaw: unknown, nextRaw: unknown): unknown[] | undefined {
+  const prev = Array.isArray(prevRaw) ? prevRaw : [];
+  const next = Array.isArray(nextRaw) ? nextRaw : [];
+  if (prev.length === 0 && next.length === 0) {
+    return Array.isArray(nextRaw) ? [] : Array.isArray(prevRaw) ? [] : undefined;
+  }
+  const seen = new Set<string>();
+  const merged: unknown[] = [];
+  for (const item of prev) {
+    const key = reviewKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  for (const item of next) {
+    const key = reviewKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  return merged;
+}
+
+function maxIsoTimestamp(a: unknown, b: unknown): string | null {
+  const sa = typeof a === "string" && a.trim() ? a.trim() : null;
+  const sb = typeof b === "string" && b.trim() ? b.trim() : null;
+  if (sa && sb) return sa > sb ? sa : sb;
+  return sa || sb;
+}
+
+function mergeStringTags(prevRaw: unknown, nextRaw: unknown): string[] {
+  const prev = Array.isArray(prevRaw)
+    ? prevRaw.filter((t): t is string => typeof t === "string" && t.length > 0)
+    : [];
+  const next = Array.isArray(nextRaw)
+    ? nextRaw.filter((t): t is string => typeof t === "string" && t.length > 0)
+    : [];
+  const seen = new Set<string>(prev);
+  const out = [...prev];
+  for (const tag of next) {
+    if (!seen.has(tag)) {
+      seen.add(tag);
+      out.push(tag);
+    }
+  }
+  return out;
+}
+
 export function readProgress(drillId: string): ProgressFile | null {
   if (!isSafeId(drillId)) return null;
   const file = progressFile(drillId);
@@ -98,42 +243,83 @@ export function writeProgress(doc: DocLike): string {
   if (!doc.drillId || !isSafeId(doc.drillId)) throw new Error("Invalid drillId");
   const existing = readProgress(doc.drillId);
   const existingProblems = (existing?.problems || {}) as Record<string, Record<string, unknown>>;
-  const problems: Record<string, unknown> = doc.reviewMerge ? { ...existingProblems } : {};
+  const problems: Record<string, unknown> = { ...existingProblems };
+  const nowIso = new Date().toISOString();
+
   for (const p of doc.problems || []) {
     if (!p.id) continue;
     const prev = existingProblems[p.id];
     if (p.state) {
-      const st = { ...(p.state as Record<string, unknown>) };
-      if (doc.reviewMerge && prev && Array.isArray(prev.attempts)) {
-        const prevAttempts = prev.attempts as Array<Record<string, unknown>>;
-        const nextAttempts = Array.isArray(st.attempts)
-          ? (st.attempts as Array<Record<string, unknown>>)
-          : [];
-        const seenTs = new Set(
-          prevAttempts
-            .map((a) => (a && typeof a.ts === "string" ? a.ts : ""))
-            .filter(Boolean)
-        );
-        const appended = nextAttempts.filter(
-          (a) => !a || typeof a.ts !== "string" || !seenTs.has(a.ts)
-        );
-        st.attempts = [...prevAttempts, ...appended];
-      }
+      const incoming = p.state as Record<string, unknown>;
+      let st: Record<string, unknown>;
+
       if (doc.reviewMerge && prev) {
-        // A review session starts from a clean state; never erase learner notes/tags it did not set.
-        const isEmpty = (v: unknown) =>
-          v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
-        for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
-          if (isEmpty(st[key]) && !isEmpty(prev[key])) {
-            st[key] = prev[key];
+        // Daily Review merge: start from the original persisted state and ONLY append
+        // attempts, merge server reviews, fill notes/tags, and advance cycle metadata.
+        // Never overwrite original score, help flags, skipped, lastCheck, lastTestReport, or durationMs.
+        st = { ...prev };
+
+        const mergedAttempts = mergeAttempts(prev.attempts, incoming.attempts);
+        if (mergedAttempts !== undefined) {
+          st.attempts = mergedAttempts;
+        }
+
+        const mergedReviews = mergeReviews(prev.reviews, incoming.reviews);
+        if (mergedReviews !== undefined) {
+          st.reviews = mergedReviews;
+        }
+
+        if (Array.isArray(incoming.mistakes) && incoming.mistakes.length > 0) {
+          st.mistakes = mergeStringTags(prev.mistakes, incoming.mistakes);
+        }
+        if (typeof incoming.mistakeNote === "string" && incoming.mistakeNote.trim().length > 0) {
+          st.mistakeNote = incoming.mistakeNote;
+        }
+        if (typeof incoming.revisitNote === "string" && incoming.revisitNote.trim().length > 0) {
+          st.revisitNote = incoming.revisitNote;
+        }
+
+        const maxCycle = maxIsoTimestamp(prev.cycleStartedAt, incoming.cycleStartedAt);
+        if (maxCycle) {
+          st.cycleStartedAt = maxCycle;
+        }
+
+        if (incoming.setupRevealedBeforeAnswer === true) {
+          st.reviewSetupRevealedAt = maxIsoTimestamp(prev.reviewSetupRevealedAt, nowIso);
+        }
+        if (incoming.solutionRevealedBeforeAnswer === true) {
+          st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, nowIso);
+        }
+      } else {
+        st = { ...incoming };
+
+        if (prev) {
+          // Server-owned history is never dropped by a normal autosave.
+          const mergedAttempts = mergeAttempts(prev.attempts, st.attempts);
+          if (mergedAttempts !== undefined) {
+            st.attempts = mergedAttempts;
+          }
+
+          const mergedReviews = mergeReviews(prev.reviews, st.reviews);
+          if (mergedReviews !== undefined) {
+            st.reviews = mergedReviews;
+          }
+
+          for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
+            if (isEmptyValue(st[key]) && !isEmptyValue(prev[key])) {
+              st[key] = prev[key];
+            }
+          }
+
+          const maxRevSetup = maxIsoTimestamp(prev.reviewSetupRevealedAt, st.reviewSetupRevealedAt);
+          if (maxRevSetup) {
+            st.reviewSetupRevealedAt = maxRevSetup;
+          }
+          const maxRevSteps = maxIsoTimestamp(prev.reviewStepsRevealedAt, st.reviewStepsRevealedAt);
+          if (maxRevSteps) {
+            st.reviewStepsRevealedAt = maxRevSteps;
           }
         }
-      }
-      if (st.reviews === undefined && prev && prev.reviews !== undefined) {
-        st.reviews = prev.reviews;
-      }
-      if (st.revisitNote === undefined && prev && typeof prev.revisitNote === "string") {
-        st.revisitNote = prev.revisitNote;
       }
 
       // Server-authoritative variant session fields: client receives redacted state without variantId,
@@ -159,20 +345,9 @@ export function writeProgress(doc: DocLike): string {
       if (prev && typeof prev.exampleViewedAt === "string" && prev.exampleViewedAt) {
         st.exampleViewedAt = prev.exampleViewedAt;
       }
-      const prevCycle =
-        prev && typeof prev.cycleStartedAt === "string" && prev.cycleStartedAt
-          ? prev.cycleStartedAt
-          : null;
-      const nextCycle =
-        typeof st.cycleStartedAt === "string" && st.cycleStartedAt
-          ? st.cycleStartedAt
-          : null;
-      if (prevCycle && nextCycle) {
-        st.cycleStartedAt = prevCycle > nextCycle ? prevCycle : nextCycle;
-      } else if (prevCycle) {
-        st.cycleStartedAt = prevCycle;
-      } else if (nextCycle) {
-        st.cycleStartedAt = nextCycle;
+      const maxCycle = maxIsoTimestamp(prev?.cycleStartedAt, st.cycleStartedAt);
+      if (maxCycle) {
+        st.cycleStartedAt = maxCycle;
       }
 
       const derived = deriveVariantLists(
@@ -198,33 +373,12 @@ export function writeProgress(doc: DocLike): string {
       }
 
       problems[p.id] = st;
-    } else if (
-      prev &&
-      (prev.reviews !== undefined ||
-        typeof prev.revisitNote === "string" ||
-        prev.variants !== undefined ||
-        Array.isArray(prev.similarSlots) ||
-        typeof prev.exampleViewedAt === "string" ||
-        typeof prev.cycleStartedAt === "string" ||
-        Array.isArray(prev.variantsSeen) ||
-        Array.isArray(prev.variantsAttempted))
-    ) {
-      const preserved: Record<string, unknown> = {};
-      if (prev.reviews !== undefined) preserved.reviews = prev.reviews;
-      if (typeof prev.revisitNote === "string") preserved.revisitNote = prev.revisitNote;
-      if (prev.variants !== undefined) preserved.variants = prev.variants;
-      if (Array.isArray(prev.similarSlots)) preserved.similarSlots = prev.similarSlots;
-      if (typeof prev.exampleViewedAt === "string") preserved.exampleViewedAt = prev.exampleViewedAt;
-      if (typeof prev.cycleStartedAt === "string") preserved.cycleStartedAt = prev.cycleStartedAt;
-      if (Array.isArray(prev.variantsSeen)) preserved.variantsSeen = prev.variantsSeen;
-      if (Array.isArray(prev.variantsAttempted)) preserved.variantsAttempted = prev.variantsAttempted;
-      problems[p.id] = preserved;
     }
   }
   const data: ProgressFile = {
     drillId: doc.drillId,
     unitCode: doc.unitCode || existing?.unitCode,
-    updatedAt: new Date().toISOString(),
+    updatedAt: nowIso,
     sessionSummary:
       (doc.sessionSummary as Record<string, unknown>) ||
       (doc.reviewMerge ? existing?.sessionSummary : undefined) ||
@@ -232,8 +386,7 @@ export function writeProgress(doc: DocLike): string {
     problems,
   };
   const file = progressFile(doc.drillId);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+  writeJsonAtomic(file, data);
   return file;
 }
 
@@ -288,8 +441,7 @@ function mutateProblemVariantState(
     problems,
   };
   const file = progressFile(drillId);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+  writeJsonAtomic(file, data);
   return nextState;
 }
 
@@ -658,11 +810,12 @@ export function resetVariantProgress(
     problems[id] = state;
   }
   const file = progressFile(drillId);
-  fs.writeFileSync(
-    file,
-    JSON.stringify({ ...existing, unitCode: unitCode || existing.unitCode, updatedAt: new Date().toISOString(), problems }, null, 2),
-    "utf-8"
-  );
+  writeJsonAtomic(file, {
+    ...existing,
+    unitCode: unitCode || existing.unitCode,
+    updatedAt: new Date().toISOString(),
+    problems,
+  });
 }
 
 function appendVariantTrackingField(

@@ -1,15 +1,19 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   computeCheckAnswerTransition,
+  computeHintRevealTransition,
   computeResetAllTransition,
   computeResetProblemTransition,
   computeSetupRevealTransition,
   computeSkipProblemTransition,
   computeSolutionRevealTransition,
+  computeTestRunTransition,
   executeSaveAndReveal,
   mergeRevealedPatchIntoDrill,
   normalizeLoadedDrillDoc,
 } from "../src/hooks/useDrill";
+import { createSaveQueue } from "../src/lib/saveQueue";
 import {
   createTelemetryTimerState,
   getAttemptElapsedMs,
@@ -347,7 +351,7 @@ async function main() {
       "Q02 timer must remain untouched"
     );
 
-    // Reset all while paused preserves paused state and resets all problems + sessionSummary
+    // Reset all while paused preserves paused state, resets visible fields, and keeps attempt history
     const pausedTimer = pauseTimer(timer, 12_000);
     const allReset = computeResetAllTransition(doc, pausedTimer, true, 15_000);
     assert.deepEqual(allReset.nextActiveSteps, {});
@@ -356,8 +360,168 @@ async function main() {
     assert.equal(allReset.updatedDoc.sessionSummary.practiceStatus, "Ready");
     assert.equal(allReset.updatedDoc.problems[0].state.score, null);
     assert.equal(allReset.updatedDoc.problems[1].state.score, null);
+    assert.equal(allReset.updatedDoc.problems[0].state.attempts?.length, 1, "Reset all must keep attempt history");
+    assert.ok(allReset.updatedDoc.problems[0].state.cycleStartedAt, "Reset all must stamp cycleStartedAt");
     assert.equal("answerPlain" in allReset.updatedDoc.problems[1], false);
     assert.match(allReset.statusMessage.text, /Reset Linear Equations to initial state\./);
+  }
+
+  // 7. Ordered save queue: serializes POSTs, latest doc wins, reveal waits for unlocking save (K2, K3)
+  {
+    const events: string[] = [];
+    const postedInputs: string[] = [];
+    let releaseFirstPost: (() => void) | null = null;
+    let postCount = 0;
+
+    const mockFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/save-state") {
+        postCount += 1;
+        const body = JSON.parse(String(init?.body || "{}")) as DrillDocument;
+        const q1Input = body.problems[0]?.state?.userInput ?? "";
+        postedInputs.push(`${body.drillId}:${q1Input}`);
+        events.push(`post-start:${q1Input}`);
+        if (postCount === 1) {
+          await new Promise<void>((resolve) => {
+            releaseFirstPost = resolve;
+          });
+        }
+        events.push(`post-end:${q1Input}`);
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      events.push(`reveal:${url}`);
+      return new Response(
+        JSON.stringify({
+          steps: [{ latex: "x = 5", explain: "Divide by 2." }],
+          answerDisplay: "5",
+          answerPlain: "5",
+        }),
+        { status: 200 }
+      );
+    }) as typeof fetch;
+
+    const queue = createSaveQueue({ fetchFn: mockFetch, debounceMs: 50 });
+    const docWithInput = (val: string, drillId = "DRL-MTH-T01-C01-01"): DrillDocument => ({
+      ...makeDrillDoc(),
+      drillId,
+      problems: [
+        makeProblem("Q01", {
+          state: { userInput: val, score: null, divergedStep: null, mistakes: [], attempts: [] },
+        }),
+      ],
+    });
+
+    // Debounced enqueue superseded by immediate saveNow -> only one POST (no double save)
+    queue.enqueue(docWithInput("stale-debounced"));
+    const p1 = queue.saveNow(docWithInput("first-in-flight"));
+    // While first POST is still in flight, enqueue an intermediate doc and then saveAndReveal latest
+    queue.enqueue(docWithInput("intermediate-stale"));
+    const revealPromise = executeSaveAndReveal(
+      docWithInput("latest-skip"),
+      "Q01",
+      ["steps"],
+      mockFetch,
+      (d) => queue.saveNow(d)
+    );
+
+    // Wait a microtask to ensure first POST started
+    await Promise.resolve();
+    assert.equal(postedInputs.length, 1, "Second POST must wait while first POST is in flight");
+    assert.equal(postedInputs[0], "DRL-MTH-T01-C01-01:first-in-flight");
+
+    releaseFirstPost!();
+    const [ok1, patch] = await Promise.all([p1, revealPromise]);
+    assert.equal(ok1, true);
+    assert.equal(patch.answerPlain, "5");
+    assert.deepEqual(
+      postedInputs,
+      ["DRL-MTH-T01-C01-01:first-in-flight", "DRL-MTH-T01-C01-01:latest-skip"],
+      "Intermediate stale doc must be coalesced; only first and latest are posted in order"
+    );
+    const postEndIdx = events.indexOf("post-end:latest-skip");
+    const revealIdx = events.findIndex((e) => e.startsWith("reveal:"));
+    assert.ok(postEndIdx >= 0 && revealIdx > postEndIdx, "Reveal must wait until the unlocking save completes");
+
+    // Switching drillId while a debounced save is pending flushes the previous drill first
+    queue.enqueue(docWithInput("drill-A-edit", "DRL-MTH-A-01"));
+    await queue.saveNow(docWithInput("drill-B-edit", "DRL-MTH-B-01"));
+    assert.deepEqual(
+      postedInputs.slice(-2),
+      ["DRL-MTH-A-01:drill-A-edit", "DRL-MTH-B-01:drill-B-edit"],
+      "Switching drills must flush the previous drill before saving the new drill"
+    );
+    queue.dispose();
+  }
+
+  // 8. PRG Run checks saves BOTH lastTestReport and score in one combined update (C2)
+  {
+    const doc = makeDrillDoc([
+      makeProblem("Q01", {
+        state: {
+          userInput: "",
+          score: null,
+          divergedStep: null,
+          mistakes: ["QC-NAMING"],
+          mistakeNote: "Keep this note edited during checks",
+          attempts: [],
+        },
+      }),
+    ]);
+    const report = {
+      allPassed: true,
+      score: 1,
+      passedCount: 4,
+      totalCount: 4,
+      visibleResults: [],
+      hiddenPassed: 2,
+      hiddenTotal: 2,
+      executionTimeMs: 42,
+    };
+    const updated = computeTestRunTransition(doc, "Q01", report, 1);
+    assert.ok(updated);
+    const st = updated.problems[0].state;
+    assert.deepEqual(st.lastTestReport, report, "lastTestReport must be persisted");
+    assert.equal(st.score, 1, "score must be persisted in the same transition");
+    assert.equal(st.skipped, false);
+    assert.equal(st.mistakeNote, "Keep this note edited during checks", "concurrent note edits must be preserved");
+    assert.deepEqual(st.mistakes, ["QC-NAMING"]);
+  }
+
+  // 9. Hint reveal transition respects current cycle and does not run side effects inside setState (K2)
+  {
+    const doc = makeDrillDoc([
+      makeProblem("Q01", {
+        state: {
+          userInput: "",
+          score: null,
+          divergedStep: null,
+          mistakes: [],
+          attempts: [{ input: "5", ts: "2026-11-18T00:00:00Z", verdict: "correct" }],
+          cycleStartedAt: "2026-11-20T00:00:00Z",
+          hintsRevealed: 0,
+        },
+      }),
+    ]);
+    const hinted = computeHintRevealTransition(doc, "Q01");
+    assert.ok(hinted, "Hint reveal after Reset must still count even when prior cycle had a correct attempt");
+    assert.equal(hinted.problems[0].state.hintsRevealed, 1);
+
+    // Structural guard: CodeDashboard PRG Skip folds countHint instead of racing onHintRevealed + onSkip (C1),
+    // and useDrill never calls triggerAutoSave inside a setCurrentDrill updater (K2).
+    const codeDashSrc = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
+    assert.match(codeDashSrc, /onSkip\(\{\s*countHint\s*\}\)/, "PRG Skip must pass { countHint }");
+    assert.match(codeDashSrc, /onTestReportChange\(report,\s*nextScore\)/, "PRG Run checks must save report and score together");
+    const studioClientSrc = readFileSync("src/components/shell/StudioClient.tsx", "utf8");
+    assert.match(studioClientSrc, /onSkip=\{\(opts\)\s*=>\s*handleSkipProblem\(prob\.id,\s*opts\)\}/);
+    const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");
+    const updaterBodies = useDrillSrc.match(/setCurrentDrill(?:State)?\(\(prev\)\s*=>\s*\{[^}]*\}\)/g) || [];
+    for (const body of updaterBodies) {
+      assert.doesNotMatch(
+        body,
+        /triggerAutoSave/,
+        "triggerAutoSave must never be called inside a setState updater"
+      );
+    }
   }
 
   console.log("useDrill reveal, timer, and reset logic tests passed");

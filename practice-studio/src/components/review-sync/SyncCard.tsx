@@ -234,8 +234,9 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               </span>
               {preview.hasAnyAttempt && <button
                 type="button"
+                disabled={isSyncing}
                 onClick={() => onStatusOverrideChange(toggleTargetStatus)}
-                className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {toggleLabel}
               </button>}

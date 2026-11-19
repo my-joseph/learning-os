@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { renderToStaticMarkup } from "react-dom/server";
 import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
-import { executeNotionSync } from "../src/hooks/useProgressSync";
+import { executeNotionSync, mergeSyncStampIntoLatestDrill } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
 import { buildSessionSummary, buildSyncPayload, getPersistedStatusOverride, summaryFingerprint } from "../src/lib/sessionSummary";
 import {
@@ -214,6 +214,79 @@ async function verifyStamping() {
     const result = await executeNotionSync({ currentDrill: mathDrill, statusOverride: null, fetchFn });
     assert.equal(Boolean(result.stampedDoc), shouldStamp, `${label} must not stamp sync metadata`);
   }
+
+  // Merge into LATEST drill doc instead of re-saving click-time copy (review_sync C2)
+  let latestDrill: DrillDocument | null = mathDrill;
+  let savedDuringLatestTest: DrillDocument | null = null;
+  const mergedResult = await executeNotionSync({
+    currentDrill: mathDrill,
+    statusOverride: null,
+    nowIso: "2026-11-20T01:00:00.000Z",
+    attemptDate: "2026-11-20",
+    getLatestDrill: () => latestDrill,
+    saveDoc: async (doc) => {
+      savedDuringLatestTest = doc;
+      return true;
+    },
+    fetchFn: async (input) => {
+      assert.equal(String(input), "/api/sync-notion");
+      // Simulate an edit arriving while /api/sync-notion is in flight
+      latestDrill = {
+        ...mathDrill,
+        problems: mathDrill.problems.map((p, idx) =>
+          idx === 0
+            ? { ...p, state: { ...p.state, mistakeNote: "Edited while sync ran", revisitNote: "Check sign" } }
+            : p
+        ),
+      };
+      return reply({ ok: true, drillPageId: "page-merged-1" });
+    },
+  });
+  assert.equal(mergedResult.ignored, undefined);
+  assert.ok(mergedResult.stampedDoc);
+  assert.equal(
+    mergedResult.stampedDoc.problems[0].state.mistakeNote,
+    "Edited while sync ran",
+    "sync stamp must merge into latest doc without rolling back mid-sync edits"
+  );
+  assert.equal(
+    mergedResult.stampedDoc.problems[0].state.revisitNote,
+    "Check sign",
+    "mid-sync revisitNote must be preserved after sync completes"
+  );
+  assert.equal(mergedResult.stampedDoc.sessionSummary.syncedToNotionAt, "2026-11-20T01:00:00.000Z");
+  assert.equal(
+    (savedDuringLatestTest as DrillDocument | null)?.problems[0].state.mistakeNote,
+    "Edited while sync ran",
+    "saveDoc must receive the merged latest doc rather than the click-time copy"
+  );
+
+  // Ignore sync result when the learner switches drills mid-sync (review_sync C2)
+  const otherDrill: DrillDocument = { ...mathDrill, drillId: "DRL-MTH-OTHER-99" };
+  let activeDrillDuringSwitch: DrillDocument | null = mathDrill;
+  let saveCalledAfterSwitch = false;
+  const switchedResult = await executeNotionSync({
+    currentDrill: mathDrill,
+    statusOverride: null,
+    nowIso: "2026-11-20T01:05:00.000Z",
+    getLatestDrill: () => activeDrillDuringSwitch,
+    saveDoc: async () => {
+      saveCalledAfterSwitch = true;
+      return true;
+    },
+    fetchFn: async () => {
+      activeDrillDuringSwitch = otherDrill;
+      return reply({ ok: true, drillPageId: "page-switched-1" });
+    },
+  });
+  assert.equal(switchedResult.ignored, true, "sync result must be marked ignored when drill switched");
+  assert.equal(switchedResult.stampedDoc, null, "switched drill must not produce a stampedDoc");
+  assert.equal(saveCalledAfterSwitch, false, "switched drill must not save stale click-time doc");
+  assert.equal(
+    mergeSyncStampIntoLatestDrill(otherDrill, mathDrill.drillId, mergedResult.stampedDoc.sessionSummary),
+    null,
+    "mergeSyncStampIntoLatestDrill returns null on drillId mismatch"
+  );
 }
 async function runAsyncTests() {
 await verifyStamping();
@@ -279,6 +352,18 @@ for (const [state, expected] of [
 ] as const) {
   assert.match(render(mathDrill, { syncState: state, isSyncing: state.phase === "syncing" }), expected);
 }
+
+// While syncing, notes, tags, self-score, and status toggle are all disabled (review_sync C2)
+const syncingEditHtml = render(mathDrill, {
+  isSyncing: true,
+  syncState: { phase: "syncing" },
+  initialExpandedIds: ["Q01"],
+});
+assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*>Mark as graded<\/button>/, "status toggle disabled while syncing");
+assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*aria-pressed="false"[^>]*>1\.0<\/button>/, "self-score disabled while syncing");
+assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*aria-pressed="true"[^>]*>.*Positive last term/, "mistake tag disabled while syncing");
+assert.match(syncingEditHtml, /<input[^>]*disabled=""[^>]*aria-label="Note for Q1"/, "mistake note disabled while syncing");
+assert.match(syncingEditHtml, /<input[^>]*disabled=""[^>]*aria-label="Revisit note for Q1"/, "revisit note disabled while syncing");
 
 const syncedFingerprint = summaryFingerprint(buildSessionSummary(mathDrill));
 const syncedDrill = { ...mathDrill, sessionSummary: { ...mathDrill.sessionSummary,
