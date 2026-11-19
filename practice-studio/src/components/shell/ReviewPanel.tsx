@@ -35,7 +35,6 @@ interface ReviewPanelProps {
   liveScore: number;
   maxScore: number;
   accuracyPct: number;
-  skippedCount: number;
   computedPracticeStatus: "Graded" | "Needs Retry";
   isSyncing: boolean;
   totalDurationMs?: number;

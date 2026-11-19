@@ -7,15 +7,12 @@ import { Workspace } from "@/lib/routes";
 import { LabMilestoneStepper } from "@/components/LabMilestoneStepper";
 
 interface QuizPaginationBarProps {
-  totalQuestions: number;
   currentIndex: number;
   problems: Problem[];
   viewMode: "quiz" | "review";
   workspace?: Workspace;
   isLab?: boolean;
   onSelectQuestion: (index: number) => void;
-  onPrev: () => void;
-  onNext: () => void;
   onToggleViewMode: (mode: "quiz" | "review") => void;
 }
 

@@ -232,7 +232,6 @@ const reviewHtml = renderToStaticMarkup(
     liveScore={0}
     maxScore={1}
     accuracyPct={0}
-    skippedCount={0}
     computedPracticeStatus="Needs Retry"
     isSyncing={false}
     totalDurationMs={135_000}

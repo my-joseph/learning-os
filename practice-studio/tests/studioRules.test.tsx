@@ -444,7 +444,6 @@ const reviewHtml = renderToStaticMarkup(
     liveScore={1}
     maxScore={1}
     accuracyPct={100}
-    skippedCount={0}
     computedPracticeStatus="Graded"
     isSyncing={false}
     onStatusOverrideChange={noop}
@@ -470,13 +469,10 @@ assert.match(
 
 const quizTilesHtml = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={1}
     currentIndex={0}
     problems={[sampleMathProblem]}
     viewMode="quiz"
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );
@@ -488,13 +484,10 @@ assert.doesNotMatch(quizTilesHtml, />Review<\/span>/);
 
 const reviewTilesHtml = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={1}
     currentIndex={0}
     problems={[sampleMathProblem]}
     viewMode="review"
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );

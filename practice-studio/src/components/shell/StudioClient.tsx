@@ -189,7 +189,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     liveScore,
     maxScore,
     accuracyPct,
-    skippedCount,
     computedPracticeStatus,
   } = computeSessionMetrics(currentDrill, statusOverride);
 
@@ -255,8 +254,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onShowGenPopoverChange={setShowGenPopover}
       onGenerated={handleGenerated}
       onSelectQuestion={handleSelectQuestion}
-      onPrevQuestion={handlePrevQuestion}
-      onNextQuestion={handleNextQuestion}
       onToggleViewMode={(mode) => setViewMode(mode)}
       status={status}
       onStatusChange={setStatus}
@@ -362,7 +359,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}
                 onHintRevealed={() => handleHintRevealed(prob.id)}
-                onSetupRevealed={() => handleSetupRevealed(prob.id)}
                 onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                 onPrevQuestion={handlePrevQuestion}
                 onNextQuestion={handleNextQuestion}
@@ -387,7 +383,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             liveScore={liveScore}
             maxScore={maxScore}
             accuracyPct={accuracyPct}
-            skippedCount={skippedCount}
             computedPracticeStatus={computedPracticeStatus}
             isSyncing={isSyncing}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}

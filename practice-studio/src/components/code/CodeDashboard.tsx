@@ -80,7 +80,6 @@ export interface CodeDashboardProps {
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
-  onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
