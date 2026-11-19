@@ -9,6 +9,7 @@ import {
   applyDivergedStep,
   resetDrillForRetry,
   resetProblemForRetry,
+  resetAnswerForReviewRetry,
 } from "../src/lib/applyCheckResult";
 import {
   CALM_PARSE_ERROR_MESSAGE,
@@ -556,6 +557,23 @@ runCase("resetDrillForRetry clears the exact same problem state fields as resetP
     /handleResetAll[\s\S]*setActiveSteps\(\{\}\)/.test(useDrillSrc),
     "handleResetAll must clear activeSteps"
   );
+});
+
+runCase("review retry clears the answer but preserves progress history", () => {
+  const state = {
+    ...createBaseProblem().state,
+    userInput: "27/32",
+    score: 0,
+    lastCheck: { ...correctResult, verdict: "incorrect" as const },
+    attempts: [{ input: "27/32", ts: "2026-11-18T10:00:00Z", verdict: "incorrect" }],
+    mistakes: ["sign-error"],
+  };
+  const reset = resetAnswerForReviewRetry(state);
+  assert(reset.userInput === "", "answer field must clear");
+  assert(reset.lastCheck === null, "stale result must clear");
+  assert(reset.score === null, "stale score must clear");
+  assert(reset.attempts?.length === 1, "attempt history must remain");
+  assert(reset.mistakes?.[0] === "sign-error", "mistake history must remain");
 });
 
 // Extra: Diverged step does not attach mistake tags

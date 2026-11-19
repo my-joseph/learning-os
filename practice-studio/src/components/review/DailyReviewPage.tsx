@@ -60,7 +60,7 @@ import {
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
 import { plainTitle, trapName } from "@/lib/titleText";
-import { formatReviewDueDate } from "@/lib/dueToday";
+import { formatReviewDueDate } from "@/lib/reviewDate";
 
 export interface DailyReviewViewProps {
   loading?: boolean;
@@ -519,6 +519,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       openInDrillHref={drillHref(currentItem.drillId, currentItem.qid)}
                       reviewSupplement={reviewSupplement}
                       isReviewSession
+                      isCorrectOnRetry={Boolean(currentOutcome?.correctOnRetry)}
                       reviewUnitTitle={resolvedUnitTitle}
                       reviewScheduleNote={reviewScheduleNote}
                       nextCardLabel={currentIndex === items.length - 1 ? "Finish" : "Next"}
@@ -556,6 +557,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       onToggleTimerPause={onToggleTimerPause}
                       reviewSupplement={reviewSupplement}
                       isReviewSession
+                      isCorrectOnRetry={Boolean(currentOutcome?.correctOnRetry)}
                       reviewUnitTitle={resolvedUnitTitle}
                       reviewScheduleNote={reviewScheduleNote}
                       nextCardLabel={currentIndex === items.length - 1 ? "Finish" : "Next"}
@@ -642,7 +644,7 @@ export const DailyReviewPage: React.FC = () => {
         const saved = window.sessionStorage.getItem(reviewStorageKey(activeScope));
         if (saved) {
           const snapshot = JSON.parse(saved) as {
-            items?: ReviewItem[]; outcomes?: Record<string, ReviewSessionItemOutcome>;
+            completed?: boolean; items?: ReviewItem[]; outcomes?: Record<string, ReviewSessionItemOutcome>;
             totalDue?: number; unitTitles?: Record<string, string>; today?: string;
             nextDueDate?: string | null; lastDrillHref?: string;
           };

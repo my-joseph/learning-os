@@ -159,7 +159,15 @@ export function getMissedReviewItems(
       unitCode: item.unitCode,
       unitTitle: plainTitle(rawTitle) || item.unitCode,
       href: drillHref(item.drillId, item.qid),
-      questionLine: firstLine.replace(/[`*_~#]/g, "").replace(/\s+/g, " ").trim().slice(0, 100),
+      questionLine: firstLine
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/[`*_~#]/g, "")
+        .replace(/\$+/g, "")
+        .replace(/\\([a-zA-Z]+)/g, "$1")
+        .replace(/[{}]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 100),
       group: outcome.correctOnRetry ? "Correct on retry" : outcome.skipped ? "Skipped" : "Missed",
     });
   }
@@ -506,7 +514,7 @@ export async function executeReviewItemSkip(params: {
   );
   if (!transition) return null;
 
-  let updatedDoc = transition.updatedDoc;
+  const updatedDoc = transition.updatedDoc;
   const updatedProb = updatedDoc.problems.find((p) => p.id === item.qid);
 
   let outcome = existingOutcome;
