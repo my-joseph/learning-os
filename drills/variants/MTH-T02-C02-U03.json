@@ -1,0 +1,266 @@
+{
+  "unitCode": "MTH-T02-C02-U03",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-01",
+      "sourceArchetype": "t02-c02-u03-average-rate-change",
+      "archetypeKey": "t02-c02-u03-average-rate-change",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A function has $f(2) = 5$ and $f(6) = 29$. Find its average rate of change on $[2, 6]$.",
+      "display": "\\frac{f(6)-f(2)}{6-2}",
+      "plainText": "A function has f(2) = 5 and f(6) = 29. Find its average rate of change on [2, 6].",
+      "givens": {
+        "a": 2,
+        "b": 6,
+        "fa": 5,
+        "fb": 29
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        6,
+        5,
+        29
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a number in output units per input unit",
+      "commonTrapTag": "t02-c02-u03-reversed-input-difference-trap",
+      "trapDerivation": "(29 - 5) / (2 - 6)",
+      "trapValue": "-6",
+      "verify": {
+        "source": "(29 - 5) / (6 - 2)",
+        "trapValue": "-6"
+      },
+      "checkpointHint": "Subtract the endpoint outputs and endpoint inputs in the same order before dividing.",
+      "references": [
+        "MTH-T02-C02-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\Delta f = 29 - 5",
+          "explain": "Subtract the earlier output from the later output.",
+          "eq": [
+            "29 - 5",
+            "24"
+          ]
+        },
+        {
+          "latex": "\\Delta x = 6 - 2",
+          "explain": "Subtract the earlier input from the later input.",
+          "eq": [
+            "6 - 2",
+            "4"
+          ]
+        },
+        {
+          "latex": "\\frac{\\Delta f}{\\Delta x} = \\frac{24}{4}",
+          "explain": "Divide the output change by the matching input change.",
+          "eq": [
+            "24 / 4",
+            "6"
+          ]
+        },
+        {
+          "latex": "\\frac{\\Delta f}{\\Delta x} = 6",
+          "explain": "State the average rate of change.",
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c02-u03-reversed-input-difference-trap|direct|A function has f(#) = # and f(#) = #. Find its average rate of change on [#, #]."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-02",
+      "sourceArchetype": "t02-c02-u03-average-rate-change",
+      "archetypeKey": "t02-c02-u03-average-rate-change",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "A function's average rate of change on $[3, 7]$ is $5$, and $f(3) = 4$. Find $f(7)$.",
+      "display": "5 = (f(7) - 4) / (7 - 3)",
+      "plainText": "5 = (f(7) - 4) / (7 - 3)",
+      "givens": {
+        "rate": 5,
+        "a": 3,
+        "b": 7,
+        "fa": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3,
+        7,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0
+      },
+      "answerPlain": "24",
+      "answerDisplay": "24",
+      "inputHint": "Enter the function output as a number",
+      "commonTrapTag": "t02-c02-u03-output-difference-only-trap",
+      "trapDerivation": "5 * (7 - 3)",
+      "trapValue": "20",
+      "verify": {
+        "source": "4 + 5 * (7 - 3)",
+        "trapValue": "20"
+      },
+      "checkpointHint": "Multiply the average rate by the input interval length to find the net output change, then add the starting output.",
+      "references": [
+        "MTH-T02-C02-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "5 = \\frac{f(7) - 4}{7 - 3}",
+          "explain": "Set up the average rate of change equation on [3, 7]."
+        },
+        {
+          "latex": "5 = \\frac{f(7) - 4}{4}",
+          "explain": "Simplify the input difference.",
+          "eq": [
+            "7 - 3",
+            "4"
+          ]
+        },
+        {
+          "latex": "20 = f(7) - 4",
+          "explain": "Multiply both sides by 4.",
+          "eq": [
+            "5 * 4",
+            "20"
+          ]
+        },
+        {
+          "latex": "f(7) = 24",
+          "explain": "Add 4 to both sides to solve for f(7).",
+          "val": "24"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u03-output-difference-only-trap|reverse|# = (f(#) - #) / (# - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-03",
+      "sourceArchetype": "t02-c02-u03-average-rate-change",
+      "archetypeKey": "t02-c02-u03-average-rate-change",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U03",
+      "level": 3,
+      "category": "Problem Solving",
+      "form": "diagnose",
+      "context": "",
+      "prompt": "For a function with $f(2) = 4$ and $f(7) = 24$, a student finds the average rate of change on $[2, 7]$:\nLine 1: $\\frac{24 - 4}{7 - 2}$\nLine 2: $\\frac{20}{2 - 7}$\nLine 3: $\\frac{20}{-5}$\nLine 4: $-4$\nWhich line is the first one that is wrong?",
+      "display": "(f(7) - f(2)) / (7 - 2)",
+      "givens": {
+        "a": 2,
+        "b": 7,
+        "fa": 4,
+        "fb": 24
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        7,
+        4,
+        24
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct difference-quotient setup as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c02-u03-reversed-input-difference-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c02-u03-reversed-input-difference-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose the first incorrect line",
+      "commonTrapTag": "t02-c02-u03-reversed-input-difference-trap",
+      "trapDerivation": "(24 - 4) / (2 - 7)",
+      "trapValue": "-4",
+      "verify": {
+        "source": "4",
+        "trapValue": "-4",
+        "flaw": {
+          "values": [
+            "(24 - 4) / (7 - 2)",
+            "20 / (2 - 7)",
+            "20 / (-5)",
+            "-4"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check whether each line preserves the same endpoint ordering and numerical value as the line above it.",
+      "references": [
+        "MTH-T02-C02-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\frac{f(7)-f(2)}{7-2} = \\frac{24-4}{7-2}",
+          "explain": "Line 1 is valid: it pairs the output and input differences in the same order.",
+          "eq": [
+            "(24 - 4) / (7 - 2)",
+            "4"
+          ]
+        },
+        {
+          "latex": "\\frac{20}{5} = 4",
+          "explain": "Line 2 is the first wrong line: it reverses the denominator difference from 7 - 2 to 2 - 7.",
+          "val": "4"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c02-u03-reversed-input-difference-trap|diagnose|For a function with $f(#) = #$ and $f(#) = #$, a student finds the average rate of change on $[#, #]$: Line #: $\\frac{# - #}{# - #}$ Line #: $\\frac{#}{# - #}$ Line #: $\\frac{#}{-#}$ Line #: $-#$ Which line is the first one that is wrong?"
+    }
+  ]
+}

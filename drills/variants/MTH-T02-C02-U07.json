@@ -1,0 +1,3632 @@
+{
+  "unitCode": "MTH-T02-C02-U07",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-01",
+      "sourceArchetype": "t02-c02-u07-verify-inverse-pair",
+      "archetypeKey": "t02-c02-u07-verify-inverse-pair",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = 3x + 5$ and $g(x) = \\frac{x - 5}{3}$. Evaluate $g(f(4))$.",
+      "display": "g(f(4))",
+      "plainText": "Let f(x)=3x+5 and g(x)=(x-5)/3. Evaluate g(f(4)).",
+      "givens": {
+        "a": 3,
+        "b": 5,
+        "x": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        5,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u07-inverse-means-reciprocal-trap",
+      "trapDerivation": "1 / (3 * 4 + 5)",
+      "trapValue": "1/17",
+      "verify": {
+        "source": "(3 * 4 + 5 - 5) / 3",
+        "trapValue": "1/17"
+      },
+      "checkpointHint": "Evaluate the inner function first, then feed that result into the outer inverse function.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(4) = 3(4) + 5",
+          "explain": "Substitute x = 4 into the inner function f."
+        },
+        {
+          "latex": "f(4) = 17",
+          "explain": "Simplify to obtain the inner output.",
+          "eq": [
+            "3 * 4 + 5",
+            "17"
+          ]
+        },
+        {
+          "latex": "g(17) = \\frac{17 - 5}{3}",
+          "explain": "Substitute 17 into the outer function g."
+        },
+        {
+          "latex": "g(17) = 4",
+          "explain": "Subtract 5 and divide by 3 to recover the original input.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c02-u07-inverse-means-reciprocal-trap|direct|Let f(x)=#x+# and g(x)=(x-#)/#. Evaluate g(f(#))."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-02",
+      "sourceArchetype": "t02-c02-u07-verify-inverse-pair",
+      "archetypeKey": "t02-c02-u07-verify-inverse-pair",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = 4x - 3$ and $g(x) = \\frac{x + 3}{4}$. Evaluate $g(f(6))$.",
+      "display": "g(f(6))",
+      "plainText": "Let f(x)=4x-3 and g(x)=(x+3)/4. Evaluate g(f(6)).",
+      "givens": {
+        "a": 4,
+        "b": 3,
+        "x": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u07-inverse-means-reciprocal-trap",
+      "trapDerivation": "1 / (4 * 6 - 3)",
+      "trapValue": "1/21",
+      "verify": {
+        "source": "(4 * 6 - 3 + 3) / 4",
+        "trapValue": "1/21"
+      },
+      "checkpointHint": "Compute the output of the inside function and pass it directly into the outside function.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(6) = 4(6) - 3",
+          "explain": "Evaluate f at x = 6."
+        },
+        {
+          "latex": "f(6) = 21",
+          "explain": "Multiply and subtract to get 21.",
+          "eq": [
+            "4 * 6 - 3",
+            "21"
+          ]
+        },
+        {
+          "latex": "g(21) = \\frac{21 + 3}{4}",
+          "explain": "Substitute 21 into g."
+        },
+        {
+          "latex": "g(21) = 6",
+          "explain": "Add 3 and divide by 4.",
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c02-u07-inverse-means-reciprocal-trap|direct|Let f(x)=#x-# and g(x)=(x+#)/#. Evaluate g(f(#))."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-03",
+      "sourceArchetype": "t02-c02-u07-verify-inverse-pair",
+      "archetypeKey": "t02-c02-u07-verify-inverse-pair",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = 5x + 2$ and $g(x) = \\frac{x - 2}{5}$. Evaluate $g(f(7))$.",
+      "display": "g(f(7))",
+      "plainText": "Let f(x)=5x+2 and g(x)=(x-2)/5. Evaluate g(f(7)).",
+      "givens": {
+        "a": 5,
+        "b": 2,
+        "x": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        2,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0
+      },
+      "answerPlain": "7",
+      "answerDisplay": "7",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u07-inverse-means-reciprocal-trap",
+      "trapDerivation": "1 / (5 * 7 + 2)",
+      "trapValue": "1/37",
+      "verify": {
+        "source": "(5 * 7 + 2 - 2) / 5",
+        "trapValue": "1/37"
+      },
+      "checkpointHint": "An inverse function undoes the original rule by composition, not by taking a reciprocal.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(7) = 5(7) + 2",
+          "explain": "Substitute x = 7 into f(x)."
+        },
+        {
+          "latex": "f(7) = 37",
+          "explain": "Evaluate 35 + 2.",
+          "eq": [
+            "5 * 7 + 2",
+            "37"
+          ]
+        },
+        {
+          "latex": "g(37) = \\frac{37 - 2}{5}",
+          "explain": "Substitute 37 into g(x)."
+        },
+        {
+          "latex": "g(37) = 7",
+          "explain": "Subtract 2 and divide by 5.",
+          "val": "7"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-verify-inverse-pair-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c02-u07-inverse-means-reciprocal-trap|direct|Let f(x)=#x+# and g(x)=(x-#)/#. Evaluate g(f(#))."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-01",
+      "sourceArchetype": "t02-c02-u07-find-inverse-formula",
+      "archetypeKey": "t02-c02-u07-find-inverse-formula",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Find the inverse function of $f(x) = 4x - 9$. Write a simplified expression in $x$.",
+      "display": "y = 4x - 9;\\ \\text{solve for } x\\text{, then exchange } x \\text{ and } y",
+      "plainText": "Find the inverse function of f(x)=4x-9. Write a simplified expression in x.",
+      "givens": {
+        "a": 4,
+        "b": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x+9)/4",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x+9)/4",
+      "answerDisplay": "(x+9)/4",
+      "inputHint": "Enter an expression in x",
+      "commonTrapTag": "t02-c02-u07-swap-without-solving-trap",
+      "trapDerivation": "4*x - 9",
+      "trapValue": "4*x-9",
+      "verify": {
+        "source": "(x+9)/4",
+        "trapValue": "4*x-9"
+      },
+      "checkpointHint": "Solve the input-output equation for the original input variable before exchanging variable names.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "y = 4x - 9",
+          "explain": "Write the function as an equation relating x and y."
+        },
+        {
+          "latex": "y + 9 = 4x",
+          "explain": "Add 9 to both sides."
+        },
+        {
+          "latex": "x = \\frac{y + 9}{4}",
+          "explain": "Divide both sides by 4 to isolate x."
+        },
+        {
+          "latex": "f^{-1}(x) = \\frac{x + 9}{4}",
+          "explain": "Exchange x and y to state the inverse rule.",
+          "val": "(x+9)/4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u07-swap-without-solving-trap|reverse|Find the inverse function of f(x)=#x-#. Write a simplified expression in x."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-02",
+      "sourceArchetype": "t02-c02-u07-find-inverse-formula",
+      "archetypeKey": "t02-c02-u07-find-inverse-formula",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Find the inverse function of $f(x) = 5x + 7$. Write a simplified expression in $x$.",
+      "display": "y = 5x + 7;\\ \\text{solve for } x\\text{, then exchange } x \\text{ and } y",
+      "plainText": "Find the inverse function of f(x)=5x+7. Write a simplified expression in x.",
+      "givens": {
+        "a": 5,
+        "b": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x-7)/5",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x-7)/5",
+      "answerDisplay": "(x-7)/5",
+      "inputHint": "Enter an expression in x",
+      "commonTrapTag": "t02-c02-u07-swap-without-solving-trap",
+      "trapDerivation": "5*x + 7",
+      "trapValue": "5*x+7",
+      "verify": {
+        "source": "(x-7)/5",
+        "trapValue": "5*x+7"
+      },
+      "checkpointHint": "Undo the addition and multiplication in reverse order to isolate the inverse output.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "y = 5x + 7",
+          "explain": "Write the function as y = 5x + 7."
+        },
+        {
+          "latex": "y - 7 = 5x",
+          "explain": "Subtract 7 from both sides."
+        },
+        {
+          "latex": "x = \\frac{y - 7}{5}",
+          "explain": "Divide both sides by 5."
+        },
+        {
+          "latex": "f^{-1}(x) = \\frac{x - 7}{5}",
+          "explain": "Swap variable labels to write f^{-1}(x).",
+          "val": "(x-7)/5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u07-swap-without-solving-trap|reverse|Find the inverse function of f(x)=#x+#. Write a simplified expression in x."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-03",
+      "sourceArchetype": "t02-c02-u07-find-inverse-formula",
+      "archetypeKey": "t02-c02-u07-find-inverse-formula",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Find the inverse function of $f(x) = 6x - 11$. Write a simplified expression in $x$.",
+      "display": "y = 6x - 11;\\ \\text{solve for } x\\text{, then exchange } x \\text{ and } y",
+      "plainText": "Find the inverse function of f(x)=6x-11. Write a simplified expression in x.",
+      "givens": {
+        "a": 6,
+        "b": 11
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        11
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x+11)/6",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x+11)/6",
+      "answerDisplay": "(x+11)/6",
+      "inputHint": "Enter an expression in x",
+      "commonTrapTag": "t02-c02-u07-swap-without-solving-trap",
+      "trapDerivation": "6*x - 11",
+      "trapValue": "6*x-11",
+      "verify": {
+        "source": "(x+11)/6",
+        "trapValue": "6*x-11"
+      },
+      "checkpointHint": "Isolate the original input variable completely after setting up the equation.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "y = 6x - 11",
+          "explain": "Set y equal to 6x - 11."
+        },
+        {
+          "latex": "y + 11 = 6x",
+          "explain": "Add 11 to both sides."
+        },
+        {
+          "latex": "x = \\frac{y + 11}{6}",
+          "explain": "Divide both sides by 6."
+        },
+        {
+          "latex": "f^{-1}(x) = \\frac{x + 11}{6}",
+          "explain": "Exchange variable names to express the inverse function.",
+          "val": "(x+11)/6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-find-inverse-formula-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u07-swap-without-solving-trap|reverse|Find the inverse function of f(x)=#x-#. Write a simplified expression in x."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-01",
+      "sourceArchetype": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetypeKey": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A one-to-one function $f$ has domain described by $2 \\le x \\le 7$ and range described by $3 \\le f(x) < 15$. Give the domain of $f^{-1}$ as an interval.",
+      "display": "\\text{Domain}(f) = [2, 7];\\ \\text{Range}(f) = [3, 15)",
+      "plainText": "A one-to-one function f has domain [2,7] and range [3,15). Give the domain of f inverse as an interval.",
+      "givens": {
+        "domain_left": 2,
+        "domain_right": 7,
+        "range_left": 3,
+        "range_right": 15
+      },
+      "constants": {
+        "inv": -1
+      },
+      "trapGivens": [
+        2,
+        7,
+        3,
+        15
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "[3, 15)"
+      },
+      "answerPlain": "[3, 15)",
+      "answerDisplay": "[3, 15)",
+      "inputHint": "Enter an interval using brackets or parentheses",
+      "commonTrapTag": "t02-c02-u07-domain-range-not-swapped-trap",
+      "trapDerivation": "[2, 7]",
+      "trapValue": "[2, 7]",
+      "verify": {
+        "trapValue": "[2, 7]"
+      },
+      "checkpointHint": "The domain of the inverse function equals the range of the original one-to-one function, keeping the same endpoint inclusion.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = \\operatorname{Range}(f)",
+          "explain": "Identify that the inverse function's domain is the original function's range."
+        },
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = [3, 15)",
+          "explain": "Copy the range interval [3, 15) with its closed left and open right endpoints."
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "xRange": [
+          -4.0,
+          4.0
+        ],
+        "yRange": [
+          -2,
+          18
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              -4.0,
+              4.0
+            ],
+            "to": [
+              4.0,
+              4.0
+            ],
+            "color": "#94a3b8",
+            "strokeDasharray": "5 4"
+          },
+          {
+            "type": "curve",
+            "points": [
+              [
+                -4.0,
+                16.0
+              ],
+              [
+                -3.9667,
+                15.7344
+              ],
+              [
+                -3.9333,
+                15.4711
+              ],
+              [
+                -3.9,
+                15.21
+              ],
+              [
+                -3.8667,
+                14.9511
+              ],
+              [
+                -3.8333,
+                14.6944
+              ],
+              [
+                -3.8,
+                14.44
+              ],
+              [
+                -3.7667,
+                14.1878
+              ],
+              [
+                -3.7333,
+                13.9378
+              ],
+              [
+                -3.7,
+                13.69
+              ],
+              [
+                -3.6667,
+                13.4444
+              ],
+              [
+                -3.6333,
+                13.2011
+              ],
+              [
+                -3.6,
+                12.96
+              ],
+              [
+                -3.5667,
+                12.7211
+              ],
+              [
+                -3.5333,
+                12.4844
+              ],
+              [
+                -3.5,
+                12.25
+              ],
+              [
+                -3.4667,
+                12.0178
+              ],
+              [
+                -3.4333,
+                11.7878
+              ],
+              [
+                -3.4,
+                11.56
+              ],
+              [
+                -3.3667,
+                11.3344
+              ],
+              [
+                -3.3333,
+                11.1111
+              ],
+              [
+                -3.3,
+                10.89
+              ],
+              [
+                -3.2667,
+                10.6711
+              ],
+              [
+                -3.2333,
+                10.4544
+              ],
+              [
+                -3.2,
+                10.24
+              ],
+              [
+                -3.1667,
+                10.0278
+              ],
+              [
+                -3.1333,
+                9.8178
+              ],
+              [
+                -3.1,
+                9.61
+              ],
+              [
+                -3.0667,
+                9.4044
+              ],
+              [
+                -3.0333,
+                9.2011
+              ],
+              [
+                -3.0,
+                9.0
+              ],
+              [
+                -2.9667,
+                8.8011
+              ],
+              [
+                -2.9333,
+                8.6044
+              ],
+              [
+                -2.9,
+                8.41
+              ],
+              [
+                -2.8667,
+                8.2178
+              ],
+              [
+                -2.8333,
+                8.0278
+              ],
+              [
+                -2.8,
+                7.84
+              ],
+              [
+                -2.7667,
+                7.6544
+              ],
+              [
+                -2.7333,
+                7.4711
+              ],
+              [
+                -2.7,
+                7.29
+              ],
+              [
+                -2.6667,
+                7.1111
+              ],
+              [
+                -2.6333,
+                6.9344
+              ],
+              [
+                -2.6,
+                6.76
+              ],
+              [
+                -2.5667,
+                6.5878
+              ],
+              [
+                -2.5333,
+                6.4178
+              ],
+              [
+                -2.5,
+                6.25
+              ],
+              [
+                -2.4667,
+                6.0844
+              ],
+              [
+                -2.4333,
+                5.9211
+              ],
+              [
+                -2.4,
+                5.76
+              ],
+              [
+                -2.3667,
+                5.6011
+              ],
+              [
+                -2.3333,
+                5.4444
+              ],
+              [
+                -2.3,
+                5.29
+              ],
+              [
+                -2.2667,
+                5.1378
+              ],
+              [
+                -2.2333,
+                4.9878
+              ],
+              [
+                -2.2,
+                4.84
+              ],
+              [
+                -2.1667,
+                4.6944
+              ],
+              [
+                -2.1333,
+                4.5511
+              ],
+              [
+                -2.1,
+                4.41
+              ],
+              [
+                -2.0667,
+                4.2711
+              ],
+              [
+                -2.0333,
+                4.1344
+              ],
+              [
+                -2.0,
+                4.0
+              ],
+              [
+                -1.9667,
+                3.8678
+              ],
+              [
+                -1.9333,
+                3.7378
+              ],
+              [
+                -1.9,
+                3.61
+              ],
+              [
+                -1.8667,
+                3.4844
+              ],
+              [
+                -1.8333,
+                3.3611
+              ],
+              [
+                -1.8,
+                3.24
+              ],
+              [
+                -1.7667,
+                3.1211
+              ],
+              [
+                -1.7333,
+                3.0044
+              ],
+              [
+                -1.7,
+                2.89
+              ],
+              [
+                -1.6667,
+                2.7778
+              ],
+              [
+                -1.6333,
+                2.6678
+              ],
+              [
+                -1.6,
+                2.56
+              ],
+              [
+                -1.5667,
+                2.4544
+              ],
+              [
+                -1.5333,
+                2.3511
+              ],
+              [
+                -1.5,
+                2.25
+              ],
+              [
+                -1.4667,
+                2.1511
+              ],
+              [
+                -1.4333,
+                2.0544
+              ],
+              [
+                -1.4,
+                1.96
+              ],
+              [
+                -1.3667,
+                1.8678
+              ],
+              [
+                -1.3333,
+                1.7778
+              ],
+              [
+                -1.3,
+                1.69
+              ],
+              [
+                -1.2667,
+                1.6044
+              ],
+              [
+                -1.2333,
+                1.5211
+              ],
+              [
+                -1.2,
+                1.44
+              ],
+              [
+                -1.1667,
+                1.3611
+              ],
+              [
+                -1.1333,
+                1.2844
+              ],
+              [
+                -1.1,
+                1.21
+              ],
+              [
+                -1.0667,
+                1.1378
+              ],
+              [
+                -1.0333,
+                1.0678
+              ],
+              [
+                -1.0,
+                1.0
+              ],
+              [
+                -0.9667,
+                0.9344
+              ],
+              [
+                -0.9333,
+                0.8711
+              ],
+              [
+                -0.9,
+                0.81
+              ],
+              [
+                -0.8667,
+                0.7511
+              ],
+              [
+                -0.8333,
+                0.6944
+              ],
+              [
+                -0.8,
+                0.64
+              ],
+              [
+                -0.7667,
+                0.5878
+              ],
+              [
+                -0.7333,
+                0.5378
+              ],
+              [
+                -0.7,
+                0.49
+              ],
+              [
+                -0.6667,
+                0.4444
+              ],
+              [
+                -0.6333,
+                0.4011
+              ],
+              [
+                -0.6,
+                0.36
+              ],
+              [
+                -0.5667,
+                0.3211
+              ],
+              [
+                -0.5333,
+                0.2844
+              ],
+              [
+                -0.5,
+                0.25
+              ],
+              [
+                -0.4667,
+                0.2178
+              ],
+              [
+                -0.4333,
+                0.1878
+              ],
+              [
+                -0.4,
+                0.16
+              ],
+              [
+                -0.3667,
+                0.1344
+              ],
+              [
+                -0.3333,
+                0.1111
+              ],
+              [
+                -0.3,
+                0.09
+              ],
+              [
+                -0.2667,
+                0.0711
+              ],
+              [
+                -0.2333,
+                0.0544
+              ],
+              [
+                -0.2,
+                0.04
+              ],
+              [
+                -0.1667,
+                0.0278
+              ],
+              [
+                -0.1333,
+                0.0178
+              ],
+              [
+                -0.1,
+                0.01
+              ],
+              [
+                -0.0667,
+                0.0044
+              ],
+              [
+                -0.0333,
+                0.0011
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0333,
+                0.0011
+              ],
+              [
+                0.0667,
+                0.0044
+              ],
+              [
+                0.1,
+                0.01
+              ],
+              [
+                0.1333,
+                0.0178
+              ],
+              [
+                0.1667,
+                0.0278
+              ],
+              [
+                0.2,
+                0.04
+              ],
+              [
+                0.2333,
+                0.0544
+              ],
+              [
+                0.2667,
+                0.0711
+              ],
+              [
+                0.3,
+                0.09
+              ],
+              [
+                0.3333,
+                0.1111
+              ],
+              [
+                0.3667,
+                0.1344
+              ],
+              [
+                0.4,
+                0.16
+              ],
+              [
+                0.4333,
+                0.1878
+              ],
+              [
+                0.4667,
+                0.2178
+              ],
+              [
+                0.5,
+                0.25
+              ],
+              [
+                0.5333,
+                0.2844
+              ],
+              [
+                0.5667,
+                0.3211
+              ],
+              [
+                0.6,
+                0.36
+              ],
+              [
+                0.6333,
+                0.4011
+              ],
+              [
+                0.6667,
+                0.4444
+              ],
+              [
+                0.7,
+                0.49
+              ],
+              [
+                0.7333,
+                0.5378
+              ],
+              [
+                0.7667,
+                0.5878
+              ],
+              [
+                0.8,
+                0.64
+              ],
+              [
+                0.8333,
+                0.6944
+              ],
+              [
+                0.8667,
+                0.7511
+              ],
+              [
+                0.9,
+                0.81
+              ],
+              [
+                0.9333,
+                0.8711
+              ],
+              [
+                0.9667,
+                0.9344
+              ],
+              [
+                1.0,
+                1.0
+              ],
+              [
+                1.0333,
+                1.0678
+              ],
+              [
+                1.0667,
+                1.1378
+              ],
+              [
+                1.1,
+                1.21
+              ],
+              [
+                1.1333,
+                1.2844
+              ],
+              [
+                1.1667,
+                1.3611
+              ],
+              [
+                1.2,
+                1.44
+              ],
+              [
+                1.2333,
+                1.5211
+              ],
+              [
+                1.2667,
+                1.6044
+              ],
+              [
+                1.3,
+                1.69
+              ],
+              [
+                1.3333,
+                1.7778
+              ],
+              [
+                1.3667,
+                1.8678
+              ],
+              [
+                1.4,
+                1.96
+              ],
+              [
+                1.4333,
+                2.0544
+              ],
+              [
+                1.4667,
+                2.1511
+              ],
+              [
+                1.5,
+                2.25
+              ],
+              [
+                1.5333,
+                2.3511
+              ],
+              [
+                1.5667,
+                2.4544
+              ],
+              [
+                1.6,
+                2.56
+              ],
+              [
+                1.6333,
+                2.6678
+              ],
+              [
+                1.6667,
+                2.7778
+              ],
+              [
+                1.7,
+                2.89
+              ],
+              [
+                1.7333,
+                3.0044
+              ],
+              [
+                1.7667,
+                3.1211
+              ],
+              [
+                1.8,
+                3.24
+              ],
+              [
+                1.8333,
+                3.3611
+              ],
+              [
+                1.8667,
+                3.4844
+              ],
+              [
+                1.9,
+                3.61
+              ],
+              [
+                1.9333,
+                3.7378
+              ],
+              [
+                1.9667,
+                3.8678
+              ],
+              [
+                2.0,
+                4.0
+              ],
+              [
+                2.0333,
+                4.1344
+              ],
+              [
+                2.0667,
+                4.2711
+              ],
+              [
+                2.1,
+                4.41
+              ],
+              [
+                2.1333,
+                4.5511
+              ],
+              [
+                2.1667,
+                4.6944
+              ],
+              [
+                2.2,
+                4.84
+              ],
+              [
+                2.2333,
+                4.9878
+              ],
+              [
+                2.2667,
+                5.1378
+              ],
+              [
+                2.3,
+                5.29
+              ],
+              [
+                2.3333,
+                5.4444
+              ],
+              [
+                2.3667,
+                5.6011
+              ],
+              [
+                2.4,
+                5.76
+              ],
+              [
+                2.4333,
+                5.9211
+              ],
+              [
+                2.4667,
+                6.0844
+              ],
+              [
+                2.5,
+                6.25
+              ],
+              [
+                2.5333,
+                6.4178
+              ],
+              [
+                2.5667,
+                6.5878
+              ],
+              [
+                2.6,
+                6.76
+              ],
+              [
+                2.6333,
+                6.9344
+              ],
+              [
+                2.6667,
+                7.1111
+              ],
+              [
+                2.7,
+                7.29
+              ],
+              [
+                2.7333,
+                7.4711
+              ],
+              [
+                2.7667,
+                7.6544
+              ],
+              [
+                2.8,
+                7.84
+              ],
+              [
+                2.8333,
+                8.0278
+              ],
+              [
+                2.8667,
+                8.2178
+              ],
+              [
+                2.9,
+                8.41
+              ],
+              [
+                2.9333,
+                8.6044
+              ],
+              [
+                2.9667,
+                8.8011
+              ],
+              [
+                3.0,
+                9.0
+              ],
+              [
+                3.0333,
+                9.2011
+              ],
+              [
+                3.0667,
+                9.4044
+              ],
+              [
+                3.1,
+                9.61
+              ],
+              [
+                3.1333,
+                9.8178
+              ],
+              [
+                3.1667,
+                10.0278
+              ],
+              [
+                3.2,
+                10.24
+              ],
+              [
+                3.2333,
+                10.4544
+              ],
+              [
+                3.2667,
+                10.6711
+              ],
+              [
+                3.3,
+                10.89
+              ],
+              [
+                3.3333,
+                11.1111
+              ],
+              [
+                3.3667,
+                11.3344
+              ],
+              [
+                3.4,
+                11.56
+              ],
+              [
+                3.4333,
+                11.7878
+              ],
+              [
+                3.4667,
+                12.0178
+              ],
+              [
+                3.5,
+                12.25
+              ],
+              [
+                3.5333,
+                12.4844
+              ],
+              [
+                3.5667,
+                12.7211
+              ],
+              [
+                3.6,
+                12.96
+              ],
+              [
+                3.6333,
+                13.2011
+              ],
+              [
+                3.6667,
+                13.4444
+              ],
+              [
+                3.7,
+                13.69
+              ],
+              [
+                3.7333,
+                13.9378
+              ],
+              [
+                3.7667,
+                14.1878
+              ],
+              [
+                3.8,
+                14.44
+              ],
+              [
+                3.8333,
+                14.6944
+              ],
+              [
+                3.8667,
+                14.9511
+              ],
+              [
+                3.9,
+                15.21
+              ],
+              [
+                3.9333,
+                15.4711
+              ],
+              [
+                3.9667,
+                15.7344
+              ],
+              [
+                4.0,
+                16.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.32,
+              16.4
+            ],
+            "text": "f(x)=x^2",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c02-u07-domain-range-not-swapped-trap|direct|A one-to-one function f has domain [#,#] and range [#,#). Give the domain of f inverse as an interval."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-02",
+      "sourceArchetype": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetypeKey": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A one-to-one function $f$ has domain described by $1 < x \\le 6$ and range described by $4 \\le f(x) \\le 19$. Give the domain of $f^{-1}$ as an interval.",
+      "display": "\\text{Domain}(f) = (1, 6];\\ \\text{Range}(f) = [4, 19]",
+      "plainText": "A one-to-one function f has domain (1,6] and range [4,19]. Give the domain of f inverse as an interval.",
+      "givens": {
+        "domain_left": 1,
+        "domain_right": 6,
+        "range_left": 4,
+        "range_right": 19
+      },
+      "constants": {
+        "inv": -1
+      },
+      "trapGivens": [
+        1,
+        6,
+        4,
+        19
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "[4, 19]"
+      },
+      "answerPlain": "[4, 19]",
+      "answerDisplay": "[4, 19]",
+      "inputHint": "Enter an interval using brackets or parentheses",
+      "commonTrapTag": "t02-c02-u07-domain-range-not-swapped-trap",
+      "trapDerivation": "(1, 6]",
+      "trapValue": "(1, 6]",
+      "verify": {
+        "trapValue": "(1, 6]"
+      },
+      "checkpointHint": "Swap the roles of domain and range when passing from a one-to-one function to its inverse.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = \\operatorname{Range}(f)",
+          "explain": "Set the domain of the inverse equal to the range of f."
+        },
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = [4, 19]",
+          "explain": "State the closed interval [4, 19]."
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "xRange": [
+          -4.0,
+          4.0
+        ],
+        "yRange": [
+          -2,
+          18
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              -4.0,
+              4.0
+            ],
+            "to": [
+              4.0,
+              4.0
+            ],
+            "color": "#94a3b8",
+            "strokeDasharray": "5 4"
+          },
+          {
+            "type": "curve",
+            "points": [
+              [
+                -4.0,
+                16.0
+              ],
+              [
+                -3.9667,
+                15.7344
+              ],
+              [
+                -3.9333,
+                15.4711
+              ],
+              [
+                -3.9,
+                15.21
+              ],
+              [
+                -3.8667,
+                14.9511
+              ],
+              [
+                -3.8333,
+                14.6944
+              ],
+              [
+                -3.8,
+                14.44
+              ],
+              [
+                -3.7667,
+                14.1878
+              ],
+              [
+                -3.7333,
+                13.9378
+              ],
+              [
+                -3.7,
+                13.69
+              ],
+              [
+                -3.6667,
+                13.4444
+              ],
+              [
+                -3.6333,
+                13.2011
+              ],
+              [
+                -3.6,
+                12.96
+              ],
+              [
+                -3.5667,
+                12.7211
+              ],
+              [
+                -3.5333,
+                12.4844
+              ],
+              [
+                -3.5,
+                12.25
+              ],
+              [
+                -3.4667,
+                12.0178
+              ],
+              [
+                -3.4333,
+                11.7878
+              ],
+              [
+                -3.4,
+                11.56
+              ],
+              [
+                -3.3667,
+                11.3344
+              ],
+              [
+                -3.3333,
+                11.1111
+              ],
+              [
+                -3.3,
+                10.89
+              ],
+              [
+                -3.2667,
+                10.6711
+              ],
+              [
+                -3.2333,
+                10.4544
+              ],
+              [
+                -3.2,
+                10.24
+              ],
+              [
+                -3.1667,
+                10.0278
+              ],
+              [
+                -3.1333,
+                9.8178
+              ],
+              [
+                -3.1,
+                9.61
+              ],
+              [
+                -3.0667,
+                9.4044
+              ],
+              [
+                -3.0333,
+                9.2011
+              ],
+              [
+                -3.0,
+                9.0
+              ],
+              [
+                -2.9667,
+                8.8011
+              ],
+              [
+                -2.9333,
+                8.6044
+              ],
+              [
+                -2.9,
+                8.41
+              ],
+              [
+                -2.8667,
+                8.2178
+              ],
+              [
+                -2.8333,
+                8.0278
+              ],
+              [
+                -2.8,
+                7.84
+              ],
+              [
+                -2.7667,
+                7.6544
+              ],
+              [
+                -2.7333,
+                7.4711
+              ],
+              [
+                -2.7,
+                7.29
+              ],
+              [
+                -2.6667,
+                7.1111
+              ],
+              [
+                -2.6333,
+                6.9344
+              ],
+              [
+                -2.6,
+                6.76
+              ],
+              [
+                -2.5667,
+                6.5878
+              ],
+              [
+                -2.5333,
+                6.4178
+              ],
+              [
+                -2.5,
+                6.25
+              ],
+              [
+                -2.4667,
+                6.0844
+              ],
+              [
+                -2.4333,
+                5.9211
+              ],
+              [
+                -2.4,
+                5.76
+              ],
+              [
+                -2.3667,
+                5.6011
+              ],
+              [
+                -2.3333,
+                5.4444
+              ],
+              [
+                -2.3,
+                5.29
+              ],
+              [
+                -2.2667,
+                5.1378
+              ],
+              [
+                -2.2333,
+                4.9878
+              ],
+              [
+                -2.2,
+                4.84
+              ],
+              [
+                -2.1667,
+                4.6944
+              ],
+              [
+                -2.1333,
+                4.5511
+              ],
+              [
+                -2.1,
+                4.41
+              ],
+              [
+                -2.0667,
+                4.2711
+              ],
+              [
+                -2.0333,
+                4.1344
+              ],
+              [
+                -2.0,
+                4.0
+              ],
+              [
+                -1.9667,
+                3.8678
+              ],
+              [
+                -1.9333,
+                3.7378
+              ],
+              [
+                -1.9,
+                3.61
+              ],
+              [
+                -1.8667,
+                3.4844
+              ],
+              [
+                -1.8333,
+                3.3611
+              ],
+              [
+                -1.8,
+                3.24
+              ],
+              [
+                -1.7667,
+                3.1211
+              ],
+              [
+                -1.7333,
+                3.0044
+              ],
+              [
+                -1.7,
+                2.89
+              ],
+              [
+                -1.6667,
+                2.7778
+              ],
+              [
+                -1.6333,
+                2.6678
+              ],
+              [
+                -1.6,
+                2.56
+              ],
+              [
+                -1.5667,
+                2.4544
+              ],
+              [
+                -1.5333,
+                2.3511
+              ],
+              [
+                -1.5,
+                2.25
+              ],
+              [
+                -1.4667,
+                2.1511
+              ],
+              [
+                -1.4333,
+                2.0544
+              ],
+              [
+                -1.4,
+                1.96
+              ],
+              [
+                -1.3667,
+                1.8678
+              ],
+              [
+                -1.3333,
+                1.7778
+              ],
+              [
+                -1.3,
+                1.69
+              ],
+              [
+                -1.2667,
+                1.6044
+              ],
+              [
+                -1.2333,
+                1.5211
+              ],
+              [
+                -1.2,
+                1.44
+              ],
+              [
+                -1.1667,
+                1.3611
+              ],
+              [
+                -1.1333,
+                1.2844
+              ],
+              [
+                -1.1,
+                1.21
+              ],
+              [
+                -1.0667,
+                1.1378
+              ],
+              [
+                -1.0333,
+                1.0678
+              ],
+              [
+                -1.0,
+                1.0
+              ],
+              [
+                -0.9667,
+                0.9344
+              ],
+              [
+                -0.9333,
+                0.8711
+              ],
+              [
+                -0.9,
+                0.81
+              ],
+              [
+                -0.8667,
+                0.7511
+              ],
+              [
+                -0.8333,
+                0.6944
+              ],
+              [
+                -0.8,
+                0.64
+              ],
+              [
+                -0.7667,
+                0.5878
+              ],
+              [
+                -0.7333,
+                0.5378
+              ],
+              [
+                -0.7,
+                0.49
+              ],
+              [
+                -0.6667,
+                0.4444
+              ],
+              [
+                -0.6333,
+                0.4011
+              ],
+              [
+                -0.6,
+                0.36
+              ],
+              [
+                -0.5667,
+                0.3211
+              ],
+              [
+                -0.5333,
+                0.2844
+              ],
+              [
+                -0.5,
+                0.25
+              ],
+              [
+                -0.4667,
+                0.2178
+              ],
+              [
+                -0.4333,
+                0.1878
+              ],
+              [
+                -0.4,
+                0.16
+              ],
+              [
+                -0.3667,
+                0.1344
+              ],
+              [
+                -0.3333,
+                0.1111
+              ],
+              [
+                -0.3,
+                0.09
+              ],
+              [
+                -0.2667,
+                0.0711
+              ],
+              [
+                -0.2333,
+                0.0544
+              ],
+              [
+                -0.2,
+                0.04
+              ],
+              [
+                -0.1667,
+                0.0278
+              ],
+              [
+                -0.1333,
+                0.0178
+              ],
+              [
+                -0.1,
+                0.01
+              ],
+              [
+                -0.0667,
+                0.0044
+              ],
+              [
+                -0.0333,
+                0.0011
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0333,
+                0.0011
+              ],
+              [
+                0.0667,
+                0.0044
+              ],
+              [
+                0.1,
+                0.01
+              ],
+              [
+                0.1333,
+                0.0178
+              ],
+              [
+                0.1667,
+                0.0278
+              ],
+              [
+                0.2,
+                0.04
+              ],
+              [
+                0.2333,
+                0.0544
+              ],
+              [
+                0.2667,
+                0.0711
+              ],
+              [
+                0.3,
+                0.09
+              ],
+              [
+                0.3333,
+                0.1111
+              ],
+              [
+                0.3667,
+                0.1344
+              ],
+              [
+                0.4,
+                0.16
+              ],
+              [
+                0.4333,
+                0.1878
+              ],
+              [
+                0.4667,
+                0.2178
+              ],
+              [
+                0.5,
+                0.25
+              ],
+              [
+                0.5333,
+                0.2844
+              ],
+              [
+                0.5667,
+                0.3211
+              ],
+              [
+                0.6,
+                0.36
+              ],
+              [
+                0.6333,
+                0.4011
+              ],
+              [
+                0.6667,
+                0.4444
+              ],
+              [
+                0.7,
+                0.49
+              ],
+              [
+                0.7333,
+                0.5378
+              ],
+              [
+                0.7667,
+                0.5878
+              ],
+              [
+                0.8,
+                0.64
+              ],
+              [
+                0.8333,
+                0.6944
+              ],
+              [
+                0.8667,
+                0.7511
+              ],
+              [
+                0.9,
+                0.81
+              ],
+              [
+                0.9333,
+                0.8711
+              ],
+              [
+                0.9667,
+                0.9344
+              ],
+              [
+                1.0,
+                1.0
+              ],
+              [
+                1.0333,
+                1.0678
+              ],
+              [
+                1.0667,
+                1.1378
+              ],
+              [
+                1.1,
+                1.21
+              ],
+              [
+                1.1333,
+                1.2844
+              ],
+              [
+                1.1667,
+                1.3611
+              ],
+              [
+                1.2,
+                1.44
+              ],
+              [
+                1.2333,
+                1.5211
+              ],
+              [
+                1.2667,
+                1.6044
+              ],
+              [
+                1.3,
+                1.69
+              ],
+              [
+                1.3333,
+                1.7778
+              ],
+              [
+                1.3667,
+                1.8678
+              ],
+              [
+                1.4,
+                1.96
+              ],
+              [
+                1.4333,
+                2.0544
+              ],
+              [
+                1.4667,
+                2.1511
+              ],
+              [
+                1.5,
+                2.25
+              ],
+              [
+                1.5333,
+                2.3511
+              ],
+              [
+                1.5667,
+                2.4544
+              ],
+              [
+                1.6,
+                2.56
+              ],
+              [
+                1.6333,
+                2.6678
+              ],
+              [
+                1.6667,
+                2.7778
+              ],
+              [
+                1.7,
+                2.89
+              ],
+              [
+                1.7333,
+                3.0044
+              ],
+              [
+                1.7667,
+                3.1211
+              ],
+              [
+                1.8,
+                3.24
+              ],
+              [
+                1.8333,
+                3.3611
+              ],
+              [
+                1.8667,
+                3.4844
+              ],
+              [
+                1.9,
+                3.61
+              ],
+              [
+                1.9333,
+                3.7378
+              ],
+              [
+                1.9667,
+                3.8678
+              ],
+              [
+                2.0,
+                4.0
+              ],
+              [
+                2.0333,
+                4.1344
+              ],
+              [
+                2.0667,
+                4.2711
+              ],
+              [
+                2.1,
+                4.41
+              ],
+              [
+                2.1333,
+                4.5511
+              ],
+              [
+                2.1667,
+                4.6944
+              ],
+              [
+                2.2,
+                4.84
+              ],
+              [
+                2.2333,
+                4.9878
+              ],
+              [
+                2.2667,
+                5.1378
+              ],
+              [
+                2.3,
+                5.29
+              ],
+              [
+                2.3333,
+                5.4444
+              ],
+              [
+                2.3667,
+                5.6011
+              ],
+              [
+                2.4,
+                5.76
+              ],
+              [
+                2.4333,
+                5.9211
+              ],
+              [
+                2.4667,
+                6.0844
+              ],
+              [
+                2.5,
+                6.25
+              ],
+              [
+                2.5333,
+                6.4178
+              ],
+              [
+                2.5667,
+                6.5878
+              ],
+              [
+                2.6,
+                6.76
+              ],
+              [
+                2.6333,
+                6.9344
+              ],
+              [
+                2.6667,
+                7.1111
+              ],
+              [
+                2.7,
+                7.29
+              ],
+              [
+                2.7333,
+                7.4711
+              ],
+              [
+                2.7667,
+                7.6544
+              ],
+              [
+                2.8,
+                7.84
+              ],
+              [
+                2.8333,
+                8.0278
+              ],
+              [
+                2.8667,
+                8.2178
+              ],
+              [
+                2.9,
+                8.41
+              ],
+              [
+                2.9333,
+                8.6044
+              ],
+              [
+                2.9667,
+                8.8011
+              ],
+              [
+                3.0,
+                9.0
+              ],
+              [
+                3.0333,
+                9.2011
+              ],
+              [
+                3.0667,
+                9.4044
+              ],
+              [
+                3.1,
+                9.61
+              ],
+              [
+                3.1333,
+                9.8178
+              ],
+              [
+                3.1667,
+                10.0278
+              ],
+              [
+                3.2,
+                10.24
+              ],
+              [
+                3.2333,
+                10.4544
+              ],
+              [
+                3.2667,
+                10.6711
+              ],
+              [
+                3.3,
+                10.89
+              ],
+              [
+                3.3333,
+                11.1111
+              ],
+              [
+                3.3667,
+                11.3344
+              ],
+              [
+                3.4,
+                11.56
+              ],
+              [
+                3.4333,
+                11.7878
+              ],
+              [
+                3.4667,
+                12.0178
+              ],
+              [
+                3.5,
+                12.25
+              ],
+              [
+                3.5333,
+                12.4844
+              ],
+              [
+                3.5667,
+                12.7211
+              ],
+              [
+                3.6,
+                12.96
+              ],
+              [
+                3.6333,
+                13.2011
+              ],
+              [
+                3.6667,
+                13.4444
+              ],
+              [
+                3.7,
+                13.69
+              ],
+              [
+                3.7333,
+                13.9378
+              ],
+              [
+                3.7667,
+                14.1878
+              ],
+              [
+                3.8,
+                14.44
+              ],
+              [
+                3.8333,
+                14.6944
+              ],
+              [
+                3.8667,
+                14.9511
+              ],
+              [
+                3.9,
+                15.21
+              ],
+              [
+                3.9333,
+                15.4711
+              ],
+              [
+                3.9667,
+                15.7344
+              ],
+              [
+                4.0,
+                16.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.32,
+              16.4
+            ],
+            "text": "f(x)=x^2",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c02-u07-domain-range-not-swapped-trap|direct|A one-to-one function f has domain (#,#] and range [#,#]. Give the domain of f inverse as an interval."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-03",
+      "sourceArchetype": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetypeKey": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A one-to-one function $f$ has domain described by $3 \\le x < 8$ and range described by $5 < f(x) \\le 22$. Give the domain of $f^{-1}$ as an interval.",
+      "display": "\\text{Domain}(f) = [3, 8);\\ \\text{Range}(f) = (5, 22]",
+      "plainText": "A one-to-one function f has domain [3,8) and range (5,22]. Give the domain of f inverse as an interval.",
+      "givens": {
+        "domain_left": 3,
+        "domain_right": 8,
+        "range_left": 5,
+        "range_right": 22
+      },
+      "constants": {
+        "inv": -1
+      },
+      "trapGivens": [
+        3,
+        8,
+        5,
+        22
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(5, 22]"
+      },
+      "answerPlain": "(5, 22]",
+      "answerDisplay": "(5, 22]",
+      "inputHint": "Enter an interval using brackets or parentheses",
+      "commonTrapTag": "t02-c02-u07-domain-range-not-swapped-trap",
+      "trapDerivation": "[3, 8)",
+      "trapValue": "[3, 8)",
+      "verify": {
+        "trapValue": "[3, 8)"
+      },
+      "checkpointHint": "Reverse the input and output sets and preserve each endpoint's open or closed bracket.",
+      "references": [
+        "MTH-T02-C02-U07"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = \\operatorname{Range}(f)",
+          "explain": "Use the range of f as the domain of f^{-1}."
+        },
+        {
+          "latex": "\\operatorname{Dom}(f^{-1}) = (5, 22]",
+          "explain": "Preserve the open left endpoint at 5 and closed right endpoint at 22."
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "xRange": [
+          -4.0,
+          4.0
+        ],
+        "yRange": [
+          -2,
+          18
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              -4.0,
+              4.0
+            ],
+            "to": [
+              4.0,
+              4.0
+            ],
+            "color": "#94a3b8",
+            "strokeDasharray": "5 4"
+          },
+          {
+            "type": "curve",
+            "points": [
+              [
+                -4.0,
+                16.0
+              ],
+              [
+                -3.9667,
+                15.7344
+              ],
+              [
+                -3.9333,
+                15.4711
+              ],
+              [
+                -3.9,
+                15.21
+              ],
+              [
+                -3.8667,
+                14.9511
+              ],
+              [
+                -3.8333,
+                14.6944
+              ],
+              [
+                -3.8,
+                14.44
+              ],
+              [
+                -3.7667,
+                14.1878
+              ],
+              [
+                -3.7333,
+                13.9378
+              ],
+              [
+                -3.7,
+                13.69
+              ],
+              [
+                -3.6667,
+                13.4444
+              ],
+              [
+                -3.6333,
+                13.2011
+              ],
+              [
+                -3.6,
+                12.96
+              ],
+              [
+                -3.5667,
+                12.7211
+              ],
+              [
+                -3.5333,
+                12.4844
+              ],
+              [
+                -3.5,
+                12.25
+              ],
+              [
+                -3.4667,
+                12.0178
+              ],
+              [
+                -3.4333,
+                11.7878
+              ],
+              [
+                -3.4,
+                11.56
+              ],
+              [
+                -3.3667,
+                11.3344
+              ],
+              [
+                -3.3333,
+                11.1111
+              ],
+              [
+                -3.3,
+                10.89
+              ],
+              [
+                -3.2667,
+                10.6711
+              ],
+              [
+                -3.2333,
+                10.4544
+              ],
+              [
+                -3.2,
+                10.24
+              ],
+              [
+                -3.1667,
+                10.0278
+              ],
+              [
+                -3.1333,
+                9.8178
+              ],
+              [
+                -3.1,
+                9.61
+              ],
+              [
+                -3.0667,
+                9.4044
+              ],
+              [
+                -3.0333,
+                9.2011
+              ],
+              [
+                -3.0,
+                9.0
+              ],
+              [
+                -2.9667,
+                8.8011
+              ],
+              [
+                -2.9333,
+                8.6044
+              ],
+              [
+                -2.9,
+                8.41
+              ],
+              [
+                -2.8667,
+                8.2178
+              ],
+              [
+                -2.8333,
+                8.0278
+              ],
+              [
+                -2.8,
+                7.84
+              ],
+              [
+                -2.7667,
+                7.6544
+              ],
+              [
+                -2.7333,
+                7.4711
+              ],
+              [
+                -2.7,
+                7.29
+              ],
+              [
+                -2.6667,
+                7.1111
+              ],
+              [
+                -2.6333,
+                6.9344
+              ],
+              [
+                -2.6,
+                6.76
+              ],
+              [
+                -2.5667,
+                6.5878
+              ],
+              [
+                -2.5333,
+                6.4178
+              ],
+              [
+                -2.5,
+                6.25
+              ],
+              [
+                -2.4667,
+                6.0844
+              ],
+              [
+                -2.4333,
+                5.9211
+              ],
+              [
+                -2.4,
+                5.76
+              ],
+              [
+                -2.3667,
+                5.6011
+              ],
+              [
+                -2.3333,
+                5.4444
+              ],
+              [
+                -2.3,
+                5.29
+              ],
+              [
+                -2.2667,
+                5.1378
+              ],
+              [
+                -2.2333,
+                4.9878
+              ],
+              [
+                -2.2,
+                4.84
+              ],
+              [
+                -2.1667,
+                4.6944
+              ],
+              [
+                -2.1333,
+                4.5511
+              ],
+              [
+                -2.1,
+                4.41
+              ],
+              [
+                -2.0667,
+                4.2711
+              ],
+              [
+                -2.0333,
+                4.1344
+              ],
+              [
+                -2.0,
+                4.0
+              ],
+              [
+                -1.9667,
+                3.8678
+              ],
+              [
+                -1.9333,
+                3.7378
+              ],
+              [
+                -1.9,
+                3.61
+              ],
+              [
+                -1.8667,
+                3.4844
+              ],
+              [
+                -1.8333,
+                3.3611
+              ],
+              [
+                -1.8,
+                3.24
+              ],
+              [
+                -1.7667,
+                3.1211
+              ],
+              [
+                -1.7333,
+                3.0044
+              ],
+              [
+                -1.7,
+                2.89
+              ],
+              [
+                -1.6667,
+                2.7778
+              ],
+              [
+                -1.6333,
+                2.6678
+              ],
+              [
+                -1.6,
+                2.56
+              ],
+              [
+                -1.5667,
+                2.4544
+              ],
+              [
+                -1.5333,
+                2.3511
+              ],
+              [
+                -1.5,
+                2.25
+              ],
+              [
+                -1.4667,
+                2.1511
+              ],
+              [
+                -1.4333,
+                2.0544
+              ],
+              [
+                -1.4,
+                1.96
+              ],
+              [
+                -1.3667,
+                1.8678
+              ],
+              [
+                -1.3333,
+                1.7778
+              ],
+              [
+                -1.3,
+                1.69
+              ],
+              [
+                -1.2667,
+                1.6044
+              ],
+              [
+                -1.2333,
+                1.5211
+              ],
+              [
+                -1.2,
+                1.44
+              ],
+              [
+                -1.1667,
+                1.3611
+              ],
+              [
+                -1.1333,
+                1.2844
+              ],
+              [
+                -1.1,
+                1.21
+              ],
+              [
+                -1.0667,
+                1.1378
+              ],
+              [
+                -1.0333,
+                1.0678
+              ],
+              [
+                -1.0,
+                1.0
+              ],
+              [
+                -0.9667,
+                0.9344
+              ],
+              [
+                -0.9333,
+                0.8711
+              ],
+              [
+                -0.9,
+                0.81
+              ],
+              [
+                -0.8667,
+                0.7511
+              ],
+              [
+                -0.8333,
+                0.6944
+              ],
+              [
+                -0.8,
+                0.64
+              ],
+              [
+                -0.7667,
+                0.5878
+              ],
+              [
+                -0.7333,
+                0.5378
+              ],
+              [
+                -0.7,
+                0.49
+              ],
+              [
+                -0.6667,
+                0.4444
+              ],
+              [
+                -0.6333,
+                0.4011
+              ],
+              [
+                -0.6,
+                0.36
+              ],
+              [
+                -0.5667,
+                0.3211
+              ],
+              [
+                -0.5333,
+                0.2844
+              ],
+              [
+                -0.5,
+                0.25
+              ],
+              [
+                -0.4667,
+                0.2178
+              ],
+              [
+                -0.4333,
+                0.1878
+              ],
+              [
+                -0.4,
+                0.16
+              ],
+              [
+                -0.3667,
+                0.1344
+              ],
+              [
+                -0.3333,
+                0.1111
+              ],
+              [
+                -0.3,
+                0.09
+              ],
+              [
+                -0.2667,
+                0.0711
+              ],
+              [
+                -0.2333,
+                0.0544
+              ],
+              [
+                -0.2,
+                0.04
+              ],
+              [
+                -0.1667,
+                0.0278
+              ],
+              [
+                -0.1333,
+                0.0178
+              ],
+              [
+                -0.1,
+                0.01
+              ],
+              [
+                -0.0667,
+                0.0044
+              ],
+              [
+                -0.0333,
+                0.0011
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0333,
+                0.0011
+              ],
+              [
+                0.0667,
+                0.0044
+              ],
+              [
+                0.1,
+                0.01
+              ],
+              [
+                0.1333,
+                0.0178
+              ],
+              [
+                0.1667,
+                0.0278
+              ],
+              [
+                0.2,
+                0.04
+              ],
+              [
+                0.2333,
+                0.0544
+              ],
+              [
+                0.2667,
+                0.0711
+              ],
+              [
+                0.3,
+                0.09
+              ],
+              [
+                0.3333,
+                0.1111
+              ],
+              [
+                0.3667,
+                0.1344
+              ],
+              [
+                0.4,
+                0.16
+              ],
+              [
+                0.4333,
+                0.1878
+              ],
+              [
+                0.4667,
+                0.2178
+              ],
+              [
+                0.5,
+                0.25
+              ],
+              [
+                0.5333,
+                0.2844
+              ],
+              [
+                0.5667,
+                0.3211
+              ],
+              [
+                0.6,
+                0.36
+              ],
+              [
+                0.6333,
+                0.4011
+              ],
+              [
+                0.6667,
+                0.4444
+              ],
+              [
+                0.7,
+                0.49
+              ],
+              [
+                0.7333,
+                0.5378
+              ],
+              [
+                0.7667,
+                0.5878
+              ],
+              [
+                0.8,
+                0.64
+              ],
+              [
+                0.8333,
+                0.6944
+              ],
+              [
+                0.8667,
+                0.7511
+              ],
+              [
+                0.9,
+                0.81
+              ],
+              [
+                0.9333,
+                0.8711
+              ],
+              [
+                0.9667,
+                0.9344
+              ],
+              [
+                1.0,
+                1.0
+              ],
+              [
+                1.0333,
+                1.0678
+              ],
+              [
+                1.0667,
+                1.1378
+              ],
+              [
+                1.1,
+                1.21
+              ],
+              [
+                1.1333,
+                1.2844
+              ],
+              [
+                1.1667,
+                1.3611
+              ],
+              [
+                1.2,
+                1.44
+              ],
+              [
+                1.2333,
+                1.5211
+              ],
+              [
+                1.2667,
+                1.6044
+              ],
+              [
+                1.3,
+                1.69
+              ],
+              [
+                1.3333,
+                1.7778
+              ],
+              [
+                1.3667,
+                1.8678
+              ],
+              [
+                1.4,
+                1.96
+              ],
+              [
+                1.4333,
+                2.0544
+              ],
+              [
+                1.4667,
+                2.1511
+              ],
+              [
+                1.5,
+                2.25
+              ],
+              [
+                1.5333,
+                2.3511
+              ],
+              [
+                1.5667,
+                2.4544
+              ],
+              [
+                1.6,
+                2.56
+              ],
+              [
+                1.6333,
+                2.6678
+              ],
+              [
+                1.6667,
+                2.7778
+              ],
+              [
+                1.7,
+                2.89
+              ],
+              [
+                1.7333,
+                3.0044
+              ],
+              [
+                1.7667,
+                3.1211
+              ],
+              [
+                1.8,
+                3.24
+              ],
+              [
+                1.8333,
+                3.3611
+              ],
+              [
+                1.8667,
+                3.4844
+              ],
+              [
+                1.9,
+                3.61
+              ],
+              [
+                1.9333,
+                3.7378
+              ],
+              [
+                1.9667,
+                3.8678
+              ],
+              [
+                2.0,
+                4.0
+              ],
+              [
+                2.0333,
+                4.1344
+              ],
+              [
+                2.0667,
+                4.2711
+              ],
+              [
+                2.1,
+                4.41
+              ],
+              [
+                2.1333,
+                4.5511
+              ],
+              [
+                2.1667,
+                4.6944
+              ],
+              [
+                2.2,
+                4.84
+              ],
+              [
+                2.2333,
+                4.9878
+              ],
+              [
+                2.2667,
+                5.1378
+              ],
+              [
+                2.3,
+                5.29
+              ],
+              [
+                2.3333,
+                5.4444
+              ],
+              [
+                2.3667,
+                5.6011
+              ],
+              [
+                2.4,
+                5.76
+              ],
+              [
+                2.4333,
+                5.9211
+              ],
+              [
+                2.4667,
+                6.0844
+              ],
+              [
+                2.5,
+                6.25
+              ],
+              [
+                2.5333,
+                6.4178
+              ],
+              [
+                2.5667,
+                6.5878
+              ],
+              [
+                2.6,
+                6.76
+              ],
+              [
+                2.6333,
+                6.9344
+              ],
+              [
+                2.6667,
+                7.1111
+              ],
+              [
+                2.7,
+                7.29
+              ],
+              [
+                2.7333,
+                7.4711
+              ],
+              [
+                2.7667,
+                7.6544
+              ],
+              [
+                2.8,
+                7.84
+              ],
+              [
+                2.8333,
+                8.0278
+              ],
+              [
+                2.8667,
+                8.2178
+              ],
+              [
+                2.9,
+                8.41
+              ],
+              [
+                2.9333,
+                8.6044
+              ],
+              [
+                2.9667,
+                8.8011
+              ],
+              [
+                3.0,
+                9.0
+              ],
+              [
+                3.0333,
+                9.2011
+              ],
+              [
+                3.0667,
+                9.4044
+              ],
+              [
+                3.1,
+                9.61
+              ],
+              [
+                3.1333,
+                9.8178
+              ],
+              [
+                3.1667,
+                10.0278
+              ],
+              [
+                3.2,
+                10.24
+              ],
+              [
+                3.2333,
+                10.4544
+              ],
+              [
+                3.2667,
+                10.6711
+              ],
+              [
+                3.3,
+                10.89
+              ],
+              [
+                3.3333,
+                11.1111
+              ],
+              [
+                3.3667,
+                11.3344
+              ],
+              [
+                3.4,
+                11.56
+              ],
+              [
+                3.4333,
+                11.7878
+              ],
+              [
+                3.4667,
+                12.0178
+              ],
+              [
+                3.5,
+                12.25
+              ],
+              [
+                3.5333,
+                12.4844
+              ],
+              [
+                3.5667,
+                12.7211
+              ],
+              [
+                3.6,
+                12.96
+              ],
+              [
+                3.6333,
+                13.2011
+              ],
+              [
+                3.6667,
+                13.4444
+              ],
+              [
+                3.7,
+                13.69
+              ],
+              [
+                3.7333,
+                13.9378
+              ],
+              [
+                3.7667,
+                14.1878
+              ],
+              [
+                3.8,
+                14.44
+              ],
+              [
+                3.8333,
+                14.6944
+              ],
+              [
+                3.8667,
+                14.9511
+              ],
+              [
+                3.9,
+                15.21
+              ],
+              [
+                3.9333,
+                15.4711
+              ],
+              [
+                3.9667,
+                15.7344
+              ],
+              [
+                4.0,
+                16.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.32,
+              16.4
+            ],
+            "text": "f(x)=x^2",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c02-u07-domain-range-not-swapped-trap|direct|A one-to-one function f has domain [#,#) and range (#,#]. Give the domain of f inverse as an interval."
+    }
+  ]
+}

@@ -232,7 +232,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             type="button"
             onClick={() => onSelectQuestion(idx)}
             title={`Open ${qLabel}`}
-            className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 shrink-0 transition-colors"
+            className="inline-flex items-center gap-0.5 text-xs font-display font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 shrink-0 transition-colors"
           >
             <span>{qLabel}</span>
             <ArrowUpRight className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
@@ -374,7 +374,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                         onClick={() => onSetScore(prob.id, btn.val)}
                         aria-label={`Set ${qLabel} score to ${btn.label}`}
                         aria-pressed={pScore === btn.val}
-                        className={`h-7 px-2 rounded-md text-[11px] font-mono border transition-colors ${
+                        className={`h-7 px-2 rounded-md text-[11px] font-display border transition-colors ${
                           pScore === btn.val
                             ? `${btn.activeCls} bg-zinc-50 dark:bg-zinc-950`
                             : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
@@ -401,7 +401,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
             {drillTitle}
           </h1>
-          <p className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="font-display text-xs text-zinc-500 dark:text-zinc-400">
             {currentDrill.unitCode}
           </p>
         </div>
@@ -466,14 +466,14 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
         <div className="pt-3.5 border-t border-zinc-200/80 dark:border-zinc-800/80 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
           <div className="flex items-center gap-1.5">
             <span>First-try</span>
-            <span className="font-mono font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+            <span className="font-display font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
               {firstTryPct}%
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <span>Time</span>
-            <span className="font-mono font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+            <span className="font-display font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
               {formatDuration(totalDurationMs)}
             </span>
           </div>
@@ -544,7 +544,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Writes your score, mistake tags, notes, and spaced-review schedule for{" "}
-          <span className="font-mono">{currentDrill.unitCode}</span> to Notion.
+          <span className="font-display">{currentDrill.unitCode}</span> to Notion.
         </p>
       </section>
 
@@ -554,7 +554,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Needs attention
           </h2>
-          <span className="text-xs font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
+          <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
             {needsAttention.length}
           </span>
         </div>
@@ -585,7 +585,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                 />
                 <span>Correct</span>
               </span>
-              <span className="text-xs font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
                 {correct.length}
               </span>
             </button>

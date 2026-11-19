@@ -568,4 +568,15 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   }
 }
 
+// Learner 2026-11-19: Source Sans Pro (text), Roboto Slab (font-display accent), Geist Mono (code only).
+{
+  const layoutSrc = readFileSync("src/app/layout.tsx", "utf8");
+  const tw = readFileSync("tailwind.config.ts", "utf8");
+  assert.match(layoutSrc, /@fontsource\/source-sans-pro\/400\.css/);
+  assert.match(layoutSrc, /@fontsource-variable\/roboto-slab/);
+  assert.doesNotMatch(layoutSrc, /GeistVF\.woff/);
+  assert.match(tw, /sans: \[\s*'"Source Sans Pro"'/);
+  assert.match(tw, /display: \['"Roboto Slab Variable"'/);
+}
+
 console.log("studio rules tests passed");
