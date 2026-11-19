@@ -489,7 +489,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                       onClick={onTrySimilar}
                       className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                     >
-                      <span>Practise similar</span>
+                      <span>Try a similar question</span>
                     </button>
                   )}
 
