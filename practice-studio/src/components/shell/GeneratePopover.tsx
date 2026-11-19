@@ -78,7 +78,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     const allowedCounts = [5, 8, 10, 15, 20];
     const loadedCount = Number(currentDrill.config.questionCount);
     setCfgCount(allowedCounts.includes(loadedCount) ? loadedCount : 5);
-    const allowedDiffs = ["ALL", "1", "2", "3", "4"];
+    const allowedDiffs = ["ALL", "1", "2", "3", "4", "5"];
     const loadedDiff = String(currentDrill.config.difficulty || "ALL").toUpperCase();
     setCfgDifficulty(allowedDiffs.includes(loadedDiff) ? loadedDiff : "ALL");
   }, [currentDrill]);
@@ -183,6 +183,9 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     }
   };
 
+  const countNoun =
+    workspace === "code" || cfgUnit.startsWith("PRG-") ? "problems" : "questions";
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -272,11 +275,11 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                   onChange={(e) => setCfgCount(Number(e.target.value))}
                   className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
                 >
-                  <option value={5}>5 Qs</option>
-                  <option value={8}>8 Qs</option>
-                  <option value={10}>10 Qs</option>
-                  <option value={15}>15 Qs</option>
-                  <option value={20}>20 Qs</option>
+                  {[5, 8, 10, 15, 20].map((n) => (
+                    <option key={n} value={n}>
+                      {n} {countNoun}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -298,6 +301,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                   <option value="2">Level 2</option>
                   <option value="3">Level 3</option>
                   <option value="4">Level 4</option>
+                  <option value="5">Level 5</option>
                 </select>
               </div>
             </div>

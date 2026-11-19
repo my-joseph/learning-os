@@ -7,6 +7,7 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
+import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import {
   getPrgScore,
@@ -246,7 +247,6 @@ const sampleCodeProblem: Problem = {
   prompt: "Implement `clampBatteryPercent(val)`.",
   workspaceFile: "drills/workspace/DRL-PRG-T00-C03-02/Q01_clampBatteryPercent.js",
   vscodeFolderUrl: "vscode://file/drills/workspace/DRL-PRG-T00-C03-02",
-  cursorFolderUrl: "cursor://file/drills/workspace/DRL-PRG-T00-C03-02",
   visibleTests: [
     {
       id: "T1",
@@ -398,7 +398,6 @@ const inBrowserCodeProblem: Problem = {
   ...sampleCodeProblem,
   workspaceFile: undefined,
   vscodeFolderUrl: undefined,
-  cursorFolderUrl: undefined,
   visibleTests: undefined,
   answerSpec: { type: "output", expected: "42" },
   codeSnippet: "console.log(42);",
@@ -505,5 +504,36 @@ const labRouteNotFoundHtml = renderToStaticMarkup(
   <DrillNotFoundCard drillId="DOES-NOT-EXIST" isLab={true} />
 );
 assert.match(labRouteNotFoundHtml, /<h1[^>]*>Lab not found<\/h1>/);
+
+// Verify GeneratePopover uses workspace item nouns and includes Level 5 (A-10)
+const mathGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={true}
+    onClose={noop}
+    workspace="math"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={noop}
+  />
+);
+assert.match(mathGenerateHtml, />5 questions<\/option>/);
+assert.doesNotMatch(mathGenerateHtml, />5 Qs<\/option>/);
+assert.match(mathGenerateHtml, />Level 5<\/option>/);
+
+const codeGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={true}
+    onClose={noop}
+    workspace="code"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={noop}
+  />
+);
+assert.match(codeGenerateHtml, />5 problems<\/option>/);
+assert.doesNotMatch(codeGenerateHtml, />5 Qs<\/option>/);
+assert.match(codeGenerateHtml, />Level 5<\/option>/);
 
 console.log("studio rules tests passed");

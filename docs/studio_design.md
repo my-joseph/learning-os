@@ -6,7 +6,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 1. **The problem is the page.** The current question (prompt, figure, answer) gets the most space and the strongest type. Everything else is quieter.
 2. **One primary action per state.** Exactly one filled button is visible at a time (icon-only `=` inside the field, Open in VS Code, Copy review request, Next problem/milestone). Other actions are text/ghost buttons or compact dialogs.
 3. **Say less.** No decorative badges, IDs, chips or status pills unless the learner acts on them. Drill IDs and metadata live in the switcher, not on the card or in toasts/dialogs. Helper text appears only when it changes what the learner does next.
-4. **Empathy.** Wrong answers get calm, specific feedback and a retry, never alarm colours across the whole card. Copy is short, second person, never blaming ("Not quite — check the sign in step 2"), and uses the item noun of the workspace (`Question` for math, `Problem` for code drills, `Milestone` for labs).
+4. **Empathy.** Wrong answers get calm, specific feedback in a light-tinted result card and a retry — never saturated alarm colours. Copy is short, second person, never blaming ("Not quite — check the sign in step 2"), and uses the item noun of the workspace (`Question` for math, `Problem` for code drills, `Milestone` for labs).
 5. **No answers before an attempt.** Hidden content is not rendered or fetched until it is earned (see rules/00_core.md §6).
 
 ## Layout
@@ -18,12 +18,13 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Colour (Tailwind tokens; light / dark)
 - Neutral base: `zinc` (bg `zinc-50` / `zinc-950`, surface `white` / `zinc-900`, border `zinc-200` / `zinc-800`, muted text `zinc-500` / `zinc-400`).
 - One accent for the primary action: `indigo-600` (both light and dark, `>= 4.5:1`), text white.
-- Status only, never decoration: correct `emerald-700`/`emerald-400`, assisted/partial `amber-700`/`amber-400`, wrong `rose-600`/`rose-400`. Status colour appears on tiles, icons, or unrounded left borders — never as a left-accent border on rounded boxes or full-card fills.
+- Focus indicators: keyboard `focus-visible` indigo rings only (`indigo-600` light / `indigo-400` dark); suppress mouse-click focus rings and browser default outlines.
+- Status only, never decoration: correct `emerald-700`/`emerald-400`, assisted/partial `amber-700`/`amber-400`, wrong `rose-600`/`rose-400`. Status colour appears on tiles, icons, unrounded left borders, or light status tints (`bg-*-50` / `dark:bg-*-500/10`) on result cards and selected choice states — never as a left-accent border on rounded boxes or saturated full-card fills.
 - Default theme follows `prefers-color-scheme`; the toggle overrides it. Contrast AA (`>= 4.5:1`) everywhere.
 
 ## Type
 - Geist Sans for UI and prose, Geist Mono for code and IDs, KaTeX for math.
-- Scale: question prompt `text-base` (16 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). Avoid all-caps labels and more than two weights on screen.
+- Scale: question prompt `text-base` (16 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). No uppercase/all-caps labels; at most two font weights on screen.
 
 ## Spacing and motion
 - 8 px rhythm (`gap-2/4/6/8`), generous padding inside the question card (`p-6`, `p-4` on mobile).

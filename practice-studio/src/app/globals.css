@@ -22,28 +22,12 @@
 :root {
   --background: #09090b;
   --foreground: #f4f4f5;
-  --bg-canvas: #09090b;
-  --bg-surface: #18181b;
-  --bg-elevated: #27272a;
-  --bg-well: #09090b;
-  --border-subtle: #27272a;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
   color-scheme: dark;
 }
 
 html.light {
   --background: #fafafa;
   --foreground: #18181b;
-  --bg-canvas: #fafafa;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f4f4f5;
-  --bg-well: #fafafa;
-  --border-subtle: #e4e4e7;
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #71717a;
   color-scheme: light;
 }
 

@@ -420,3 +420,38 @@ def test_check_lab_fails_closed_when_lint_tools_missing_unless_opted_out(
         lab_ingest.check_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True, allow_missing_lint=True)
         == []
     )
+
+
+def test_lab_sync_cli_help(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        lab_sync.main(["--help"])
+    assert exc_info.value.code == 0
+    out = capsys.readouterr().out
+    assert "--dry-run" in out
+    assert "lab_dir" in out
+
+
+def test_lab_sync_dry_run_writes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    lab_dir, _, id_map_path = _make_fixture_lab(tmp_path)
+    before_id_map = id_map_path.read_text(encoding="utf-8")
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    def _forbid(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("dry-run must not call Notion or write id_map.json")
+
+    monkeypatch.setattr(lab_sync, "notion_request", _forbid)
+    monkeypatch.setattr(lab_sync, "replace_page_content", _forbid)
+    monkeypatch.setattr(lab_sync, "save_id_map", _forbid)
+
+    rc = lab_sync.main([str(lab_dir), "--dry-run"])
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["synced"] is True
+    assert payload["dryRun"] is True
+    assert payload["labId"] == "LAB-PRG-T01-C01-99"
+    assert payload["blockCount"] >= 4
+    assert id_map_path.read_text(encoding="utf-8") == before_id_map

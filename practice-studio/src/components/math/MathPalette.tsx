@@ -46,7 +46,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             type="button"
             onClick={() => onModeChange("math")}
             aria-pressed={inputMode === "math"}
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
+            className={`inline-flex items-center gap-1.5 rounded-md h-7 px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
               inputMode === "math"
                 ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-sm"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -59,7 +59,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             type="button"
             onClick={() => onModeChange("plain")}
             aria-pressed={inputMode === "plain"}
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
+            className={`inline-flex items-center gap-1.5 rounded-md h-7 px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
               inputMode === "plain"
                 ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-sm"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
