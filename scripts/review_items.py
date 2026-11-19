@@ -376,6 +376,10 @@ def get_review_items_schedule(
     for key, saved_entry in saved.items():
         entry = dict(saved_entry)
         bf_entry = backfilled.get(key)
+        if bf_entry and str(bf_entry.get("lastReviewed") or "") > str(entry.get("lastReviewed") or ""):
+            # A newer attempt in a normal drill session wins over an older saved review result.
+            merged[key] = bf_entry
+            continue
         if bf_entry:
             if bf_entry.get("revisitNote") is not None:
                 entry["revisitNote"] = bf_entry["revisitNote"]

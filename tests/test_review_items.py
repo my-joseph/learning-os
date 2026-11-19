@@ -404,3 +404,21 @@ def test_cli_is_read_only_unless_rebuild_and_respects_pilot_mode(tmp_path: Path,
     pilot_data = json.loads(pilot_store.read_text(encoding="utf-8"))
     assert pilot_data["DRL-MTH-T01-C04-U01-01/Q01"]["level"] == 2
     assert pilot_data["DRL-MTH-T01-C04-U01-01/Q01"]["dueDate"] == "2026-11-22"
+
+
+def test_newer_drill_attempt_wins_over_older_saved_review(tmp_path: Path):
+    data_root, progress_dir = _seed_fixture(tmp_path)
+    backfilled = ri.build_schedule_from_progress(data_root=data_root, progress_dir=progress_dir)
+    key = "DRL-MTH-T01-C04-U01-01/Q01"
+    newer = backfilled[key]["lastReviewed"]  # "2026-11-17"
+
+    stale = dict(backfilled[key], level=5, lastReviewed="2026-11-01", dueDate="2026-12-06")
+    ri.write_review_items({key: stale}, progress_dir=progress_dir)
+    merged = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    assert merged[key]["lastReviewed"] == newer
+    assert merged[key]["level"] == backfilled[key]["level"]
+
+    fresh = dict(backfilled[key], level=4, lastReviewed="2026-11-18", dueDate="2026-12-04")
+    ri.write_review_items({key: fresh}, progress_dir=progress_dir)
+    merged = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    assert merged[key]["level"] == 4 and merged[key]["lastReviewed"] == "2026-11-18"

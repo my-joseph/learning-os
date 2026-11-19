@@ -787,6 +787,11 @@ export function getReviewItemsSchedule(
   for (const [key, savedEntry] of Object.entries(saved)) {
     const entry: ReviewItem = { ...savedEntry };
     const bf = backfilled[key];
+    if (bf && (bf.lastReviewed || "") > (entry.lastReviewed || "")) {
+      // A newer attempt in a normal drill session wins over an older saved review result.
+      merged[key] = bf;
+      continue;
+    }
     if (bf) {
       if (bf.revisitNote !== null) {
         entry.revisitNote = bf.revisitNote;
