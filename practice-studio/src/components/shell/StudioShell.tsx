@@ -115,6 +115,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
   const {
     dueReviewCount,
+    reviewSessionSize,
     otherWorkspaceDueCount,
     estimatedMinutes,
     nextDueDate,
@@ -322,6 +323,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
                 currentUnitCode={currentDrill?.unitCode}
                 drillLoading={isLoadingDrill}
                 dueReviewCount={dueReviewCount}
+                reviewSessionSize={reviewSessionSize}
                 otherWorkspaceDueCount={otherWorkspaceDueCount}
                 estimatedMinutes={estimatedMinutes}
                 nextDueDate={nextDueDate}
@@ -393,6 +395,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               currentUnitCode={currentDrill?.unitCode}
               drillLoading={isLoadingDrill}
               dueReviewCount={dueReviewCount}
+              reviewSessionSize={reviewSessionSize}
               otherWorkspaceDueCount={otherWorkspaceDueCount}
               estimatedMinutes={estimatedMinutes}
               nextDueDate={nextDueDate}

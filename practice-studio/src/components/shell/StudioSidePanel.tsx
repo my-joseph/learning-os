@@ -15,6 +15,7 @@ export interface StudioSidePanelProps {
   currentUnitCode?: string | null;
   drillLoading?: boolean;
   dueReviewCount?: number;
+  reviewSessionSize?: number;
   otherWorkspaceDueCount?: number;
   estimatedMinutes?: number;
   nextDueDate?: string | null;
@@ -64,6 +65,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
   currentUnitCode,
   drillLoading = false,
   dueReviewCount = 0,
+  reviewSessionSize = 0,
   otherWorkspaceDueCount = 0,
   estimatedMinutes,
   nextDueDate = null,
@@ -87,7 +89,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
     typeof estimatedMinutes === "number" && estimatedMinutes > 0
       ? estimatedMinutes
       : estimateFallbackMinutes(dueReviewCount);
-  const sessionSize = Math.min(8, dueReviewCount);
+  const sessionSize = Math.min(reviewSessionSize, dueReviewCount);
   const sessionMinutes = dueReviewCount > 0
     ? Math.max(1, Math.round((resolvedMinutes * sessionSize) / dueReviewCount))
     : 0;
@@ -141,7 +143,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           >
             Due today
           </h2>
-          {!dueLoading && dueReviewCount > 0 && (
+          {!dueLoading && dueReviewCount + otherWorkspaceDueCount > 0 && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums shrink-0">
               {dueReviewCount + otherWorkspaceDueCount} total across workspaces
             </span>
@@ -165,7 +167,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           <div className="space-y-2.5 min-w-0">
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed tabular-nums break-words">
               <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                {dueReviewCount} due · next {sessionSize} ~{sessionMinutes} min
+                {dueReviewCount} due · next {sessionSize} · ~{sessionMinutes} min
               </span>
             </p>
 

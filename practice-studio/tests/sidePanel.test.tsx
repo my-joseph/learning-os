@@ -203,13 +203,14 @@ async function runTests() {
     assert.ok(due.unitMastery?.["MTH-T09-C01-U03"], "unitMastery includes non-due units as context");
 
     // 4a. Math workspace: header count & CTA come from item-level dueReviewCount (NOT dueUnits.length),
-    //     shows "N due · ~M min", "· K in the other workspace", does NOT render dueUnits as a to-do list,
+    //     shows the current due count and capped session estimate, a full-width other-workspace row,
     //     and keeps current unit mastery dots + "Capped at 2 · …" as context only.
     const mathHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
         dueReviewCount={7}
+        reviewSessionSize={7}
         otherWorkspaceDueCount={3}
         estimatedMinutes={11}
         currentUnitMastery={due.unitMastery?.["MTH-T09-C01-U01"]}
@@ -239,9 +240,11 @@ async function runTests() {
       />
     );
     assert.match(mathHtml, /Due today/);
-    assert.match(mathHtml, />7<\/span>/, "Due today header count must come from item-level dueReviewCount, not dueUnits.length");
-    assert.match(mathHtml, /7 due · ~11 min/);
-    assert.match(mathHtml, /· 3 in the other workspace/);
+    assert.match(mathHtml, />10 total across workspaces<\/span>/, "header count must be the all-workspace total");
+    assert.match(mathHtml, /7 due · next 7 · ~11 min/);
+    assert.match(mathHtml, /10 total across workspaces/);
+    assert.match(mathHtml, /Start review · 7 of 7/);
+    assert.match(mathHtml, /min-h-\[36px\][^>]*>3 due in the other workspace/);
     assert.match(mathHtml, /href="\/review\?scope=subject:MTH"/);
     assert.match(mathHtml, /href="\/review\?scope=subject:PRG"/);
     assert.match(mathHtml, /Start review/);
@@ -254,6 +257,20 @@ async function runTests() {
       /href="\/math\/DRL-MTH-T09-C01-U01-02"/,
       "Panel must not list due units as a second to-do list"
     );
+
+    const cappedSessionHtml = renderToStaticMarkup(
+      <StudioSidePanel
+        workspace="math"
+        dueReviewCount={29}
+        reviewSessionSize={8}
+        otherWorkspaceDueCount={7}
+        estimatedMinutes={44}
+        weakSpotUnits={[]}
+      />
+    );
+    assert.match(cappedSessionHtml, /36 total across workspaces/);
+    assert.match(cappedSessionHtml, /29 due · next 8 · ~12 min/);
+    assert.match(cappedSessionHtml, /Start review · 8 of 29/);
     assert.doesNotMatch(
       mathHtml,
       /href="\/code\/DRL-PRG-T09-C01-01"/,
@@ -269,11 +286,12 @@ async function runTests() {
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
         dueReviewCount={5}
+        reviewSessionSize={5}
         dueUnits={due.units}
         weakSpotUnits={[]}
       />
     );
-    assert.match(fallbackEstimateHtml, /5 due · ~8 min/);
+    assert.match(fallbackEstimateHtml, /5 due · next 5 · ~8 min/);
     assert.match(fallbackEstimateHtml, /href="\/review\?scope=subject:MTH"/);
     assert.doesNotMatch(fallbackEstimateHtml, /in the other workspace/);
 
@@ -283,6 +301,7 @@ async function runTests() {
         workspace="code"
         currentUnitCode="PRG-T09-C01-U02"
         dueReviewCount={4}
+        reviewSessionSize={4}
         otherWorkspaceDueCount={6}
         estimatedMinutes={9}
         currentUnitMastery={due.unitMastery?.["PRG-T09-C01-U02"]}
@@ -311,8 +330,9 @@ async function runTests() {
         ]}
       />
     );
-    assert.match(prgHtml, /4 due · ~9 min/);
-    assert.match(prgHtml, /· 6 in the other workspace/);
+    assert.match(prgHtml, /4 due · next 4 · ~9 min/);
+    assert.match(prgHtml, /10 total across workspaces/);
+    assert.match(prgHtml, /6 due in the other workspace/);
     assert.match(prgHtml, /href="\/review\?scope=subject:PRG"/);
     assert.match(prgHtml, /href="\/review\?scope=subject:MTH"/);
     assert.match(prgHtml, /Mastery 1 of 4/);
@@ -334,7 +354,8 @@ async function runTests() {
     );
     assert.match(prgEmptyHtml, /Nothing due today/);
     assert.match(prgEmptyHtml, /Next due: 2026-11-22/);
-    assert.match(prgEmptyHtml, /· 2 in the other workspace/);
+    assert.match(prgEmptyHtml, /2 due in the other workspace/);
+    assert.match(prgEmptyHtml, /2 total across workspaces/);
     assert.match(prgEmptyHtml, /No open check or lint issues in this unit\./);
     // Header count must NOT show dueUnits.length when dueReviewCount is 0
     assert.doesNotMatch(prgEmptyHtml, /Due today<\/h2><span[^>]*>2<\/span>/);
@@ -377,6 +398,7 @@ async function runTests() {
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
         dueReviewCount={3}
+        reviewSessionSize={3}
         weakSpotUnits={[]}
         embedded
       />
@@ -386,10 +408,12 @@ async function runTests() {
     assert.match(embeddedDrawerHtml, /overflow-x-hidden/);
 
     const shellSource = fs.readFileSync("src/components/shell/StudioShell.tsx", "utf8");
+    const sidePanelDataSource = fs.readFileSync("src/hooks/useSidePanelData.ts", "utf8");
     assert.match(shellSource, /useState\(false\)/, "drawer must be closed by default");
     assert.match(shellSource, /hidden lg:block/, "side panel visible on >=1024px");
     assert.match(shellSource, /lg:hidden/, "drawer only below 1024px");
     assert.match(shellSource, /embedded/, "drawer must pass embedded to StudioSidePanel");
+    assert.match(sidePanelDataSource, /api\/review-items\?limit=8/, "session size must come from the API-limited item batch");
     assert.match(shellSource, /overflow-x-hidden/, "mobile drawer panel must prevent horizontal overflow");
     assert.doesNotMatch(shellSource, /calc\(100vw-2\.5rem\)/, "invalid space-less calc() width must not remain on mobile drawer");
 

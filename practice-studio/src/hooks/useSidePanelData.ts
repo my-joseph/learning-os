@@ -26,6 +26,7 @@ export function useSidePanelData(
   const otherSubject = workspace === "code" ? "MTH" : "PRG";
 
   const [dueReviewCount, setDueReviewCount] = useState<number>(0);
+  const [reviewSessionSize, setReviewSessionSize] = useState<number>(0);
   const [otherWorkspaceDueCount, setOtherWorkspaceDueCount] = useState<number>(0);
   const [estimatedMinutes, setEstimatedMinutes] = useState<number>(0);
   const [nextDueDate, setNextDueDate] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export function useSidePanelData(
     setDueLoading(true);
     setDueError(null);
 
-    fetch(`/api/review-items?scope=${encodeURIComponent(`subject:${workspaceSubject}`)}`, {
+    fetch(`/api/review-items?limit=8&scope=${encodeURIComponent(`subject:${workspaceSubject}`)}`, {
       cache: "no-store",
     })
       .then(async (res) => {
@@ -58,6 +59,7 @@ export function useSidePanelData(
         const items = Array.isArray(data.items) ? data.items : [];
         const count =
           typeof data.totalDue === "number" ? data.totalDue : items.length;
+        setReviewSessionSize(items.length);
         const otherCount =
           typeof data.bySubject?.[otherSubject] === "number"
             ? data.bySubject[otherSubject]!
@@ -157,6 +159,7 @@ export function useSidePanelData(
 
   return {
     dueReviewCount,
+    reviewSessionSize,
     otherWorkspaceDueCount,
     estimatedMinutes,
     nextDueDate,
