@@ -35,6 +35,8 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
     case "passed":
       return `bg-emerald-600 border-emerald-600 text-white group-hover:bg-emerald-700 group-hover:border-emerald-700 dark:bg-emerald-500 dark:border-emerald-500 dark:text-zinc-950 dark:group-hover:bg-emerald-400 dark:group-hover:border-emerald-400${halo}`;
     case "assisted":
+      // Correct with help: a paler green than a clean correct (learner 2026-11-19).
+      return `bg-emerald-200 border-emerald-200 text-emerald-800 group-hover:bg-emerald-300 group-hover:border-emerald-300 dark:bg-emerald-500/35 dark:border-emerald-500/35 dark:text-emerald-200 dark:group-hover:bg-emerald-500/50 dark:group-hover:border-emerald-500/50${halo}`;
     case "usedHelp":
     case "partial":
     case "regressed":

@@ -23,6 +23,7 @@ import { MathAnswerArea, MathAnswerAreaHandle } from "@/components/math/MathAnsw
 import { getProblemPlaceholder } from "@/lib/mathInput";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { CheckResult, MistakeTag, Problem } from "@/types/drill";
+import type { SkipOptions } from "@/hooks/types";
 
 export interface MathItemViewHandle {
   focusAnswer: () => void;
@@ -62,7 +63,7 @@ export interface MathItemViewProps {
   choiceKeyboardEnabled?: boolean;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
-  onSkip?: () => void;
+  onSkip?: (opts?: SkipOptions) => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
@@ -426,14 +427,15 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           onSkip={
             onSkip
               ? () => {
-                  if (allowAutoRevealOnSkip && !showHint && onHintRevealed) {
-                    onHintRevealed();
-                  }
+                  // Count the auto-opened hint inside the skip save itself. A separate
+                  // onHintRevealed() call raced the skip save and could overwrite
+                  // `skipped: true`, so /api/reveal refused steps and set-up (empty boxes).
+                  const countHint = Boolean(allowAutoRevealOnSkip && !showHint && onHintRevealed);
                   if (allowAutoRevealOnSkip) {
                     setShowHint(true);
                     setShowSolution(true);
                   }
-                  onSkip();
+                  onSkip({ countHint });
                 }
               : undefined
           }
