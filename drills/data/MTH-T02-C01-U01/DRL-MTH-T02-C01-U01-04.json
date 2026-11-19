@@ -79,7 +79,7 @@
         },
         {
           "latex": "-6i^2 = 6",
-          "explain": "Line 2 is the first wrong line: the square of the imaginary unit is -1, so the last term is +6, not -6."
+          "explain": "Line 3 is the first wrong line (Line 2 correctly combines -4i + 12i into 8i): the square of the imaginary unit is -1, so the last term is +6, not -6."
         },
         {
           "latex": "8 + 6 + 8i",
