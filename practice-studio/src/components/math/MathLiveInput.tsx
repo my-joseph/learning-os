@@ -253,18 +253,22 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         onClick={() => mfRef.current?.focus()}
         className="relative flex items-center flex-1 min-w-0 min-h-[2.75rem] pl-2 pr-12 py-0.5 cursor-text"
       >
+        {/* Placeholder and loading fallback share one position (14px inset, sans) with the
+            plain-text input's placeholder, so switching modes never moves the text. */}
         {!ready && (
-          <div
+          <span
             aria-hidden="true"
-            className="w-full px-1 font-mono text-sm text-zinc-400 dark:text-zinc-500 truncate"
+            className={`pointer-events-none absolute left-3.5 right-12 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none ${
+              value ? "font-mono" : "font-sans"
+            }`}
           >
             {value || placeholder || "Enter your answer…"}
-          </div>
+          </span>
         )}
         {isEmpty && ready && placeholder && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 right-12 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
+            className="pointer-events-none absolute left-3.5 right-12 font-sans text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
           >
             {placeholder}
           </span>
