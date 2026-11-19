@@ -297,10 +297,10 @@ const codeInitialHtml = renderToStaticMarkup(
   />
 );
 assert.match(codeInitialHtml, /clamps above 100 to 100/, "visible test name must render");
-assert.doesNotMatch(
+assert.match(
   codeInitialHtml,
-  /assert\.strictEqual/,
-  "visible test assertion code must not render on dashboard"
+  /aria-expanded="false" aria-controls="visible-test-code-0"[^>]*>[\s\S]*?<\/button><\/div><div id="visible-test-code-0" hidden=""[^>]*>[\s\S]*?assert\.strictEqual/,
+  "visible test assertion code must render inside its collapsed disclosure"
 );
 assert.match(codeInitialHtml, /Open in VS Code/);
 assert.match(codeInitialHtml, /Run checks/);

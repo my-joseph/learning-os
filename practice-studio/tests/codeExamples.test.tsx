@@ -31,7 +31,15 @@ const drillProblem: Problem = {
   prompt: "Implement `searchInsert(nums, target)`.\n\n**Requirements**\n- Return the insertion index.",
   starterCode: "export function searchInsert() { return 0; }",
   workspaceFile: "drills/workspace/DRL-PRG-TEST-01/Q01_searchInsert.ts",
-  visibleTests: [{ id: "T1", name: "finds existing target", testCode: "" }],
+  visibleTests: [
+    {
+      id: "T1",
+      name: "finds existing target",
+      testCode: "assert.equal(searchInsert([1, 3, 5], 3), 1);",
+    },
+    { id: "T2", name: "inserts before the first value", testCode: "assert.equal(searchInsert([2], 1), 0);" },
+    { id: "T3", name: "keeps the name only", testCode: "" },
+  ],
   examples: [
     {
       input: "nums = [1, 3, 5, 6], target = 5",
@@ -92,6 +100,39 @@ assert.match(drillHtml, /<code[^>]*>nums<\/code> is sorted ascending/);
 assert.match(drillHtml, /bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3\.5 py-2\.5 font-mono/);
 assert.doesNotMatch(drillHtml, /aria-label="Examples"[\s\S]*border-l-2/);
 
+// Visible test names with code are collapsed disclosure buttons by default.
+assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-0"[^>]*>/);
+assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-1"[^>]*>/);
+assert.match(drillHtml, /<div id="visible-test-code-0" hidden=""/);
+assert.match(drillHtml, /bg-indigo-600 dark:bg-indigo-400 shrink-0/);
+assert.match(drillHtml, /inserts before the first value/);
+assert.doesNotMatch(drillHtml, /aria-controls="visible-test-code-2"/, "tests without code stay plain names");
+
+// Hidden test implementations and trap mutants must never render in the learner list.
+const secretProblem = {
+  ...drillProblem,
+  hiddenTests: [{ id: "H1", name: "SECRET_HIDDEN_TEST_NAME", testCode: "SECRET_HIDDEN_TEST_CODE" }],
+  trapMutants: ["SECRET_TRAP_MUTANT_CODE"],
+} as Problem;
+const secretHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={secretProblem}
+    drillId="DRL-PRG-TEST-01"
+    index={0}
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.doesNotMatch(secretHtml, /SECRET_HIDDEN_TEST_NAME|SECRET_HIDDEN_TEST_CODE|SECRET_TRAP_MUTANT_CODE/);
+
 // 2. Drill problem WITHOUT examples or constraints omits both headings cleanly
 const plainProblem: Problem = {
   ...drillProblem,
@@ -146,7 +187,9 @@ const labDetail: LabDetailResponse = {
       description: "Implement `consumeRetry(budget, cost)`.",
       units: ["PRG-T01-C01-U02"],
       visibleTestFiles: ["tests/m1_budget.test.ts"],
-      visibleTests: [{ id: "M1-T1", name: "deducts cost", testCode: "" }],
+      visibleTests: [
+        { id: "M1-T1", name: "deducts cost", testCode: "assert.equal(consumeRetry(4, 1), 3);" },
+      ],
       examples: [
         { input: "budget = 4, cost = 1", output: "3", explanation: "4 - 1 = 3" },
         { input: "budget = 6, cost = 2", output: "4" },
@@ -207,6 +250,8 @@ assert.match(labHtml, /Example 1/);
 assert.match(labHtml, /budget = 4, cost = 1/);
 assert.match(labHtml, /Example 2/);
 assert.match(labHtml, /budget &gt;= 0/);
+assert.match(labHtml, /aria-expanded="false"[^>]*aria-controls="visible-test-code-0"/);
+assert.match(labHtml, /consumeRetry\(4, 1\), 3\);/);
 
 // 4. After Shiki warms up, Examples Input and Output render highlighted JS token spans
 //    while Input:/Output: labels remain plain zinc and inline <code> in requirements/constraints stays plain.
