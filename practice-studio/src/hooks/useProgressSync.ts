@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { DrillDocument } from "@/types/drill";
+import { plainTitle } from "@/lib/titleText";
 import { PracticeStatusOverride, StatusMessage } from "./types";
 
 export interface SessionMetrics {
@@ -70,15 +71,16 @@ export function formatSyncToast(
       type: "warn",
     };
   }
+  const cleanTitle = plainTitle(drillTitle) || unitCode;
   if (data.degraded) {
     // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
     return {
-      text: `Saved ${drillTitle} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
+      text: `Saved ${cleanTitle} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
       type: "warn",
     };
   }
   return {
-    text: `Synced ${drillTitle} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${unitCode} Mistake Log!`,
+    text: `Synced ${cleanTitle} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${unitCode} Mistake Log!`,
     type: "pass",
   };
 }
@@ -115,7 +117,8 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         statusOverride
       );
 
-      const drillLabel = currentDrill.unitTitle || currentDrill.unitCode || currentDrill.drillId;
+      const drillLabel =
+        plainTitle(currentDrill.unitTitle) || currentDrill.unitCode || currentDrill.drillId;
       setIsSyncing(true);
       setStatus({
         text: `Syncing ${drillLabel} (${liveScore}/${maxScore}) to Notion...`,

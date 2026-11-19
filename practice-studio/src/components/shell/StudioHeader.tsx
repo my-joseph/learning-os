@@ -122,7 +122,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
       }`}
     >
       {/* Slim one-row header */}
-      <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+      <div className="relative flex items-center justify-between gap-1.5 sm:gap-2">
         {/* Left: Workspace switch (<1024px, icon-only) + Drill switcher + Generate button */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
           <nav

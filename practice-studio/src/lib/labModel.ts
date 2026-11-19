@@ -7,6 +7,7 @@ import type {
   TestCase,
 } from "@/types/drill";
 import { deriveReviewStatus, type ReviewStatus } from "@/lib/codeStatus";
+import { plainTitle } from "@/lib/titleText";
 
 export const ALWAYS_STRIPPED_LAB_FIELDS = [
   "blindSolve",
@@ -344,7 +345,7 @@ export function labToDrillDocument(lab: LabDetailResponse): DrillDocument {
     drillId: lab.id,
     subject: "PRG",
     unitCode: lab.unitCode || lab.chapterCode,
-    unitTitle: lab.title,
+    unitTitle: plainTitle(lab.title) || lab.id,
     chapterCode: lab.chapterCode,
     topicCode: lab.topicCode,
     unitNotionUrl: lab.unitNotionUrl,

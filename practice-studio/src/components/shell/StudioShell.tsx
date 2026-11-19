@@ -43,8 +43,6 @@ interface StudioShellProps {
   onGenerated: (drillId: string) => Promise<void>;
   // Pagination / tiles
   onSelectQuestion: (idx: number) => void;
-  onPrevQuestion: () => void;
-  onNextQuestion: () => void;
   onToggleViewMode: (mode: ViewMode) => void;
   // Status banner
   status: StatusMessage | null;
@@ -77,8 +75,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onShowGenPopoverChange,
   onGenerated,
   onSelectQuestion,
-  onPrevQuestion,
-  onNextQuestion,
   onToggleViewMode,
   status,
   onStatusChange,
@@ -233,15 +229,12 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     currentDrill && currentDrill.problems.length > 0 ? (
       <div className="mt-2">
         <QuizPaginationBar
-          totalQuestions={currentDrill.problems.length}
           currentIndex={currentProblemIndex}
           problems={currentDrill.problems}
           viewMode={viewMode}
           workspace={workspace}
           isLab={isLabId(currentDrill.drillId)}
           onSelectQuestion={onSelectQuestion}
-          onPrev={onPrevQuestion}
-          onNext={onNextQuestion}
           onToggleViewMode={onToggleViewMode}
         />
       </div>

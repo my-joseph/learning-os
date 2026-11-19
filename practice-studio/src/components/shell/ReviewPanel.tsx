@@ -13,6 +13,7 @@ import {
 import { DrillDocument, Problem } from "@/types/drill";
 import { canRevealVerifiedAnswer, hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { isLabId } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import {
   OUTCOME_META,
   classifyReviewOutcome,
@@ -34,7 +35,6 @@ interface ReviewPanelProps {
   liveScore: number;
   maxScore: number;
   accuracyPct: number;
-  skippedCount: number;
   computedPracticeStatus: "Graded" | "Needs Retry";
   isSyncing: boolean;
   totalDurationMs?: number;
@@ -109,7 +109,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
   const isLab = isLabId(currentDrill.drillId);
   const isCode = currentDrill.subject === "PRG" && !isLab;
-  const drillTitle = currentDrill.unitTitle || currentDrill.unitCode;
+  const drillTitle = plainTitle(currentDrill.unitTitle) || currentDrill.unitCode;
   const mistakeTags = currentDrill.mistakeTags || [];
 
   const backLabel = isLab
@@ -353,7 +353,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
               )}
 
               <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                <div className="flex-1 min-w-[180px] flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
+                <div className="flex-1 min-w-[180px] flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
                   <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
                   <input
                     type="text"

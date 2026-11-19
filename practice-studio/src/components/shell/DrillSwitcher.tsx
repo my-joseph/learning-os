@@ -38,6 +38,7 @@ import {
   type VisibleTreeRow,
 } from "@/lib/drillGrouping";
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import { DrillFilter } from "@/hooks/types";
 
 type PickerTab = "drills" | "labs";
@@ -566,12 +567,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`group w-full text-left px-1.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 focus:outline-none ${
+        className={`group w-full text-left px-1.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
           isCurrent
-            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50 focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70"
+            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
             : isSearchTarget
             ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70"
+            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80"
         }`}
       >
         <StatusDot status={item.practiceStatus} />
@@ -583,7 +584,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               : "text-zinc-700 dark:text-zinc-300"
           }`}
         >
-          {label}
+          {plainTitle(label)}
         </span>
         <HoverRowCode code={hoverCode} />
       </button>
@@ -591,7 +592,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   };
 
   return (
-    <div className="relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
+    <div className="sm:relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
       <button
         ref={triggerRef}
         type="button"
@@ -603,7 +604,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       >
         <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[220px] sm:max-w-[300px] md:max-w-[360px]">
           {currentDrill
-            ? currentDrill.unitTitle || currentDrill.unitCode
+            ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
             : "Select practice drill"}
         </span>
         <ChevronDown
@@ -622,10 +623,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             role="dialog"
             aria-label="Practice drill picker"
             onKeyDown={handlePopoverKeyDown}
-            className="absolute left-0 mt-2 w-[min(calc(100vw-2.75rem),460px)] max-h-[72vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
+            className="absolute left-0 right-0 top-full mt-2 max-w-[460px] sm:right-auto sm:w-[min(calc(100vw-2.75rem),460px)] max-h-[72vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
           >
             {/* Top Search Input */}
-            <div className="shrink-0 flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2">
+            <div className="shrink-0 flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
               <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <input
                 ref={searchInputRef}
@@ -847,8 +848,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   />
                   <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
                     {currentPinnedItem.setLabel
-                      ? `${currentPinnedItem.title} · ${currentPinnedItem.setLabel}`
-                      : currentPinnedItem.title}
+                      ? `${plainTitle(currentPinnedItem.title)} · ${currentPinnedItem.setLabel}`
+                      : plainTitle(currentPinnedItem.title)}
                   </span>
                   <HoverRowCode code={extractLeafHoverCode(currentPinnedItem)} />
                 </button>
@@ -925,7 +926,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                             aria-hidden="true"
                           />
                           <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
-                            {topic.topicTitle}
+                            {plainTitle(topic.topicTitle)}
                           </span>
                           {showTopicCode && <HoverRowCode code={topic.topicCode} />}
                         </button>
@@ -973,7 +974,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                       aria-hidden="true"
                                     />
                                     <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
-                                      {chapter.chapterTitle}
+                                      {plainTitle(chapter.chapterTitle)}
                                     </span>
                                     {showChapterCode && (
                                       <HoverRowCode code={chapterShortCode} />
@@ -1046,7 +1047,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                 aria-hidden="true"
                                               />
                                               <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
-                                                {entry.unitTitle}
+                                                {plainTitle(entry.unitTitle)}
                                               </span>
                                               <HoverRowCode code={unitShortCode} />
                                               <CountPill count={entry.items.length} />

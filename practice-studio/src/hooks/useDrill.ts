@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DrillDocument, Problem, CheckResult, TestRunReport } from "@/types/drill";
+import { plainTitle } from "@/lib/titleText";
 import {
   applyCheckResult,
   applySkip,
@@ -486,7 +487,8 @@ export function useDrill({
     if (updated.problems[0]) {
       onQuestionChange?.(updated.drillId, updated.problems[0].id);
     }
-    const drillLabel = currentDrill.unitTitle || currentDrill.unitCode || currentDrill.drillId;
+    const drillLabel =
+      plainTitle(currentDrill.unitTitle) || currentDrill.unitCode || currentDrill.drillId;
     setStatus({
       text: `Reset ${drillLabel} to initial state.`,
       type: "pass",

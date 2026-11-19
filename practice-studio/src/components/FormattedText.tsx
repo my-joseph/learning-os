@@ -3,7 +3,9 @@
 import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
+import { HighlightedCode } from "@/components/HighlightedCode";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
+import { normalizeShikiLanguage } from "@/lib/shiki";
 
 interface FormattedTextProps {
   text: string;
@@ -31,13 +33,16 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     const rawLines = text.split("\n");
     const out: Array<
       | { kind: "line"; line: string; lineIdx: number }
-      | { kind: "code"; code: string; lineIdx: number }
+      | { kind: "code"; code: string; lang: string | null; lineIdx: number }
     > = [];
     let i = 0;
     while (i < rawLines.length) {
       const current = rawLines[i];
-      if (current.trim().startsWith("```")) {
+      const trimmedCurrent = current.trim();
+      if (trimmedCurrent.startsWith("```")) {
         const startIdx = i;
+        const fenceInfo = trimmedCurrent.slice(3).trim();
+        const lang = fenceInfo.split(/\s+/)[0] || null;
         i++;
         const codeLines: string[] = [];
         while (i < rawLines.length && !rawLines[i].trim().startsWith("```")) {
@@ -47,7 +52,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         if (i < rawLines.length && rawLines[i].trim().startsWith("```")) {
           i++;
         }
-        out.push({ kind: "code", code: codeLines.join("\n"), lineIdx: startIdx });
+        out.push({ kind: "code", code: codeLines.join("\n"), lang, lineIdx: startIdx });
       } else {
         out.push({ kind: "line", line: current, lineIdx: i });
         i++;
@@ -155,12 +160,19 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     <div className={`space-y-1.5 ${className}`}>
       {blocks.map((block) => {
         if (block.kind === "code") {
+          const supportedLang = normalizeShikiLanguage(block.lang);
           return (
             <pre
               key={block.lineIdx}
-              className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
+              className="px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
             >
-              <code>{block.code}</code>
+              <code>
+                {supportedLang ? (
+                  <HighlightedCode code={block.code} language={supportedLang} />
+                ) : (
+                  block.code
+                )}
+              </code>
             </pre>
           );
         }

@@ -483,14 +483,11 @@ async function testSyntheticLabAndProgress() {
     const noop = () => {};
     const stepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
-        totalQuestions={drillDoc.problems.length}
         currentIndex={1}
         problems={drillDoc.problems}
         viewMode="quiz"
         isLab={true}
         onSelectQuestion={noop}
-        onPrev={noop}
-        onNext={noop}
         onToggleViewMode={noop}
       />
     );
@@ -534,14 +531,11 @@ async function testSyntheticLabAndProgress() {
     );
     const regressedStepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
-        totalQuestions={regressedProblems.length}
         currentIndex={2}
         problems={regressedProblems}
         viewMode="quiz"
         isLab={true}
         onSelectQuestion={noop}
-        onPrev={noop}
-        onNext={noop}
         onToggleViewMode={noop}
       />
     );
@@ -557,14 +551,11 @@ async function testSyntheticLabAndProgress() {
     }));
     const scrollingStepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
-        totalQuestions={manyMilestones.length}
         currentIndex={0}
         problems={manyMilestones}
         viewMode="quiz"
         isLab={true}
         onSelectQuestion={noop}
-        onPrev={noop}
-        onNext={noop}
         onToggleViewMode={noop}
       />
     );
@@ -572,14 +563,11 @@ async function testSyntheticLabAndProgress() {
 
     const labReviewStepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
-        totalQuestions={drillDoc.problems.length}
         currentIndex={1}
         problems={drillDoc.problems}
         viewMode="review"
         isLab={true}
         onSelectQuestion={noop}
-        onPrev={noop}
-        onNext={noop}
         onToggleViewMode={noop}
       />
     );

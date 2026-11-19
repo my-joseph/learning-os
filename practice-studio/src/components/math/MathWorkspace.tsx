@@ -36,6 +36,7 @@ import {
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { plainTitle } from "@/lib/titleText";
 import {
   getChoiceResultStatus,
   isChoiceInteractionLocked,
@@ -369,11 +370,13 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     </button>
   );
 
+  const displayTitle = plainTitle(drillTitle);
+
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
-      {drillTitle && (
+      {displayTitle && (
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {drillTitle}
+          {displayTitle}
         </h1>
       )}
 
@@ -793,7 +796,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
               <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
               <input
                 type="text"

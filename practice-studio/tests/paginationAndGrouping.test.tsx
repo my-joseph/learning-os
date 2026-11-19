@@ -96,13 +96,10 @@ const makeProblem = (id: string): Problem => ({
 const noop = () => {};
 const drillQuizTiles = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={2}
     currentIndex={1}
     problems={[makeProblem("Q01"), makeProblem("Q02")]}
     viewMode="quiz"
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );
@@ -115,14 +112,11 @@ assert.doesNotMatch(drillQuizTiles, />Review<\/span>/);
 
 const codeQuizTiles = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={2}
     currentIndex={0}
     problems={[makeProblem("Q01"), makeProblem("Q02")]}
     viewMode="quiz"
     workspace="code"
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );
@@ -131,13 +125,10 @@ assert.match(codeQuizTiles, /aria-label="Problem 1 — Unanswered"/);
 
 const drillReviewTiles = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={2}
     currentIndex={1}
     problems={[makeProblem("Q01"), makeProblem("Q02")]}
     viewMode="review"
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );
@@ -148,14 +139,11 @@ assert.match(
 
 const labQuizStepper = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={2}
     currentIndex={0}
     problems={[makeProblem("M1"), makeProblem("M2")]}
     viewMode="quiz"
     isLab={true}
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );
@@ -168,14 +156,11 @@ assert.doesNotMatch(labQuizStepper, />Review<\/span>/); // icon-only Review step
 
 const labReviewStepper = renderToStaticMarkup(
   <QuizPaginationBar
-    totalQuestions={2}
     currentIndex={1}
     problems={[makeProblem("M1"), makeProblem("M2")]}
     viewMode="review"
     isLab={true}
     onSelectQuestion={noop}
-    onPrev={noop}
-    onNext={noop}
     onToggleViewMode={noop}
   />
 );

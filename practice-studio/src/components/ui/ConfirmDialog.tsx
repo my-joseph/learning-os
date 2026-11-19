@@ -94,8 +94,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [open, onCancel]);
 
   const confirmBtnCls = destructive
-    ? "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 focus:ring-rose-600/35"
-    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus:ring-indigo-600/35";
+    ? "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
   return (
     <AnimatePresence>
@@ -140,14 +140,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 ref={cancelRef}
                 type="button"
                 onClick={onCancel}
-                className="h-9 px-3.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600/30 dark:focus:ring-indigo-500/40"
+                className="h-9 px-3.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
               >
                 {cancelLabel}
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className={`h-9 px-3.5 rounded-xl text-xs font-semibold text-white transition-colors focus:outline-none focus:ring-2 ${confirmBtnCls}`}
+                className={`h-9 px-3.5 rounded-xl text-xs font-semibold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${confirmBtnCls}`}
               >
                 {confirmLabel}
               </button>

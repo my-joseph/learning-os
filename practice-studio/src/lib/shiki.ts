@@ -7,6 +7,7 @@ export type SupportedShikiLang =
   | "jsx"
   | "json"
   | "python"
+  | "sql"
   | "bash";
 
 export const SHIKI_THEMES = {
@@ -21,6 +22,7 @@ export const SUPPORTED_SHIKI_LANGS: readonly SupportedShikiLang[] = [
   "jsx",
   "json",
   "python",
+  "sql",
   "bash",
 ] as const;
 
@@ -38,6 +40,11 @@ const LANGUAGE_ALIASES: Record<string, SupportedShikiLang> = {
   json: "json",
   python: "python",
   py: "python",
+  sql: "sql",
+  postgresql: "sql",
+  postgres: "sql",
+  psql: "sql",
+  sqlite: "sql",
   bash: "bash",
   sh: "bash",
   shell: "bash",
@@ -58,6 +65,7 @@ const LANG_LOADERS: Record<SupportedShikiLang, () => Promise<LangModule>> = {
   jsx: () => import("shiki/langs/jsx.mjs"),
   json: () => import("shiki/langs/json.mjs"),
   python: () => import("shiki/langs/python.mjs"),
+  sql: () => import("shiki/langs/sql.mjs"),
   bash: () => import("shiki/langs/bash.mjs"),
 };
 
@@ -84,6 +92,7 @@ const LANGUAGE_EXTENSIONS: Record<SupportedShikiLang, string> = {
   jsx: "jsx",
   json: "json",
   python: "py",
+  sql: "sql",
   bash: "sh",
 };
 
@@ -107,6 +116,7 @@ export function inferShikiLanguageFromFilename(filename?: string | null): Suppor
   if (lower.endsWith(".js") || lower.endsWith(".mjs") || lower.endsWith(".cjs")) return "javascript";
   if (lower.endsWith(".json")) return "json";
   if (lower.endsWith(".py")) return "python";
+  if (lower.endsWith(".sql")) return "sql";
   if (lower.endsWith(".sh") || lower.endsWith(".bash") || lower.endsWith(".zsh")) return "bash";
   return null;
 }

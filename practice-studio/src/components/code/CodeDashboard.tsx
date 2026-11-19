@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Equal,
   Flag,
   Loader2,
   PenLine,
@@ -57,6 +58,7 @@ import {
   ReviewStatus,
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
+import { plainTitle } from "@/lib/titleText";
 
 export interface CodeDashboardProps {
   problem: Problem;
@@ -78,7 +80,6 @@ export interface CodeDashboardProps {
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
-  onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
@@ -480,11 +481,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     Boolean(problem.prompt) &&
     problem.prompt.includes(problem.codeSnippet!.trim().slice(0, 32));
 
+  const displayTitle = plainTitle(drillTitle);
+
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
-      {drillTitle && (
+      {displayTitle && (
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {drillTitle}
+          {displayTitle}
         </h1>
       )}
 
@@ -1023,9 +1026,26 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             )}
 
             <div className="space-y-3">
-              {!isChoice && (
-                <div className="flex items-center gap-2.5">
-                  {!isFindBug && (
+              {!isChoice &&
+                (isFindBug ? (
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={triggerWebCheck}
+                      disabled={isChecking || !problem.state.userInput.trim()}
+                      aria-label="Check answer"
+                      title="Check (Enter)"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
+                    >
+                      {isChecking ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Equal className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25">
                     <input
                       ref={answerInputRef}
                       type="text"
@@ -1039,26 +1059,25 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       }}
                       placeholder={getSafePlaceholder(problem.inputHint, problem)}
                       aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
-                      className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+                      className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                     />
-                  )}
 
-                  <button
-                    type="button"
-                    onClick={triggerWebCheck}
-                    disabled={isChecking || !problem.state.userInput.trim()}
-                    aria-label="Check answer"
-                    title="Check answer (Enter)"
-                    className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
-                  >
-                    {isChecking ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              )}
+                    <button
+                      type="button"
+                      onClick={triggerWebCheck}
+                      disabled={isChecking || !problem.state.userInput.trim()}
+                      aria-label="Check answer"
+                      title="Check (Enter)"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
+                    >
+                      {isChecking ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Equal className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                ))}
 
               <AnswerResultCard
                 lastCheck={lastCheck}
@@ -1274,7 +1293,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
               <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
               <input
                 type="text"

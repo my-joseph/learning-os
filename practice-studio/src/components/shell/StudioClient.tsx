@@ -31,6 +31,7 @@ import {
 } from "@/lib/routes";
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
+import { plainTitle } from "@/lib/titleText";
 
 interface StudioClientProps {
   workspace: Workspace;
@@ -188,7 +189,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     liveScore,
     maxScore,
     accuracyPct,
-    skippedCount,
     computedPracticeStatus,
   } = computeSessionMetrics(currentDrill, statusOverride);
 
@@ -254,8 +254,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onShowGenPopoverChange={setShowGenPopover}
       onGenerated={handleGenerated}
       onSelectQuestion={handleSelectQuestion}
-      onPrevQuestion={handlePrevQuestion}
-      onNextQuestion={handleNextQuestion}
       onToggleViewMode={(mode) => setViewMode(mode)}
       status={status}
       onStatusChange={setStatus}
@@ -309,7 +307,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   index={idx}
                   totalQuestions={currentDrill.problems.length}
                   unitCode={currentDrill.unitCode}
-                  drillTitle={currentDrill.unitTitle || currentDrill.unitCode}
+                  drillTitle={plainTitle(currentDrill.unitTitle) || currentDrill.unitCode}
                   mistakeTags={currentDrill.mistakeTags || []}
                   activeStep={activeSteps[prob.id] ?? null}
                   onInputChange={(val) => handleInputChange(prob.id, val)}
@@ -344,7 +342,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 drillId={currentDrill.drillId}
                 index={idx}
                 totalQuestions={currentDrill.problems.length}
-                drillTitle={currentDrill.unitTitle || currentDrill.unitCode}
+                drillTitle={plainTitle(currentDrill.unitTitle) || currentDrill.unitCode}
                 labReadme={currentDrill.labReadme}
                 mistakeTags={currentDrill.mistakeTags || []}
                 activeStep={activeSteps[prob.id] ?? null}
@@ -361,7 +359,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}
                 onHintRevealed={() => handleHintRevealed(prob.id)}
-                onSetupRevealed={() => handleSetupRevealed(prob.id)}
                 onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                 onPrevQuestion={handlePrevQuestion}
                 onNextQuestion={handleNextQuestion}
@@ -386,7 +383,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             liveScore={liveScore}
             maxScore={maxScore}
             accuracyPct={accuracyPct}
-            skippedCount={skippedCount}
             computedPracticeStatus={computedPracticeStatus}
             isSyncing={isSyncing}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
@@ -408,7 +404,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           ? "problems"
           : "questions";
         const drillLabel = currentDrill
-          ? currentDrill.unitTitle || currentDrill.unitCode
+          ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
           : "";
         return (
           <ConfirmDialog
