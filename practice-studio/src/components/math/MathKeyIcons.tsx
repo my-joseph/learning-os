@@ -43,7 +43,7 @@ export interface KeyIconProps {
 }
 
 const STROKE_WIDTH = 1.35;
-const GLYPH_FONT = "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif";
+const GLYPH_FONT = '"Source Sans Pro", ui-sans-serif, system-ui, sans-serif';
 
 interface KeyIconFrameProps {
   width?: number;
