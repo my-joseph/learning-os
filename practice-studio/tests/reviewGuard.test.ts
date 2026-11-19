@@ -218,5 +218,54 @@ assert.strictEqual(
   true,
   "Passing review in the current cycle unlocks reference solution"
 );
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    skipped: true,
+    lastCheck: { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+    lastTestReport: {
+      allPassed: true,
+      score: 1,
+      passedCount: 2,
+      totalCount: 2,
+      visibleResults: [],
+      hiddenPassed: 0,
+      hiddenTotal: 0,
+      executionTimeMs: 10,
+    },
+    attempts: [{ input: "42", ts: "2026-11-16T10:00:00Z", verdict: "correct" }],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  false,
+  "Prior-cycle lastCheck, skipped, and untimestamped lastTestReport must not count as attempted in a new cycle"
+);
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    lastTestReport: {
+      allPassed: false,
+      score: 0,
+      passedCount: 1,
+      totalCount: 2,
+      visibleResults: [],
+      hiddenPassed: 0,
+      hiddenTotal: 0,
+      executionTimeMs: 10,
+      ts: "2026-11-20T00:05:00Z",
+    },
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  true,
+  "Current-cycle timestamped lastTestReport counts as attempted"
+);
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    testRuns: [{ ts: "2026-11-16T10:00:00Z", allPassed: true }],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  false,
+  "Pre-cycle testRuns must not count in a new cycle"
+);
 
 console.log("reviewGuard tests passed");

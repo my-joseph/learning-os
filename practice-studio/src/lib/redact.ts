@@ -120,38 +120,52 @@ const DEFAULT_CODE_PLACEHOLDER = "Enter predicted terminal output (press Enter t
 
 /**
  * Unlock rule for math/code step-by-step derivations (`steps`, `answerDisplay`, `answerPlain`):
- * available once the problem has been checked/answered (`canRevealVerifiedAnswer`) or
- * the learner explicitly revealed steps before answering (`solutionRevealedBeforeAnswer`).
+ * available once the problem has been checked/answered in the current cycle
+ * (`canRevealVerifiedAnswer`) or the learner explicitly revealed steps in the current cycle.
+ * When `cycleStartedAt` is active, untimestamped prior-cycle `solutionRevealedBeforeAnswer`
+ * does not unlock steps until revealed again in that cycle (`reviewStepsRevealedAt >= cycleStartedAt`).
  */
 export function canRevealSteps(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (canRevealVerifiedAnswer(state)) return true;
-  if (state.solutionRevealedBeforeAnswer) return true;
-  if (
-    state.reviewStepsRevealedAt &&
-    isInCycle(state.reviewStepsRevealedAt, state.cycleStartedAt)
-  ) {
-    return true;
+  if (state.cycleStartedAt) {
+    if (
+      state.reviewStepsRevealedAt &&
+      isInCycle(state.reviewStepsRevealedAt, state.cycleStartedAt)
+    ) {
+      return true;
+    }
+    if (cycleOriginalAttempts(state).some((a) => a.solutionRevealed)) return true;
+    return false;
   }
+  if (state.solutionRevealedBeforeAnswer) return true;
+  if (state.reviewStepsRevealedAt) return true;
   if (cycleOriginalAttempts(state).some((a) => a.solutionRevealed)) return true;
   return false;
 }
 
 /**
  * Unlock rule for math equation set-up (`display`, `plainText`):
- * available once the problem has been checked/answered (`canRevealVerifiedAnswer`) or
- * the learner explicitly revealed set-up before answering (`setupRevealedBeforeAnswer`).
+ * available once the problem has been checked/answered in the current cycle
+ * (`canRevealVerifiedAnswer`) or the learner explicitly revealed set-up in the current cycle.
+ * When `cycleStartedAt` is active, untimestamped prior-cycle `setupRevealedBeforeAnswer`
+ * does not unlock display until revealed again in that cycle (`reviewSetupRevealedAt >= cycleStartedAt`).
  */
 export function canRevealDisplay(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (canRevealVerifiedAnswer(state)) return true;
-  if (state.setupRevealedBeforeAnswer) return true;
-  if (
-    state.reviewSetupRevealedAt &&
-    isInCycle(state.reviewSetupRevealedAt, state.cycleStartedAt)
-  ) {
-    return true;
+  if (state.cycleStartedAt) {
+    if (
+      state.reviewSetupRevealedAt &&
+      isInCycle(state.reviewSetupRevealedAt, state.cycleStartedAt)
+    ) {
+      return true;
+    }
+    if (cycleOriginalAttempts(state).some((a) => a.setupRevealed)) return true;
+    return false;
   }
+  if (state.setupRevealedBeforeAnswer) return true;
+  if (state.reviewSetupRevealedAt) return true;
   if (cycleOriginalAttempts(state).some((a) => a.setupRevealed)) return true;
   return false;
 }

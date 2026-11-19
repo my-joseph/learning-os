@@ -289,14 +289,33 @@ export function writeProgress(doc: DocLike): string {
           st.cycleStartedAt = maxCycle;
         }
 
+        const revealStamp = maxIsoTimestamp(nowIso, st.cycleStartedAt) || nowIso;
         if (incoming.setupRevealedBeforeAnswer === true) {
-          st.reviewSetupRevealedAt = maxIsoTimestamp(prev.reviewSetupRevealedAt, nowIso);
+          st.reviewSetupRevealedAt = maxIsoTimestamp(prev.reviewSetupRevealedAt, revealStamp);
         }
         if (incoming.solutionRevealedBeforeAnswer === true) {
-          st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, nowIso);
+          st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, revealStamp);
         }
       } else {
         st = { ...incoming };
+
+        const incomingCycle =
+          typeof incoming.cycleStartedAt === "string" && incoming.cycleStartedAt.trim()
+            ? incoming.cycleStartedAt.trim()
+            : null;
+        const prevCycle =
+          typeof prev?.cycleStartedAt === "string" && prev.cycleStartedAt.trim()
+            ? prev.cycleStartedAt.trim()
+            : null;
+        if (incomingCycle && (!prevCycle || incomingCycle >= prevCycle)) {
+          const revealStamp = maxIsoTimestamp(nowIso, incomingCycle) || nowIso;
+          if (incoming.setupRevealedBeforeAnswer === true) {
+            st.reviewSetupRevealedAt = maxIsoTimestamp(st.reviewSetupRevealedAt, revealStamp);
+          }
+          if (incoming.solutionRevealedBeforeAnswer === true) {
+            st.reviewStepsRevealedAt = maxIsoTimestamp(st.reviewStepsRevealedAt, revealStamp);
+          }
+        }
 
         if (prev) {
           // Server-owned history is never dropped by a normal autosave.
