@@ -230,10 +230,28 @@ async function runTests() {
     assert.match(mathHtml, /Due today/);
     assert.match(mathHtml, /Complex Conjugates/);
     assert.match(mathHtml, /Mastery 2 of 4/);
+    assert.match(mathHtml, /Capped at 2 · needs one L4 challenge without hints/);
+    assert.doesNotMatch(mathHtml, /Daily review ·/);
     assert.match(mathHtml, /href="\/math\/DRL-MTH-T09-C01-U01-02"/);
     assert.match(mathHtml, /href="\/code\/DRL-PRG-T09-C01-01"/);
     assert.match(mathHtml, /Repeated traps/);
     assert.match(mathHtml, /c09-sign-flip/);
+
+    const withDailyReviewRowHtml = renderToStaticMarkup(
+      <StudioSidePanel
+        workspace="math"
+        currentUnitCode="MTH-T09-C01-U01"
+        dueUnits={due.units}
+        dueReviewCount={5}
+        weakSpotUnits={[]}
+      />
+    );
+    assert.match(withDailyReviewRowHtml, /href="\/review"/);
+    assert.match(withDailyReviewRowHtml, /Daily review · 5 due/);
+    assert.match(
+      withDailyReviewRowHtml,
+      /Capped at 2 · needs one L4 challenge without hints/
+    );
 
     const prgHtml = renderToStaticMarkup(
       <StudioSidePanel

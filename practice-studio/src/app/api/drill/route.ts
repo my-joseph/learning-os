@@ -11,12 +11,14 @@ import {
   resolveInsideDrillWorkspace,
 } from "@/lib/paths";
 import { applyProgress, readProgress } from "@/lib/progress";
-import { redactDrill } from "@/lib/redact";
+import { redactDrill, redactDrillForReview } from "@/lib/redact";
 import { plainTitle } from "@/lib/titleText";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
+  const isReview =
+    searchParams.get("review") === "1" || searchParams.get("review") === "true";
 
   if (!id) {
     return NextResponse.json({ error: "Missing drill id" }, { status: 400 });
@@ -78,7 +80,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      return NextResponse.json(redactDrill(doc));
+      return NextResponse.json(isReview ? redactDrillForReview(doc) : redactDrill(doc));
     }
   }
 

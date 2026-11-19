@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
 import {
+  ArrowUpRight,
   Check,
   ChevronDown,
   ChevronRight,
@@ -87,6 +89,11 @@ export interface CodeDashboardProps {
   totalTimerMs?: number;
   isTimerPaused?: boolean;
   onToggleTimerPause?: () => void;
+  openInDrillHref?: string;
+  reviewSupplement?: React.ReactNode;
+  isReviewSession?: boolean;
+  nextCardLabel?: string;
+  lastQuestionNavLabel?: string;
 }
 
 const DEFAULT_EXPLAIN_QUESTION =
@@ -145,6 +152,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   totalTimerMs,
   isTimerPaused = false,
   onToggleTimerPause,
+  openInDrillHref,
+  reviewSupplement,
+  isReviewSession = false,
+  nextCardLabel,
+  lastQuestionNavLabel,
 }) => {
   const isLab = drillId.startsWith("LAB-") || /^M\d+$/i.test(problem.id);
   const isKata = isLab || isWorkspaceProblem(problem);
@@ -561,7 +573,51 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           </section>
         )}
 
-        {isKata ? (
+        {isKata && openInDrillHref ? (
+          <>
+            {problem.codeSnippet && !snippetInPrompt && (
+              <VSCodeBlock
+                code={problem.codeSnippet}
+                language={snippetLanguage}
+                filename={filename}
+              />
+            )}
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <Link
+                  href={openInDrillHref}
+                  className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                >
+                  <span>Open in drill</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </Link>
+
+                {hasCheckpointHint(problem.checkpointHint) && <button
+                  type="button"
+                  onClick={() => {
+                    if (!showHint && onHintRevealed) {
+                      onHintRevealed();
+                    }
+                    setShowHint(!showHint);
+                  }}
+                  aria-expanded={showHint}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
+                  <span>{showHint ? "Hide hint" : "Hint"}</span>
+                </button>}
+              </div>
+
+              <CheckpointHintDisclosure
+                checkpointHint={problem.checkpointHint}
+                show={showHint}
+              />
+            </div>
+
+            {reviewSupplement}
+          </>
+        ) : isKata ? (
           <>
             {problem.codeSnippet && !snippetInPrompt && (
               <VSCodeBlock
@@ -1044,14 +1100,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 state={problem.state}
                 problem={problem}
                 mistakeTags={mistakeTags}
-                isLastQuestion={isLastQuestion}
-                nextLabel={isLab ? "Next milestone" : "Next problem"}
+                isLastQuestion={isReviewSession ? false : isLastQuestion}
+                nextLabel={nextCardLabel ?? (isLab ? "Next milestone" : "Next problem")}
                 onNextQuestion={onNextQuestion}
                 onOpenReview={onOpenReview}
                 onTryAgain={handleTryAgain}
                 onShowSteps={handleShowStepsFromCard}
               />
             </div>
+
+            {reviewSupplement}
 
             <ProblemAssistSection
               problem={problem}
@@ -1118,6 +1176,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         onPrevQuestion={onPrevQuestion}
         onNextQuestion={onNextQuestion}
         onOpenReview={onOpenReview}
+        lastQuestionLabel={lastQuestionNavLabel}
       />
     </div>
   );

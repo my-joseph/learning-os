@@ -113,6 +113,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
   const {
     dueUnits,
+    dueReviewCount,
     dueLoading,
     dueError,
     weakSpotUnits,
@@ -124,7 +125,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   );
 
   const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
-  const sidePanelCount = dueUnits.length + openWeakCount;
+  const sidePanelCount = dueUnits.length + (dueReviewCount > 0 ? 1 : 0) + openWeakCount;
   const dueUnitCodes = React.useMemo(
     () => dueUnits.map((u) => u.unitCode),
     [dueUnits]
@@ -317,6 +318,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
                 workspace={workspace}
                 currentUnitCode={currentDrill?.unitCode}
                 dueUnits={dueUnits}
+                dueReviewCount={dueReviewCount}
                 dueLoading={dueLoading}
                 dueError={dueError}
                 weakSpotUnits={weakSpotUnits}
@@ -383,6 +385,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               workspace={workspace}
               currentUnitCode={currentDrill?.unitCode}
               dueUnits={dueUnits}
+              dueReviewCount={dueReviewCount}
               dueLoading={dueLoading}
               dueError={dueError}
               weakSpotUnits={weakSpotUnits}

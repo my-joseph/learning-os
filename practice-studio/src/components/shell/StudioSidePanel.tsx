@@ -12,6 +12,7 @@ export interface StudioSidePanelProps {
   workspace: Workspace;
   currentUnitCode?: string | null;
   dueUnits: DueTodayUnit[];
+  dueReviewCount?: number;
   dueLoading?: boolean;
   dueError?: string | null;
   weakSpotUnits: WeakSpotUnit[];
@@ -49,6 +50,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
   workspace,
   currentUnitCode,
   dueUnits,
+  dueReviewCount = 0,
   dueLoading = false,
   dueError = null,
   weakSpotUnits,
@@ -98,20 +100,37 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           )}
         </div>
 
-        {dueLoading && dueUnits.length === 0 ? (
+        {dueLoading && dueUnits.length === 0 && dueReviewCount === 0 ? (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Checking schedule…
           </p>
-        ) : dueError ? (
+        ) : dueError && dueReviewCount === 0 ? (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Could not load due units.
           </p>
-        ) : dueUnits.length === 0 ? (
+        ) : dueUnits.length === 0 && dueReviewCount === 0 ? (
           <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
             Nothing due today — you&apos;re all caught up.
           </p>
         ) : (
           <ul className="space-y-1.5">
+            {dueReviewCount > 0 && (
+              <li>
+                <Link
+                  href="/review"
+                  onClick={onNavigate}
+                  className="group flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 -mx-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition-colors"
+                >
+                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                    Daily review · {dueReviewCount} due
+                  </span>
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 shrink-0 transition-colors"
+                  />
+                </Link>
+              </li>
+            )}
             {dueUnits.map((unit) => {
               const inner = (
                 <>
@@ -127,6 +146,11 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                         </span>
                       )}
                     </div>
+                    {unit.masteryCap?.capped && unit.masteryCap.reason && (
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
+                        Capped at {unit.mastery} · {unit.masteryCap.reason}
+                      </p>
+                    )}
                   </div>
                   {unit.href && (
                     <ChevronRight

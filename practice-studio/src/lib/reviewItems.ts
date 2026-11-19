@@ -819,13 +819,22 @@ export function getReviewItemsSchedule(
 export function getDueReviewItems(options?: ReviewStoreOptions): {
   today: string;
   items: ReviewItem[];
+  totalDue: number;
+  nextDueDate: string | null;
 } {
   const today = normalizeReviewDate(options?.today);
   const schedule = getReviewItemsSchedule(options);
-  const due = Object.values(schedule).filter((it) => it.dueDate <= today);
+  const allItems = Object.values(schedule);
+  const due = allItems.filter((it) => it.dueDate <= today);
+  const futureDates = allItems
+    .filter((it) => it.dueDate > today)
+    .map((it) => it.dueDate)
+    .sort(cmpStr);
   return {
     today,
     items: interleaveDueItems(due, options?.limit),
+    totalDue: due.length,
+    nextDueDate: futureDates[0] ?? null,
   };
 }
 

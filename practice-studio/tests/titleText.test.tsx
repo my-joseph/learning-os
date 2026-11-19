@@ -7,7 +7,7 @@
 import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { plainTitle } from "../src/lib/titleText";
+import { plainTitle, trapName } from "../src/lib/titleText";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
@@ -24,6 +24,17 @@ assert.equal(plainTitle("Plain Title"), "Plain Title");
 assert.equal(plainTitle(""), "");
 assert.equal(plainTitle(null), "");
 assert.equal(plainTitle(undefined), "");
+
+// 1b. Unit cases for trapName (mirrors scripts.weak_spots.trap_name)
+assert.equal(
+  trapName("t02-c01-u01-i-squared-positive-one-trap"),
+  "I squared positive one"
+);
+assert.equal(trapName("c04-divide-not-invert-trap"), "Divide not invert");
+assert.equal(trapName("c09-sign-flip"), "Sign flip");
+assert.equal(trapName(""), "");
+assert.equal(trapName(null), "");
+assert.equal(trapName(undefined), "");
 
 const noop = () => {};
 

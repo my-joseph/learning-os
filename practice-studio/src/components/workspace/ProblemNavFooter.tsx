@@ -9,6 +9,7 @@ export interface ProblemNavFooterProps {
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
+  lastQuestionLabel?: string;
 }
 
 /** Shared quiet Previous / Next / Review & sync navigation footer below the problem card. */
@@ -18,6 +19,7 @@ export const ProblemNavFooter: React.FC<ProblemNavFooterProps> = ({
   onPrevQuestion,
   onNextQuestion,
   onOpenReview,
+  lastQuestionLabel,
 }) => {
   if (!onPrevQuestion && !onNextQuestion && !onOpenReview) {
     return null;
@@ -41,7 +43,7 @@ export const ProblemNavFooter: React.FC<ProblemNavFooterProps> = ({
           onClick={onOpenReview}
           className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
         >
-          <span>Review &amp; sync</span>
+          <span>{lastQuestionLabel || <>Review &amp; sync</>}</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       ) : (
