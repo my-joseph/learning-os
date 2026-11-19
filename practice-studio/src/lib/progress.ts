@@ -77,6 +77,16 @@ export function writeProgress(doc: DocLike): string {
         );
         st.attempts = [...prevAttempts, ...appended];
       }
+      if (doc.reviewMerge && prev) {
+        // A review session starts from a clean state; never erase learner notes/tags it did not set.
+        const isEmpty = (v: unknown) =>
+          v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
+        for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
+          if (isEmpty(st[key]) && !isEmpty(prev[key])) {
+            st[key] = prev[key];
+          }
+        }
+      }
       if (st.reviews === undefined && prev && prev.reviews !== undefined) {
         st.reviews = prev.reviews;
       }

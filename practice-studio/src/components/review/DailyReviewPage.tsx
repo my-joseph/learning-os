@@ -319,10 +319,10 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             </div>
           ) : (
             (() => {
-              const safeProblem = prepareProblemForReviewItem(
-                currentProblem,
-                currentItem
-              );
+              // The problem was already redacted/reset once when its drill loaded
+              // (prepareProblemForReviewItem). Re-running it here on every render wiped the
+              // learner's typing, so render the live in-session problem as is.
+              const safeProblem = currentProblem;
               const hasAttempt = hasSubstantiveAttempt(safeProblem.state);
               const isCorrect =
                 hasAttempt &&

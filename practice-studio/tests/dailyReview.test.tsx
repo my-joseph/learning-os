@@ -498,6 +498,7 @@ async function runTests() {
               userInput: "99",
               score: 0,
               mistakes: ["c04-divide-not-invert-trap"],
+              mistakeNote: "Forgot to flip the second fraction.",
               revisitNote: "Remember to invert the divisor first.",
               lastCheck: {
                 verdict: "incorrect",
@@ -741,6 +742,8 @@ async function runTests() {
         {
           score: number;
           revisitNote?: string;
+          mistakes?: string[];
+          mistakeNote?: string;
           attempts: Array<{ input: string; verdict: string }>;
         }
       >;
@@ -753,6 +756,16 @@ async function runTests() {
       savedProgress.problems.Q01.attempts.length,
       3,
       "reviewMerge must append the new review attempt while preserving prior attempts"
+    );
+    assert.deepEqual(
+      savedProgress.problems.Q01.mistakes,
+      ["c04-divide-not-invert-trap"],
+      "reviewMerge must not erase earlier mistake tags the review did not set"
+    );
+    assert.equal(
+      savedProgress.problems.Q01.mistakeNote,
+      "Forgot to flip the second fraction.",
+      "reviewMerge must not erase the learner's earlier mistake note"
     );
     assert.equal(
       savedProgress.problems.Q02.score,
