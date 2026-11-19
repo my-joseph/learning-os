@@ -204,8 +204,9 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
               key={lineIdx}
               className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <span className="text-zinc-500 dark:text-zinc-400 font-bold select-none text-xs mt-1 shrink-0">
-                •
+              {/* Indigo dot like the Visible tests list; centred on the first text line (1lh tall box). */}
+              <span className="h-[1lh] flex items-center shrink-0 select-none" aria-hidden="true">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
               </span>
               <div className="flex-1">{renderInline(bulletContent)}</div>
             </div>

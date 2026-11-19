@@ -7,6 +7,11 @@ import { preloadShiki } from "../src/lib/shiki";
 
 async function main() {
   // 1. Markdown headings render as bold labels, never raw "###"
+  // Learner 2026-11-19: list bullets use the same small indigo dot as the Visible tests list.
+  const bulletHtml = renderToStaticMarkup(<FormattedText text={"Requirements:\n- Return a fresh array\n- Keep order"} />);
+  assert.match(bulletHtml, /w-1\.5 h-1\.5 rounded-full bg-indigo-600 dark:bg-indigo-400/);
+  assert.doesNotMatch(bulletHtml, /•/);
+
   const headingHtml = renderToStaticMarkup(
     <FormattedText text={"### Requirements\n- keep order\n#### Return contract"} />
   );
