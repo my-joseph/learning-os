@@ -180,6 +180,8 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
             or st.get("solutionRevealedBeforeAnswer")
             or st.get("hintsRevealed")
             or st.get("durationMs")
+            or st.get("variants")
+            or st.get("exampleViewedAt")
         ):
             return True
     return False
@@ -254,13 +256,16 @@ def item_score(state: dict[str, Any]) -> tuple[float, bool]:
     - Correct after a wrong/partial attempt or assisted -> (0.5, assisted)
     - Otherwise -> (0.0, assisted), or (-1.0, assisted) if unattempted.
     """
-    attempts = state.get("attempts") or []
+    attempts = [a for a in (state.get("attempts") or []) if isinstance(a, dict) and a.get("kind") != "variant"]
     assisted = bool(
         state.get("setupRevealedBeforeAnswer")
         or state.get("solutionRevealedBeforeAnswer")
+        or state.get("exampleViewedAt")
         or (state.get("hintsRevealed") or 0) > 0
     )
-    assisted = assisted or any(a.get("setupRevealed") or a.get("solutionRevealed") for a in attempts)
+    assisted = assisted or any(
+        a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in attempts
+    )
     if state.get("skipped"):
         return 0.0, assisted
     substantive = [a for a in attempts if a.get("verdict") not in _NON_SUBSTANTIVE_VERDICTS]

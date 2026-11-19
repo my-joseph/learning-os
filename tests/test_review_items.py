@@ -422,3 +422,82 @@ def test_newer_drill_attempt_wins_over_older_saved_review(tmp_path: Path):
     ri.write_review_items({key: fresh}, progress_dir=progress_dir)
     merged = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
     assert merged[key]["level"] == 4 and merged[key]["lastReviewed"] == "2026-11-18"
+
+
+def test_variants_do_not_move_schedule_feed_weak_spots_and_example_marks_assisted(tmp_path: Path):
+    from scripts import weak_spots
+
+    data_root, progress_dir = _seed_fixture(tmp_path)
+    # Overwrite U01 progress so Q01 has:
+    # - 11-10 correct (L1 -> L2)
+    # - 11-15 wrong (L2 -> L1, due 11-16) with matchedTrap
+    # - variant attempts (correct + wrong with matchedTrap) -> MUST NOT change level, MUST feed weak_spots
+    # - worked example viewed at 11-19T10:30:00Z
+    # - 11-19T11:00:00Z correct on Q01 -> assisted (after exampleViewedAt) -> stays at L1 (due 11-20, NOT L2!)
+    (Path(progress_dir) / "DRL-MTH-T01-C04-U01-01.json").write_text(
+        json.dumps(
+            {
+                "drillId": "DRL-MTH-T01-C04-U01-01",
+                "updatedAt": "2026-11-19T11:00:00Z",
+                "problems": {
+                    "Q01": {
+                        "attempts": [
+                            {"verdict": "correct", "ts": "2026-11-10T10:00:00Z"},
+                            {
+                                "verdict": "incorrect",
+                                "ts": "2026-11-15T10:00:00Z",
+                                "matchedTrap": "c04-divide-not-invert-trap",
+                            },
+                            {"verdict": "correct", "ts": "2026-11-19T11:00:00Z"},
+                        ],
+                        "exampleViewedAt": "2026-11-19T10:30:00Z",
+                        "variants": {
+                            "v1": {
+                                "variantId": "VAR-MTH-T01-C04-fraction-division-01",
+                                "role": "try",
+                                "servedAt": "2026-11-19T10:00:00Z",
+                                "attempts": [
+                                    {"verdict": "correct", "ts": "2026-11-19T10:05:00Z", "kind": "variant"},
+                                    {
+                                        "verdict": "incorrect",
+                                        "ts": "2026-11-19T10:10:00Z",
+                                        "kind": "variant",
+                                        "matchedTrap": "c04-divide-not-invert-trap",
+                                    },
+                                ],
+                            }
+                        },
+                        "score": 0.5,
+                        "hintsRevealed": 0,
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    # replay_events ignores kind=="variant" directly
+    replayed = ri.replay_events(
+        [
+            {"date": "2026-11-15", "correct": False, "assisted": False},
+            {"date": "2026-11-16", "correct": True, "assisted": False, "kind": "variant"},
+            {"date": "2026-11-17", "correct": True, "assisted": False, "kind": "variant"},
+        ]
+    )
+    assert replayed == {"level": 1, "lastReviewed": "2026-11-15", "dueDate": "2026-11-16"}
+
+    # Schedule: Q01 stayed at L1 (assisted after exampleViewedAt) and due +1 day (2026-11-20)
+    schedule = ri.build_schedule_from_progress(data_root=data_root, progress_dir=progress_dir)
+    q1 = schedule["DRL-MTH-T01-C04-U01-01/Q01"]
+    assert q1["level"] == 1
+    assert q1["lastReviewed"] == "2026-11-19"
+    assert q1["dueDate"] == "2026-11-20"
+
+    # Weak spots: variant matchedTrap combines with original matchedTrap (>= 2 matches -> open weak spot!)
+    items = weak_spots.load_items(data_root=data_root, progress_dir=progress_dir)
+    q1_item = next(i for i in items if i.drill == "DRL-MTH-T01-C04-U01-01" and i.pid == "Q01")
+    assert q1_item.assisted is True
+    assert q1_item.matched.count("c04-divide-not-invert-trap") == 2
+    traps = weak_spots.trap_status(items)
+    assert traps["c04-divide-not-invert-trap"]["open"] is True
+    assert traps["c04-divide-not-invert-trap"]["matches"] == 2

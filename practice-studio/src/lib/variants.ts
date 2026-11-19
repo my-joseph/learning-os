@@ -1,4 +1,40 @@
 import { loadVariantBankFromDisk } from "./paths";
+import { ProblemState, VariantSessionRecord } from "@/types/drill";
+
+/** Collect every bank `variantId` already seen for a problem (both `try` and `example` roles). */
+export function collectSeenVariantIds(state?: ProblemState | null): string[] {
+  const seen = new Set<string>();
+  if (Array.isArray(state?.variantsSeen)) {
+    for (const v of state.variantsSeen) {
+      if (typeof v === "string" && v) seen.add(v);
+    }
+  }
+  if (state?.variants && typeof state.variants === "object") {
+    for (const rec of Object.values(state.variants)) {
+      if (rec && typeof rec.variantId === "string" && rec.variantId) {
+        seen.add(rec.variantId);
+      }
+    }
+  }
+  return Array.from(seen);
+}
+
+/** Allocate the next opaque per-problem handle ("v1", "v2", ...) that never reveals the bank variantId. */
+export function allocateNextVariantToken(
+  variants?: Record<string, VariantSessionRecord> | null
+): string {
+  let maxNum = 0;
+  if (variants && typeof variants === "object") {
+    for (const key of Object.keys(variants)) {
+      const m = /^v(\d+)$/.exec(key);
+      if (m) {
+        const n = Number(m[1]);
+        if (Number.isFinite(n) && n > maxNum) maxNum = n;
+      }
+    }
+  }
+  return `v${maxNum + 1}`;
+}
 
 function normPrompt(val: unknown): string {
   return String(val || "")
