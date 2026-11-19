@@ -236,8 +236,11 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
         const assisted = Boolean(
           st.setupRevealedBeforeAnswer ||
             st.solutionRevealedBeforeAnswer ||
+            st.exampleViewedAt ||
             (typeof st.hintsRevealed === "number" && st.hintsRevealed > 0) ||
-            attempts.some((a) => a && (a.setupRevealed || a.solutionRevealed))
+            attempts.some(
+              (a) => a && a.kind !== "variant" && (a.setupRevealed || a.solutionRevealed || a.exampleViewed)
+            )
         );
         if (assisted) continue;
 
