@@ -124,25 +124,45 @@ export function sanitizeCheckMessage(
 
 /**
  * Return true only if the problem has a substantive check/attempt in the current cycle,
- * was skipped, has a PRG test report, or has a code review in the current cycle.
- * Draft input, parse/invalid-input checks, and self-score alone do not count.
+ * was skipped in the current cycle, has a PRG test report/run in the current cycle,
+ * or has a code review in the current cycle.
+ * Draft input, parse/invalid-input checks, self-score alone, and prior-cycle records
+ * behind `cycleStartedAt` do not count.
  */
 export function hasSubstantiveAttempt(state?: ProblemState | null): boolean {
   if (!state) return false;
-  if (state.skipped) return true;
+  const cycleStartedAt = state.cycleStartedAt;
   if (
     state.attempts?.some(
       (a) =>
         a?.kind !== "variant" &&
         isSubstantiveVerdict(a.verdict) &&
-        isTimestampInCycle(a.ts, state.cycleStartedAt)
+        isTimestampInCycle(a.ts, cycleStartedAt)
     )
   ) {
     return true;
   }
-  if (state.lastCheck != null && isSubstantiveVerdict(state.lastCheck.verdict)) return true;
-  if (state.lastTestReport != null) return true;
   if (cycleReviews(state).length > 0) return true;
+  if (
+    Array.isArray(state.testRuns) &&
+    state.testRuns.some((tr) => tr && isTimestampInCycle(tr.ts, cycleStartedAt))
+  ) {
+    return true;
+  }
+  if (state.lastTestReport != null) {
+    if (!cycleStartedAt) return true;
+    const reportTs =
+      typeof (state.lastTestReport as { ts?: unknown }).ts === "string"
+        ? (state.lastTestReport as { ts?: string }).ts
+        : null;
+    if (reportTs && isTimestampInCycle(reportTs, cycleStartedAt)) return true;
+  }
+  // When a review/retry cycle is active (`cycleStartedAt`), untimestamped top-level
+  // fields (`skipped`, `lastCheck`, untimestamped `lastTestReport`) may belong to a
+  // prior cycle (e.g. after `startProblemCycle` on /review) and must not unlock it.
+  if (cycleStartedAt) return false;
+  if (state.skipped) return true;
+  if (state.lastCheck != null && isSubstantiveVerdict(state.lastCheck.verdict)) return true;
   return false;
 }
 

@@ -8,7 +8,8 @@ import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { getDrillsDataDir } from "../src/lib/paths";
-import { writeProgress } from "../src/lib/progress";
+import { startProblemCycle, writeProgress } from "../src/lib/progress";
+import { resetProblemForRetry } from "../src/lib/applyCheckResult";
 import {
   ALWAYS_STRIPPED_PROBLEM_FIELDS,
   CONDITIONAL_STRIPPED_PROBLEM_FIELDS,
@@ -395,6 +396,45 @@ assert.equal(canRevealSteps(reviewRevealState), true);
 assert.equal(reviewRevealState.setupRevealedBeforeAnswer, undefined);
 assert.equal(reviewRevealState.solutionRevealedBeforeAnswer, undefined);
 
+// Review cycle with preserved original drill flags (lastCheck, skipped, setup/solution flags, stale review timestamps):
+// NONE of the prior-cycle fields may unlock steps, display, or solution in the new cycle.
+const activeReviewCycleWithPriorFlags = makeState({
+  userInput: "42",
+  score: 0.5,
+  skipped: true,
+  lastCheck: { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+  setupRevealedBeforeAnswer: true,
+  solutionRevealedBeforeAnswer: true,
+  reviewSetupRevealedAt: "2026-11-19T10:00:00Z",
+  reviewStepsRevealedAt: "2026-11-19T10:01:00Z",
+  attempts: [
+    {
+      input: "42",
+      ts: "2026-11-17T10:00:00Z",
+      verdict: "correct",
+      setupRevealed: true,
+      solutionRevealed: true,
+    },
+  ],
+  reviews: [makeReview("pass")],
+  cycleStartedAt: "2026-11-20T09:00:00Z",
+});
+assert.equal(
+  canRevealSteps(activeReviewCycleWithPriorFlags),
+  false,
+  "prior-cycle lastCheck/skipped/solutionRevealedBeforeAnswer/stale reviewStepsRevealedAt must not unlock steps in new cycle"
+);
+assert.equal(
+  canRevealDisplay(activeReviewCycleWithPriorFlags),
+  false,
+  "prior-cycle lastCheck/skipped/setupRevealedBeforeAnswer/stale reviewSetupRevealedAt must not unlock display in new cycle"
+);
+assert.equal(
+  canRevealSolution(activeReviewCycleWithPriorFlags),
+  false,
+  "prior-cycle pass review must not unlock solution in new cycle"
+);
+
 // ---------------------------------------------------------------------------
 // 4. Route handler integration tests (/api/reveal and /api/check-answer)
 // ---------------------------------------------------------------------------
@@ -548,6 +588,246 @@ async function runRouteTests() {
       "incorrect",
       "Server answerSpec must win over client-spoofed answerSpec"
     );
+
+    // 4f. /api/reveal respects review cycles (startProblemCycle + reviewMerge)
+    const oldCycleState = makeState({
+      userInput: "42",
+      score: 0.5,
+      skipped: true,
+      lastCheck: { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+      setupRevealedBeforeAnswer: true,
+      solutionRevealedBeforeAnswer: true,
+      reviewSetupRevealedAt: "2026-11-18T10:00:00Z",
+      reviewStepsRevealedAt: "2026-11-18T10:01:00Z",
+      attempts: [
+        {
+          input: "42",
+          ts: "2026-11-18T10:02:00Z",
+          verdict: "correct",
+          setupRevealed: true,
+          solutionRevealed: true,
+        },
+      ],
+    });
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [{ id: mthDrillSample.problemId, state: oldCycleState }],
+    });
+    const cycleTs = "2026-11-20T09:00:00.000Z";
+    startProblemCycle(mthDrillSample.drillId, "MTH-TEST", mthDrillSample.problemId, cycleTs);
+
+    // Immediately after starting a new review cycle, old attempts/lastCheck/flags must NOT unlock /api/reveal
+    for (const part of ["steps", "display"] as const) {
+      const res = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
+        )
+      );
+      assert.equal(
+        res.status,
+        403,
+        `Expected 403 for ${part} in a new review cycle before any current-cycle attempt or reveal`
+      );
+    }
+
+    // Non-substantive attempt in the new cycle must keep steps and display locked
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      reviewMerge: true,
+      problems: [
+        {
+          id: mthDrillSample.problemId,
+          state: makeState({
+            cycleStartedAt: cycleTs,
+            attempts: [
+              { input: "(((", ts: "2026-11-20T09:00:10.000Z", verdict: "parse_error" },
+            ],
+          }),
+        },
+      ],
+    });
+    for (const part of ["steps", "display"] as const) {
+      const res = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
+        )
+      );
+      assert.equal(res.status, 403, `parse_error in new cycle must keep ${part} locked`);
+    }
+
+    // Explicit set-up reveal in the new review cycle unlocks display ONLY (steps stays 403)
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      reviewMerge: true,
+      problems: [
+        {
+          id: mthDrillSample.problemId,
+          state: makeState({
+            cycleStartedAt: cycleTs,
+            setupRevealedBeforeAnswer: true,
+          }),
+        },
+      ],
+    });
+    const revDispRes = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=display`
+      )
+    );
+    assert.equal(revDispRes.status, 200, "explicit setup reveal in review cycle must unlock display");
+    const revStepsStillLocked = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=steps`
+      )
+    );
+    assert.equal(revStepsStillLocked.status, 403, "explicit setup reveal must not unlock steps");
+
+    // Explicit steps reveal in the new review cycle unlocks steps
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      reviewMerge: true,
+      problems: [
+        {
+          id: mthDrillSample.problemId,
+          state: makeState({
+            cycleStartedAt: cycleTs,
+            solutionRevealedBeforeAnswer: true,
+          }),
+        },
+      ],
+    });
+    const revStepsUnlocked = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=steps`
+      )
+    );
+    assert.equal(revStepsUnlocked.status, 200, "explicit steps reveal in review cycle must unlock steps");
+
+    // 4g. Drill Reset (resetProblemForRetry) locks /api/reveal until answered or explicitly revealed in the new cycle
+    const resetTs = "2026-11-20T10:00:00.000Z";
+    const resetProb = resetProblemForRetry(
+      {
+        ...leakingMathProblem,
+        id: mthDrillSample.problemId,
+        state: oldCycleState,
+      },
+      resetTs
+    );
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [{ id: mthDrillSample.problemId, state: resetProb.state }],
+    });
+    for (const part of ["steps", "display"] as const) {
+      const res = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
+        )
+      );
+      assert.equal(res.status, 403, `Reset must re-lock /api/reveal?part=${part} until answered`);
+    }
+
+    // Explicit setup reveal after Drill Reset unlocks display (steps stays 403)
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [
+        {
+          id: mthDrillSample.problemId,
+          state: { ...resetProb.state, setupRevealedBeforeAnswer: true },
+        },
+      ],
+    });
+    assert.equal(
+      (
+        await revealGET(
+          new NextRequest(
+            `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=display`
+          )
+        )
+      ).status,
+      200,
+      "explicit setup reveal after Reset must unlock display"
+    );
+    assert.equal(
+      (
+        await revealGET(
+          new NextRequest(
+            `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=steps`
+          )
+        )
+      ).status,
+      403,
+      "explicit setup reveal after Reset must keep steps locked"
+    );
+
+    // Substantive attempt in the new cycle after Reset unlocks steps
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [
+        {
+          id: mthDrillSample.problemId,
+          state: {
+            ...resetProb.state,
+            attempts: [
+              ...(resetProb.state.attempts || []),
+              { input: "99", ts: "2026-11-20T10:01:00.000Z", verdict: "incorrect" },
+            ],
+          },
+        },
+      ],
+    });
+    assert.equal(
+      (
+        await revealGET(
+          new NextRequest(
+            `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=steps`
+          )
+        )
+      ).status,
+      200,
+      "substantive attempt in new cycle after Reset must unlock steps"
+    );
+
+    // 4h. PRG problem with prior pass review re-locks solution after startProblemCycle until new-cycle pass
+    startProblemCycle(
+      prgDrillSample.drillId,
+      "PRG-TEST",
+      prgDrillSample.problemId,
+      "2026-11-20T11:00:00.000Z"
+    );
+    const prgRelocked = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${prgDrillSample.drillId}&q=${prgDrillSample.problemId}&part=solution`
+      )
+    );
+    assert.equal(prgRelocked.status, 403, "old-cycle PRG pass must not unlock solution in new cycle");
+
+    writeProgress({
+      drillId: prgDrillSample.drillId,
+      unitCode: "PRG-TEST",
+      reviewMerge: true,
+      problems: [
+        {
+          id: prgDrillSample.problemId,
+          state: makeState({
+            cycleStartedAt: "2026-11-20T11:00:00.000Z",
+            reviews: [{ ...makeReview("pass"), at: "2026-11-20T11:05:00.000Z", attempt: 2 }],
+          }),
+        },
+      ],
+    });
+    const prgReunlocked = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${prgDrillSample.drillId}&q=${prgDrillSample.problemId}&part=solution`
+      )
+    );
+    assert.equal(prgReunlocked.status, 200, "new-cycle PRG pass must unlock solution");
   } finally {
     if (prevProgressDir === undefined) {
       delete process.env.PROGRESS_DIR;

@@ -21,8 +21,12 @@ import { SimilarTabStrip } from "../src/components/math/SimilarTabStrip";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import {
+  SIMILAR_LIST_ERROR_MESSAGE,
+  SIMILAR_LIST_RETRY_DELAYS_MS,
   applySimilarCheckToLatestProblem,
   applySimilarHintToLatestProblem,
+  executeSimilarStepsReveal,
+  getSimilarListRetryDelayMs,
   shouldPersistVariantStepsReveal,
 } from "../src/hooks/useSimilarTabs";
 import {
@@ -292,11 +296,25 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     "assisted",
     "wrong then correct on a similar question must score assisted (same rule as main question)"
   );
+  // B4: bounded backoff schedule for failed mode=list fetches
+  assert.equal(getSimilarListRetryDelayMs(0), null);
+  assert.equal(getSimilarListRetryDelayMs(1), SIMILAR_LIST_RETRY_DELAYS_MS[0]);
+  assert.equal(getSimilarListRetryDelayMs(2), SIMILAR_LIST_RETRY_DELAYS_MS[1]);
+  assert.equal(
+    getSimilarListRetryDelayMs(SIMILAR_LIST_RETRY_DELAYS_MS.length + 1),
+    null,
+    "auto-retry backoff must stop after bounded attempts"
+  );
   const useSimilarSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
   assert.match(
     useSimilarSrc,
-    /if \(!res\.ok\)[\s\S]*?fetchedListKeyRef\.current = null/,
-    "BUG 4: failed variant list fetch must clear fetchedListKeyRef so user can retry"
+    /const scheduleFailureRetry = \(\) => \{[\s\S]*?fetchedListKeyRef\.current = null;[\s\S]*?setListError\(SIMILAR_LIST_ERROR_MESSAGE\);/,
+    "B4: failed variant list fetch must clear fetchedListKeyRef, surface quiet error, and schedule backoff retry"
+  );
+  assert.match(
+    useSimilarSrc,
+    /pendingTabRef\.current = nextTabId;[\s\S]*?retrySimilarList\(\)/,
+    "B4: clicking Practise a similar question while list is unloaded must queue tab and retry list"
   );
   assert.equal(
     deriveVariantStatus(
@@ -527,12 +545,87 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /cursor-not-allowed/);
+
+  // B4: Unlocked strip with failed list load shows quiet error + Retry action instead of permanent "Answer Question N first" lock
+  const listErrorStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q02"
+      questionNumber={2}
+      realStatus="wrong"
+      tabs={[]}
+      selectedTab="q"
+      locked={false}
+      listError={SIMILAR_LIST_ERROR_MESSAGE}
+      onRetryList={noop}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(listErrorStripHtml, /data-similar-list-error="true"/);
+  assert.match(listErrorStripHtml, /Couldn&#x27;t load similar questions\./);
+  assert.match(listErrorStripHtml, />Retry</);
+  assert.doesNotMatch(
+    listErrorStripHtml,
+    /Answer Question 2 first/,
+    "failed list load must NOT show locked 'Answer Question N first' tooltip"
+  );
+  assert.doesNotMatch(
+    listErrorStripHtml,
+    /aria-disabled="true"/,
+    "failed list load must NOT render locked ghost tabs"
+  );
+
+  // Loading state while list is fetching after unlock must also not render fake lock tooltip
+  const listLoadingStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q02"
+      questionNumber={2}
+      realStatus="wrong"
+      tabs={[]}
+      selectedTab="q"
+      locked={false}
+      loadingList={true}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(listLoadingStripHtml, /Loading similar\.\.\./);
+  assert.doesNotMatch(listLoadingStripHtml, /Answer Question 2 first/);
 }
 
 // ---------------------------------------------------------------------------
 // 4. MathWorkspace SSR states (untouched locked strip, usedHelp before attempt, R wrong #1/#2, R correct, bank empty)
 // ---------------------------------------------------------------------------
 {
+  // Unlocked question whose similarSlots have not loaded yet must NOT show locked ghost tabs
+  const unlockedBeforeListHtml = renderToStaticMarkup(
+    <MathWorkspace
+      problem={makeProblem({
+        state: baseState({
+          userInput: "1/2",
+          score: 0,
+          lastCheck: { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+          attempts: [{ input: "1/2", ts: "2026-11-19T10:00:00Z", verdict: "incorrect" }],
+        }),
+      })}
+      drillId="DRL-MTH-T01-C04-01"
+      index={1}
+      totalQuestions={6}
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(
+    unlockedBeforeListHtml,
+    /Answer Question 2 first/,
+    "answered question must not show locked 'Answer Question N first' even while tabs array is empty"
+  );
   const untouchedHtml = renderToStaticMarkup(
     <MathWorkspace
       problem={makeProblem({ similarCount: 3 })}
@@ -1652,16 +1745,145 @@ async function testReviewCycleIsolation() {
     true,
     "Show steps before a correct answer must persist to server even when steps are already cached"
   );
-  const hookSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
-  assert.match(
-    hookSrc,
-    /if \(!needsFetchSteps\)[\s\S]{0,650}action:\s*"reveal-steps"/,
-    "handleSimilarSolutionRevealed must POST action:'reveal-steps' even when steps are already cached"
-  );
+}
+
+async function testExecuteSimilarStepsReveal() {
+  // 1. Cached steps + wrong attempt (!hasCorrect): MUST POST reveal-steps idempotently, must NOT re-fetch /api/reveal
+  const calls1: Array<{ url: string; method: string; body?: string }> = [];
+  const mockFetch1 = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    calls1.push({
+      url,
+      method: (init?.method || "GET").toUpperCase(),
+      body: typeof init?.body === "string" ? init.body : undefined,
+    });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+
+  const cachedWrongProb = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 0,
+      solutionRevealedBeforeAnswer: false,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res1 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedWrongProb,
+    fetchFn: mockFetch1,
+  });
+  assert.equal(res1.recordedServerReveal, true);
+  assert.equal(res1.fetchedSteps, false);
+  assert.equal(res1.stepsPatch, null);
+  assert.equal(calls1.length, 1);
+  assert.equal(calls1[0].url, "/api/variant");
+  assert.equal(calls1[0].method, "POST");
+  assert.deepEqual(JSON.parse(calls1[0].body || "{}"), {
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    variantToken: "vtok1",
+    action: "reveal-steps",
+  });
+
+  // 2. Cached steps + local solutionRevealedBeforeAnswer already true (e.g. retry after transient network error):
+  //    still sends idempotent POST reveal-steps because !hasCorrect
+  const calls2: string[] = [];
+  const mockFetch2 = (async (input: RequestInfo | URL) => {
+    calls2.push(typeof input === "string" ? input : input.toString());
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const cachedAlreadyFlagged = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 0,
+      solutionRevealedBeforeAnswer: true,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res2 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedAlreadyFlagged,
+    fetchFn: mockFetch2,
+  });
+  assert.equal(res2.recordedServerReveal, true);
+  assert.deepEqual(calls2, ["/api/variant"]);
+
+  // 3. Cached steps + already solved (hasCorrect): calls neither endpoint
+  const calls3: string[] = [];
+  const mockFetch3 = (async (input: RequestInfo | URL) => {
+    calls3.push(typeof input === "string" ? input : input.toString());
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const cachedSolved = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 1,
+      attempts: [{ input: "7/30", ts: "2026-11-20T01:00:00.000Z", verdict: "correct", kind: "variant" }],
+    }),
+  });
+  const res3 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedSolved,
+    fetchFn: mockFetch3,
+  });
+  assert.equal(res3.recordedServerReveal, false);
+  assert.equal(res3.fetchedSteps, false);
+  assert.deepEqual(calls3, []);
+
+  // 4. Uncached steps + wrong attempt: records POST reveal-steps BEFORE GET /api/reveal?part=steps
+  const calls4: string[] = [];
+  const mockFetch4 = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    const method = (init?.method || "GET").toUpperCase();
+    calls4.push(`${method} ${url}`);
+    if (url.startsWith("/api/reveal")) {
+      return new Response(
+        JSON.stringify({
+          steps: [{ latex: "7/30", explain: "Simplify." }],
+          answerDisplay: "\\frac{7}{30}",
+          answerPlain: "7/30",
+        }),
+        { status: 200 }
+      );
+    }
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const uncachedWrong = makeProblem({
+    id: "vtok1",
+    state: baseState({
+      score: 0,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res4 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: uncachedWrong,
+    fetchFn: mockFetch4,
+  });
+  assert.equal(res4.recordedServerReveal, true);
+  assert.equal(res4.fetchedSteps, true);
+  assert.equal(res4.stepsPatch?.steps.length, 1);
+  assert.equal(res4.stepsPatch?.answerPlain, "7/30");
+  assert.equal(calls4.length, 2);
+  assert.equal(calls4[0], "POST /api/variant");
+  assert.match(calls4[1], /^GET \/api\/reveal\?.*part=steps/);
 }
 
 testV1Migration()
   .then(() => testReviewCycleIsolation())
+  .then(() => testExecuteSimilarStepsReveal())
   .then(() => {
     console.log("PASS: similarTabs.test.tsx (state model, cycle rule, migration, ARIA, copy, deep link, Review & Sync)");
   })

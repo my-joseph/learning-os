@@ -7,11 +7,13 @@ import {
 } from "@/lib/reviewGuard";
 import { isLockedAfterCorrect, scoreProblem, scoreVariant } from "@/lib/scoring";
 import {
+  cycleOriginalAttempts,
   deriveRealTabStatus,
   deriveTabStatuses,
   deriveVariantStatus,
   isInCycle,
   parseTabParam,
+  pickNextUntriedOrWrongTab,
   resolveInitialTab,
   SimilarSlotNumber,
   SimilarTabId,
@@ -324,10 +326,102 @@ export function applySimilarHintToLatestProblem(
   return { nextProblem, nextRecord, didIncrement: !hasCorrect };
 }
 
-/** Return true when opening steps on a similar tab must persist `stepsRevealed` to the server. */
+/** Return true when opening steps on a similar tab must mark local help and persist `stepsRevealed`. */
 export function shouldPersistVariantStepsReveal(prob: Problem): boolean {
   const hasCorrect = isLockedAfterCorrect(prob.state, { isVariant: true });
   return !hasCorrect && !prob.state.solutionRevealedBeforeAnswer;
+}
+
+/**
+ * Record a similar-tab steps reveal on the server (idempotent whenever not yet solved)
+ * BEFORE and INDEPENDENT of fetching steps, then fetch steps only if not already loaded.
+ */
+export async function executeSimilarStepsReveal(params: {
+  drillId: string;
+  qid: string;
+  token: string;
+  existing: Problem;
+  fetchFn?: typeof fetch;
+}): Promise<{
+  recordedServerReveal: boolean;
+  fetchedSteps: boolean;
+  stepsPatch: {
+    steps: Step[];
+    answerDisplay: string;
+    answerPlain: string;
+  } | null;
+}> {
+  const { drillId, qid, token, existing, fetchFn = fetch } = params;
+  const hasCorrect = isLockedAfterCorrect(existing.state, { isVariant: true });
+  const needsFetchSteps = !existing.steps || existing.steps.length === 0;
+  let recordedServerReveal = false;
+
+  if (!hasCorrect) {
+    try {
+      const res = await fetchFn("/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          qid,
+          variantToken: token,
+          action: "reveal-steps",
+        }),
+      });
+      recordedServerReveal = res.ok;
+    } catch {
+      // ignore transient error; next reveal will retry idempotently
+    }
+  }
+
+  if (!needsFetchSteps) {
+    return {
+      recordedServerReveal,
+      fetchedSteps: false,
+      stepsPatch: null,
+    };
+  }
+
+  const qs = new URLSearchParams({
+    drillId,
+    qid,
+    variantToken: token,
+    part: "steps",
+  });
+  const res = await fetchFn(`/api/reveal?${qs.toString()}`);
+  if (!res.ok) {
+    return {
+      recordedServerReveal,
+      fetchedSteps: true,
+      stepsPatch: null,
+    };
+  }
+  const data = (await res.json()) as {
+    steps?: Step[];
+    answerDisplay?: string;
+    answerPlain?: string;
+  };
+  return {
+    recordedServerReveal,
+    fetchedSteps: true,
+    stepsPatch: {
+      steps: Array.isArray(data.steps) ? data.steps : [],
+      answerDisplay: data.answerDisplay || data.answerPlain || "",
+      answerPlain: data.answerPlain || "",
+    },
+  };
+}
+
+export const SIMILAR_LIST_RETRY_DELAYS_MS = [1_500, 3_000] as const;
+export const SIMILAR_LIST_ERROR_MESSAGE = "Couldn't load similar questions.";
+
+/** Return the backoff delay (ms) for the Nth failed `mode=list` fetch (1-based), or null once retries are exhausted. */
+export function getSimilarListRetryDelayMs(failureCount: number): number | null {
+  if (!Number.isFinite(failureCount) || failureCount < 1) return null;
+  const idx = Math.trunc(failureCount) - 1;
+  return idx < SIMILAR_LIST_RETRY_DELAYS_MS.length
+    ? SIMILAR_LIST_RETRY_DELAYS_MS[idx]
+    : null;
 }
 
 export interface UseSimilarTabsOptions {
@@ -364,12 +458,19 @@ export function useSimilarTabs({
     drillId && problem.hasVariants && similarUnlock(problem.state)
   );
   const cycleKey = problem.state.cycleStartedAt ?? "";
+  const cycleSubstantiveCount = cycleOriginalAttempts(problem.state).filter((a) =>
+    isSubstantiveVerdict(a.verdict)
+  ).length;
+  const unlockSignal = `${cycleSubstantiveCount}:${problem.state.skipped ? 1 : 0}`;
 
   const [selectedTab, setSelectedTab] = useState<SimilarTabId>("q");
   const [tabs, setTabs] = useState<SimilarTabSummary[]>(() =>
     isUnlocked ? deriveTabStatuses(problem.state) : []
   );
   const [listEmpty, setListEmpty] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+  const [isLoadingList, setIsLoadingList] = useState(false);
+  const [listFetchNonce, setListFetchNonce] = useState(0);
   const [tabProblems, setTabProblems] = useState<Record<string, Problem>>({});
   const [loadingTabToken, setLoadingTabToken] = useState<string | null>(null);
   const [tabErrors, setTabErrors] = useState<Record<string, string>>({});
@@ -405,9 +506,31 @@ export function useSimilarTabs({
   const tabProblemsRef = useRef<Record<string, Problem>>(tabProblems);
   tabProblemsRef.current = tabProblems;
   const tabServedAtRef = useRef<Record<string, string>>({});
+  const listEmptyRef = useRef(listEmpty);
+  listEmptyRef.current = listEmpty;
+  const listLoadingRef = useRef(false);
+  const listRetryTimerRef = useRef<number | null>(null);
+  const autoRetryCountRef = useRef(0);
+  const pendingTabRef = useRef<SimilarTabId | null>(null);
+  const lastUnlockSignalRef = useRef(unlockSignal);
+  const fetchedListKeyRef = useRef<string | null>(null);
   const questionKey = `${drillId ?? ""}:${problem.id}`;
   const questionKeyRef = useRef(questionKey);
   questionKeyRef.current = questionKey;
+
+  const clearListRetryTimer = useCallback(() => {
+    if (listRetryTimerRef.current !== null) {
+      window.clearTimeout(listRetryTimerRef.current);
+      listRetryTimerRef.current = null;
+    }
+  }, []);
+
+  const retrySimilarList = useCallback(() => {
+    clearListRetryTimer();
+    autoRetryCountRef.current = 0;
+    fetchedListKeyRef.current = null;
+    setListFetchNonce((n) => n + 1);
+  }, [clearListRetryTimer]);
 
   const updateTabProblem = useCallback(
     (tok: string, updater: (cur: Problem) => Problem): Problem | null => {
@@ -587,6 +710,7 @@ export function useSimilarTabs({
       syncTabUrlParam(nextTabId, isReviewSession);
 
       if (nextTabId === "q") {
+        pendingTabRef.current = null;
         const realStatus = deriveRealTabStatus(problemStateRef.current);
         setAnnouncement(
           `Question ${questionNumber}${tabStatusAccessibleSuffix(realStatus)}`
@@ -605,8 +729,15 @@ export function useSimilarTabs({
       if (!targetTab) {
         setSelectedTab("q");
         syncTabUrlParam("q", isReviewSession);
+        if (isUnlockedRef.current && tabsRef.current.length === 0 && !listEmptyRef.current) {
+          pendingTabRef.current = nextTabId;
+          if (!listLoadingRef.current) {
+            retrySimilarList();
+          }
+        }
         return;
       }
+      pendingTabRef.current = null;
 
       const cached = opts?.forceRefetch ? undefined : tabProblemsRef.current[targetTab.token];
       if (cached) {
@@ -633,14 +764,28 @@ export function useSimilarTabs({
         void openTokenFromServer(targetTab, { announce: true, focusOnLoad: true });
       }
     },
-    [flushActiveSimilarDuration, isReviewSession, openTokenFromServer, questionNumber]
+    [
+      flushActiveSimilarDuration,
+      isReviewSession,
+      openTokenFromServer,
+      questionNumber,
+      retrySimilarList,
+    ]
   );
 
   // Reset per-question state when switching to a different question or cycle.
   useEffect(() => {
+    clearListRetryTimer();
+    autoRetryCountRef.current = 0;
+    pendingTabRef.current = null;
+    listLoadingRef.current = false;
+    fetchedListKeyRef.current = null;
+    lastUnlockSignalRef.current = unlockSignal;
     setSelectedTab("q");
     setShowingExample(false);
     setListEmpty(false);
+    setListError(null);
+    setIsLoadingList(false);
     setTabProblems({});
     setTabErrors({});
     setLoadingTabToken(null);
@@ -667,16 +812,23 @@ export function useSimilarTabs({
       setTabs(deriveTabStatuses(problem.state));
     }
     return () => {
+      clearListRetryTimer();
       flushActiveSimilarDuration();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drillId, problem.id, cycleKey]);
 
-  // Fetch mode=list once unlocked (and hydrate initial ?tab= / ?similar=1 or WorkedExampleDisclosure).
-  const fetchedListKeyRef = useRef<string | null>(null);
+  // Fetch mode=list once unlocked (with bounded backoff + retry on next answer/open).
   useEffect(() => {
     if (!isUnlocked || !drillId) {
+      clearListRetryTimer();
+      autoRetryCountRef.current = 0;
+      pendingTabRef.current = null;
+      listLoadingRef.current = false;
       fetchedListKeyRef.current = null;
+      lastUnlockSignalRef.current = unlockSignal;
+      setListError(null);
+      setIsLoadingList(false);
       setTabs([]);
       if (selectedTabRef.current !== "q") {
         setSelectedTab("q");
@@ -693,9 +845,19 @@ export function useSimilarTabs({
     }
 
     const listKey = `${drillId}:${problem.id}:${cycleKey}`;
-    if (fetchedListKeyRef.current === listKey && tabsRef.current.length > 0) {
+    if (lastUnlockSignalRef.current !== unlockSignal) {
+      lastUnlockSignalRef.current = unlockSignal;
+      if (tabsRef.current.length === 0 && !listEmptyRef.current) {
+        // New answer submitted while list was not yet loaded: reset backoff and retry immediately.
+        clearListRetryTimer();
+        autoRetryCountRef.current = 0;
+        fetchedListKeyRef.current = null;
+      }
+    }
+
+    if (fetchedListKeyRef.current === listKey && (tabsRef.current.length > 0 || listEmptyRef.current)) {
       // Already loaded list for this question/cycle; handle late autoOpenSimilar if triggered.
-      if (autoOpenSimilar) {
+      if (autoOpenSimilar && tabsRef.current.length > 0) {
         onAutoOpenSimilarConsumedRef.current?.();
         const targetId = resolveInitialTab({
           unlocked: true,
@@ -710,7 +872,23 @@ export function useSimilarTabs({
     }
 
     let cancelled = false;
+    clearListRetryTimer();
     fetchedListKeyRef.current = listKey;
+    listLoadingRef.current = true;
+    setIsLoadingList(true);
+
+    const scheduleFailureRetry = () => {
+      fetchedListKeyRef.current = null;
+      setListError(SIMILAR_LIST_ERROR_MESSAGE);
+      autoRetryCountRef.current += 1;
+      const delay = getSimilarListRetryDelayMs(autoRetryCountRef.current);
+      if (delay !== null && typeof window !== "undefined") {
+        listRetryTimerRef.current = window.setTimeout(() => {
+          listRetryTimerRef.current = null;
+          setListFetchNonce((n) => n + 1);
+        }, delay);
+      }
+    };
 
     const run = async () => {
       try {
@@ -728,16 +906,25 @@ export function useSimilarTabs({
         });
         if (cancelled) return;
         if (!res.ok) {
-          fetchedListKeyRef.current = null;
+          scheduleFailureRetry();
           return;
         }
         const data = (await res.json()) as ListApiResponse;
         if (cancelled) return;
 
-        if (!data.unlocked || !Array.isArray(data.tabs) || data.tabs.length === 0) {
+        if (!data.unlocked) {
+          // Client is unlocked but server did not see the unlock yet (e.g. save still landing): retry.
           setTabs([]);
-          setListEmpty(Boolean(data.unlocked));
-          fetchedListKeyRef.current = null;
+          scheduleFailureRetry();
+          return;
+        }
+
+        if (!Array.isArray(data.tabs) || data.tabs.length === 0) {
+          setTabs([]);
+          setListEmpty(true);
+          setListError(null);
+          autoRetryCountRef.current = 0;
+          pendingTabRef.current = null;
           if (autoOpenSimilar) onAutoOpenSimilarConsumedRef.current?.();
           const intent = readUrlTabIntent(isReviewSession);
           if (intent.tabParam !== null || intent.similarParam) {
@@ -747,6 +934,8 @@ export function useSimilarTabs({
         }
 
         setListEmpty(false);
+        setListError(null);
+        autoRetryCountRef.current = 0;
         setTabs(data.tabs);
         tabsRef.current = data.tabs;
         onSimilarProgressSyncRef.current?.({
@@ -782,6 +971,20 @@ export function useSimilarTabs({
             });
         }
 
+        const pendingTab = pendingTabRef.current;
+        pendingTabRef.current = null;
+        if (pendingTab && pendingTab !== "q") {
+          const matchedPending = data.tabs.find(
+            (t) => slotToTabId(t.slot) === pendingTab
+          );
+          const fallbackTab = pickNextUntriedOrWrongTab(data.tabs) ?? data.tabs[0];
+          const chosen = matchedPending ?? fallbackTab;
+          if (chosen) {
+            selectTab(slotToTabId(chosen.slot));
+            return;
+          }
+        }
+
         const intent = readUrlTabIntent(isReviewSession);
         const wantsDeepLink = Boolean(autoOpenSimilar || intent.similarParam);
         if (autoOpenSimilar) {
@@ -799,7 +1002,14 @@ export function useSimilarTabs({
           syncTabUrlParam("q", isReviewSession);
         }
       } catch {
-        fetchedListKeyRef.current = null;
+        if (!cancelled) {
+          scheduleFailureRetry();
+        }
+      } finally {
+        if (!cancelled) {
+          listLoadingRef.current = false;
+          setIsLoadingList(false);
+        }
       }
     };
 
@@ -807,15 +1017,20 @@ export function useSimilarTabs({
 
     return () => {
       cancelled = true;
+      listLoadingRef.current = false;
+      clearListRetryTimer();
     };
   }, [
     autoOpenSimilar,
+    clearListRetryTimer,
     cycleKey,
     drillId,
     isReviewSession,
     isUnlocked,
+    listFetchNonce,
     problem.id,
     selectTab,
+    unlockSignal,
   ]);
 
   // Run per-similar-tab timer only while on a similar tab, unpaused, loaded, and not solved.
@@ -1231,9 +1446,6 @@ export function useSimilarTabs({
     const existing = tabProblemsRef.current[tok];
     if (!existing) return;
     const targetQuestionKey = questionKeyRef.current;
-    const hasSubstantive = (existing.state.attempts || []).some((a) =>
-      isSubstantiveVerdict(a.verdict)
-    );
     const shouldPersist = shouldPersistVariantStepsReveal(existing);
     if (shouldPersist) {
       const updated = updateTabProblem(tok, (cur) => ({
@@ -1248,64 +1460,29 @@ export function useSimilarTabs({
       }
     }
     const needsFetchSteps = !existing.steps || existing.steps.length === 0;
-    if (!needsFetchSteps) {
-      // Steps were already cached locally (e.g. reopened after a wrong attempt),
-      // so still persist `stepsRevealed` on the server so status survives reload.
-      if (shouldPersist) {
-        try {
-          await fetch("/api/variant", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              drillId,
-              qid: problem.id,
-              variantToken: tok,
-              action: "reveal-steps",
-            }),
-          });
-        } catch {
-          // ignore transient error
-        }
-      }
-      return;
+    if (needsFetchSteps) {
+      setLoadingSteps(true);
     }
-    setLoadingSteps(true);
     try {
-      if (shouldPersist || !hasSubstantive) {
-        await fetch("/api/variant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            drillId,
-            qid: problem.id,
-            variantToken: tok,
-            action: "reveal-steps",
-          }),
-        });
-      }
-      if (questionKeyRef.current !== targetQuestionKey) return;
-      const qs = new URLSearchParams({
+      const { stepsPatch } = await executeSimilarStepsReveal({
         drillId,
         qid: problem.id,
-        variantToken: tok,
-        part: "steps",
+        token: tok,
+        existing,
       });
-      const res = await fetch(`/api/reveal?${qs.toString()}`);
-      if (!res.ok || questionKeyRef.current !== targetQuestionKey) return;
-      const data = (await res.json()) as {
-        steps?: Step[];
-        answerDisplay?: string;
-        answerPlain?: string;
-      };
-      if (questionKeyRef.current !== targetQuestionKey) return;
+      if (!stepsPatch || questionKeyRef.current !== targetQuestionKey) return;
       updateTabProblem(tok, (cur) => ({
         ...cur,
-        steps: Array.isArray(data.steps) ? data.steps : [],
-        answerDisplay: data.answerDisplay || data.answerPlain || "",
-        answerPlain: data.answerPlain || "",
+        steps: stepsPatch.steps,
+        answerDisplay: stepsPatch.answerDisplay,
+        answerPlain: stepsPatch.answerPlain,
       }));
+    } catch {
+      // ignore transient error
     } finally {
-      setLoadingSteps(false);
+      if (needsFetchSteps) {
+        setLoadingSteps(false);
+      }
     }
   }, [drillId, problem.id, syncSimilarHelpStatus, updateTabProblem]);
 
@@ -1376,12 +1553,18 @@ export function useSimilarTabs({
   }, [drillId, problem.id]);
 
   const resetAllVariantUi = useCallback(() => {
+    clearListRetryTimer();
+    autoRetryCountRef.current = 0;
+    pendingTabRef.current = null;
+    listLoadingRef.current = false;
     fetchedListKeyRef.current = null;
     tabProblemsRef.current = {};
     tabServedAtRef.current = {};
     setSelectedTab("q");
     setShowingExample(false);
     setListEmpty(false);
+    setListError(null);
+    setIsLoadingList(false);
     setTabs([]);
     setTabProblems({});
     setTabErrors({});
@@ -1396,11 +1579,13 @@ export function useSimilarTabs({
     setIsSimilarPaused(false);
     similarTickStartRef.current = null;
     syncTabUrlParam("q", isReviewSession);
-  }, [isReviewSession]);
+  }, [clearListRetryTimer, isReviewSession]);
 
   return {
     isUnlocked,
     listEmpty,
+    listError,
+    isLoadingList,
     selectedTab,
     tabs,
     activeSimilarTab,
@@ -1425,6 +1610,7 @@ export function useSimilarTabs({
       setIsSimilarPaused((prev) => !prev);
     },
     selectTab,
+    retrySimilarList,
     retryActiveTab,
     openWorkedExample,
     closeWorkedExample,

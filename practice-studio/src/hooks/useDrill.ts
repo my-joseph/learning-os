@@ -13,6 +13,7 @@ import {
 import {
   hasSubstantiveAttempt,
   isSubstantiveVerdict,
+  isTimestampInCycle,
   sanitizeCheckMessage,
 } from "@/lib/reviewGuard";
 import {
@@ -272,14 +273,30 @@ export function computeSetupRevealTransition(
 } | null {
   const target = currentDrill.problems.find((p) => p.id === probId);
   if (!target) return null;
-  const shouldMarkAssisted =
-    !hasSubstantiveAttempt(target.state) && !target.state.setupRevealedBeforeAnswer;
+  const cycleStartedAt = target.state.cycleStartedAt;
+  const alreadyRevealedInCycle = cycleStartedAt
+    ? Boolean(
+        target.state.reviewSetupRevealedAt &&
+          isTimestampInCycle(target.state.reviewSetupRevealedAt, cycleStartedAt)
+      )
+    : Boolean(target.state.setupRevealedBeforeAnswer);
+  const shouldMarkAssisted = !hasSubstantiveAttempt(target.state) && !alreadyRevealedInCycle;
+  const nowIso = new Date().toISOString();
+  const revealTs =
+    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
         ...currentDrill,
         problems: currentDrill.problems.map((p) =>
           p.id === probId
-            ? { ...p, state: { ...p.state, setupRevealedBeforeAnswer: true } }
+            ? {
+                ...p,
+                state: {
+                  ...p.state,
+                  setupRevealedBeforeAnswer: true,
+                  ...(cycleStartedAt ? { reviewSetupRevealedAt: revealTs } : {}),
+                },
+              }
             : p
         ),
       }
@@ -305,13 +322,30 @@ export function computeSolutionRevealTransition(
   const target = currentDrill.problems.find((p) => p.id === probId);
   if (!target) return null;
   const hasCorrect = isLockedAfterCorrect(target.state);
-  const shouldMarkAssisted = !hasCorrect && !target.state.solutionRevealedBeforeAnswer;
+  const cycleStartedAt = target.state.cycleStartedAt;
+  const alreadyRevealedInCycle = cycleStartedAt
+    ? Boolean(
+        target.state.reviewStepsRevealedAt &&
+          isTimestampInCycle(target.state.reviewStepsRevealedAt, cycleStartedAt)
+      )
+    : Boolean(target.state.solutionRevealedBeforeAnswer);
+  const shouldMarkAssisted = !hasCorrect && !alreadyRevealedInCycle;
+  const nowIso = new Date().toISOString();
+  const revealTs =
+    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
         ...currentDrill,
         problems: currentDrill.problems.map((p) =>
           p.id === probId
-            ? { ...p, state: { ...p.state, solutionRevealedBeforeAnswer: true } }
+            ? {
+                ...p,
+                state: {
+                  ...p.state,
+                  solutionRevealedBeforeAnswer: true,
+                  ...(cycleStartedAt ? { reviewStepsRevealedAt: revealTs } : {}),
+                },
+              }
             : p
         ),
       }
