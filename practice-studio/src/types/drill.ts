@@ -268,12 +268,14 @@ export interface ProblemState {
   /** Set when the learner opens the step-by-step solution before the first correct answer. */
   solutionRevealedBeforeAnswer?: boolean;
   durationMs?: number;
-  /** Server-side variant sessions keyed by opaque per-problem token (e.g. "v1", "v2"). */
+  /** Server-side variant sessions keyed by opaque per-problem token (e.g. "vk3m9x2"). */
   variants?: Record<string, VariantSessionRecord>;
-  /** Opaque token of the currently active similar question, or null when none is open. */
-  activeVariant?: string | null;
+  /** Server-allocated opaque tokens for Similar 1..3 in tab order (max 3). */
+  similarSlots?: string[];
   /** ISO timestamp when a worked example was first viewed for this problem. */
   exampleViewedAt?: string | null;
+  /** ISO timestamp marking the start of the current review cycle (set on review retry). */
+  cycleStartedAt?: string | null;
   /** Server-derived backward-compat list of bank variant IDs served (stripped before sending to browser). */
   variantsSeen?: string[];
   /** Server-derived backward-compat list of bank variant IDs substantively attempted (stripped before sending to browser). */
@@ -311,6 +313,7 @@ export interface Problem {
   display?: string;
   plainText?: string;
   hasSetup?: boolean;
+  hasHint?: boolean;
   hasVariants?: boolean;
   codeSnippet?: string;
   language?: string;
@@ -439,7 +442,7 @@ export interface DrillListItem {
 }
 
 export interface RedactedVariant {
-  /** Opaque per-problem handle (e.g. "v1"), never the bank variantId or archetype name. */
+  /** Opaque per-problem handle (e.g. "vk3m9x2"), never the bank variantId or archetype name. */
   token: string;
   id: string;
   level: number;
@@ -452,8 +455,8 @@ export interface RedactedVariant {
   answerSpec: AnswerSpec;
   inputHint?: string;
   placeholder?: string;
-  checkpointHint?: string;
   hasSetup?: boolean;
+  hasHint?: boolean;
 }
 
 export interface WorkedExampleVariant {

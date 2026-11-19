@@ -1,7 +1,10 @@
+import crypto from "crypto";
 import { loadVariantBankFromDisk } from "./paths";
 import { ProblemState, VariantSessionRecord } from "@/types/drill";
 
-/** Collect every bank `variantId` already seen for a problem (both `try` and `example` roles). */
+const TOKEN_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+/** Collect every bank `variantId` already seen/served for a problem (both `try` and `example` roles). */
 export function collectSeenVariantIds(state?: ProblemState | null): string[] {
   const seen = new Set<string>();
   if (Array.isArray(state?.variantsSeen)) {
@@ -11,7 +14,12 @@ export function collectSeenVariantIds(state?: ProblemState | null): string[] {
   }
   if (state?.variants && typeof state.variants === "object") {
     for (const rec of Object.values(state.variants)) {
-      if (rec && typeof rec.variantId === "string" && rec.variantId) {
+      if (
+        rec &&
+        typeof rec.variantId === "string" &&
+        rec.variantId &&
+        (Boolean(rec.servedAt) || (Array.isArray(rec.attempts) && rec.attempts.length > 0))
+      ) {
         seen.add(rec.variantId);
       }
     }
@@ -19,21 +27,23 @@ export function collectSeenVariantIds(state?: ProblemState | null): string[] {
   return Array.from(seen);
 }
 
-/** Allocate the next opaque per-problem handle ("v1", "v2", ...) that never reveals the bank variantId. */
-export function allocateNextVariantToken(
+/** Generate a random-suffixed opaque per-problem token (`v` + 6 base36 chars, unique per problem). */
+export function generateVariantToken(
   variants?: Record<string, VariantSessionRecord> | null
 ): string {
-  let maxNum = 0;
-  if (variants && typeof variants === "object") {
-    for (const key of Object.keys(variants)) {
-      const m = /^v(\d+)$/.exec(key);
-      if (m) {
-        const n = Number(m[1]);
-        if (Number.isFinite(n) && n > maxNum) maxNum = n;
-      }
+  const existing = new Set(
+    variants && typeof variants === "object" ? Object.keys(variants) : []
+  );
+  for (let attempt = 0; attempt < 64; attempt += 1) {
+    const bytes = crypto.randomBytes(6);
+    let suffix = "";
+    for (let i = 0; i < 6; i += 1) {
+      suffix += TOKEN_ALPHABET[bytes[i] % TOKEN_ALPHABET.length];
     }
+    const token = `v${suffix}`;
+    if (!existing.has(token)) return token;
   }
-  return `v${maxNum + 1}`;
+  return `v${Date.now().toString(36).slice(-6)}`;
 }
 
 function normPrompt(val: unknown): string {
@@ -129,40 +139,17 @@ export function hasVariantsForProblem(
   return findVariantsForProblem(doc, problem, bankCache).length > 0;
 }
 
-/** Pick the first unseen variant for `mode=try`, returning null if all have been seen. */
-export function pickUnseenVariant(
-  variants: Array<Record<string, unknown>>,
-  variantsSeen: string[]
-): { variant: Record<string, unknown>; remainingCount: number } | null {
-  const seenSet = new Set(variantsSeen);
-  const unseen = variants.filter(
-    (v) => typeof v.variantId === "string" && !seenSet.has(v.variantId)
-  );
-  if (unseen.length === 0) return null;
-  return {
-    variant: unseen[0],
-    remainingCount: unseen.length - 1,
-  };
-}
-
 /**
- * Pick one variant for `mode=example` (fully solved), preferring one that does not
- * match `excludeVariantId` (so an open "Try a similar question" is not spoiled) and
- * preferring an unseen variant when available.
+ * Pick one variant for `mode=example` (fully solved), preferring an unseen variant when available.
  */
 export function pickExampleVariant(
   variants: Array<Record<string, unknown>>,
-  variantsSeen: string[],
-  excludeVariantId?: string | null
+  variantsSeen: string[]
 ): Record<string, unknown> | null {
   if (variants.length === 0) return null;
   const seenSet = new Set(variantsSeen);
-  const notExcluded = excludeVariantId
-    ? variants.filter((v) => v.variantId !== excludeVariantId)
-    : variants;
-  const pool = notExcluded.length > 0 ? notExcluded : variants;
-  const unseen = pool.find(
+  const unseen = variants.find(
     (v) => typeof v.variantId === "string" && !seenSet.has(v.variantId)
   );
-  return unseen ?? pool[0];
+  return unseen ?? variants[0];
 }

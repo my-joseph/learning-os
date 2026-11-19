@@ -16,6 +16,8 @@ import {
   canShowReferenceSolution,
   isSubstantiveVerdict,
 } from "./reviewGuard";
+import { cycleAttempts } from "./similarTabs";
+import { hasCheckpointHint } from "./studioRules";
 
 /**
  * Secret fields stripped by `redactProblem` / `redactDrill` before sending a drill to the browser:
@@ -157,19 +159,27 @@ export function isPartUnlocked(part: RevealPart, state?: ProblemState | null): b
   return false;
 }
 
-/** Unlock rule for variant step-by-step derivation: after a substantive attempt or explicit reveal/give-up. */
-export function canRevealVariantSteps(record?: VariantSessionRecord | null): boolean {
+/** Unlock rule for variant step-by-step derivation: after a substantive attempt in the current cycle or explicit reveal/give-up. */
+export function canRevealVariantSteps(
+  record?: VariantSessionRecord | null,
+  cycleStartedAt?: string | null
+): boolean {
   if (!record) return false;
-  if (record.stepsRevealed) return true;
-  if (Array.isArray(record.attempts) && record.attempts.some((a) => isSubstantiveVerdict(a?.verdict))) {
+  const attemptsInCycle = cycleAttempts(record.attempts, cycleStartedAt);
+  if (attemptsInCycle.some((a) => isSubstantiveVerdict(a?.verdict))) {
     return true;
+  }
+  if (record.stepsRevealed) {
+    if (!cycleStartedAt) return true;
+    if (record.servedAt && record.servedAt >= cycleStartedAt) return true;
   }
   return false;
 }
 
 /**
- * Strip bank `variantId`s, `variantsSeen`/`variantsAttempted`, and variant trap tags from `ProblemState`
- * before sending it to the browser so method/archetype names never leak.
+ * Strip bank `variantId`s, `variantsSeen`/`variantsAttempted`, legacy `activeVariant`,
+ * and variant trap tags from `ProblemState` before sending it to the browser so
+ * method/archetype names never leak.
  */
 export function redactProblemStateForClient(
   state?: ProblemState | null
@@ -178,6 +188,7 @@ export function redactProblemStateForClient(
   const copy: ProblemState = { ...state };
   delete copy.variantsSeen;
   delete copy.variantsAttempted;
+  delete (copy as unknown as Record<string, unknown>).activeVariant;
   if (state.variants && typeof state.variants === "object") {
     const cleanVariants: Record<string, VariantSessionRecord> = {};
     for (const [token, rec] of Object.entries(state.variants)) {
@@ -561,6 +572,10 @@ export function redactVariantForTry(
     redacted.answerSpec = specCopy;
   }
 
+  const hasHint = hasCheckpointHint(
+    typeof variant.checkpointHint === "string" ? variant.checkpointHint : undefined
+  );
+
   return {
     token: safeToken,
     id: safeToken,
@@ -575,6 +590,7 @@ export function redactVariantForTry(
     ...(typeof redacted.inputHint === "string" ? { inputHint: redacted.inputHint } : {}),
     ...(typeof redacted.placeholder === "string" ? { placeholder: redacted.placeholder } : {}),
     hasSetup: Boolean(redacted.hasSetup),
+    hasHint,
   };
 }
 
