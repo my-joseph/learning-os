@@ -1,0 +1,1613 @@
+{
+  "unitCode": "MTH-T02-C01-U03",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-01",
+      "sourceArchetype": "t02-c01-u03-rational-exponent-equations",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $(x - 2)^{2/3} = 9$ over $\\mathbb{R}$.",
+      "display": "(x - 2)^{2/3} = 9",
+      "plainText": "(x - 2)^(2/3) = 9",
+      "givens": {
+        "h": 2,
+        "p": 2,
+        "q": 3,
+        "k": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        9
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-25",
+          "29"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-25, 29",
+      "answerDisplay": "\\{-25, 29\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-omitted-pm-even-numerator-trap",
+      "trapDerivation": "2 + 9^(3/2)",
+      "trapValue": "29",
+      "verify": {
+        "source": "2 + 9^(3/2)",
+        "trapValue": "29"
+      },
+      "checkpointHint": "Because the numerator of the rational exponent is even, include both positive and negative branches when raising both sides to the reciprocal power.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x - 2 = \\pm 9^{3/2}",
+          "explain": "Raise both sides to the reciprocal exponent 3/2, including both signs because the numerator 2 is even.",
+          "eq": [
+            "3^3",
+            "27"
+          ]
+        },
+        {
+          "latex": "x - 2 = \\pm 27",
+          "explain": "Evaluate 9^(3/2) as (sqrt(9))^3 = 27.",
+          "eq": [
+            "9^(3/2)",
+            "27"
+          ]
+        },
+        {
+          "latex": "x = 2 \\pm 27",
+          "explain": "Add 2 to both sides."
+        },
+        {
+          "latex": "x \\in \\{-25, 29\\}",
+          "explain": "Evaluate both branches to obtain the solution set.",
+          "eq": [
+            "2 + 27",
+            "29"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u03-omitted-pm-even-numerator-trap|direct|(x - #)^(#/#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-02",
+      "sourceArchetype": "t02-c01-u03-rational-exponent-equations",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $(x + 4)^{2/5} = 4$ over $\\mathbb{R}$.",
+      "display": "(x + 4)^{2/5} = 4",
+      "plainText": "(x + 4)^(2/5) = 4",
+      "givens": {
+        "h": 4,
+        "p": 2,
+        "q": 5,
+        "k": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        2,
+        5
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-36",
+          "28"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-36, 28",
+      "answerDisplay": "\\{-36, 28\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-omitted-pm-even-numerator-trap",
+      "trapDerivation": "-4 + 4^(5/2)",
+      "trapValue": "28",
+      "verify": {
+        "source": "-4 + 4^(5/2)",
+        "trapValue": "28"
+      },
+      "checkpointHint": "Check the parity of the numerator in the fractional exponent and keep both signs when applying the reciprocal power.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x + 4 = \\pm 4^{5/2}",
+          "explain": "Raise both sides to the reciprocal exponent 5/2 with both positive and negative signs.",
+          "eq": [
+            "2^5",
+            "32"
+          ]
+        },
+        {
+          "latex": "x + 4 = \\pm 32",
+          "explain": "Evaluate 4^(5/2) as (sqrt(4))^5 = 32.",
+          "eq": [
+            "4^(5/2)",
+            "32"
+          ]
+        },
+        {
+          "latex": "x = -4 \\pm 32",
+          "explain": "Subtract 4 from both sides."
+        },
+        {
+          "latex": "x \\in \\{-36, 28\\}",
+          "explain": "Simplify both branches to find all real solutions.",
+          "eq": [
+            "-4 + 32",
+            "28"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u03-omitted-pm-even-numerator-trap|direct|(x + #)^(#/#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-03",
+      "sourceArchetype": "t02-c01-u03-rational-exponent-equations",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 3,
+      "category": "Exponent Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student solved $(3x + 2)^{3/2} = 64$ over $\\mathbb{R}$ step by step:\nLine 1: $(3x + 2)^{3/2} = 64$\nLine 2: $3x + 2 = 64^{3/2}$\nLine 3: $3x + 2 = 512$\nLine 4: $3x = 510$\nLine 5: $x = 170$\nWhich line is the first one that is wrong?",
+      "display": "(3x + 2)^{3/2} = 64",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "k": 64
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        64
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags the given equation as wrong"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          },
+          {
+            "id": "5",
+            "label": "Line 5",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap",
+      "trapDerivation": "(64^(3/2) - 2) / 3",
+      "trapValue": "170",
+      "verify": {
+        "source": "(64^(2/3) - 2) / 3",
+        "trapValue": "170",
+        "flaw": {
+          "values": [
+            "(64^(2/3) - 2) / 3",
+            "(64^(3/2) - 2) / 3",
+            "(512 - 2) / 3",
+            "510 / 3",
+            "170"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check whether each line preserves the exact solution set of the line above it.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "3x + 2 = 64^{2/3}",
+          "explain": "Line 2 is the first wrong line: to undo the 3/2 power, raise both sides to the reciprocal exponent 2/3 rather than 3/2.",
+          "eq": [
+            "64^(2/3)",
+            "16"
+          ]
+        },
+        {
+          "latex": "3x = 14",
+          "explain": "Evaluate 64^(2/3) = 16 and subtract 2 from both sides.",
+          "eq": [
+            "16 - 2",
+            "14"
+          ]
+        },
+        {
+          "latex": "x = \\frac{14}{3}",
+          "explain": "Divide both sides by 3 to obtain the true solution.",
+          "val": "14/3"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-exponent-equations-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u03-reciprocal-exponent-inverted-trap|diagnose|A student solved $(#x + #)^{#/#} = #$ over $\\mathbb{R}$ step by step: Line #: $(#x + #)^{#/#} = #$ Line #: $#x + # = #^{#/#}$ Line #: $#x + # = #$ Line #: $#x = #$ Line #: $x = #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-01",
+      "sourceArchetype": "t02-c01-u03-factoring-higher-degree-grouping",
+      "archetypeKey": "t02-c01-u03-factoring-higher-degree-grouping",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $x^3 - 16x = 0$ over $\\mathbb{R}$.",
+      "display": "x^3 - 16x = 0",
+      "plainText": "x^3 - 16*x = 0",
+      "givens": {
+        "a": 16
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        16,
+        1
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-4",
+          "0",
+          "4"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-4, 0, 4",
+      "answerDisplay": "\\{-4, 0, 4\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+      "trapDerivation": "sqrt(16)",
+      "trapValue": "4",
+      "verify": {
+        "source": "4",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Factor out the common variable factor rather than dividing by it, then factor the remaining difference of squares.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x(x^2 - 16) = 0",
+          "explain": "Factor out the common variable factor x.",
+          "eq": [
+            "4*(4^2 - 16)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x(x - 4)(x + 4) = 0",
+          "explain": "Factor x^2 - 16 as a difference of squares.",
+          "eq": [
+            "(-4)*((-4) - 4)*((-4) + 4)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-4, 0, 4\\}",
+          "explain": "Apply the Zero Product Property to all three linear factors.",
+          "eq": [
+            "4 - 4",
+            "0"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u03-divided-by-variable-lost-zero-trap|direct|x^# - #*x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-02",
+      "sourceArchetype": "t02-c01-u03-factoring-higher-degree-grouping",
+      "archetypeKey": "t02-c01-u03-factoring-higher-degree-grouping",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $2x^3 - 14x^2 = 0$ over $\\mathbb{R}$.",
+      "display": "2x^3 - 14x^2 = 0",
+      "plainText": "2*x^3 - 14*x^2 = 0",
+      "givens": {
+        "a": 2,
+        "b": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        14
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "0",
+          "7"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "0, 7",
+      "answerDisplay": "\\{0, 7\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+      "trapDerivation": "14 / 2",
+      "trapValue": "7",
+      "verify": {
+        "source": "7",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Factor out the greatest common variable power instead of dividing both sides by it.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "2x^2(x - 7) = 0",
+          "explain": "Factor out the greatest common factor 2x^2.",
+          "eq": [
+            "2 * 7^2 * (7 - 7)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x - 7 = 0",
+          "explain": "Set each factor to zero using the Zero Product Property (with 2x^2 = 0 giving x = 0)."
+        },
+        {
+          "latex": "x \\in \\{0, 7\\}",
+          "explain": "Solve for both real solutions.",
+          "eq": [
+            "14 / 2",
+            "7"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u03-divided-by-variable-lost-zero-trap|direct|#*x^# - #*x^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-03",
+      "sourceArchetype": "t02-c01-u03-factoring-higher-degree-grouping",
+      "archetypeKey": "t02-c01-u03-factoring-higher-degree-grouping",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $3x^4 + 15x^3 = 0$ over $\\mathbb{R}$.",
+      "display": "3x^4 + 15x^3 = 0",
+      "plainText": "3*x^4 + 15*x^3 = 0",
+      "givens": {
+        "a": 3,
+        "b": 15
+      },
+      "constants": {
+        "deg": 4
+      },
+      "trapGivens": [
+        3,
+        15
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-5",
+          "0"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-5, 0",
+      "answerDisplay": "\\{-5, 0\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+      "trapDerivation": "-15 / 3",
+      "trapValue": "-5",
+      "verify": {
+        "source": "-5",
+        "trapValue": "-5"
+      },
+      "checkpointHint": "Keep the highest common power of the variable as a factor so the zero root is retained.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "3x^3(x + 5) = 0",
+          "explain": "Factor out the greatest common factor 3x^3.",
+          "eq": [
+            "3 * (-5)^3 * (-5 + 5)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x + 5 = 0",
+          "explain": "Apply the Zero Product Property to both factors (with 3x^3 = 0 giving x = 0)."
+        },
+        {
+          "latex": "x \\in \\{-5, 0\\}",
+          "explain": "Solve each factor for x.",
+          "eq": [
+            "-15 / 3",
+            "-5"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-factoring-higher-degree-grouping-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u03-divided-by-variable-lost-zero-trap|direct|#*x^# + #*x^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-01",
+      "sourceArchetype": "t02-c01-u03-absolute-value-equations",
+      "archetypeKey": "t02-c01-u03-absolute-value-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $|2x - 5| + 3 = 14$ over $\\mathbb{R}$.",
+      "display": "|2x - 5| + 3 = 14",
+      "plainText": "|2*x - 5| + 3 = 14",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "c": 3,
+        "d": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5,
+        3,
+        14
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-3",
+          "8"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-3, 8",
+      "answerDisplay": "\\{-3, 8\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+      "trapDerivation": "(14 - 3 + 5) / 2",
+      "trapValue": "8",
+      "verify": {
+        "source": "(14 - 3 + 5) / 2",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Isolate the absolute value bars first, then split into both positive and negative cases.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "|2x - 5| = 11",
+          "explain": "Subtract 3 from both sides to isolate the absolute value.",
+          "eq": [
+            "14 - 3",
+            "11"
+          ]
+        },
+        {
+          "latex": "2x - 5 = \\pm 11",
+          "explain": "Split into positive and negative equations."
+        },
+        {
+          "latex": "2x = 5 \\pm 11",
+          "explain": "Add 5 to both sides.",
+          "eq": [
+            "5 - 11",
+            "-6"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-3, 8\\}",
+          "explain": "Divide both branches by 2.",
+          "eq": [
+            "abs(2 * (-3) - 5) + 3",
+            "14"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-single-branch-absolute-value-trap|direct||#*x - #| + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-02",
+      "sourceArchetype": "t02-c01-u03-absolute-value-equations",
+      "archetypeKey": "t02-c01-u03-absolute-value-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $|4x + 8| - 5 = 15$ over $\\mathbb{R}$.",
+      "display": "|4x + 8| - 5 = 15",
+      "plainText": "|4*x + 8| - 5 = 15",
+      "givens": {
+        "a": 4,
+        "b": 8,
+        "c": 5,
+        "d": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        8,
+        5,
+        15
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-7",
+          "3"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-7, 3",
+      "answerDisplay": "\\{-7, 3\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+      "trapDerivation": "(15 + 5 - 8) / 4",
+      "trapValue": "3",
+      "verify": {
+        "source": "(15 + 5 - 8) / 4",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Add the constant term to isolate the absolute value before setting the inner expression equal to both signed distances.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "|4x + 8| = 20",
+          "explain": "Add 5 to both sides to isolate the absolute value.",
+          "eq": [
+            "15 + 5",
+            "20"
+          ]
+        },
+        {
+          "latex": "4x + 8 = \\pm 20",
+          "explain": "Split into positive and negative branches."
+        },
+        {
+          "latex": "4x = -8 \\pm 20",
+          "explain": "Subtract 8 from both sides.",
+          "eq": [
+            "-8 - 20",
+            "-28"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-7, 3\\}",
+          "explain": "Divide both sides by 4 to find both solutions.",
+          "eq": [
+            "abs(4 * (-7) + 8) - 5",
+            "15"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-single-branch-absolute-value-trap|direct||#*x + #| - # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-03",
+      "sourceArchetype": "t02-c01-u03-absolute-value-equations",
+      "archetypeKey": "t02-c01-u03-absolute-value-equations",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $2|x - 4| + 7 = 25$ over $\\mathbb{R}$.",
+      "display": "2|x - 4| + 7 = 25",
+      "plainText": "2*|x - 4| + 7 = 25",
+      "givens": {
+        "a": 2,
+        "b": 4,
+        "c": 7,
+        "d": 25
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        4,
+        7,
+        25
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-5",
+          "13"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-5, 13",
+      "answerDisplay": "\\{-5, 13\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+      "trapDerivation": "(25 - 7) / 2 + 4",
+      "trapValue": "13",
+      "verify": {
+        "source": "(25 - 7) / 2 + 4",
+        "trapValue": "13"
+      },
+      "checkpointHint": "Subtract the constant and divide by the outside multiplier to isolate the absolute value before splitting into two branches.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "2|x - 4| = 18",
+          "explain": "Subtract 7 from both sides.",
+          "eq": [
+            "25 - 7",
+            "18"
+          ]
+        },
+        {
+          "latex": "|x - 4| = 9",
+          "explain": "Divide both sides by 2 to isolate the absolute value.",
+          "eq": [
+            "18 / 2",
+            "9"
+          ]
+        },
+        {
+          "latex": "x - 4 = \\pm 9",
+          "explain": "Split into positive and negative branches."
+        },
+        {
+          "latex": "x \\in \\{-5, 13\\}",
+          "explain": "Add 4 to both branches.",
+          "eq": [
+            "2 * abs(-5 - 4) + 7",
+            "25"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-absolute-value-equations-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-single-branch-absolute-value-trap|direct|#*|x - #| + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-01",
+      "sourceArchetype": "t02-c01-u03-quadratic-form-substitution",
+      "archetypeKey": "t02-c01-u03-quadratic-form-substitution",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find all real values of $k$ for which the equation $(x^2 - k)^2 - 7(x^2 - k) + 12 = 0$ has $x = 2$ as a solution.",
+      "display": "(x^2 - k)^2 - 7(x^2 - k) + 12 = 0",
+      "plainText": "(x^2 - k)^2 - 7*(x^2 - k) + 12 = 0",
+      "givens": {
+        "b": 7,
+        "c": 12,
+        "x0": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        12,
+        2
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "0",
+          "1"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "0, 1",
+      "answerDisplay": "\\{0, 1\\}",
+      "inputHint": "Enter all real values separated by a comma",
+      "commonTrapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+      "trapDerivation": "(7 - sqrt(7^2 - 4 * 12)) / 2",
+      "trapValue": "3",
+      "verify": {
+        "source": "4 - 3",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Substitute the known root for x, solve the quadratic for the repeated inner expression, and back-substitute to solve for k.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "(4 - k)^2 - 7(4 - k) + 12 = 0",
+          "explain": "Substitute x = 2 into the equation so x^2 = 4.",
+          "eq": [
+            "2^2",
+            "4"
+          ]
+        },
+        {
+          "latex": "u^2 - 7u + 12 = 0",
+          "explain": "Let u = 4 - k to write the equation in standard quadratic form."
+        },
+        {
+          "latex": "(u - 3)(u - 4) = 0",
+          "explain": "Factor the quadratic in u.",
+          "eq": [
+            "3^2 - 7 * 3 + 12",
+            "0"
+          ]
+        },
+        {
+          "latex": "4 - k \\in \\{3, 4\\}",
+          "explain": "Back-substitute u = 4 - k for each root."
+        },
+        {
+          "latex": "k \\in \\{0, 1\\}",
+          "explain": "Solve each linear equation for k.",
+          "eq": [
+            "4 - 3",
+            "1"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-stopped-at-u-substitution-trap|reverse|(x^# - k)^# - #*(x^# - k) + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-02",
+      "sourceArchetype": "t02-c01-u03-quadratic-form-substitution",
+      "archetypeKey": "t02-c01-u03-quadratic-form-substitution",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $(x + 3)^2 - 6(x + 3) + 8 = 0$ over $\\mathbb{R}$.",
+      "display": "(x + 3)^2 - 6(x + 3) + 8 = 0",
+      "plainText": "(x + 3)^2 - 6*(x + 3) + 8 = 0",
+      "givens": {
+        "h": 3,
+        "b": 6,
+        "c": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        6,
+        8
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-1",
+          "1"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-1, 1",
+      "answerDisplay": "\\{-1, 1\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+      "trapDerivation": "(6 - sqrt(6^2 - 4 * 8)) / 2",
+      "trapValue": "2",
+      "verify": {
+        "source": "4 - 3",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Substitute a temporary variable for the repeated binomial, solve the resulting quadratic, and back-substitute to solve for x.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "u^2 - 6u + 8 = 0",
+          "explain": "Let u = x + 3 to rewrite the equation as a quadratic in u."
+        },
+        {
+          "latex": "(u - 2)(u - 4) = 0",
+          "explain": "Factor the quadratic in u.",
+          "eq": [
+            "2^2 - 6 * 2 + 8",
+            "0"
+          ]
+        },
+        {
+          "latex": "u \\in \\{2, 4\\}",
+          "explain": "Apply the Zero Product Property to find both u-values."
+        },
+        {
+          "latex": "x + 3 \\in \\{2, 4\\}",
+          "explain": "Back-substitute x + 3 for u."
+        },
+        {
+          "latex": "x \\in \\{-1, 1\\}",
+          "explain": "Subtract 3 from each value to obtain the solutions for x.",
+          "eq": [
+            "4 - 3",
+            "1"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-stopped-at-u-substitution-trap|direct|(x + #)^# - #*(x + #) + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-03",
+      "sourceArchetype": "t02-c01-u03-quadratic-form-substitution",
+      "archetypeKey": "t02-c01-u03-quadratic-form-substitution",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find all real values of $k$ for which the equation $(x^2 + k)^2 - 9(x^2 + k) + 20 = 0$ has $x = 3$ as a solution.",
+      "display": "(x^2 + k)^2 - 9(x^2 + k) + 20 = 0",
+      "plainText": "(x^2 + k)^2 - 9*(x^2 + k) + 20 = 0",
+      "givens": {
+        "b": 9,
+        "c": 20,
+        "x0": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        20,
+        3
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-5",
+          "-4"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-5, -4",
+      "answerDisplay": "\\{-5, -4\\}",
+      "inputHint": "Enter all real values separated by a comma",
+      "commonTrapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+      "trapDerivation": "(9 - sqrt(9^2 - 4 * 20)) / 2",
+      "trapValue": "4",
+      "verify": {
+        "source": "4 - 9",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Evaluate the inner expression at the given root, solve the quadratic for that inner expression, and then isolate k.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "(9 + k)^2 - 9(9 + k) + 20 = 0",
+          "explain": "Substitute x = 3 so x^2 = 9.",
+          "eq": [
+            "3^2",
+            "9"
+          ]
+        },
+        {
+          "latex": "u^2 - 9u + 20 = 0",
+          "explain": "Let u = 9 + k to form a standard quadratic in u."
+        },
+        {
+          "latex": "(u - 4)(u - 5) = 0",
+          "explain": "Factor the quadratic in u.",
+          "eq": [
+            "4^2 - 9 * 4 + 20",
+            "0"
+          ]
+        },
+        {
+          "latex": "9 + k \\in \\{4, 5\\}",
+          "explain": "Back-substitute u = 9 + k."
+        },
+        {
+          "latex": "k \\in \\{-5, -4\\}",
+          "explain": "Subtract 9 from each value to find k.",
+          "eq": [
+            "4 - 9",
+            "-5"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-quadratic-form-substitution-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u03-stopped-at-u-substitution-trap|reverse|(x^# + k)^# - #*(x^# + k) + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-01",
+      "sourceArchetype": "t02-c01-u03-rational-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $\\frac{x}{x - 2} + \\frac{3}{x + 2} = \\frac{8}{x^2 - 4}$ over $\\mathbb{R}$.",
+      "display": "\\frac{x}{x - 2} + \\frac{3}{x + 2} = \\frac{8}{x^2 - 4}",
+      "plainText": "x/(x - 2) + 3/(x + 2) = 8/(x^2 - 4)",
+      "givens": {
+        "a": 2,
+        "b": 3,
+        "c": 8,
+        "d": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        8,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-7",
+        "tolerance": 0
+      },
+      "answerPlain": "-7",
+      "answerDisplay": "-7",
+      "inputHint": "Enter an integer.",
+      "commonTrapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
+      "trapDerivation": "8 / 4",
+      "trapValue": "2",
+      "verify": {
+        "source": "-7",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Record the domain values that make any denominator zero before clearing fractions, then reject any candidate root that violates the domain.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x(x + 2) + 3(x - 2) = 8 \\quad (x \\neq \\pm 2)",
+          "explain": "Multiply every term by the LCD (x - 2)(x + 2), noting x cannot equal 2 or -2.",
+          "eq": [
+            "(-7)/(-7 - 2) + 3/(-7 + 2)",
+            "8/((-7)^2 - 4)"
+          ]
+        },
+        {
+          "latex": "x^2 + 2x + 3x - 6 = 8",
+          "explain": "Distribute on the left-hand side."
+        },
+        {
+          "latex": "x^2 + 5x - 14 = 0",
+          "explain": "Combine like terms and subtract 8 from both sides.",
+          "eq": [
+            "(-7)^2 + 5*(-7) - 14",
+            "0"
+          ]
+        },
+        {
+          "latex": "(x + 7)(x - 2) = 0",
+          "explain": "Factor the quadratic equation."
+        },
+        {
+          "latex": "x = -7",
+          "explain": "Reject x = 2 because it zeroes the denominator x - 2, leaving x = -7.",
+          "val": "-7"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-7",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "x = 2 (makes denominators x - 2 and x^2 - 4 equal to zero)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u03-kept-domain-excluded-root-trap|direct|x/(x - #) + #/(x + #) = #/(x^# - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-02",
+      "sourceArchetype": "t02-c01-u03-rational-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve $\\frac{x}{x - 4} + \\frac{5}{x + 4} = \\frac{32}{x^2 - 16}$ over $\\mathbb{R}$.",
+      "display": "\\frac{x}{x - 4} + \\frac{5}{x + 4} = \\frac{32}{x^2 - 16}",
+      "plainText": "x/(x - 4) + 5/(x + 4) = 32/(x^2 - 16)",
+      "givens": {
+        "a": 4,
+        "b": 5,
+        "c": 32,
+        "d": 16
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        32
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-13",
+        "tolerance": 0
+      },
+      "answerPlain": "-13",
+      "answerDisplay": "-13",
+      "inputHint": "Enter an integer.",
+      "commonTrapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
+      "trapDerivation": "32 / (2 * 4)",
+      "trapValue": "4",
+      "verify": {
+        "source": "-13",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Note which inputs make a denominator vanish before multiplying by the least common denominator, and check each solution against those exclusions.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x(x + 4) + 5(x - 4) = 32 \\quad (x \\neq \\pm 4)",
+          "explain": "Multiply every term by (x - 4)(x + 4), noting x cannot equal 4 or -4.",
+          "eq": [
+            "(-13)/(-13 - 4) + 5/(-13 + 4)",
+            "32/((-13)^2 - 16)"
+          ]
+        },
+        {
+          "latex": "x^2 + 4x + 5x - 20 = 32",
+          "explain": "Expand the products on the left-hand side."
+        },
+        {
+          "latex": "x^2 + 9x - 52 = 0",
+          "explain": "Combine like terms and subtract 32 from both sides.",
+          "eq": [
+            "(-13)^2 + 9*(-13) - 52",
+            "0"
+          ]
+        },
+        {
+          "latex": "(x + 13)(x - 4) = 0",
+          "explain": "Factor the resulting quadratic trinomial."
+        },
+        {
+          "latex": "x = -13",
+          "explain": "Reject x = 4 because it makes x - 4 = 0, leaving x = -13.",
+          "val": "-13"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-13",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "x = 4 (makes denominators x - 4 and x^2 - 16 equal to zero)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u03-kept-domain-excluded-root-trap|direct|x/(x - #) + #/(x + #) = #/(x^# - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-03",
+      "sourceArchetype": "t02-c01-u03-rational-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "drone_wind_round_trip",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Ground speed against and with a steady wind of 3 km/h is v - 3 and v + 3 km/h; leg travel times 36/(v - 3) + 36/(v + 3) = 5 h sum to total time with consistent km, h, and km/h units and realistic airspeed v = 15 km/h > 3 km/h."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A survey drone flies $36\\text{ km}$ against a steady headwind and then $36\\text{ km}$ back along the same path with the tailwind in a total flight time of $5\\text{ hours}$. If the wind speed is $3\\text{ km/h}$, find the drone's airspeed in still air, in $\\text{km/h}$.",
+      "display": "\\frac{d}{v - c} + \\frac{d}{v + c} = T",
+      "plainText": "36/(v - 3) + 36/(v + 3) = 5",
+      "givens": {
+        "d": 36,
+        "c": 3,
+        "T": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        36,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0
+      },
+      "answerPlain": "15",
+      "answerDisplay": "15",
+      "inputHint": "Enter a positive number in km/h",
+      "commonTrapTag": "t02-c01-u03-partial-lcd-multiplication-trap",
+      "trapDerivation": "5 / (36 + 36)",
+      "trapValue": "5/72",
+      "verify": {
+        "source": "15",
+        "trapValue": "5/72"
+      },
+      "checkpointHint": "Write each flight leg's duration as distance divided by effective ground speed, multiply every term on both sides by the common denominator, and discard any speed below the wind speed.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{36}{v - 3} + \\frac{36}{v + 3} = 5 \\quad (v > 3)",
+          "explain": "Sum the headwind and tailwind flight durations to equal the total flight time.",
+          "eq": [
+            "36/(15 - 3) + 36/(15 + 3)",
+            "5"
+          ]
+        },
+        {
+          "latex": "36(v + 3) + 36(v - 3) = 5(v^2 - 9)",
+          "explain": "Multiply every term on both sides by the LCD (v - 3)(v + 3).",
+          "eq": [
+            "36*18 + 36*12",
+            "5*(15^2 - 9)"
+          ]
+        },
+        {
+          "latex": "72v = 5v^2 - 45",
+          "explain": "Expand and simplify both sides."
+        },
+        {
+          "latex": "5v^2 - 72v - 45 = 0",
+          "explain": "Rearrange into standard quadratic form.",
+          "eq": [
+            "5*15^2 - 72*15 - 45",
+            "0"
+          ]
+        },
+        {
+          "latex": "(5v + 3)(v - 15) = 0",
+          "explain": "Factor the quadratic equation."
+        },
+        {
+          "latex": "v = 15",
+          "explain": "Reject v = -3/5 because the drone's airspeed must exceed the 3 km/h wind speed.",
+          "val": "15"
+        }
+      ],
+      "blindSolve": {
+        "answer": "15",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "v = -3/5 (drone airspeed in still air must be > 3 km/h)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-rational-equations-extraneous-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u03-partial-lcd-multiplication-trap|direct|#/(v - #) + #/(v + #) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-01",
+      "sourceArchetype": "t02-c01-u03-radical-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-radical-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "canyon_echo_drop_chronometer",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Free fall d = (1/2)*g*t1^2 with g = 10 m/s^2 plus upward acoustic propagation t2 = d/300 at 300 m/s gives sqrt(2d/10) + d/300 = 3.15 s; units (m, s, m/s) and depth d = 45 m are physically valid."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A geologist drops a probe from rest down a vertical canyon shaft of depth $d$ meters ($d = \\frac{1}{2} g t_1^2$ with $g = 10\\text{ m/s}^2$), and the acoustic impact signal travels straight back up at $300\\text{ m/s}$. If the total time from release until the signal arrives at the rim is $3.15\\text{ s}$, find the shaft depth $d$ in meters.",
+      "display": "\\sqrt{\\frac{2d}{g}} + \\frac{d}{v_s} = T",
+      "plainText": "sqrt(2*d/10) + d/300 = 3.15",
+      "givens": {
+        "g": 10,
+        "vs": 300,
+        "T": 3.15
+      },
+      "constants": {
+        "one": 1,
+        "two": 2
+      },
+      "trapGivens": [
+        10,
+        300,
+        3.15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "45",
+        "tolerance": 0
+      },
+      "answerPlain": "45",
+      "answerDisplay": "45",
+      "inputHint": "Enter a positive number in meters",
+      "commonTrapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+      "trapDerivation": "(10 / 2) * (300 / 10 + sqrt((300 / 10)^2 + (300 / (10 / 2)) * 3.15))^2",
+      "trapValue": "19845",
+      "verify": {
+        "source": "45",
+        "trapValue": "19845"
+      },
+      "checkpointHint": "Express both the fall time and the upward sound travel time in terms of the depth, solve the resulting equation, and reject any root that makes the principal square root negative.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{\\frac{d}{5}} + \\frac{d}{300} = 3.15",
+          "explain": "Write the sum of the free-fall time sqrt(2d/10) = sqrt(d/5) and acoustic return time d/300.",
+          "eq": [
+            "sqrt(45/5) + 45/300",
+            "3.15"
+          ]
+        },
+        {
+          "latex": "u + \\frac{5u^2}{300} = 3.15",
+          "explain": "Substitute u = sqrt(d/5) >= 0 so d = 5u^2."
+        },
+        {
+          "latex": "u^2 + 60u - 189 = 0",
+          "explain": "Multiply every term by 60 and move all terms to one side.",
+          "eq": [
+            "3^2 + 60*3 - 189",
+            "0"
+          ]
+        },
+        {
+          "latex": "(u - 3)(u + 63) = 0",
+          "explain": "Factor the quadratic in u."
+        },
+        {
+          "latex": "u = 3",
+          "explain": "Reject u = -63 because u = sqrt(d/5) must be non-negative."
+        },
+        {
+          "latex": "d = 5(3^2)",
+          "explain": "Back-substitute u = 3 into d = 5u^2.",
+          "eq": [
+            "5 * 3^2",
+            "45"
+          ]
+        },
+        {
+          "latex": "d = 45",
+          "explain": "Evaluate to find the shaft depth in meters.",
+          "val": "45"
+        }
+      ],
+      "blindSolve": {
+        "answer": "45",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "u = -63 (fall time u = sqrt(d/5) must be non-negative; equivalently d = 19845 m is extraneous)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u03-kept-extraneous-radical-root-trap|direct|sqrt(#*d/#) + d/# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-02",
+      "sourceArchetype": "t02-c01-u03-radical-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-radical-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "mine_ventilation_shaft_drop",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Free fall d = (1/2)*g*t1^2 with g = 10 m/s^2 and upward acoustic return t2 = d/360 in warm mine air at 360 m/s yield sqrt(d/5) + d/360 = 6.5 s; units and depth d = 180 m are physically consistent."
+      },
+      "verificationLevel": "partial",
+      "prompt": "An engineer drops a test weight from rest down a vertical mine ventilation shaft of depth $d$ meters ($d = \\frac{1}{2} g t_1^2$ with $g = 10\\text{ m/s}^2$), and the sound of impact travels back up the warm air column at $360\\text{ m/s}$. If the total time from release until the sound reaches the top is $6.5\\text{ s}$, find the shaft depth $d$ in meters.",
+      "display": "\\sqrt{\\frac{2d}{g}} + \\frac{d}{v_s} = T",
+      "plainText": "sqrt(2*d/10) + d/360 = 6.5",
+      "givens": {
+        "g": 10,
+        "vs": 360,
+        "T": 6.5
+      },
+      "constants": {
+        "one": 1,
+        "two": 2
+      },
+      "trapGivens": [
+        10,
+        360,
+        6.5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "180",
+        "tolerance": 0
+      },
+      "answerPlain": "180",
+      "answerDisplay": "180",
+      "inputHint": "Enter a positive number in meters",
+      "commonTrapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+      "trapDerivation": "(10 / 2) * (360 / 10 + sqrt((360 / 10)^2 + (360 / (10 / 2)) * 6.5))^2",
+      "trapValue": "30420",
+      "verify": {
+        "source": "180",
+        "trapValue": "30420"
+      },
+      "checkpointHint": "Add the free-fall duration and the acoustic travel duration to equal the total time, then check that the radical term is non-negative.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{\\frac{d}{5}} + \\frac{d}{360} = 6.5",
+          "explain": "Express the fall time as sqrt(2d/10) = sqrt(d/5) and add the sound return time d/360.",
+          "eq": [
+            "sqrt(180/5) + 180/360",
+            "6.5"
+          ]
+        },
+        {
+          "latex": "u + \\frac{5u^2}{360} = 6.5",
+          "explain": "Substitute u = sqrt(d/5) >= 0 so d = 5u^2."
+        },
+        {
+          "latex": "u^2 + 72u - 468 = 0",
+          "explain": "Multiply every term by 72 and rearrange into standard form.",
+          "eq": [
+            "6^2 + 72*6 - 468",
+            "0"
+          ]
+        },
+        {
+          "latex": "(u - 6)(u + 78) = 0",
+          "explain": "Factor the quadratic equation in u."
+        },
+        {
+          "latex": "u = 6",
+          "explain": "Reject u = -78 because u = sqrt(d/5) cannot be negative."
+        },
+        {
+          "latex": "d = 5(6^2)",
+          "explain": "Back-substitute u = 6 into d = 5u^2.",
+          "eq": [
+            "5 * 6^2",
+            "180"
+          ]
+        },
+        {
+          "latex": "d = 180",
+          "explain": "Multiply to find the shaft depth in meters.",
+          "val": "180"
+        }
+      ],
+      "blindSolve": {
+        "answer": "180",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "u = -78 (fall time u = sqrt(d/5) must be non-negative; equivalently d = 30420 m is extraneous)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u03-kept-extraneous-radical-root-trap|direct|sqrt(#*d/#) + d/# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-03",
+      "sourceArchetype": "t02-c01-u03-radical-equations-extraneous",
+      "archetypeKey": "t02-c01-u03-radical-equations-extraneous",
+      "unitCode": "MTH-T02-C01-U03",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "sinkhole_acoustic_sounding_drop",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Free fall d = (1/2)*g*t1^2 with g = 10 m/s^2 and upward sound travel t2 = d/350 at 350 m/s give sqrt(d/5) + d/350 = 7.7 s; units (m, s, m/s) and depth d = 245 m are physically realistic."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A surveyor drops a steel sphere from rest into a vertical sinkhole of depth $d$ meters ($d = \\frac{1}{2} g t_1^2$ with $g = 10\\text{ m/s}^2$), and the sound of impact travels straight back up at $350\\text{ m/s}$. If the total time from release until the sound is heard at the top is $7.7\\text{ s}$, find the sinkhole depth $d$ in meters.",
+      "display": "\\sqrt{\\frac{2d}{g}} + \\frac{d}{v_s} = T",
+      "plainText": "sqrt(2*d/10) + d/350 = 7.7",
+      "givens": {
+        "g": 10,
+        "vs": 350,
+        "T": 7.7
+      },
+      "constants": {
+        "one": 1,
+        "two": 2
+      },
+      "trapGivens": [
+        10,
+        350,
+        7.7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "245",
+        "tolerance": 0
+      },
+      "answerPlain": "245",
+      "answerDisplay": "245",
+      "inputHint": "Enter a positive number in meters",
+      "commonTrapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+      "trapDerivation": "(10 / 2) * (350 / 10 + sqrt((350 / 10)^2 + (350 / (10 / 2)) * 7.7))^2",
+      "trapValue": "29645",
+      "verify": {
+        "source": "245",
+        "trapValue": "29645"
+      },
+      "checkpointHint": "Combine the free-fall time and sound return time into one equation in terms of the depth, then verify that your solution satisfies the original un-squared equation.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{\\frac{d}{5}} + \\frac{d}{350} = 7.7",
+          "explain": "Write the sum of the free-fall time sqrt(2d/10) = sqrt(d/5) and the sound travel time d/350.",
+          "eq": [
+            "sqrt(245/5) + 245/350",
+            "7.7"
+          ]
+        },
+        {
+          "latex": "u + \\frac{5u^2}{350} = 7.7",
+          "explain": "Substitute u = sqrt(d/5) >= 0 so d = 5u^2."
+        },
+        {
+          "latex": "u^2 + 70u - 539 = 0",
+          "explain": "Multiply every term by 70 and move all terms to one side.",
+          "eq": [
+            "7^2 + 70*7 - 539",
+            "0"
+          ]
+        },
+        {
+          "latex": "(u - 7)(u + 77) = 0",
+          "explain": "Factor the quadratic equation in u."
+        },
+        {
+          "latex": "u = 7",
+          "explain": "Reject u = -77 because u = sqrt(d/5) must be non-negative."
+        },
+        {
+          "latex": "d = 5(7^2)",
+          "explain": "Back-substitute u = 7 into d = 5u^2.",
+          "eq": [
+            "5 * 7^2",
+            "245"
+          ]
+        },
+        {
+          "latex": "d = 245",
+          "explain": "Evaluate to find the sinkhole depth in meters.",
+          "val": "245"
+        }
+      ],
+      "blindSolve": {
+        "answer": "245",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "u = -77 (fall time u = sqrt(d/5) must be non-negative; equivalently d = 29645 m is extraneous)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U03-t02-c01-u03-radical-equations-extraneous-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u03-kept-extraneous-radical-root-trap|direct|sqrt(#*d/#) + d/# = #"
+    }
+  ]
+}
