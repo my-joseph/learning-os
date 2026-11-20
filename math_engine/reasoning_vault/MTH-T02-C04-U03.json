@@ -11,13 +11,34 @@
       "mentalModel": "Check whether the curve can be drawn without lifting a pencil and without a sharp turn; both are structural properties of polynomial graphs.",
       "governingRelation": "A polynomial function is continuous for every real input; its graph has no breaks or corners.",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-corner-can-be-polynomial-trap", "description": "Accepting a graph with a sharp corner as a polynomial graph.", "trapFormula": "sharp corner => polynomial"},
-        {"trapTag": "t02-c04-u03-break-can-be-polynomial-trap", "description": "Accepting a graph with a discontinuity as a polynomial graph.", "trapFormula": "break in graph => polynomial"}
+        {
+          "trapTag": "t02-c04-u03-corner-can-be-polynomial-trap",
+          "description": "Accepting a graph with a sharp corner as a polynomial graph.",
+          "trapFormula": "sharp corner => polynomial"
+        },
+        {
+          "trapTag": "t02-c04-u03-break-can-be-polynomial-trap",
+          "description": "Accepting a graph with a discontinuity as a polynomial graph.",
+          "trapFormula": "break in graph => polynomial"
+        }
       ],
-      "versatileDomains": ["function modeling", "trajectory analysis"],
+      "versatileDomains": [
+        "function modeling",
+        "trajectory analysis"
+      ],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"expr": "(x-1)^3-2", "x_min": -3, "x_max": 4, "y_min": -8, "y_max": 8}, "title": "A smooth continuous polynomial graph"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "(x-1)^3-2",
+            "x_min": -3,
+            "x_max": 4,
+            "y_min": -8,
+            "y_max": 8
+          },
+          "title": "Graph"
+        }
       ]
     },
     {
@@ -30,12 +51,31 @@
       "mentalModel": "Factor the expression, set each factor to zero, and keep the factor equation connected to the original function.",
       "governingRelation": "f(x)=u(x)v(x)=0 iff u(x)=0 or v(x)=0",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-forget-common-factor-zero-trap", "description": "Dropping a zero introduced by a common variable factor before solving the remaining factors.", "trapFormula": "x^2(x-a)(x-b)=0 -> only x=a,b"},
-        {"trapTag": "t02-c04-u03-factor-not-equal-zero-trap", "description": "Factoring correctly but failing to set every factor equal to zero.", "trapFormula": "(x-a)(x-b)=0 -> x=a-b"},
-        {"trapTag": "t02-c04-u03-factor-inside-sign-trap", "description": "Reporting the constant inside a linear factor instead of solving for the zero with its opposite sign.", "trapFormula": "x+c=0 -> x=c"},
-        {"trapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap", "description": "Counting a repeated zero once for each repeated factor when the task asks for distinct zeros.", "trapFormula": "sum distinct zeros counts r with multiplicity m more than once"}
+        {
+          "trapTag": "t02-c04-u03-forget-common-factor-zero-trap",
+          "description": "Dropping a zero introduced by a common variable factor before solving the remaining factors.",
+          "trapFormula": "x^2(x-a)(x-b)=0 -> only x=a,b"
+        },
+        {
+          "trapTag": "t02-c04-u03-factor-not-equal-zero-trap",
+          "description": "Factoring correctly but failing to set every factor equal to zero.",
+          "trapFormula": "(x-a)(x-b)=0 -> x=a-b"
+        },
+        {
+          "trapTag": "t02-c04-u03-factor-inside-sign-trap",
+          "description": "Reporting the constant inside a linear factor instead of solving for the zero with its opposite sign.",
+          "trapFormula": "x+c=0 -> x=c"
+        },
+        {
+          "trapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+          "description": "Counting a repeated zero once for each repeated factor when the task asks for distinct zeros.",
+          "trapFormula": "sum distinct zeros counts r with multiplicity m more than once"
+        }
       ],
-      "versatileDomains": ["equation solving", "polynomial modeling"],
+      "versatileDomains": [
+        "equation solving",
+        "polynomial modeling"
+      ],
       "usedContexts": [],
       "figureNone": "A graph would reveal the requested zeros directly, so it would give away the target of a factoring problem."
     },
@@ -49,14 +89,39 @@
       "mentalModel": "Near each intercept, inspect whether the curve changes sides of the axis; crossing parity distinguishes odd from even multiplicity.",
       "governingRelation": "(x-r)^m: odd m crosses at r; even m touches and turns at r",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-even-multiplicity-crossing-trap", "description": "Reading a touch-and-turn zero as an odd multiplicity because the graph reaches the axis.", "trapFormula": "even m => crosses the axis"},
-        {"trapTag": "t02-c04-u03-crossing-means-simple-zero-trap", "description": "Assuming every crossing zero has multiplicity one, even when the curve flattens as it crosses.", "trapFormula": "crossing => m=1"},
-        {"trapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap", "description": "Reporting the polynomial's total degree instead of the exponent on the factor for the named zero.", "trapFormula": "multiplicity at r = total degree"}
+        {
+          "trapTag": "t02-c04-u03-even-multiplicity-crossing-trap",
+          "description": "Reading a touch-and-turn zero as an odd multiplicity because the graph reaches the axis.",
+          "trapFormula": "even m => crosses the axis"
+        },
+        {
+          "trapTag": "t02-c04-u03-crossing-means-simple-zero-trap",
+          "description": "Assuming every crossing zero has multiplicity one, even when the curve flattens as it crosses.",
+          "trapFormula": "crossing => m=1"
+        },
+        {
+          "trapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+          "description": "Reporting the polynomial's total degree instead of the exponent on the factor for the named zero.",
+          "trapFormula": "multiplicity at r = total degree"
+        }
       ],
-      "versatileDomains": ["graph interpretation", "model reconstruction"],
+      "versatileDomains": [
+        "graph interpretation",
+        "model reconstruction"
+      ],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"expr": "a*(x-r1)^m1*(x-r2)^m2", "x_min": "r1-2", "x_max": "r2+2", "mark_x": "r1,r2", "mark_labels": "zeros"}, "title": "Zero multiplicity controls crossing behavior"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*(x-r1)^m1*(x-r2)^m2",
+            "x_min": "r1-2",
+            "x_max": "r2+2",
+            "mark_x": "r1,r2",
+            "mark_labels": "zeros"
+          },
+          "title": "Graph"
+        }
       ]
     },
     {
@@ -69,10 +134,21 @@
       "mentalModel": "For large inputs, lower-degree terms matter less than the leading term; read parity and sign before sketching either tail.",
       "governingRelation": "For f(x)=a_n x^n+...: even n gives matching ends, odd n gives opposite ends; sign(a_n) sets the right-end direction.",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-parity-end-behavior-trap", "description": "Using coefficient sign alone and ignoring whether the degree is even or odd.", "trapFormula": "odd degree => matching ends"},
-        {"trapTag": "t02-c04-u03-leading-sign-end-trap", "description": "Reversing the end direction for a negative leading coefficient.", "trapFormula": "a_n<0 => right end rises"}
+        {
+          "trapTag": "t02-c04-u03-parity-end-behavior-trap",
+          "description": "Using coefficient sign alone and ignoring whether the degree is even or odd.",
+          "trapFormula": "odd degree => matching ends"
+        },
+        {
+          "trapTag": "t02-c04-u03-leading-sign-end-trap",
+          "description": "Reversing the end direction for a negative leading coefficient.",
+          "trapFormula": "a_n<0 => right end rises"
+        }
       ],
-      "versatileDomains": ["graph sketching", "long-range model behavior"],
+      "versatileDomains": [
+        "graph sketching",
+        "long-range model behavior"
+      ],
       "usedContexts": [],
       "figureNone": "The problem supplies only degree and leading coefficient; a plotted curve would encode the requested end behavior."
     },
@@ -86,11 +162,26 @@
       "mentalModel": "A degree-n polynomial can have no more than n real zeros and its smooth graph cannot reverse direction more than n−1 times.",
       "governingRelation": "maximum turning points = degree − 1",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-turning-points-equals-degree-trap", "description": "Using the degree itself as the maximum number of turning points.", "trapFormula": "max turns=n"},
-        {"trapTag": "t02-c04-u03-subtract-two-turns-trap", "description": "Subtracting two instead of one from the degree.", "trapFormula": "max turns=n-2"},
-        {"trapTag": "t02-c04-u03-add-one-to-turn-bound-trap", "description": "Adding one instead of subtracting one when converting degree to the maximum turning-point count.", "trapFormula": "max turns=n+1"}
+        {
+          "trapTag": "t02-c04-u03-turning-points-equals-degree-trap",
+          "description": "Using the degree itself as the maximum number of turning points.",
+          "trapFormula": "max turns=n"
+        },
+        {
+          "trapTag": "t02-c04-u03-subtract-two-turns-trap",
+          "description": "Subtracting two instead of one from the degree.",
+          "trapFormula": "max turns=n-2"
+        },
+        {
+          "trapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+          "description": "Adding one instead of subtracting one when converting degree to the maximum turning-point count.",
+          "trapFormula": "max turns=n+1"
+        }
       ],
-      "versatileDomains": ["graph analysis", "model complexity"],
+      "versatileDomains": [
+        "graph analysis",
+        "model complexity"
+      ],
       "usedContexts": [],
       "figureNone": "This is a direct symbolic bound; a graph would add no useful information."
     },
@@ -104,13 +195,34 @@
       "mentalModel": "Build one factor per zero with its multiplicity, then use a known nonzero point to set the vertical scale and verify the end behavior.",
       "governingRelation": "f(x)=a∏(x−r_i)^{m_i}; one known point determines a when it is not a zero",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-multiplicity-factor-count-trap", "description": "Using a zero once even when its stated multiplicity requires a repeated factor.", "trapFormula": "m=2 -> (x-r)"},
-        {"trapTag": "t02-c04-u03-scale-factor-omission-trap", "description": "Assuming the leading scale factor is one without checking the supplied point.", "trapFormula": "a=1 without substitution"}
+        {
+          "trapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+          "description": "Using a zero once even when its stated multiplicity requires a repeated factor.",
+          "trapFormula": "m=2 -> (x-r)"
+        },
+        {
+          "trapTag": "t02-c04-u03-scale-factor-omission-trap",
+          "description": "Assuming the leading scale factor is one without checking the supplied point.",
+          "trapFormula": "a=1 without substitution"
+        }
       ],
-      "versatileDomains": ["model reconstruction", "trajectory graphs"],
+      "versatileDomains": [
+        "model reconstruction",
+        "trajectory graphs"
+      ],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"expr": "a*(x-r1)^m1*(x-r2)^m2", "x_min": "r1-2", "x_max": "r2+2", "mark_x": "r1,r2", "mark_labels": "zeros"}, "title": "Factors encode zeros and their multiplicities"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*(x-r1)^m1*(x-r2)^m2",
+            "x_min": "r1-2",
+            "x_max": "r2+2",
+            "mark_x": "r1,r2",
+            "mark_labels": "zeros"
+          },
+          "title": "Graph"
+        }
       ]
     },
     {
@@ -123,10 +235,21 @@
       "mentalModel": "Continuity prevents the graph from moving between opposite sides of the axis without crossing it; the theorem guarantees existence, not an exact root or uniqueness.",
       "governingRelation": "If f is continuous on [a,b] and f(a)f(b)<0, then some c∈(a,b) has f(c)=0.",
       "cognitiveTraps": [
-        {"trapTag": "t02-c04-u03-ivt-uniqueness-trap", "description": "Claiming the sign change proves exactly one zero in the interval.", "trapFormula": "opposite signs => exactly one zero"},
-        {"trapTag": "t02-c04-u03-ivt-same-sign-trap", "description": "Treating equal endpoint signs as proof that no zero lies between them.", "trapFormula": "same signs => no zero"}
+        {
+          "trapTag": "t02-c04-u03-ivt-uniqueness-trap",
+          "description": "Claiming the sign change proves exactly one zero in the interval.",
+          "trapFormula": "opposite signs => exactly one zero"
+        },
+        {
+          "trapTag": "t02-c04-u03-ivt-same-sign-trap",
+          "description": "Treating equal endpoint signs as proof that no zero lies between them.",
+          "trapFormula": "same signs => no zero"
+        }
       ],
-      "versatileDomains": ["root existence", "numerical methods"],
+      "versatileDomains": [
+        "root existence",
+        "numerical methods"
+      ],
       "usedContexts": [],
       "figureNone": "A graph would visually reveal the guaranteed crossing; the drill targets the theorem's sign and continuity conditions."
     }

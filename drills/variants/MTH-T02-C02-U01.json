@@ -73,7 +73,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Vertical Line Test",
+        "title": "Graph",
         "xRange": [
           1.0,
           15.0
@@ -1992,7 +1992,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Vertical Line Test: Circle",
+        "title": "Graph",
         "xRange": [
           -6.0,
           6.0
@@ -3735,7 +3735,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Vertical Line Test",
+        "title": "Graph",
         "xRange": [
           3.0,
           21.0
@@ -5676,7 +5676,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Reciprocal Toolkit Function",
+        "title": "Graph",
         "xRange": [
           -7.0,
           7.0
@@ -6762,7 +6762,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Reciprocal Toolkit Function",
+        "title": "Graph",
         "xRange": [
           -5.0,
           5.0
@@ -7848,7 +7848,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Reciprocal Toolkit Function",
+        "title": "Graph",
         "xRange": [
           -10.0,
           10.0
@@ -8954,7 +8954,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Horizontal Line Test",
+        "title": "Graph",
         "xRange": [
           -4.645751311064591,
           4.645751311064591
@@ -11014,7 +11014,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Horizontal Line Test",
+        "title": "Graph",
         "xRange": [
           -5.0,
           5.0
@@ -13074,7 +13074,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Horizontal Line Test",
+        "title": "Graph",
         "xRange": [
           -4.449489742783178,
           4.449489742783178

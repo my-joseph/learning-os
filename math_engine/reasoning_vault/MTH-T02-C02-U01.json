@@ -102,7 +102,7 @@
             "label": "y = sqrt(x - {x0:g})",
             "label2": "y = -sqrt(x - {x0:g})"
           },
-          "title": "Vertical Line Test"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -119,7 +119,7 @@
             "label": "y = sqrt({r:g}^2 - x^2)",
             "label2": "y = -sqrt({r:g}^2 - x^2)"
           },
-          "title": "Vertical Line Test: Circle"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -134,7 +134,7 @@
             "mark_labels": "({c:g}, ?)",
             "label": "y = {a:g}x^2 + {b:g}"
           },
-          "title": "Vertical Line Test"
+          "title": "Graph"
         }
       ]
     },
@@ -182,7 +182,7 @@
             "mark_labels": "(-{neg_x0:g}, ?)",
             "label": "f(x)"
           },
-          "title": "Reciprocal Toolkit Function"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -199,7 +199,7 @@
             "mark_labels": "({x0:g}, ?)",
             "label": "f(x)"
           },
-          "title": "Reciprocal Toolkit Function"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -214,7 +214,7 @@
             "vlines": "0",
             "label": "f(x)"
           },
-          "title": "Reciprocal Toolkit Function"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -226,7 +226,7 @@
             "expr": "{a:g}*abs(x) + {b:g}",
             "label": "f(x)"
           },
-          "title": "Absolute Value Toolkit Function"
+          "title": "Graph"
         }
       ]
     },
@@ -296,7 +296,7 @@
             "label": "f(x) = {a:g}x^2 + {k:g}",
             "label2": "y = {y0:g}"
           },
-          "title": "Horizontal Line Test"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -310,7 +310,7 @@
             "label": "f(x) = {a:g}x^3 + {k:g}",
             "label2": "y = {y0:g}"
           },
-          "title": "Horizontal Line Test"
+          "title": "Graph"
         }
       ]
     },

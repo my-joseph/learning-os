@@ -94,7 +94,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Absolute value transformation",
+        "title": "Graph",
         "xRange": [
           -3.0,
           5.0

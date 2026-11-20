@@ -13,9 +13,21 @@
       "mentalModel": "Run one function and then the other in both orders; a genuine reversible pair returns each admissible input unchanged.",
       "governingRelation": "g(f(x))=x and f(g(x))=x",
       "cognitiveTraps": [
-        {"trapTag": "t02-c02-u07-check-only-one-composition-trap", "description": "Checking only one composition and assuming the reverse composition also works.", "trapFormula": "g(f(x))=x \u21db assume f(g(x))=x"},
-        {"trapTag": "t02-c02-u07-inverse-means-reciprocal-trap", "description": "Treating the inverse function as the reciprocal of the output.", "trapFormula": "f^{-1}(x) \u21a6 1/f(x)"},
-        {"trapTag": "t02-c02-u07-transposition-sign-trap", "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.", "trapFormula": "x=2y+5 \u21a6 y=(x+5)/2"}
+        {
+          "trapTag": "t02-c02-u07-check-only-one-composition-trap",
+          "description": "Checking only one composition and assuming the reverse composition also works.",
+          "trapFormula": "g(f(x))=x ⇛ assume f(g(x))=x"
+        },
+        {
+          "trapTag": "t02-c02-u07-inverse-means-reciprocal-trap",
+          "description": "Treating the inverse function as the reciprocal of the output.",
+          "trapFormula": "f^{-1}(x) ↦ 1/f(x)"
+        },
+        {
+          "trapTag": "t02-c02-u07-transposition-sign-trap",
+          "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.",
+          "trapFormula": "x=2y+5 ↦ y=(x+5)/2"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
@@ -29,12 +41,28 @@
       "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Finding the Inverse of a Function",
       "coreConcept": "Solve y=f(x) for x in terms of y, then exchange the variable labels to express the inverse output as a function of its input.",
       "mentalModel": "Reverse the input-output roles, solve for the old input, and rename the old output as the new input.",
-      "governingRelation": "y=f(x) \u2192 solve for x \u2192 f^{-1}(x)=y",
+      "governingRelation": "y=f(x) → solve for x → f^{-1}(x)=y",
       "cognitiveTraps": [
-        {"trapTag": "t02-c02-u07-swap-without-solving-trap", "description": "Exchanging x and y but failing to isolate the inverse output.", "trapFormula": "y=f(x) \u2192 x=f(y)"},
-        {"trapTag": "t02-c02-u07-reciprocal-notation-trap", "description": "Interpreting the superscript -1 as a reciprocal instead of an inverse function.", "trapFormula": "f^{-1}(x) \u21a6 1/f(x)"},
-        {"trapTag": "t02-c02-u07-transposition-sign-trap", "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.", "trapFormula": "x=2y+5 \u21a6 y=(x+5)/2"},
-        {"trapTag": "t02-c02-u07-subtraction-sign-trap", "description": "Adding the constant instead of subtracting it when evaluating a linear inverse.", "trapFormula": "(x-b)/a \u21a6 (x+b)/a"}
+        {
+          "trapTag": "t02-c02-u07-swap-without-solving-trap",
+          "description": "Exchanging x and y but failing to isolate the inverse output.",
+          "trapFormula": "y=f(x) → x=f(y)"
+        },
+        {
+          "trapTag": "t02-c02-u07-reciprocal-notation-trap",
+          "description": "Interpreting the superscript -1 as a reciprocal instead of an inverse function.",
+          "trapFormula": "f^{-1}(x) ↦ 1/f(x)"
+        },
+        {
+          "trapTag": "t02-c02-u07-transposition-sign-trap",
+          "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.",
+          "trapFormula": "x=2y+5 ↦ y=(x+5)/2"
+        },
+        {
+          "trapTag": "t02-c02-u07-subtraction-sign-trap",
+          "description": "Adding the constant instead of subtracting it when evaluating a linear inverse.",
+          "trapFormula": "(x-b)/a ↦ (x+b)/a"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
@@ -50,13 +78,33 @@
       "mentalModel": "Choose one branch so every output identifies exactly one input, then reverse all input-output pairs and their sets.",
       "governingRelation": "Domain(f^{-1})=Range(f); Range(f^{-1})=Domain(f)",
       "cognitiveTraps": [
-        {"trapTag": "t02-c02-u07-restrict-wrong-branch-trap", "description": "Choosing a restriction that still leaves repeated outputs or conflicts with the requested branch.", "trapFormula": "x^2,\\ x\\in\\mathbb{R} \\mapsto \\text{still not one-to-one}"},
-        {"trapTag": "t02-c02-u07-domain-range-not-swapped-trap", "description": "Keeping the original domain and range in the same roles for the inverse.", "trapFormula": "D(f^{-1})\u21a6 D(f)"}
+        {
+          "trapTag": "t02-c02-u07-restrict-wrong-branch-trap",
+          "description": "Choosing a restriction that still leaves repeated outputs or conflicts with the requested branch.",
+          "trapFormula": "x^2,\\ x\\in\\mathbb{R} \\mapsto \\text{still not one-to-one}"
+        },
+        {
+          "trapTag": "t02-c02-u07-domain-range-not-swapped-trap",
+          "description": "Keeping the original domain and range in the same roles for the inverse.",
+          "trapFormula": "D(f^{-1})↦ D(f)"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"x_min": "-4", "x_max": "4", "hlines": "4"}, "labels": {"expr": "x^2", "label": "f(x)=x^2"}, "title": "A horizontal line meets a non-one-to-one graph twice"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "4",
+            "hlines": "4"
+          },
+          "labels": {
+            "expr": "x^2",
+            "label": "f(x)=x^2"
+          },
+          "title": "Graph"
+        }
       ]
     },
     {
@@ -67,15 +115,38 @@
       "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Graphing an Inverse Function",
       "coreConcept": "Inverse functions exchange ordered-pair coordinates, so their graphs reflect across y=x.",
       "mentalModel": "Swap each point's horizontal and vertical coordinates; the mirror line is the diagonal y=x.",
-      "governingRelation": "(a,b)\u2208 f \u21d4 (b,a)\u2208 f^{-1}",
+      "governingRelation": "(a,b)∈ f ⇔ (b,a)∈ f^{-1}",
       "cognitiveTraps": [
-        {"trapTag": "t02-c02-u07-reflect-across-axis-trap", "description": "Reflecting across a coordinate axis instead of the line y=x.", "trapFormula": "(a,b) \u21a6 (a,-b)"},
-        {"trapTag": "t02-c02-u07-do-not-swap-coordinate-trap", "description": "Changing a point without exchanging its input and output coordinates.", "trapFormula": "(a,b) \u21a6 (a,b)"}
+        {
+          "trapTag": "t02-c02-u07-reflect-across-axis-trap",
+          "description": "Reflecting across a coordinate axis instead of the line y=x.",
+          "trapFormula": "(a,b) ↦ (a,-b)"
+        },
+        {
+          "trapTag": "t02-c02-u07-do-not-swap-coordinate-trap",
+          "description": "Changing a point without exchanging its input and output coordinates.",
+          "trapFormula": "(a,b) ↦ (a,b)"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"x_min": "-4", "x_max": "4", "y_min": "-4", "y_max": "4"}, "labels": {"expr": "2*x+1", "expr2": "(x-1)/2", "label": "f(x)=2x+1", "label2": "f^{-1}(x)=(x-1)/2"}, "title": "A function and its inverse have exchanged coordinates"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "4",
+            "y_min": "-4",
+            "y_max": "4"
+          },
+          "labels": {
+            "expr": "2*x+1",
+            "expr2": "(x-1)/2",
+            "label": "f(x)=2x+1",
+            "label2": "f^{-1}(x)=(x-1)/2"
+          },
+          "title": "Graph"
+        }
       ]
     }
   ]

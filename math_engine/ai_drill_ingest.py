@@ -27,7 +27,12 @@ from math_engine.answer_check import (
 )
 from math_engine.answer_spec_registry import validate_answer_spec
 from math_engine.bridge import BRIDGE_SCOPE, BRIDGE_TITLE, MIN_BRIDGE_UNITS, validate_bridge_problem
-from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure, figure_decision_missing
+from math_engine.figure_autofill import (
+    archetype_requires_figure,
+    autofill_problem_figure,
+    collect_figure_title_warnings,
+    figure_decision_missing,
+)
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.latex_guard import find_bare_words
@@ -981,6 +986,26 @@ def check_ai_drill(
     return errors
 
 
+def check_ai_drill_warnings(
+    drill_doc: Dict[str, Any],
+    vault_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Return non-blocking ingest warnings (such as method-naming figure titles) without mutating ``drill_doc``."""
+    unit_code = drill_doc.get("unitCode")
+    problems = drill_doc.get("problems") or []
+    if not unit_code or not problems:
+        return []
+    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
+    checked: List[Dict[str, Any]] = []
+    for idx, original in enumerate(problems, 1):
+        prob = copy.deepcopy(original)
+        prob.setdefault("id", f"Q{idx:02d}")
+        autofill_problem_figure(prob, vault_archs)
+        checked.append(prob)
+    return collect_figure_title_warnings(checked)
+
+
 def ingest_ai_drill(
     drill_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -1134,6 +1159,8 @@ def ingest_ai_drill(
             mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir, eligible_units=eligible_units)
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
+    for fig_warn in collect_figure_title_warnings(problems):
+        print(f"WARNING: {fig_warn}")
     if warn_coverage:
         from math_engine.variant_bank import format_coverage_warning
 
@@ -1189,6 +1216,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             drill_data = json.load(f)
         if args.check:
             problems_found = check_ai_drill(drill_data)
+            fig_warnings = check_ai_drill_warnings(drill_data)
             resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
             if args.originality is False:
                 pass
@@ -1203,6 +1231,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 if orig_notice:
                     print(f"NOTE: {orig_notice}")
                 problems_found.extend(orig_errors)
+            for warn in fig_warnings:
+                print(f"WARNING: {warn}")
             for line in problems_found:
                 print(f"  FAIL {line}")
             n = len(drill_data.get("problems") or [])

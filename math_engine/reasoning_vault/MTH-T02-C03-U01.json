@@ -13,14 +13,39 @@
       "mentalModel": "The slope describes the repeated vertical change for each horizontal step; the intercept anchors the graph where the input is zero.",
       "governingRelation": "f(x)=mx+b; m=(f(x_2)-f(x_1))/(x_2-x_1)",
       "cognitiveTraps": [
-        {"trapTag": "t02-c03-u01-reverse-slope-differences-trap", "description": "Reversing the order of output differences but not input differences when computing slope.", "trapFormula": "(y_1-y_2)/(x_2-x_1)"},
-        {"trapTag": "t02-c03-u01-confuse-intercept-with-slope-trap", "description": "Treating the vertical intercept as the rate of change or reading the coefficient of x as the intercept.", "trapFormula": "mx+b \u21a6 m=b, b=m"},
-        {"trapTag": "t02-c03-u01-ignore-negative-change-trap", "description": "Dropping a negative sign when the output decreases as the input increases.", "trapFormula": "decrease \u21a6 positive slope"}
+        {
+          "trapTag": "t02-c03-u01-reverse-slope-differences-trap",
+          "description": "Reversing the order of output differences but not input differences when computing slope.",
+          "trapFormula": "(y_1-y_2)/(x_2-x_1)"
+        },
+        {
+          "trapTag": "t02-c03-u01-confuse-intercept-with-slope-trap",
+          "description": "Treating the vertical intercept as the rate of change or reading the coefficient of x as the intercept.",
+          "trapFormula": "mx+b ↦ m=b, b=m"
+        },
+        {
+          "trapTag": "t02-c03-u01-ignore-negative-change-trap",
+          "description": "Dropping a negative sign when the output decreases as the input increases.",
+          "trapFormula": "decrease ↦ positive slope"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
       "figureBuilders": [
-        {"fn": "build_function_graph_figure", "args": {"x_min": "-4", "x_max": "4", "y_min": "-5", "y_max": "7"}, "labels": {"expr": "2*x+1", "label": "f(x)=2x+1"}, "title": "A linear function has a constant slope and a y-intercept"}
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "4",
+            "y_min": "-5",
+            "y_max": "7"
+          },
+          "labels": {
+            "expr": "2*x+1",
+            "label": "f(x)=2x+1"
+          },
+          "title": "Graph"
+        }
       ]
     },
     {
@@ -33,8 +58,16 @@
       "mentalModel": "Use the point as an anchor and the slope as the line's fixed step pattern.",
       "governingRelation": "y-y_1=m(x-x_1)",
       "cognitiveTraps": [
-        {"trapTag": "t02-c03-u01-point-coordinate-sign-trap", "description": "Mishandling a negative point coordinate inside the point-slope expression.", "trapFormula": "x-(-a) \u21a6 x-a"},
-        {"trapTag": "t02-c03-u01-slope-sign-transposition-trap", "description": "Changing the sign of a point coordinate incorrectly while isolating the intercept.", "trapFormula": "y_1=mx_1+b \u21a6 b=y_1+mx_1"}
+        {
+          "trapTag": "t02-c03-u01-point-coordinate-sign-trap",
+          "description": "Mishandling a negative point coordinate inside the point-slope expression.",
+          "trapFormula": "x-(-a) ↦ x-a"
+        },
+        {
+          "trapTag": "t02-c03-u01-slope-sign-transposition-trap",
+          "description": "Changing the sign of a point coordinate incorrectly while isolating the intercept.",
+          "trapFormula": "y_1=mx_1+b ↦ b=y_1+mx_1"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
@@ -50,8 +83,16 @@
       "mentalModel": "Parallel lines preserve the same step pattern; perpendicular step patterns are negative reciprocals.",
       "governingRelation": "m_1=m_2; m_1m_2=-1",
       "cognitiveTraps": [
-        {"trapTag": "t02-c03-u01-perpendicular-reciprocal-only-trap", "description": "Taking a reciprocal without changing its sign when finding a perpendicular slope.", "trapFormula": "m \u21a6 1/m"},
-        {"trapTag": "t02-c03-u01-parallel-negative-reciprocal-trap", "description": "Assigning a negative reciprocal to a parallel line instead of keeping the same slope.", "trapFormula": "m \u21a6 -1/m"}
+        {
+          "trapTag": "t02-c03-u01-perpendicular-reciprocal-only-trap",
+          "description": "Taking a reciprocal without changing its sign when finding a perpendicular slope.",
+          "trapFormula": "m ↦ 1/m"
+        },
+        {
+          "trapTag": "t02-c03-u01-parallel-negative-reciprocal-trap",
+          "description": "Assigning a negative reciprocal to a parallel line instead of keeping the same slope.",
+          "trapFormula": "m ↦ -1/m"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],
@@ -67,8 +108,16 @@
       "mentalModel": "Check the proposed line against its defining data: the slope pattern and at least one anchor point.",
       "governingRelation": "f(x)=mx+b; f(x_0)=y_0",
       "cognitiveTraps": [
-        {"trapTag": "t02-c03-u01-confuse-intercept-with-slope-trap", "description": "Swapping the slope and y-intercept when reading or writing slope-intercept form.", "trapFormula": "mx+b \u21a6 bx+m"},
-        {"trapTag": "t02-c03-u01-reverse-slope-differences-trap", "description": "Using inconsistent subtraction order in the numerator and denominator of the slope formula.", "trapFormula": "(y_2-y_1)/(x_1-x_2)"}
+        {
+          "trapTag": "t02-c03-u01-confuse-intercept-with-slope-trap",
+          "description": "Swapping the slope and y-intercept when reading or writing slope-intercept form.",
+          "trapFormula": "mx+b ↦ bx+m"
+        },
+        {
+          "trapTag": "t02-c03-u01-reverse-slope-differences-trap",
+          "description": "Using inconsistent subtraction order in the numerator and denominator of the slope formula.",
+          "trapFormula": "(y_2-y_1)/(x_1-x_2)"
+        }
       ],
       "versatileDomains": [],
       "usedContexts": [],

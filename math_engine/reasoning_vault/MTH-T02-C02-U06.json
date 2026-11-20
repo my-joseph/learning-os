@@ -37,7 +37,7 @@
             "expr": "{a:g}*abs(x-{h:g})+{k:g}",
             "label": "g(x)"
           },
-          "title": "Absolute value transformation"
+          "title": "Graph"
         }
       ]
     },
@@ -102,7 +102,7 @@
             "mark_labels": "({point_x:g}, {point_y:g})",
             "label": "g(x)"
           },
-          "title": "Absolute value rule from a point"
+          "title": "Graph"
         }
       ]
     },

@@ -45,7 +45,7 @@
             "mark_x": "h",
             "mark_labels": "vertex"
           },
-          "title": "A quadratic graph is symmetric about its vertex"
+          "title": "Graph"
         }
       ]
     },
@@ -91,7 +91,7 @@
             "mark_x": "h",
             "mark_labels": "vertex"
           },
-          "title": "The vertex lies on the axis of symmetry"
+          "title": "Graph"
         }
       ]
     },
@@ -139,7 +139,7 @@
             "hlines": "k",
             "title": "The vertex sets the included range endpoint"
           },
-          "title": "A quadratic's range includes its vertex value"
+          "title": "Graph"
         }
       ]
     },
@@ -187,7 +187,7 @@
             "label_h": "height",
             "title": "A rectangular area is optimized under a fixed constraint"
           },
-          "title": "A constraint turns the dimensions into one variable"
+          "title": "Rectangle"
         }
       ]
     }

@@ -84,7 +84,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Vertical Line Test",
+        "title": "Graph",
         "xRange": [
           2.0,
           12.0
@@ -1986,7 +1986,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Reciprocal Toolkit Function",
+        "title": "Graph",
         "xRange": [
           -6.0,
           6.0
@@ -3133,7 +3133,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Horizontal Line Test",
+        "title": "Graph",
         "xRange": [
           -4.23606797749979,
           4.23606797749979

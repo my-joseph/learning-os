@@ -86,7 +86,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A linear function has a constant slope and a y-intercept",
+        "title": "Graph",
         "xRange": [
           -4.0,
           4.0

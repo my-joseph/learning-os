@@ -37,7 +37,7 @@
             "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Horizontally stretched and transformed graph"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -49,7 +49,7 @@
             "expr": "{a:g}*(x-{h:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Transformed quadratic graph"
+          "title": "Graph"
         }
       ]
     },
@@ -87,7 +87,7 @@
             "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Horizontally stretched and transformed graph"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -99,7 +99,7 @@
             "expr": "{a:g}*(x-{h:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Transformed quadratic graph"
+          "title": "Graph"
         }
       ]
     },
@@ -147,7 +147,7 @@
             "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Horizontally stretched and transformed graph"
+          "title": "Graph"
         },
         {
           "fn": "build_function_graph_figure",
@@ -159,7 +159,7 @@
             "expr": "{a:g}*(x-{h:g})^2+{k:g}",
             "label": "g(x)"
           },
-          "title": "Transformed quadratic graph"
+          "title": "Graph"
         }
       ]
     }
