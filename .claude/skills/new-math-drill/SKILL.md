@@ -113,19 +113,30 @@ It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. 
 .venv/bin/python -m pytest -q
 ```
 
-Run the **full** test suite after ingest and before anything leaves the machine. If a test fails, fix the cause (or delete the new drill file) before step 9; never sync or push a drill with a failing test.
+Run the **full** test suite after ingest and before anything leaves the machine. If a test fails, fix the cause (or delete the new drill file) before step 10; never sync or push a drill with a failing test.
 
-Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and records the used contexts in the vault.
+Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json`, records the used contexts in the vault, and prints a non-blocking warning if any `(archetypeKey, level)` pair in the drill has < 3 Similar variants.
+
+## 9. Variant coverage (Similar bank)
+
+```bash
+.venv/bin/python -m math_engine.variant_bank --coverage drills/data/<UNIT>/<DRILL_ID>.json
+```
+
+For every `(archetypeKey, level)` pair flagged with `< 3` variants, create AI-made variants (~3 per pair: same form with new numbers, changed form e.g. reverse, and one level up when the vault allows) through the existing `variant_bank --add` path with its full gates:
+1. Run blind solve (required for L3+, plus context check when non-empty) and reviewer subagent on the variant draft.
+2. Append via `.venv/bin/python -m math_engine.variant_bank --add scratch/drafts/<UNIT>-variants.json` and check originality with `.venv/bin/python -m math_engine.variant_bank --check <UNIT> --originality`.
+3. **Templates are being retired: never seed variants from templates (`--from-templates`).**
 
 Before reporting, log every friction item from the run: anything you had to guess, a gate or tool that misbehaved (including a workaround you used), a rule that was unclear, a vault gap. Use `.venv/bin/python -m scripts.issues add` with the matching kind; listing it in the report is not enough.
 
-Report to the learner in a few lines and **without answers or prompts**: drill ID, number of problems per level, and how many problems the reviewer fixed or dropped (with the issue-log IDs). If anything is `urgent` (`rules/00_core.md` §11), put a warning on the first line.
+Report to the learner in a few lines and **without answers or prompts**: drill ID, number of problems per level, Similar-bank coverage / variants added, and how many problems the reviewer fixed or dropped (with the issue-log IDs). If anything is `urgent` (`rules/00_core.md` §11), put a warning on the first line.
 
-## 9. Sync, then ship (in this order)
+## 10. Sync, then ship (in this order)
 
-Only after every test in step 8 passed: (1) sync to Notion, which adds the drill's entry to `id_map.json`; (2) commit the drill, its vault and `id_map.json`; (3) push, open the PR and merge it.
+Only after every test in step 8 (and any variant checks in step 9) passed: (1) sync to Notion, which adds the drill's entry to `id_map.json`; (2) commit the drill, its vault, `id_map.json` (and any updated variant bank); (3) push and open the PR.
 
-- Ship it without being asked (learner decision 2026-11-15): commit on a branch `drill/<drill-id>` (never on `main`), push, open a PR and merge it yourself (`gh pr merge --merge --delete-branch`), then return the checkout to `main` (`git checkout main && git pull --ff-only`). Self-merge is allowed **only** when the PR changes nothing but the new drill file under `drills/data/<UNIT>/`, that unit's vault file and `id_map.json`; check with `git diff --stat origin/main...HEAD` before merging. Anything else (rules, code, tests, other drills) needs the learner's go-ahead.
+- Ship it without being asked (learner decision 2026-11-15): commit on a branch `drill/<drill-id>` (never on `main`), push, open a PR and merge it yourself (`gh pr merge --merge --delete-branch`), then return the checkout to `main` (`git checkout main && git pull --ff-only`). Self-merge is allowed **only** when the PR changes nothing but the new drill file under `drills/data/<UNIT>/`, that unit's vault file and `id_map.json`; check with `git diff --stat origin/main...HEAD` before merging. Anything else (variant bank files, rules, code, tests, other drills) needs the learner's go-ahead.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
 - Sync the new drill's pristine record to Notion once the tests pass (`rules/00_core.md` §8); no need to wait for the merge or ask. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
