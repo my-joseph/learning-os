@@ -1233,59 +1233,59 @@
       "form": "direct",
       "context": "",
       "verificationLevel": "partial",
-      "prompt": "Evaluate $(9i)(4i)$. Write the result as a real number.",
+      "prompt": "Determine the real-valued product represented by $(-8i)(13i)$.",
       "display": "(bi)(di) = bd\\cdot i^2",
-      "plainText": "(9*i)*(4*i)",
+      "plainText": "(-8*i)*(13*i)",
       "givens": {
-        "b": 9,
-        "d": 4
+        "b": -8,
+        "d": 13
       },
       "constants": {},
       "trapGivens": [
-        9,
-        4
+        8,
+        13
       ],
       "answerSpec": {
         "type": "number",
-        "value": "-36",
+        "value": "104",
         "tolerance": 0.001
       },
-      "answerPlain": "-36",
-      "answerDisplay": "-36",
+      "answerPlain": "104",
+      "answerDisplay": "104",
       "inputHint": "Enter a real number.",
       "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
-      "trapDerivation": "9 * 4",
-      "trapValue": "36",
+      "trapDerivation": "-8 * 13",
+      "trapValue": "-104",
       "verify": {
-        "source": "-36",
-        "trapValue": "36"
+        "source": "104",
+        "trapValue": "-104"
       },
-      "checkpointHint": "Multiply the real coefficients and the imaginary units, then replace the squared imaginary unit with its real value.",
+      "checkpointHint": "Track the sign of the coefficient product separately from the value of the product of the imaginary units.",
       "references": [
         "MTH-T02-C01-U01"
       ],
       "steps": [
         {
-          "latex": "(9i)(4i) = (9\\cdot 4)(i\\cdot i)",
-          "explain": "Group the numerical coefficients and the imaginary units."
+          "latex": "(-8i)(13i) = (-8\\cdot 13)(i\\cdot i)",
+          "explain": "Group the real coefficients and the imaginary units."
         },
         {
-          "latex": "(9\\cdot 4)(i\\cdot i) = 36i^2",
-          "explain": "Multiply 9 by 4 to get 36."
+          "latex": "(-8\\cdot 13)(i\\cdot i) = -104i^2",
+          "explain": "Multiply -8 by 13 to get -104."
         },
         {
-          "latex": "36i^2 = 36(-1)",
+          "latex": "-104i^2 = -104(-1)",
           "explain": "Replace i^2 with -1."
         },
         {
-          "latex": "36(-1) = -36",
-          "explain": "Multiply 36 by -1 to get -36.",
-          "val": "-36"
+          "latex": "-104(-1) = 104",
+          "explain": "Multiply -104 by -1 to get 104.",
+          "val": "104"
         }
       ],
       "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-01",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(#*i)*(#*i)"
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(-#*i)*(#*i)"
     },
     {
       "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-02",
@@ -1298,59 +1298,59 @@
       "form": "direct",
       "context": "",
       "verificationLevel": "partial",
-      "prompt": "Evaluate $(-5i)(11i)$. Write the result as a real number.",
+      "prompt": "Simplify the product of $14i$ and $-3i$.",
       "display": "(bi)(di) = bd\\cdot i^2",
-      "plainText": "(-5*i)*(11*i)",
+      "plainText": "(14*i)*(-3*i)",
       "givens": {
-        "b": -5,
-        "d": 11
+        "b": 14,
+        "d": -3
       },
       "constants": {},
       "trapGivens": [
-        5,
-        11
+        14,
+        3
       ],
       "answerSpec": {
         "type": "number",
-        "value": "55",
+        "value": "42",
         "tolerance": 0.001
       },
-      "answerPlain": "55",
-      "answerDisplay": "55",
+      "answerPlain": "42",
+      "answerDisplay": "42",
       "inputHint": "Enter a real number.",
       "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
-      "trapDerivation": "-5 * 11",
-      "trapValue": "-55",
+      "trapDerivation": "14 * -3",
+      "trapValue": "-42",
       "verify": {
-        "source": "55",
-        "trapValue": "-55"
+        "source": "42",
+        "trapValue": "-42"
       },
-      "checkpointHint": "Account for both the negative sign on the coefficient and the negative sign produced by the product of the two imaginary units.",
+      "checkpointHint": "Keep the coefficient signs and the square of the imaginary unit in view as distinct factors.",
       "references": [
         "MTH-T02-C01-U01"
       ],
       "steps": [
         {
-          "latex": "(-5i)(11i) = (-5\\cdot 11)(i\\cdot i)",
-          "explain": "Group the real coefficients and the imaginary units."
+          "latex": "(14i)(-3i) = (14\\cdot -3)(i\\cdot i)",
+          "explain": "Separate the real coefficients from the imaginary units."
         },
         {
-          "latex": "(-5\\cdot 11)(i\\cdot i) = -55i^2",
-          "explain": "Multiply -5 by 11 to get -55."
+          "latex": "(14\\cdot -3)(i\\cdot i) = -42i^2",
+          "explain": "Multiply 14 by -3 to get -42."
         },
         {
-          "latex": "-55i^2 = -55(-1)",
+          "latex": "-42i^2 = -42(-1)",
           "explain": "Replace i^2 with -1."
         },
         {
-          "latex": "-55(-1) = 55",
-          "explain": "Multiply -55 by -1 to obtain 55.",
-          "val": "55"
+          "latex": "-42(-1) = 42",
+          "explain": "Multiply -42 by -1 to get 42.",
+          "val": "42"
         }
       ],
       "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-02",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(-#*i)*(#*i)"
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(#*i)*(-#*i)"
     },
     {
       "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-03",
