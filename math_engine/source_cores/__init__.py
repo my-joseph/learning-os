@@ -11,14 +11,20 @@ from __future__ import annotations
 import json
 import os
 import re
+import warnings
 from typing import Any, Iterable
 
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.dirname(PACKAGE_DIR))
+ID_MAP_PATH = os.path.join(REPO_ROOT, "id_map.json")
 SCHEMA_PATH = os.path.join(PACKAGE_DIR, "schema.json")
 UNIT_TERMS_PATH = os.path.join(PACKAGE_DIR, "unit_terms.json")
 
 MAX_FIELD_LENGTH = 200
 WORD_SHINGLE_SIZE = 6
+UNMAPPED_PREFIX = "UNMAPPED:"
+_UNIT_OR_CHAPTER_RE = re.compile(r"^(?:MTH|PHY|PRG)-T\d+-C\d+(?:-U\d+)?$")
+_VALID_CODES_CACHE: dict[tuple[str, float], dict[str, str]] = {}
 
 REASONING_MOVES: tuple[str, ...] = (
     "direct",
@@ -206,7 +212,34 @@ def _content_string_fields(card: dict[str, Any]) -> list[tuple[str, str]]:
     return fields
 
 
-def validate_core_card(card: Any, source_item_text: str | None = None) -> list[str]:
+def load_valid_unit_codes(id_map_path: str | None = None) -> dict[str, str]:
+    """Return ``{code: title}`` for every unit/chapter code registered in ``id_map.json``."""
+    target = os.path.abspath(id_map_path or ID_MAP_PATH)
+    if not os.path.isfile(target):
+        return {}
+    mtime = os.path.getmtime(target)
+    cache_key = (target, mtime)
+    cached = _VALID_CODES_CACHE.get(cache_key)
+    if cached is not None:
+        return dict(cached)
+    with open(target, "r", encoding="utf-8") as fh:
+        raw = json.load(fh)
+    codes: dict[str, str] = {}
+    if isinstance(raw, dict):
+        for key, entry in raw.items():
+            if not isinstance(key, str) or not _UNIT_OR_CHAPTER_RE.match(key):
+                continue
+            title = entry.get("title", "") if isinstance(entry, dict) else ""
+            codes[key] = str(title or "")
+    _VALID_CODES_CACHE[cache_key] = codes
+    return dict(codes)
+
+
+def validate_core_card(
+    card: Any,
+    source_item_text: str | None = None,
+    valid_unit_codes: Iterable[str] | None = None,
+) -> list[str]:
     """Validate a core card against ``schema.json`` and source-free invariants.
 
     Returns a list of error strings (empty list means valid).
@@ -235,6 +268,27 @@ def validate_core_card(card: Any, source_item_text: str | None = None) -> list[s
     if "laterUnit" in card and card["laterUnit"] is not None:
         if not isinstance(card["laterUnit"], str) or not card["laterUnit"].strip():
             errors.append("laterUnit: must be a non-empty string or null.")
+        else:
+            later = card["laterUnit"].strip()
+            if later.startswith(UNMAPPED_PREFIX):
+                if not later[len(UNMAPPED_PREFIX) :].strip():
+                    errors.append("laterUnit: 'UNMAPPED:' prefix must be followed by a non-empty label.")
+            else:
+                known_codes = (
+                    {str(c).strip() for c in valid_unit_codes if isinstance(c, str) and c.strip()}
+                    if valid_unit_codes is not None
+                    else set(load_valid_unit_codes())
+                )
+                if known_codes and later not in known_codes:
+                    warnings.warn(
+                        f"Unknown laterUnit '{later}' is not in id_map.json unit/chapter codes.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    errors.append(
+                        f"laterUnit: unknown unit/chapter code '{later}' (not in id_map.json; "
+                        f"use a real unit/chapter code or prefix with '{UNMAPPED_PREFIX}')."
+                    )
 
     if "units" in card:
         units = card["units"]
@@ -355,16 +409,7 @@ def validate_core_card(card: Any, source_item_text: str | None = None) -> list[s
     return errors
 
 
-def load_core_cards(
-    unit_code: str,
-    sources_dir: str | None = None,
-    validate: bool = True,
-) -> list[dict[str, Any]]:
-    """Load core cards from ``sources/_cores/<unit_code>.jsonl`` (returns ``[]`` if missing)."""
-    path = cores_path(unit_code, sources_dir=sources_dir)
-    if not os.path.exists(path):
-        return []
-    cards: list[dict[str, Any]] = []
+def _iter_jsonl_cards(path: str) -> Iterable[tuple[int, dict[str, Any]]]:
     with open(path, "r", encoding="utf-8") as fh:
         for line_no, raw in enumerate(fh, 1):
             line = raw.strip()
@@ -374,11 +419,78 @@ def load_core_cards(
                 card = json.loads(line)
             except ValueError as exc:
                 raise CoreCardError(f"{path}:{line_no}: invalid JSON: {exc}") from exc
+            if not isinstance(card, dict):
+                raise CoreCardError(f"{path}:{line_no}: invalid core card: Card must be a JSON object.")
+            yield line_no, card
+
+
+def _card_targets_unit(card: dict[str, Any], unit_code: str) -> bool:
+    later = card.get("laterUnit")
+    if isinstance(later, str) and later.strip() == unit_code:
+        return True
+    units = card.get("units")
+    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units):
+        return True
+    return False
+
+
+def load_core_cards(
+    unit_code: str,
+    sources_dir: str | None = None,
+    validate: bool = True,
+    *,
+    include_carried: bool = True,
+    valid_unit_codes: Iterable[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Load core cards for ``unit_code`` from ``sources/_cores/<unit_code>.jsonl``.
+
+    When ``include_carried`` is True (default), also scans other ``sources/_cores/*.jsonl``
+    files for cards whose ``laterUnit == unit_code`` or whose ``units`` contains ``unit_code``,
+    deduplicating by ``id`` and annotating carried-forward cards with ``carriedFrom``.
+    """
+    cards: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    path = cores_path(unit_code, sources_dir=sources_dir)
+    if os.path.exists(path):
+        for line_no, card in _iter_jsonl_cards(path):
             if validate:
-                errs = validate_core_card(card)
+                errs = validate_core_card(card, valid_unit_codes=valid_unit_codes)
                 if errs:
                     raise CoreCardError(f"{path}:{line_no}: invalid core card: " + "; ".join(errs))
+            cid = card.get("id")
+            if isinstance(cid, str):
+                if cid in seen_ids:
+                    continue
+                seen_ids.add(cid)
             cards.append(card)
+
+    if include_carried:
+        cores_dir = os.path.dirname(path)
+        if os.path.isdir(cores_dir):
+            for fname in sorted(os.listdir(cores_dir)):
+                if not fname.endswith(".jsonl"):
+                    continue
+                other_unit = fname[:-6]
+                if other_unit == unit_code:
+                    continue
+                other_path = os.path.join(cores_dir, fname)
+                if not os.path.isfile(other_path):
+                    continue
+                for line_no, card in _iter_jsonl_cards(other_path):
+                    if not _card_targets_unit(card, unit_code):
+                        continue
+                    cid = card.get("id")
+                    if isinstance(cid, str) and cid in seen_ids:
+                        continue
+                    if validate:
+                        errs = validate_core_card(card, valid_unit_codes=valid_unit_codes)
+                        if errs:
+                            raise CoreCardError(f"{other_path}:{line_no}: invalid core card: " + "; ".join(errs))
+                    if isinstance(cid, str):
+                        seen_ids.add(cid)
+                    cards.append({**card, "carriedFrom": other_unit})
+
     return cards
 
 
@@ -387,12 +499,18 @@ def save_core_cards(
     cards: list[dict[str, Any]],
     sources_dir: str | None = None,
     source_texts: dict[str, str] | None = None,
+    *,
+    valid_unit_codes: Iterable[str] | None = None,
 ) -> str:
     """Validate and write ``cards`` to ``sources/_cores/<unit_code>.jsonl``."""
     source_texts = source_texts or {}
     for idx, card in enumerate(cards, 1):
         cid = card.get("id", f"#{idx}") if isinstance(card, dict) else f"#{idx}"
-        errs = validate_core_card(card, source_item_text=source_texts.get(cid))
+        errs = validate_core_card(
+            card,
+            source_item_text=source_texts.get(cid),
+            valid_unit_codes=valid_unit_codes,
+        )
         if errs:
             raise CoreCardError(f"[{cid}] invalid core card: " + "; ".join(errs))
     path = cores_path(unit_code, sources_dir=sources_dir)
@@ -408,9 +526,11 @@ def append_core_card(
     card: dict[str, Any],
     sources_dir: str | None = None,
     source_item_text: str | None = None,
+    *,
+    valid_unit_codes: Iterable[str] | None = None,
 ) -> str:
     """Validate and append one core card to ``sources/_cores/<unit_code>.jsonl``."""
-    errs = validate_core_card(card, source_item_text=source_item_text)
+    errs = validate_core_card(card, source_item_text=source_item_text, valid_unit_codes=valid_unit_codes)
     if errs:
         raise CoreCardError("Invalid core card: " + "; ".join(errs))
     path = cores_path(unit_code, sources_dir=sources_dir)

@@ -29,7 +29,8 @@ import os
 import random
 import re
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from collections import Counter
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from math_engine.ai_drill_ingest import (
     AiContractError,
@@ -667,17 +668,286 @@ def generate_variants_from_templates(
     return bank_doc
 
 
+DEFAULT_MIN_VARIANTS = 3
+
+
+def _candidate_bank_codes_for_scope(codes: Iterable[str], variants_dir: Optional[str] = None) -> List[str]:
+    """Resolve bank file stems (exact unit/chapter, parent chapter, child units for chapter)."""
+    base = variants_dir or variants_root()
+    ordered: List[str] = []
+    seen: set[str] = set()
+
+    def _add(code: str) -> None:
+        c = code.strip()
+        if c and c not in seen:
+            seen.add(c)
+            ordered.append(c)
+
+    for raw in codes:
+        if not isinstance(raw, str) or not raw.strip():
+            continue
+        code = raw.strip()
+        _add(code)
+        m_unit = re.match(r"^(.+)-U\d+$", code)
+        if m_unit:
+            _add(m_unit.group(1))
+        elif os.path.isdir(base):
+            prefix = f"{code}-U"
+            for path in sorted(glob.glob(os.path.join(base, "*.json"))):
+                stem = os.path.basename(path)[:-5]
+                if stem.startswith(prefix):
+                    _add(stem)
+    return ordered
+
+
+def _load_scope_variants(codes: Iterable[str], variants_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Load unique bank variants across all candidate bank files for ``codes``."""
+    variants: List[Dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for code in _candidate_bank_codes_for_scope(codes, variants_dir=variants_dir):
+        path = bank_path(code, variants_dir=variants_dir)
+        if not os.path.isfile(path):
+            continue
+        try:
+            doc = load_bank(path, variants_dir=variants_dir)
+        except (OSError, ValueError):
+            continue
+        for var in doc.get("variants") or []:
+            if not isinstance(var, dict):
+                continue
+            vid = str(var.get("variantId") or "")
+            if vid:
+                if vid in seen_ids:
+                    continue
+                seen_ids.add(vid)
+            variants.append(var)
+    return variants
+
+
+def _summarize_coverage(
+    target: str,
+    unit_code: str,
+    drill_count: int,
+    problems: List[Dict[str, Any]],
+    *,
+    variants_dir: Optional[str] = None,
+    min_variants: int = DEFAULT_MIN_VARIANTS,
+) -> Dict[str, Any]:
+    bank_codes: List[str] = [unit_code] if unit_code else []
+    pair_drill_counts: Counter[Tuple[str, int]] = Counter()
+    for prob in problems:
+        if not isinstance(prob, dict):
+            continue
+        arch = str(prob.get("archetypeKey") or prob.get("templateKey") or "").strip()
+        if not arch:
+            continue
+        try:
+            lvl = int(prob.get("level") or 0)
+        except (TypeError, ValueError):
+            lvl = 0
+        pair_drill_counts[(arch, lvl)] += 1
+        p_unit = prob.get("unitCode")
+        if isinstance(p_unit, str) and p_unit.strip():
+            bank_codes.append(p_unit.strip())
+
+    scope_variants = _load_scope_variants(bank_codes, variants_dir=variants_dir)
+    variant_pair_counts: Counter[Tuple[str, int]] = Counter()
+    variant_arch_counts: Counter[str] = Counter()
+    for var in scope_variants:
+        v_arch = str(var.get("archetypeKey") or var.get("sourceArchetype") or "").strip()
+        if not v_arch:
+            continue
+        try:
+            v_lvl = int(var.get("level") or 0)
+        except (TypeError, ValueError):
+            v_lvl = 0
+        variant_pair_counts[(v_arch, v_lvl)] += 1
+        variant_arch_counts[v_arch] += 1
+
+    pairs: List[Dict[str, Any]] = []
+    uncovered: List[Dict[str, Any]] = []
+    for (arch, lvl), drill_uses in sorted(pair_drill_counts.items()):
+        v_count = variant_pair_counts.get((arch, lvl), 0)
+        entry = {
+            "archetypeKey": arch,
+            "level": lvl,
+            "drillProblems": drill_uses,
+            "variantCount": v_count,
+            "archetypeTotalVariants": variant_arch_counts.get(arch, 0),
+            "covered": v_count >= min_variants,
+            "needed": max(0, min_variants - v_count),
+        }
+        pairs.append(entry)
+        if not entry["covered"]:
+            uncovered.append(entry)
+
+    return {
+        "target": target,
+        "unitCode": unit_code,
+        "minVariants": min_variants,
+        "drillCount": drill_count,
+        "problemCount": sum(pair_drill_counts.values()),
+        "totalPairs": len(pairs),
+        "coveredPairs": len(pairs) - len(uncovered),
+        "uncoveredPairs": uncovered,
+        "pairs": pairs,
+    }
+
+
+def compute_drill_coverage(
+    drill_doc: Dict[str, Any],
+    *,
+    variants_dir: Optional[str] = None,
+    min_variants: int = DEFAULT_MIN_VARIANTS,
+    target_label: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Compute variant coverage for every ``(archetypeKey, level)`` pair in a single drill document."""
+    unit_code = str(drill_doc.get("unitCode") or "").strip()
+    label = target_label or str(drill_doc.get("drillId") or unit_code or "<drill>")
+    problems = [p for p in (drill_doc.get("problems") or []) if isinstance(p, dict)]
+    return _summarize_coverage(
+        target=label,
+        unit_code=unit_code,
+        drill_count=1,
+        problems=problems,
+        variants_dir=variants_dir,
+        min_variants=min_variants,
+    )
+
+
+def compute_coverage(
+    target: str,
+    *,
+    variants_dir: Optional[str] = None,
+    data_root: Optional[str] = None,
+    min_variants: int = DEFAULT_MIN_VARIANTS,
+) -> Dict[str, Any]:
+    """Compute Similar-bank variant coverage for a unit/chapter code or a drill JSON file."""
+    if target.endswith(".json") and os.path.isfile(target):
+        with open(target, "r", encoding="utf-8") as fh:
+            doc = json.load(fh)
+        return compute_drill_coverage(
+            doc,
+            variants_dir=variants_dir,
+            min_variants=min_variants,
+            target_label=target,
+        )
+
+    root = _drills_data_root(data_root)
+    candidate_dirs: List[str] = []
+    exact = os.path.join(root, target)
+    if os.path.isdir(exact):
+        candidate_dirs.append(exact)
+    if os.path.isdir(root):
+        for entry in sorted(os.listdir(root)):
+            full = os.path.join(root, entry)
+            if os.path.isdir(full) and entry.startswith(target + "-U") and full not in candidate_dirs:
+                candidate_dirs.append(full)
+
+    drill_count = 0
+    problems: List[Dict[str, Any]] = []
+    for d in candidate_dirs:
+        for path in sorted(glob.glob(os.path.join(d, "*.json"))):
+            try:
+                with open(path, "r", encoding="utf-8") as fh:
+                    doc = json.load(fh)
+            except (OSError, ValueError):
+                continue
+            drill_count += 1
+            for prob in doc.get("problems") or []:
+                if isinstance(prob, dict):
+                    problems.append(prob)
+
+    return _summarize_coverage(
+        target=target,
+        unit_code=target,
+        drill_count=drill_count,
+        problems=problems,
+        variants_dir=variants_dir,
+        min_variants=min_variants,
+    )
+
+
+def format_coverage_report(report: Dict[str, Any]) -> str:
+    """Format ``compute_coverage`` output as a readable CLI report."""
+    min_v = int(report["minVariants"])
+    lines = [
+        f"Similar variant coverage for {report['target']} "
+        f"({report['drillCount']} drill(s), {report['totalPairs']} (archetypeKey, level) pair(s), min={min_v})",
+    ]
+    pairs = report.get("pairs") or []
+    if not pairs:
+        lines.append("  (no drill problems found)")
+        return "\n".join(lines)
+
+    for entry in pairs:
+        status = "OK " if entry["covered"] else "LOW"
+        extra_bits = [f"{entry['drillProblems']} drill problem(s)"]
+        if not entry["covered"]:
+            extra_bits.insert(0, f"need {entry['needed']} more")
+        if entry["archetypeTotalVariants"] != entry["variantCount"]:
+            extra_bits.append(f"total across levels: {entry['archetypeTotalVariants']}")
+        lines.append(
+            f"  {status}  {entry['archetypeKey']} @ L{entry['level']}: "
+            f"{entry['variantCount']} variant(s) ({'; '.join(extra_bits)})"
+        )
+
+    uncovered_n = len(report.get("uncoveredPairs") or [])
+    lines.append(
+        f"Summary: {report['coveredPairs']}/{report['totalPairs']} pair(s) covered (>= {min_v} variants), "
+        f"{uncovered_n} uncovered (< {min_v})."
+    )
+    return "\n".join(lines)
+
+
+def format_coverage_warning(
+    drill_doc: Dict[str, Any],
+    *,
+    variants_dir: Optional[str] = None,
+    min_variants: int = DEFAULT_MIN_VARIANTS,
+    drill_path: Optional[str] = None,
+) -> Optional[str]:
+    """Return a non-blocking single-line warning if ``drill_doc`` has uncovered pairs, else None."""
+    report = compute_drill_coverage(
+        drill_doc,
+        variants_dir=variants_dir,
+        min_variants=min_variants,
+        target_label=drill_path or drill_doc.get("drillId"),
+    )
+    uncovered = report.get("uncoveredPairs") or []
+    if not uncovered:
+        return None
+    items = ", ".join(f"{e['archetypeKey']}@L{e['level']} ({e['variantCount']}/{min_variants})" for e in uncovered)
+    target_hint = drill_path or drill_doc.get("unitCode") or ""
+    return (
+        f"WARNING: Similar variant bank has {len(uncovered)} uncovered pair(s) (< {min_variants} variants): "
+        f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}"
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Validate, append, or seed math variant banks.")
+    parser = argparse.ArgumentParser(description="Validate, append, inspect coverage, or seed math variant banks.")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--check", metavar="FILE_OR_UNIT", help="Validate a variant bank JSON file or unit code.")
     group.add_argument("--add", metavar="DRAFT_JSON", help="Gate and append variants from a draft JSON file.")
+    group.add_argument(
+        "--coverage",
+        metavar="UNIT_OR_DRILL",
+        help="Report variant counts per (archetypeKey, level) used by a unit's drills or a drill JSON file.",
+    )
     group.add_argument(
         "--from-templates",
         metavar="UNIT",
         help="Deterministically generate gated variants from math_engine/templates for UNIT.",
     )
     parser.add_argument("--unit", help="Unit code override (optional with --add).")
+    parser.add_argument(
+        "--min-variants",
+        type=int,
+        default=DEFAULT_MIN_VARIANTS,
+        help=f"Minimum variants per (archetypeKey, level) for --coverage (default: {DEFAULT_MIN_VARIANTS}).",
+    )
+    parser.add_argument("--json", action="store_true", help="With --coverage: print structured JSON output.")
     parser.add_argument(
         "--per-archetype",
         type=int,
@@ -703,6 +973,18 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.coverage:
+        try:
+            report = compute_coverage(args.coverage, min_variants=args.min_variants)
+        except (OSError, ValueError) as exc:
+            print(f"FAIL Could not compute variant coverage for '{args.coverage}': {exc}")
+            return 1
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            print(format_coverage_report(report))
+        return 0
 
     if args.check:
         try:

@@ -39,7 +39,13 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
   - `usedContexts: []`.
   Then run `.venv/bin/python -m code_engine.quality_checks --check-vaults` and fix any errors before continuing.
 
-## 4. Notion page (`rules/02_pedagogy.md` §7a for MTH, §7b for PRG)
+## 4. Source synthesis (MTH)
+
+Run `.venv/bin/python -m scripts.source_find <UNIT>` (watch for any unregistered-folder warning) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units`).
+- If any `cores` mining targets exist **or** carried-forward cards exist for `<UNIT>`, run `.claude/skills/synthesize-source/SKILL.md` steps 3–5 (extract source-free core cards, `source_gap`, vault update + reviewer subagent) so the Notion page and first drill already use the synthesised archetypes and traps.
+- If neither exists, note that in one line and continue. (`synthesize-source` remains callable on its own.)
+
+## 5. Notion page (`rules/02_pedagogy.md` §7a for MTH, §7b for PRG)
 
 Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and text syntax: `python -m notion_sync.unit_page --help`).
 
@@ -73,14 +79,14 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
   - Fill every empty property with `--set "Name=value"`: `Learning Objective`, `Expected Output`, `Resources` (`--set "Resources=R0xx"`, added to existing links), and `Status=In progress` if it is `Not started`. Never write to Notion any other way (no direct API calls); if the tool cannot do something, log a `tool-gap`. Do not change `Mastery (0-4)` (drill sync sets it from evidence).
   - Run `.venv/bin/python -m scripts.page_audit <UNIT>` after `--mode add` / `--move-section-to-end` / `--renumber`: it must show 0 FAIL. Fix a FAIL with `--mode add`/`--set`; a WARN is your call, say what you decided in the report.
 
-## 5. First drill
+## 6. First drill and Similar variants
 
-- **MTH:** Run the `new-math-drill` skill for the unit code (unit-only drill, default levels). It ingests, tests, syncs and merges its own PR.
+- **MTH:** Run the `new-math-drill` skill for the unit code (unit-only drill, default levels). After ingest, run `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT>` (or the new drill file). For every uncovered `(archetypeKey, level)` pair (< 3 variants), create AI-made variants (~3 per pair: same form with new numbers, changed form e.g. reverse, and one level up when the vault allows) via `variant_bank --add` with its gates (blind solve for L3+, reviewer, `--check --originality`). Templates are being retired: **never** seed variants from templates (`--from-templates`).
 - **PRG:** Say that the `new-code-drill` skill comes next and stop there for now (do not hand-write drills).
 
-## 6. Ship and report
+## 7. Ship and report
 
-- **MTH:** Commit the new vault file on the drill's branch (or its own `drill/` branch): a PR that changes only that unit's vault file, the new drill and `id_map.json` may be merged by the agent; anything else (code, rules, other vaults) waits for the learner.
+- **MTH:** Commit the new vault file on the drill's branch (or its own `drill/` branch): a PR that changes only that unit's vault file, the new drill and `id_map.json` may be merged by the agent; if variant bank files (`drills/variants/<UNIT>.json`) or anything else (code, rules, other vaults) changed, open the PR and wait for the learner to merge.
 - **PRG:** Open a PR on a branch for the chapter vault changes (waiting for the learner to merge).
 - Log every friction item (`.venv/bin/python -m scripts.issues add ...`).
-- Report in Thai in a few lines, with no problem prompts or answers: the page (new or extended, and which sections; the `page_audit` result), archetypes added, the drill ID / PR number (or `new-code-drill` next step for PRG), and issue-log IDs.
+- Report in Thai in a few lines, with no problem prompts or answers: the page (new or extended, and which sections; the `page_audit` result), source-synthesis status, archetypes added, the drill ID / variant coverage / PR number (or `new-code-drill` next step for PRG), and issue-log IDs.

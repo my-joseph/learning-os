@@ -987,6 +987,8 @@ def ingest_ai_drill(
     rules: Optional[Dict[str, Any]] = None,
     vault_dir: Optional[str] = None,
     eligible_units: Optional[Iterable[str]] = None,
+    variants_dir: Optional[str] = None,
+    warn_coverage: bool = True,
 ) -> Dict[str, Any]:
     """
     Verifies every problem in an AI-generated drill document using Machine Quality Gates G1–G6,
@@ -1132,6 +1134,12 @@ def ingest_ai_drill(
             mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir, eligible_units=eligible_units)
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
+    if warn_coverage:
+        from math_engine.variant_bank import format_coverage_warning
+
+        cov_warning = format_coverage_warning(drill_doc, variants_dir=variants_dir, drill_path=file_path)
+        if cov_warning:
+            print(cov_warning)
     return drill_doc
 
 
@@ -1204,8 +1212,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                 else f"OK: all {n} problems pass every gate (nothing saved)."
             )
             return 1 if problems_found else 0
-        saved = ingest_ai_drill(drill_data)
+        saved = ingest_ai_drill(drill_data, warn_coverage=False)
         print(f"Successfully verified and ingested drill: {saved.get('drillId')}")
+        from math_engine.variant_bank import format_coverage_warning
+
+        cov_warning = format_coverage_warning(saved, drill_path=saved.get("localFilePath"))
+        if cov_warning:
+            print(cov_warning)
     return 0
 
 

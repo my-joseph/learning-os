@@ -20,11 +20,13 @@ import hashlib
 import io
 import json
 import os
+import re
 import sys
 import zipfile
 from typing import Any
 
 from math_engine.source_cores import (
+    REPO_ROOT,
     family_mode,
     family_root,
     get_unit_terms,
@@ -32,7 +34,50 @@ from math_engine.source_cores import (
     resolve_sources_dir,
 )
 
+DOCS_SOURCES_PATH = os.path.join(REPO_ROOT, "docs", "sources.md")
 _SCOPE_HINT_KEYWORDS = ("table of contents", "contents", "learning objectives", "by the end of this section")
+_TABLE_FAMILY_RE = re.compile(r"^\|\s*`([^`]+)`")
+
+
+def load_registered_source_families(registry_path: str | None = None) -> set[str]:
+    """Parse top-level registered folder names (lowercased) from ``docs/sources.md``."""
+    target = registry_path or DOCS_SOURCES_PATH
+    if not os.path.isfile(target):
+        return set()
+    registered: set[str] = set()
+    with open(target, "r", encoding="utf-8") as fh:
+        for line in fh:
+            stripped = line.strip()
+            m = _TABLE_FAMILY_RE.match(stripped)
+            if not m:
+                continue
+            token = m.group(1).replace("\\", "/").strip("/")
+            if not token:
+                continue
+            top = token.split("/", 1)[0].lower()
+            if top:
+                registered.add(top)
+    return registered
+
+
+def find_unregistered_source_folders(sources_dir: str, registry_path: str | None = None) -> list[str]:
+    """Return sorted top-level directories under ``sources_dir`` not listed in ``docs/sources.md``.
+
+    Ignores hidden entries (starting with ``.``) and internal folders (starting with ``_``).
+    """
+    if not os.path.isdir(sources_dir):
+        return []
+    registered = load_registered_source_families(registry_path=registry_path)
+    unregistered: list[str] = []
+    for entry in sorted(os.listdir(sources_dir)):
+        if entry.startswith("_") or entry.startswith("."):
+            continue
+        full = os.path.join(sources_dir, entry)
+        if not os.path.isdir(full):
+            continue
+        if entry.lower() not in registered:
+            unregistered.append(entry)
+    return unregistered
 
 
 def _load_pypdf() -> Any:
@@ -178,6 +223,7 @@ def find_sources(
     families: list[str] | None = None,
     sources_dir: str | None = None,
     use_cache: bool = True,
+    registry_path: str | None = None,
 ) -> dict[str, Any]:
     """Search PDFs under ``sources_dir`` for ``unit_code`` terms and cache extracted text."""
     sdir = resolve_sources_dir(sources_dir=sources_dir)
@@ -193,6 +239,7 @@ def find_sources(
             "math_engine/source_cores/unit_terms.json."
         )
 
+    unregistered = find_unregistered_source_folders(sdir, registry_path=registry_path)
     idx_dir = index_dir(sources_dir=sdir)
     pdfs = _discover_source_pdfs(sdir, families=families)
 
@@ -290,6 +337,7 @@ def find_sources(
         "manifestPath": manifest_path,
         "terms": search_terms,
         "pdfsScanned": len(pdfs),
+        "unregisteredSources": unregistered,
         "coreMatches": core_matches,
         "scopeMatches": scope_matches,
         "imageOnlyFiles": image_only_files,
@@ -307,8 +355,18 @@ def format_find_report(result: dict[str, Any]) -> str:
         f"Source find for {result['unitCode']} ({result['pdfsScanned']} PDF(s) scanned)",
         f"Terms: {', '.join(result['terms'])}",
         f"Sources dir: {result['sourcesDir']}",
-        "",
     ]
+
+    unregistered = result.get("unregisteredSources") or []
+    if unregistered:
+        lines.append("")
+        lines.append(
+            f"WARNING: Unregistered top-level folder(s) under sources/ not in docs/sources.md: "
+            f"{', '.join(unregistered)}"
+        )
+        lines.append("  Please register each folder in docs/sources.md (family, licence, allowed use) before mining.")
+
+    lines.append("")
 
     core_matches = result.get("coreMatches") or []
     lines.append(f"Mining targets (cores): {len(core_matches)} file(s)")
