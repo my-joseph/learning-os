@@ -46,6 +46,8 @@ from code_engine.workspace import (
     materialize_drill_workspace,
     resolve_test_imports,
 )
+from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores.code_originality import check_code_drill_originality
 from progress_store import strip_progress
 from quality_rules import QUALITY_RULES, find_choice_prompt_option_duplicates
 
@@ -1308,6 +1310,8 @@ def check_code_drill(
     *,
     ingested: bool = False,
     allow_missing_lint: bool = False,
+    check_originality: bool = False,
+    sources_dir: Optional[str] = None,
 ) -> List[str]:
     """Run every PRG ingest gate on a draft WITHOUT writing anything or touching the vault.
 
@@ -1388,6 +1392,15 @@ def check_code_drill(
     # 5. Blind solve & Reviewer record
     errors.extend(validate_drill_blind_solve(drill_doc, working_problems, ingested=ingested))
     errors.extend(validate_drill_review(drill_doc, working_problems))
+
+    # 6. Optional source originality gate (also enabled by default on CLI --check when sources/ exists)
+    if check_originality:
+        orig_errors, _ = check_code_drill_originality(
+            drill_doc,
+            unit_code=unit_code,
+            sources_dir=sources_dir,
+        )
+        errors.extend(orig_errors)
 
     return errors
 
@@ -1563,6 +1576,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Allow skipping ESLint/tsc gates if tools/lint/node_modules or node is missing (or set LEARNINGOS_ALLOW_MISSING_LINT=1).",
     )
+    parser.add_argument(
+        "--originality",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="With --check: run the source code/prompt originality gate (default: ON when sources dir exists, skipped with a notice when absent).",
+    )
+    parser.add_argument(
+        "--sources-dir",
+        default=None,
+        help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
+    )
     args = parser.parse_args(argv)
 
     if args.list_vault:
@@ -1605,6 +1629,20 @@ def main(argv: Optional[List[str]] = None) -> int:
             ingested=ingested_mode,
             allow_missing_lint=args.allow_missing_lint,
         )
+        resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+        if args.originality is False:
+            pass
+        elif not os.path.isdir(resolved_sources):
+            print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
+        else:
+            orig_errors, orig_notice = check_code_drill_originality(
+                drill_data,
+                unit_code=drill_data.get("unitCode") or args.unit,
+                sources_dir=resolved_sources,
+            )
+            if orig_notice:
+                print(f"NOTE: {orig_notice}")
+            failures.extend(orig_errors)
         for warning in visible_edge_case_warnings(drill_data):
             print(f"  WARN {warning}")
         for line in failures:

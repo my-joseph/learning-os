@@ -35,6 +35,8 @@ from code_engine.examples_gate import (
 from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries
 from code_engine.quality_checks import load_universal
 from code_engine.submit import _parse_junit_xml
+from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores.code_originality import check_lab_originality
 from notion_sync.client import load_env, notion_request
 
 LAB_ID_RE = re.compile(r"^LAB-[A-Z0-9-]+$")
@@ -743,6 +745,8 @@ def check_lab(
     offline: bool = False,
     ingested: bool = False,
     allow_missing_lint: bool = False,
+    check_originality: bool = False,
+    sources_dir: str | None = None,
 ) -> list[str]:
     """Run all lab ingest gates without modifying files. Returns list of error strings."""
     resolved_ref = _resolve_ref_dir(lab_dir, ref_dir)
@@ -765,6 +769,13 @@ def check_lab(
     errors.extend(_check_trap_mutants(resolved_ref, cfg, ingested=ingested))
     errors.extend(_check_blind_solve(lab_dir, resolved_ref, cfg, ingested=ingested))
     errors.extend(_check_review(cfg))
+    if check_originality:
+        orig_errors, _ = check_lab_originality(
+            lab_dir,
+            ref_dir=resolved_ref,
+            sources_dir=sources_dir,
+        )
+        errors.extend(orig_errors)
     return errors
 
 
@@ -840,6 +851,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--offline", action="store_true", help="Skip Notion Status GET check for extra-project")
     parser.add_argument("--id-map", default="id_map.json", help="Path to id_map.json")
     parser.add_argument("--vault-dir", default=None, help="Override reasoning_vault directory")
+    parser.add_argument(
+        "--originality",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="With --check: run the source code/prompt originality gate (default: ON when sources dir exists, skipped with a notice when absent).",
+    )
+    parser.add_argument(
+        "--sources-dir",
+        default=None,
+        help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
+    )
     args = parser.parse_args(argv)
 
     ingested_mode = bool(args.ingested)
@@ -862,6 +884,19 @@ def main(argv: list[str] | None = None) -> int:
             ingested=ingested_mode,
             allow_missing_lint=args.allow_missing_lint,
         )
+        resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+        if args.originality is False:
+            pass
+        elif not os.path.isdir(resolved_sources):
+            print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
+        else:
+            orig_errors, orig_notice = check_lab_originality(
+                lab_dir,
+                sources_dir=resolved_sources,
+            )
+            if orig_notice:
+                print(f"NOTE: {orig_notice}")
+            errors.extend(orig_errors)
         if errors:
             for err in errors:
                 print(f"FAIL: {err}", file=sys.stderr)

@@ -27,6 +27,7 @@ from math_engine.source_cores import (
     extract_digit_runs,
     get_unit_terms,
     index_dir,
+    is_prg_unit,
     load_core_cards,
     resolve_sources_dir,
 )
@@ -43,10 +44,14 @@ MIN_SIMILARITY_CHARS = 40
 
 
 def _family_relevant(rel_path: str, unit_code: str) -> bool:
-    """Compare MTH units only with math-relevant families (skip CS/physics books that merely mention a term)."""
-    rel = rel_path.replace("\\", "/")
-    if unit_code.startswith("MTH") and rel.startswith("openstax/cs-physics/"):
-        return False
+    """Compare MTH units with math families and PRG units with PRG code sources."""
+    rel = rel_path.replace("\\", "/").lower()
+    if unit_code.upper().startswith("MTH"):
+        if rel.startswith("openstax/cs-physics/") or rel.startswith("prg/"):
+            return False
+    elif is_prg_unit(unit_code):
+        if not rel.startswith("prg/"):
+            return False
     return True
 
 
@@ -149,15 +154,16 @@ def _load_pdf_cache_by_relpath(idx_dir: str) -> dict[str, dict[str, Any]]:
     by_rel: dict[str, dict[str, Any]] = {}
     if not os.path.isdir(idx_dir):
         return by_rel
-    for path in sorted(glob.glob(os.path.join(idx_dir, "pdf_*.json"))):
-        try:
-            with open(path, "r", encoding="utf-8") as fh:
-                doc = json.load(fh)
-        except (OSError, ValueError):
-            continue
-        rel = doc.get("relPath")
-        if isinstance(rel, str) and rel:
-            by_rel[rel] = doc
+    for pattern in ("pdf_*.json", "code_*.json"):
+        for path in sorted(glob.glob(os.path.join(idx_dir, pattern))):
+            try:
+                with open(path, "r", encoding="utf-8") as fh:
+                    doc = json.load(fh)
+            except (OSError, ValueError):
+                continue
+            rel = doc.get("relPath")
+            if isinstance(rel, str) and rel:
+                by_rel[rel] = doc
     return by_rel
 
 
@@ -240,11 +246,13 @@ def load_located_source_pages(
             if rel == ref_file or rel.endswith("/" + ref_file) or os.path.basename(rel) == ref_file:
                 _add_page(rel, ref_page, _lookup_page_text(cache_doc, ref_page))
 
-    # 3. Fallback: scan cached PDFs with seeded unit terms
+    # 3. Fallback: scan cached files with seeded unit terms (respecting track relevance)
     if not pages_out and by_rel:
         terms = [t.lower() for t in get_unit_terms(unit_code)]
         if terms:
             for rel, cache_doc in by_rel.items():
+                if not _family_relevant(rel, unit_code):
+                    continue
                 for p in cache_doc.get("pages") or []:
                     text = str(p.get("text") or "")
                     low = text.lower()
@@ -407,6 +415,18 @@ def check_document_originality(
     if not isinstance(resolved_unit, str) or not resolved_unit.strip():
         return (["Document must specify 'unitCode' (or pass --unit)."], None)
 
+    if is_prg_unit(resolved_unit):
+        from math_engine.source_cores.code_originality import check_code_drill_originality
+
+        return check_code_drill_originality(
+            doc,
+            unit_code=resolved_unit,
+            sources_dir=sources_dir,
+            source_pages=source_pages,
+            shingle_size=shingle_size,
+            similarity_threshold=similarity_threshold,
+        )
+
     if source_pages is None:
         sdir = resolve_sources_dir(sources_dir=sources_dir)
         if not os.path.isdir(sdir):
@@ -495,6 +515,26 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if os.path.isdir(args.file):
+        from math_engine.source_cores.code_originality import check_lab_originality
+
+        errors, notice = check_lab_originality(
+            args.file,
+            sources_dir=args.sources_dir,
+            shingle_size=args.shingle_size,
+            similarity_threshold=args.threshold,
+        )
+        if notice:
+            print(f"NOTE: {notice}")
+            return 0
+        if errors:
+            for line in errors:
+                print(f"  FAIL {line}")
+            print(f"\n{len(errors)} originality error(s) found.")
+            return 1
+        print(f"OK: lab {os.path.basename(os.path.abspath(args.file))} passed the originality gate.")
+        return 0
+
     try:
         with open(args.file, "r", encoding="utf-8") as fh:
             doc = json.load(fh)
