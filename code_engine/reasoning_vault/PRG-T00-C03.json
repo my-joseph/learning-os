@@ -1,7 +1,7 @@
 {
   "unitCode": "PRG-T00-C03",
   "unitTitle": "JavaScript & TypeScript Baseline",
-  "description": "Empirical reasoning schemas and archetypes for baseline JavaScript runtime mechanics and TypeScript type safety (U01 to U07).",
+  "description": "Empirical reasoning schemas and archetypes for the diagnostic JavaScript and TypeScript baseline check; deeper language internals are carried by PRG-T01.",
   "archetypes": [
     {
       "archetypeKey": "prg-c02-primitive-coercion-guard",
@@ -39,6 +39,18 @@
           "name": "Truthiness Conflating Valid Falsy Values",
           "description": "Checking '!val' treats legitimate 0, false, or '' the same as null or undefined.",
           "reproducer": "Pass port = 0 to hasValidPort; '!port' rejects 0 instead of distinguishing missing vs zero."
+        },
+        {
+          "trapTag": "reference-identity-confusion",
+          "name": "Content Mistaken for Identity",
+          "description": "Two separately created structured values may contain the same fields yet still compare as different references.",
+          "reproducer": "A predicted comparison between two independently constructed but structurally equal records is marked equal; the runtime comparison is false."
+        },
+        {
+          "trapTag": "coercion-context-confusion",
+          "name": "One Conversion Rule Assumed Everywhere",
+          "description": "Boolean tests, arithmetic, equality, and runtime classification can apply different language rules to the same value.",
+          "reproducer": "A trace checks an empty-like value in a conditional and then compares it numerically; one predicted result incorrectly reuses the other context’s conversion."
         }
       ],
       "realWorldDomains": [
@@ -83,8 +95,24 @@
             "code": "function sanitizeConfig(raw) {\n  return { ...raw, timeoutSec: raw.timeoutSec ?? 30 };\n}",
             "caughtBy": "review"
           }
+        },
+        {
+          "id": "QC-absence-state",
+          "check": "Defaulting and validation intent is explicit at the boundary rather than spread across implicit truthy/falsy expressions.",
+          "why": "Scattered coercion obscures which values the caller contract considers absent.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function readLimit(config) { const raw = config.limit; return raw || 10; }",
+            "caughtBy": "review"
+          }
         }
-      ]
+      ],
+      "levelNotes": {
+        "L1": "Classify scalar and structured values and use types that match their roles.",
+        "L2": "Predict identity and ordinary coercion outcomes from short expressions.",
+        "L3": "Explain boundary behavior for absent values, unusual numbers, and built-in runtime categories."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: exercism-javascript, exercism-typescript, javascript-koans, javascript-questions, wtfjs"
     },
     {
       "archetypeKey": "prg-c02-lexical-closure-factory",
@@ -194,6 +222,30 @@
           "name": "Reduce Without Initial Accumulator",
           "description": "Calling reduce() without an explicit initial accumulator throws TypeError on empty arrays and reuses the first element.",
           "reproducer": "Call sumTotals([]); without an initial value, reduce throws TypeError."
+        },
+        {
+          "trapTag": "collection-result-contract",
+          "name": "Callback Effect Confused with Returned Result",
+          "description": "A callback side effect does not supply the transformed collection value, and selection, mapping, and aggregation have different result shapes.",
+          "reproducer": "A predicted pipeline contains no transformed entries because its callback only records a side effect; a focused output assertion catches the empty or malformed result."
+        },
+        {
+          "trapTag": "collection-cardinality-order",
+          "name": "Transformation Loses Entry Alignment",
+          "description": "A collection transformation can produce plausible values while dropping, duplicating, or moving entries.",
+          "reproducer": "Tests compare output length and each output position with the corresponding input after mapping; a missing or reordered entry fails."
+        },
+        {
+          "trapTag": "accumulator-seed-update",
+          "name": "Accumulator Starts or Advances Incorrectly",
+          "description": "An absent initial state changes the first callback input, while a faulty update can discard prior contributions.",
+          "reproducer": "Tests cover empty, one-entry, and several-entry inputs; the empty case exposes a missing seed and the larger case exposes a lost prior total."
+        },
+        {
+          "trapTag": "mutation-observation-confusion",
+          "name": "Mutation Effect Confused with Operation Result",
+          "description": "An operation may change a collection while returning a different value, and edits during traversal can change later visits.",
+          "reproducer": "A test separately inspects the collection after the operation, the returned value, and the visited-entry sequence."
         }
       ],
       "realWorldDomains": [
@@ -234,8 +286,24 @@
             "code": "function summarize(orders) {\n  const out = {};\n  for (const o of orders) {\n    if (o.paid) out[o.cat] = (out[o.cat] ?? 0) + o.total * 1.07;\n  }\n  return out;\n}",
             "caughtBy": "review"
           }
+        },
+        {
+          "id": "QC-reduction-accumulator",
+          "check": "Aggregation has a focused stage with its initial state and update policy visible at one boundary.",
+          "why": "An opaque or mixed-purpose aggregation is difficult to review and extend safely.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function summarize(rows) { let output = {}; for (const row of rows) { if (row.active) output[row.group] = (output[row.group] ?? 0) + row.amount; } return output; }",
+            "caughtBy": "review"
+          }
         }
-      ]
+      ],
+      "levelNotes": {
+        "L1": "Implement one-to-one transformations and selection with preserved order.",
+        "L2": "Distinguish callback return contracts and establish correct accumulator behavior.",
+        "L3": "Compose typed stages while preserving inputs, shape, and traversal expectations."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: eslint, exercism-javascript, javascript-koans, javascript-questions, typescript-exercises"
     },
     {
       "archetypeKey": "prg-c02-event-delegation-dispatcher",
@@ -337,6 +405,30 @@
           "name": "Completion-Order Result Array Drift",
           "description": "Pushing resolved values into an array inside .then() reorders results by completion time instead of input order.",
           "reproducer": "Task 0 takes 30ms, task 1 takes 5ms; output has task 1's result at index 0."
+        },
+        {
+          "trapTag": "async-container-as-value",
+          "name": "Pending Work Mistaken for Its Result",
+          "description": "A completion handle represents work that may settle later; reading it as the fulfilled value skips the asynchronous boundary.",
+          "reproducer": "A predicted trace uses a pending completion object where a later consumer expects the fulfilled data; an awaited-result assertion exposes the mismatch."
+        },
+        {
+          "trapTag": "async-result-propagation",
+          "name": "Started Work Not Connected to the Caller",
+          "description": "A callback can start asynchronous work yet omit returning it, hiding its outcome from downstream stages.",
+          "reproducer": "A regression check waits on the public operation and verifies both the final value and rejection; it completes too early or misses the inner failure when work is detached."
+        },
+        {
+          "trapTag": "async-continuation-order",
+          "name": "Deferred Reaction Placed in the Synchronous Phase",
+          "description": "Promise reactions run after the current synchronous sequence, and later observations depend on settlement and chaining.",
+          "reproducer": "An exact event-trace prediction puts a reaction before a synchronous marker; the expected sequence check fails."
+        },
+        {
+          "trapTag": "concurrent-result-alignment",
+          "name": "Completion Speed Mistaken for Output Position",
+          "description": "Concurrent tasks may finish in a different order from their inputs even when results remain associated with original positions.",
+          "reproducer": "Tests give tasks deliberately different completion times and compare each output with its originating input."
         }
       ],
       "realWorldDomains": [
@@ -376,8 +468,24 @@
             "code": "async function runAll(tasks) {\n  const out = [];\n  tasks.forEach((t) => { t().then((v) => out.push(v)); });\n  return out;\n}",
             "caughtBy": "review"
           }
+        },
+        {
+          "id": "QC-async-propagation",
+          "check": "Asynchronous work is connected to its caller through a returned or awaited completion path, with independent work coordinated in a focused boundary.",
+          "why": "Detached tasks obscure ownership of completion and failure handling.",
+          "severity": "should",
+          "knownBad": {
+            "code": "async function refresh() { persistLater(); }",
+            "caughtBy": "review"
+          }
         }
-      ]
+      ],
+      "levelNotes": {
+        "L1": "Return and observe asynchronous completion through the declared boundary.",
+        "L2": "Trace synchronous effects and deferred continuations.",
+        "L3": "Propagate fulfillment and failure through composed or concurrent work."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: exercism-javascript, javascript-questions, wtfjs"
     },
     {
       "archetypeKey": "prg-c02-discriminated-union-narrowing",
@@ -403,6 +511,12 @@
           "name": "State Mutation on Invalid Transition",
           "description": "Permitting transition actions from incompatible states (e.g. CANCELLED -> SHIPPED) corrupts domain state integrity.",
           "reproducer": "Dispatch PAY event on an already REFUNDED order; status changes to COMPLETED."
+        },
+        {
+          "trapTag": "type-model-too-broad",
+          "name": "Type Model Erases Useful Distinctions",
+          "description": "A broad or inaccurate declared type can hide invalid operations or reject valid input shapes.",
+          "reproducer": "Strict compiler fixtures assign representative valid and invalid values; broad declarations allow an invalid operation or a narrow declaration rejects a supported state."
         }
       ],
       "realWorldDomains": [
@@ -449,7 +563,13 @@
             "caughtBy": "review"
           }
         }
-      ]
+      ],
+      "levelNotes": {
+        "L1": "Represent primitive and structured values with fitting types.",
+        "L2": "Keep callback input and result types aligned across transformations.",
+        "L3": "Use strict compilation alongside behavioral examples to validate the baseline contract."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: exercism-typescript, typescript-exercises"
     },
     {
       "archetypeKey": "prg-c02-reproducible-defect-isolation",
@@ -481,6 +601,18 @@
           "name": "Breaking Exported Function Signature",
           "description": "Changing the exported function name, parameter order, or return shape breaks existing baseline callers.",
           "reproducer": "Add a required second parameter without a default; baseline single-arg callers throw or fail."
+        },
+        {
+          "trapTag": "static-runtime-contract-drift",
+          "name": "Runtime Example Mistaken for Type Safety",
+          "description": "A value can pass a few runtime examples while violating the intended static contract, or a broad type can erase useful distinctions.",
+          "reproducer": "The behavior examples pass but strict compilation rejects a callback result or permits an invalid operation; separate compiler and runtime checks expose the mismatch."
+        },
+        {
+          "trapTag": "checker-coverage-gap",
+          "name": "Configured Restriction Assumed to Cover Equivalent Forms",
+          "description": "A static rule can miss an equivalent access form or reject unrelated behavior when its scope is misunderstood.",
+          "reproducer": "Lint fixtures include allowed and prohibited access forms; a missing diagnostic or an extra diagnostic reveals the configuration boundary."
         }
       ],
       "realWorldDomains": [
@@ -514,8 +646,24 @@
             "code": "function getPath(obj, path) {\n  if (!obj) return undefined;\n  if (path === '') return obj;\n  const parts = path.split('.');\n  let cur = obj;\n  for (const p of parts) {\n    if (cur == null) return undefined;\n    cur = cur[p];\n  }\n  return cur;\n}",
             "caughtBy": "review"
           }
+        },
+        {
+          "id": "QC-static-runtime-contract",
+          "check": "Compiler feedback and runtime examples are maintained as separate verification concerns with a clear boundary.",
+          "why": "Combining both concerns in one opaque check makes failures harder to isolate.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type View = any; function inspect(view: View) { return view.total.toUpperCase(); }",
+            "caughtBy": "review"
+          }
         }
-      ]
+      ],
+      "levelNotes": {
+        "L1": "Use a failing behavioral example to isolate a focused defect.",
+        "L2": "Check both runtime outcomes and static contracts; test positive and negative rule cases.",
+        "L3": "Keep the repair tied to the underlying contract and verify regression behavior."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: eslint, exercism-javascript, typescript-exercises"
     },
     {
       "archetypeKey": "prg-c02-function-parameters-basics",
@@ -686,6 +834,210 @@
           "severity": "should",
           "knownBad": {
             "code": "function summarizeOrder(items) {\n  let total = 0;\n  for (const it of items) if (it.active) total += it.price;\n  return `${items.length} items: $${total.toFixed(2)}`;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u01-runtime-trace",
+      "unitCode": "PRG-T00-C03-U01",
+      "level": 2,
+      "archetype": "code-tracing",
+      "name": "Runtime Value and Completion Trace",
+      "competencies": [
+        "runtime-semantics",
+        "coercion",
+        "asynchronous-execution"
+      ],
+      "coreConcept": "A prediction follows the language rules for value category, conversion context, identity, and deferred completion at each observation point.",
+      "mentalModel": [
+        "1. Mark the value and operation at each expression.",
+        "2. Separate immediate effects from deferred continuations.",
+        "3. Track what each later observer actually receives."
+      ],
+      "governingInvariant": "Each predicted observation matches the value, phase, and completion state available at that point.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "coercion-context-confusion",
+          "name": "One Conversion Rule Assumed Everywhere",
+          "description": "Boolean tests, arithmetic, equality, and runtime classification can apply different rules.",
+          "reproducer": "A trace includes the same unusual value in two operator contexts; a predicted output that repeats one conversion result is incorrect."
+        },
+        {
+          "trapTag": "async-continuation-order",
+          "name": "Deferred Reaction Placed in the Synchronous Phase",
+          "description": "A queued promise reaction cannot interrupt the synchronous sequence already running.",
+          "reproducer": "An exact output prediction places a deferred callback before the remaining immediate statements."
+        },
+        {
+          "trapTag": "reference-identity-confusion",
+          "name": "Content Mistaken for Identity",
+          "description": "Equal-looking structured values can still be distinct references.",
+          "reproducer": "A comparison prediction treats two separately created records as identical because their visible fields match."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "diagnostic_trace_review",
+          "description": "Predicting observable behavior in short utility and service traces."
+        }
+      ],
+      "usedContexts": [
+        "diagnostic_trace_review"
+      ],
+      "levelNotes": {
+        "L1": "Classify values and predict direct expression results.",
+        "L2": "Trace identity, coercion context, and synchronous versus deferred observations.",
+        "L3": "Reason about nested completion and failure propagation; full event-loop depth belongs to PRG-T01-C01-U07."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: exercism-javascript, javascript-questions, wtfjs",
+      "qualityChecks": [
+        {
+          "id": "QC-completion-order",
+          "check": "Every predicted value is tied to the correct expression and execution phase.",
+          "why": "A trace can contain individually plausible values in an impossible sequence.",
+          "severity": "must",
+          "knownBad": {
+            "code": "events.push(\"start\"); Promise.resolve().then(() => events.push(\"later\")); events.push(\"finish\");",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-promise-event-order",
+          "check": "Trace material distinguishes immediate observations from deferred continuation points so the reasoning path is inspectable.",
+          "why": "A trace without explicit observation boundaries is difficult to review and can conceal an ordering assumption.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function run() { scheduleLater(); return readNow(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-behavior-preserving-refactor",
+      "unitCode": "PRG-T00-C03-U02",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Behavior-Preserving Utility Refactor",
+      "competencies": [
+        "refactoring",
+        "data-handling",
+        "regression-testing"
+      ],
+      "coreConcept": "A local readability refactor preserves the values observed, defaults applied, mutation behavior, and collection contract.",
+      "mentalModel": [
+        "1. Record the current observable contract, including missing and boundary inputs.",
+        "2. Make one local structural change.",
+        "3. Compare outputs and side effects across the same cases."
+      ],
+      "governingInvariant": "The revised implementation preserves all specified observable behavior while making repeated access or transformation clearer.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "behavior-refactor-drift",
+          "name": "Readability Change Alters the Contract",
+          "description": "A refactor can change which property is read, when a default applies, or whether input data is mutated.",
+          "reproducer": "Before/after tests include a missing field, a supplied empty-like value, and an unchanged-input assertion; any changed outcome reveals drift."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "legacy-utility-maintenance",
+          "description": "Improving readability in small baseline utility functions while preserving behavior."
+        }
+      ],
+      "usedContexts": [
+        "legacy-utility-maintenance"
+      ],
+      "levelNotes": {
+        "L1": "Refactor repeated property access without changing observed values.",
+        "L2": "Preserve defaults, nested access behavior, and input mutation boundaries.",
+        "L3": "Broad architectural refactors belong to later units; keep this chapter diagnostic."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: eslint",
+      "qualityChecks": [
+        {
+          "id": "QC-refactor-equivalence",
+          "check": "The change isolates one readability concern and keeps responsibilities and data ownership easy to compare during review.",
+          "why": "Unrelated rewrites obscure the intent and make regressions harder to localize.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function view(record) { return normalize(record).filter(isVisible).map(toSummary).sort(compareSummary); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-refactor-scope",
+          "check": "The refactor avoids adding a new abstraction unless it clarifies a repeated responsibility within this small baseline utility.",
+          "why": "Premature abstraction increases the diagnostic surface without improving ownership.",
+          "severity": "should",
+          "knownBad": {
+            "code": "class GenericPropertyAccessFacade { read(value, key) { return value[key]; } }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u04-behavior-and-type-checkpoint",
+      "unitCode": "PRG-T00-C03-U04",
+      "level": 2,
+      "archetype": "project-based",
+      "name": "Behavior and Type Baseline Checkpoint",
+      "competencies": [
+        "typescript",
+        "testing",
+        "debugging"
+      ],
+      "coreConcept": "A compact diagnostic implementation must satisfy representative behavior checks and a precise TypeScript contract.",
+      "mentalModel": [
+        "1. Read the input and output contract.",
+        "2. Implement the smallest coherent behavior.",
+        "3. run behavior examples and strict type feedback independently."
+      ],
+      "governingInvariant": "The implementation satisfies the declared runtime examples and compiles under the stated type constraints.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "static-runtime-contract-drift",
+          "name": "Runtime Example Mistaken for Type Safety",
+          "description": "A few successful outputs do not establish a sound static type contract.",
+          "reproducer": "Runtime examples pass while strict compilation flags a widened or incompatible result type."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "baseline_type_diagnostic",
+          "description": "A small implementation checkpoint that combines behavior examples and static checking."
+        }
+      ],
+      "usedContexts": [
+        "baseline_type_diagnostic"
+      ],
+      "levelNotes": {
+        "L1": "Implement a small behavior from an explicit contract.",
+        "L2": "Resolve a mismatch found by examples or compiler feedback.",
+        "L3": "Large validation schemas, advanced type machinery, and project architecture belong to PRG-T01-C02."
+      },
+      "source": "ECMAScript and TypeScript language semantics; cores: exercism-typescript",
+      "qualityChecks": [
+        {
+          "id": "QC-dual-verification",
+          "check": "Behavior examples and compiler feedback are organized as independent evidence sources with failures attributable to each layer.",
+          "why": "When verification layers are conflated, a failure cannot identify whether the runtime or declared contract needs attention.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Entry = any; function project(entry: Entry) { return entry.label.trim(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-checkpoint-boundary",
+          "check": "The checkpoint uses one focused entry point and keeps the diagnostic implementation small enough to explain.",
+          "why": "A broad multi-module solution obscures whether the baseline concepts are understood.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function process(input) { return validate(input).then(normalize).then(persist).then(render); }",
             "caughtBy": "review"
           }
         }
