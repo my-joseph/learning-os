@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
+from math_engine.bridge import BRIDGE_SCOPE, problem_unit_codes
 from progress_store import find_repo_root, item_score, progress_root, score_problem
 from progress_store import labs_root as default_labs_root
 
@@ -54,6 +55,14 @@ class Item:
     lint_overrides: set[str] = field(default_factory=set)
     revisit_note: str | None = None
     state: dict = field(default_factory=dict)
+    units: tuple[str, ...] = ()
+
+
+def _item_units(item: Item) -> tuple[str, ...]:
+    """Return all concrete units an Item attributes evidence to (multi-unit for bridge problems)."""
+    if item.units:
+        return item.units
+    return (item.unit,) if item.unit else ()
 
 
 def _is_prg(doc: dict) -> bool:
@@ -176,6 +185,7 @@ def load_items(
         }
     # Problems ingested before archetypes carried `unitCode` get their unit from the archetype.
     unit_of = {}
+    units_of: dict[str, tuple[str, ...]] = {}
     cwd_mth_vault = os.path.join("math_engine", "reasoning_vault")
     mth_vault_dir = (
         cwd_mth_vault if os.path.isdir(cwd_mth_vault) else os.path.join(repo_root, "math_engine", "reasoning_vault")
@@ -183,8 +193,13 @@ def load_items(
     for vpath in glob.glob(os.path.join(mth_vault_dir, "*.json")):
         with open(vpath, encoding="utf-8") as f:
             for a in json.load(f).get("archetypes", []):
+                key = a.get("archetypeKey")
+                if not key:
+                    continue
                 if a.get("unitCode"):
-                    unit_of[a.get("archetypeKey")] = a["unitCode"]
+                    unit_of[key] = a["unitCode"]
+                if isinstance(a.get("unitCodes"), list) and a["unitCodes"]:
+                    units_of[key] = tuple(u.strip() for u in a["unitCodes"] if isinstance(u, str) and u.strip())
     prg_unit_of, prg_level_of, prg_arch_checks, _ = _load_prg_vault_meta()
     unit_of.update({k: v for k, v in prg_unit_of.items() if k not in unit_of})
     universal_ids = {c["id"] for c in load_universal() if isinstance(c, dict) and c.get("id")}
@@ -256,10 +271,21 @@ def load_items(
                 score, assisted = _item_score(state)
                 if score < 0:
                     continue
+                fallback_unit = unit_of.get(arch_key) or doc.get("unitCode", "")
+                prob_units = problem_unit_codes(
+                    prob,
+                    fallback_unit=fallback_unit,
+                    arch_units=units_of.get(arch_key or "", ()),
+                )
+                primary_unit = (
+                    BRIDGE_SCOPE
+                    if doc.get("unitCode") == BRIDGE_SCOPE and len(prob_units) >= 2
+                    else (prob_units[0] if prob_units else fallback_unit)
+                )
                 items.append(
                     Item(
                         drill=doc["drillId"],
-                        unit=prob.get("unitCode") or unit_of.get(arch_key) or doc.get("unitCode", ""),
+                        unit=primary_unit,
                         pid=prob.get("id", ""),
                         level=prob.get("level"),
                         form=prob.get("form", ""),
@@ -274,6 +300,7 @@ def load_items(
                         passed=(score == 1.0),
                         revisit_note=revisit_note,
                         state=dict(state),
+                        units=tuple(prob_units) if prob_units else ((primary_unit,) if primary_unit else ()),
                     )
                 )
     return sorted(items, key=lambda i: i.ts)
@@ -306,7 +333,7 @@ def trap_status(items: list[Item]) -> dict[str, dict]:
             "matches": n,
             "drills": len({i.drill for i in hits}),
             "last": last_hit[:10],
-            "units": sorted({i.unit for i in hits}),
+            "units": sorted({u for i in hits for u in _item_units(i)}),
             "open": len(clean) < CLOSE_AFTER,
             "subject": "MTH",
         }
@@ -327,7 +354,7 @@ def trap_status(items: list[Item]) -> dict[str, dict]:
             "matches": len(hits),
             "drills": len({i.drill for _, i in hits}),
             "last": last_hit.ts[:10],
-            "units": sorted({i.unit for _, i in hits}),
+            "units": sorted({u for _, i in hits for u in _item_units(i)}),
             "open": len(later_clean) < CLOSE_AFTER,
             "subject": "PRG",
         }
@@ -444,7 +471,7 @@ def review_update(
 ) -> dict | None:
     """Mastery, Last Reviewed, Next Review and masteryCap for a unit page after practice, or None without evidence.
     A learner-set 4 is kept while the evidence still says 3 (drills cannot confirm or refute 4)."""
-    items = [i for i in load_items(data_root, progress_dir) if i.unit == unit]
+    items = [i for i in load_items(data_root, progress_dir) if unit in _item_units(i)]
     open_weak = any(s["open"] and unit in s["units"] for s in trap_status(items).values())
     mastery, cap = evaluate_mastery(items, open_weak)
     if mastery is None:
@@ -495,6 +522,12 @@ def _load_mth_trap_descriptions() -> dict[str, str]:
     return out
 
 
+def _unit_matches_scope(unit: str, scope: str | None) -> bool:
+    if not scope:
+        return True
+    return unit == scope or unit.startswith(scope + "-U")
+
+
 def _build_unit_reports(
     scope: str | None = None,
     data_root: str = "drills/data",
@@ -502,7 +535,7 @@ def _build_unit_reports(
 ) -> list[dict]:
     items = load_items(data_root, progress_dir)
     if scope:
-        items = [i for i in items if i.unit == scope or i.unit.startswith(scope + "-U")]
+        items = [i for i in items if i.unit == scope or any(_unit_matches_scope(u, scope) for u in _item_units(i))]
     if not items:
         return []
     titles = _load_titles()
@@ -510,14 +543,18 @@ def _build_unit_reports(
     _, _, _, check_sentences = _load_prg_vault_meta()
     trap_descriptions = _load_mth_trap_descriptions()
     reports: list[dict] = []
-    for unit in sorted({i.unit for i in items}):
-        its = [i for i in items if i.unit == unit]
+    if scope == BRIDGE_SCOPE:
+        target_units = [BRIDGE_SCOPE] if any(i.unit == BRIDGE_SCOPE for i in items) else []
+    else:
+        target_units = sorted({u for i in items for u in _item_units(i) if _unit_matches_scope(u, scope)})
+    for unit in target_units:
+        its = [i for i in items if (i.unit == BRIDGE_SCOPE if unit == BRIDGE_SCOPE else unit in _item_units(i))]
         open_traps = sorted(
-            (t for t, s in traps.items() if s["open"] and unit in s["units"]),
+            (t for t, s in traps.items() if s["open"] and (unit == BRIDGE_SCOPE or unit in s["units"])),
             key=lambda t: traps[t]["last"],
             reverse=True,
         )
-        closed_traps = [t for t, s in traps.items() if not s["open"] and unit in s["units"]]
+        closed_traps = [t for t, s in traps.items() if not s["open"] and (unit == BRIDGE_SCOPE or unit in s["units"])]
         subject = "PRG" if unit.startswith("PRG-") or any(i.subject == "PRG" for i in its) else "MTH"
 
         def _entry(trap_id: str) -> dict:

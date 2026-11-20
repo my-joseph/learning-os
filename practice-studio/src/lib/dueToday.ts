@@ -179,7 +179,7 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
 
   const drillsById = new Map<
     string,
-    { unitCode: string; isPrg: boolean; problems: Array<{ id: string; level: number; unitCode: string }> }
+    { unitCode: string; isPrg: boolean; problems: Array<{ id: string; level: number; unitCodes: string[] }> }
   >();
 
   const visit = (dir: string) => {
@@ -193,18 +193,29 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
             drillId?: unknown;
             subject?: unknown;
             unitCode?: unknown;
-            problems?: Array<{ id?: unknown; level?: unknown; unitCode?: unknown }>;
+            problems?: Array<{ id?: unknown; level?: unknown; unitCode?: unknown; unitCodes?: unknown[]; references?: unknown[] }>;
           };
           if (typeof doc.drillId !== "string" || !doc.drillId) continue;
           const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
           const isPrg =
             doc.subject === "PRG" || drillUnit.startsWith("PRG-") || doc.drillId.startsWith("DRL-PRG-");
-          const problems: Array<{ id: string; level: number; unitCode: string }> = [];
+          const problems: Array<{ id: string; level: number; unitCodes: string[] }> = [];
           for (const p of doc.problems || []) {
             if (!p || typeof p.id !== "string") continue;
             const lv = typeof p.level === "number" ? p.level : 0;
+            const multi = Array.isArray(p.unitCodes)
+              ? p.unitCodes.filter((u): u is string => typeof u === "string" && Boolean(u.trim())).map((u) => u.trim())
+              : [];
+            const refUnits =
+              multi.length === 0 && drillUnit === "MTH-BRIDGE" && Array.isArray(p.references)
+                ? p.references
+                    .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
+                    .map((r) => r.trim())
+                : [];
             const pUnit = typeof p.unitCode === "string" && p.unitCode ? p.unitCode : drillUnit;
-            problems.push({ id: p.id, level: lv, unitCode: pUnit });
+            const unitCodes =
+              multi.length > 0 ? multi : refUnits.length > 0 ? refUnits : pUnit ? [pUnit] : [];
+            problems.push({ id: p.id, level: lv, unitCodes });
           }
           drillsById.set(doc.drillId, { unitCode: drillUnit, isPrg, problems });
         } catch {
@@ -229,7 +240,7 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
       if (!drill || !prog.problems) continue;
 
       for (const prob of drill.problems) {
-        if (prob.level < 4 || !prob.unitCode) continue;
+        if (prob.level < 4 || prob.unitCodes.length === 0) continue;
         const st = prog.problems[prob.id];
         if (!st || typeof st !== "object" || st.skipped) continue;
         const attempts = Array.isArray(st.attempts) ? (st.attempts as Array<Record<string, unknown>>) : [];
@@ -247,16 +258,16 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
         if (drill.isPrg) {
           const reviews = Array.isArray(st.reviews) ? (st.reviews as Array<Record<string, unknown>>) : [];
           if (reviews.length > 0 && reviews[0]?.verdict === "pass" && reviews[reviews.length - 1]?.verdict === "pass") {
-            passedUnits.add(prob.unitCode);
+            for (const uc of prob.unitCodes) passedUnits.add(uc);
           }
         } else {
           const substantive = attempts.filter(
             (a) => a && a.verdict !== "invalid input" && a.verdict !== "parse_error"
           );
           if (substantive.length > 0 && substantive[0]?.verdict === "correct") {
-            passedUnits.add(prob.unitCode);
+            for (const uc of prob.unitCodes) passedUnits.add(uc);
           } else if (substantive.length === 0 && st.score === 1) {
-            passedUnits.add(prob.unitCode);
+            for (const uc of prob.unitCodes) passedUnits.add(uc);
           }
         }
       }

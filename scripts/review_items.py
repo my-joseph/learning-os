@@ -80,6 +80,19 @@ def parse_scope(raw: str | None) -> tuple[str, str] | None:
     raise ValueError(f"Unknown scope kind {kind!r}")
 
 
+def _item_unit_list(item: dict[str, Any]) -> list[str]:
+    raw_multi = item.get("unitCodes")
+    out: list[str] = []
+    if isinstance(raw_multi, list):
+        for u in raw_multi:
+            if isinstance(u, str) and u.strip() and u.strip() not in out:
+                out.append(u.strip())
+    uc = str(item.get("unitCode") or "").strip()
+    if uc and uc not in out:
+        out.append(uc)
+    return out
+
+
 def matches_scope(item: dict[str, Any], parsed_scope: tuple[str, str] | None) -> bool:
     """Return True when `item` matches `parsed_scope` (or when `parsed_scope` is None)."""
     if parsed_scope is None:
@@ -88,10 +101,9 @@ def matches_scope(item: dict[str, Any], parsed_scope: tuple[str, str] | None) ->
     if kind == "subject":
         return str(item.get("subject") or "").upper() == value
     if kind == "unit":
-        return str(item.get("unitCode") or "") == value
+        return value in _item_unit_list(item)
     if kind == "chapter":
-        unit = str(item.get("unitCode") or "")
-        return unit == value or unit.startswith(f"{value}-U")
+        return any(unit == value or unit.startswith(f"{value}-U") for unit in _item_unit_list(item))
     if kind == "trap":
         return item.get("commonTrapTag") == value
     if kind == "drill":
@@ -331,7 +343,7 @@ def _clean_revisit_note(raw: Any) -> str | None:
 def redact_review_item(entry: dict[str, Any]) -> dict[str, Any]:
     """Return a strictly redacted review item (metadata + schedule + revisitNote only; never answers/steps)."""
     subj = "PRG" if str(entry.get("subject") or "").upper() == "PRG" else "MTH"
-    return {
+    out: dict[str, Any] = {
         "drillId": str(entry.get("drillId") or ""),
         "qid": str(entry.get("qid") or ""),
         "unitCode": str(entry.get("unitCode") or entry.get("unit") or ""),
@@ -348,6 +360,12 @@ def redact_review_item(entry: dict[str, Any]) -> dict[str, Any]:
         "revisitNote": _clean_revisit_note(entry.get("revisitNote")),
         "lastWrong": bool(entry.get("lastWrong", False)),
     }
+    raw_multi = entry.get("unitCodes")
+    if isinstance(raw_multi, (list, tuple)):
+        cleaned_multi = list(dict.fromkeys(u.strip() for u in raw_multi if isinstance(u, str) and u.strip()))
+        if len(cleaned_multi) >= 2:
+            out["unitCodes"] = cleaned_multi
+    return out
 
 
 def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict[str, Any]]:
@@ -372,21 +390,22 @@ def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict
             continue
         trap_tag = item.trap or (item.matched[-1] if item.matched else None)
         key = item_key(item.drill, item.pid)
-        schedule[key] = redact_review_item(
-            {
-                "drillId": item.drill,
-                "qid": item.pid,
-                "unitCode": item.unit,
-                "subject": "PRG" if item.subject == "PRG" else "MTH",
-                "commonTrapTag": trap_tag,
-                "archetypeKey": item.archetype,
-                "level": replayed["level"],
-                "lastReviewed": replayed["lastReviewed"],
-                "dueDate": replayed["dueDate"],
-                "revisitNote": item.revisit_note,
-                "lastWrong": replayed["lastWrong"],
-            }
-        )
+        payload: dict[str, Any] = {
+            "drillId": item.drill,
+            "qid": item.pid,
+            "unitCode": item.unit,
+            "subject": "PRG" if item.subject == "PRG" else "MTH",
+            "commonTrapTag": trap_tag,
+            "archetypeKey": item.archetype,
+            "level": replayed["level"],
+            "lastReviewed": replayed["lastReviewed"],
+            "dueDate": replayed["dueDate"],
+            "revisitNote": item.revisit_note,
+            "lastWrong": replayed["lastWrong"],
+        }
+        if len(item.units) >= 2:
+            payload["unitCodes"] = list(item.units)
+        schedule[key] = redact_review_item(payload)
     return dict(sorted(schedule.items()))
 
 
@@ -562,6 +581,8 @@ def _merge_saved_schedule(
                 entry["revisitNote"] = bf_entry["revisitNote"]
             if not entry.get("unitCode") and bf_entry.get("unitCode"):
                 entry["unitCode"] = bf_entry["unitCode"]
+            if not entry.get("unitCodes") and bf_entry.get("unitCodes"):
+                entry["unitCodes"] = list(bf_entry["unitCodes"])
             if not entry.get("commonTrapTag") and bf_entry.get("commonTrapTag"):
                 entry["commonTrapTag"] = bf_entry["commonTrapTag"]
             if not entry.get("archetypeKey") and bf_entry.get("archetypeKey"):
@@ -613,8 +634,10 @@ def _prune_saved_items(
     return active
 
 
-def _lookup_problem_unit(drill_id: str, qid: str, data_root: str | None = None, labs_root: str | None = None) -> str:
-    """Resolve unit metadata for a newly reviewed item, including never-practised problems."""
+def _lookup_problem_units(
+    drill_id: str, qid: str, data_root: str | None = None, labs_root: str | None = None
+) -> tuple[str, list[str]]:
+    """Resolve primary unitCode and optional multi-unit list for a newly reviewed item."""
     repo_root = find_repo_root()
     drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
     lab_root = labs_root or os.path.join(repo_root, "labs")
@@ -629,17 +652,30 @@ def _lookup_problem_unit(drill_id: str, qid: str, data_root: str | None = None, 
             problems = doc.get("problems") or doc.get("milestones") or []
             for problem in problems:
                 if isinstance(problem, dict) and problem.get("id") == qid:
+                    drill_unit = str(doc.get("unitCode") or doc.get("chapterCode") or "")
+                    multi = [u.strip() for u in (problem.get("unitCodes") or []) if isinstance(u, str) and u.strip()]
+                    if not multi and drill_unit == "MTH-BRIDGE":
+                        multi = [
+                            r.strip()
+                            for r in (problem.get("references") or [])
+                            if isinstance(r, str) and "-U" in r and r.strip()
+                        ]
+                    multi = list(dict.fromkeys(multi))
+                    if len(multi) >= 2:
+                        primary = drill_unit if drill_unit == "MTH-BRIDGE" else multi[0]
+                        return primary, multi
                     units = problem.get("units") or []
-                    return str(
-                        problem.get("unitCode")
-                        or (units[0] if units else "")
-                        or doc.get("unitCode")
-                        or doc.get("chapterCode")
-                        or ""
-                    )
+                    primary = str(problem.get("unitCode") or (units[0] if units else "") or drill_unit)
+                    return primary, []
         except (OSError, ValueError):
             continue
-    return ""
+    return "", []
+
+
+def _lookup_problem_unit(drill_id: str, qid: str, data_root: str | None = None, labs_root: str | None = None) -> str:
+    """Resolve unit metadata for a newly reviewed item, including never-practised problems."""
+    unit, _ = _lookup_problem_units(drill_id, qid, data_root, labs_root)
+    return unit
 
 
 def get_review_items_schedule(
@@ -799,19 +835,21 @@ def record_review_result(
     rev_date = _normalize_date(review_date)
     step = step_schedule(current_level, correct=bool(correct), assisted=assisted, review_date=rev_date)
 
-    base = (
-        dict(existing)
-        if existing
-        else {
+    if existing:
+        base = dict(existing)
+    else:
+        primary_unit, multi_units = _lookup_problem_units(drill_id, qid, data_root, labs_root)
+        base = {
             "drillId": drill_id,
             "qid": qid,
-            "unitCode": _lookup_problem_unit(drill_id, qid, data_root, labs_root),
+            "unitCode": primary_unit,
             "subject": "PRG" if drill_id.startswith(("DRL-PRG-", "LAB-")) else "MTH",
             "commonTrapTag": None,
             "archetypeKey": None,
             "revisitNote": None,
         }
-    )
+        if len(multi_units) >= 2:
+            base["unitCodes"] = multi_units
     base["level"] = step["level"]
     base["lastReviewed"] = step["lastReviewed"]
     base["dueDate"] = step["dueDate"]
