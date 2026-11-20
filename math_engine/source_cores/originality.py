@@ -388,6 +388,30 @@ def check_document_originality(
         if not os.path.isdir(sdir):
             return ([], f"Originality gate skipped: sources directory not found ({sdir}).")
         source_pages = load_located_source_pages(resolved_unit, sources_dir=sdir)
+        if resolved_unit == "MTH-BRIDGE" or not source_pages:
+            raw_items = doc.get("problems") or doc.get("variants") or []
+            component_units: list[str] = []
+            seen_u: set[str] = set()
+            for prob in raw_items:
+                if not isinstance(prob, dict):
+                    continue
+                for candidate in [*(prob.get("unitCodes") or []), *(prob.get("references") or [])]:
+                    if (
+                        isinstance(candidate, str)
+                        and "-U" in candidate
+                        and candidate not in seen_u
+                        and candidate != resolved_unit
+                    ):
+                        seen_u.add(candidate)
+                        component_units.append(candidate)
+            if component_units:
+                seen_page_keys = {(p.get("relPath"), p.get("page")) for p in source_pages}
+                for cu in component_units:
+                    for page in load_located_source_pages(cu, sources_dir=sdir):
+                        pkey = (page.get("relPath"), page.get("page"))
+                        if pkey not in seen_page_keys:
+                            seen_page_keys.add(pkey)
+                            source_pages.append(page)
         if not source_pages:
             return (
                 [],
