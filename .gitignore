@@ -62,3 +62,6 @@ issues/
 
 # Pilot mode (AI stand-in learner state, never tracked)
 pilot/
+
+# Local raw source materials, extracted text cache, and core cards
+sources/
