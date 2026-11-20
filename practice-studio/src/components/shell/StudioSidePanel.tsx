@@ -137,15 +137,15 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
     >
       {/* Section 1: Due today (single item-level queue, split by workspace) */}
       <section aria-labelledby="side-panel-due-heading" className="pb-4 space-y-2.5 min-w-0">
-        <div className="flex items-baseline justify-between gap-2 min-w-0">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 min-w-0">
           <h2
             id="side-panel-due-heading"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate"
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
           >
             Due today
           </h2>
           {!dueLoading && dueReviewCount + otherWorkspaceDueCount > 0 && (
-            <span className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
+            <span className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
               {dueReviewCount + otherWorkspaceDueCount} total across workspaces
             </span>
           )}
@@ -205,7 +205,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               <Link
                 href={otherReviewHref}
                 onClick={onNavigate}
-                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs font-display tabular-nums hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
                 {otherWorkspaceDueCount} due in the other workspace
               </Link>
@@ -271,7 +271,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               >
                 <div className="flex items-baseline justify-between gap-2 min-w-0">
                   <span
-                    className={`text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words min-w-0 ${
+                    className={`text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words [overflow-wrap:anywhere] min-w-0 ${
                       spot.name ? "" : "font-display"
                     }`}
                     title={spot.name ? spot.id : undefined}
@@ -283,7 +283,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                   </span>
                 </div>
                 {spot.detail && (
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-snug break-words">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-snug break-words [overflow-wrap:anywhere]">
                     <FormattedText text={spot.detail} />
                   </p>
                 )}

@@ -405,13 +405,45 @@ async function runTests() {
         currentUnitCode="MTH-T09-C01-U01"
         dueReviewCount={3}
         reviewSessionSize={3}
-        weakSpotUnits={[]}
+        weakSpotUnits={[
+          {
+            unitCode: "MTH-T09-C01-U01",
+            unitTitle: "Complex Conjugates",
+            subject: "MTH",
+            itemCount: 4,
+            drillCount: 1,
+            open: [
+              {
+                id: "t02-c02-u01-reciprocal-vs-reciprocal-squared-sign-trap",
+                detail: "Watch `veryLongIdentifierWithoutBreaksOrSpaces` on narrow screens.",
+                matches: 3,
+                drills: 2,
+                last: "2026-11-18",
+                subject: "MTH",
+              },
+            ],
+            closed: [],
+            levels: {},
+            assistedCount: 0,
+            skipped: [],
+          },
+        ]}
         embedded
       />
     );
     assert.doesNotMatch(embeddedDrawerHtml, /rounded-2xl border/, "embedded side panel must not render a nested bordered card");
     assert.doesNotMatch(embeddedDrawerHtml, /-mx-/, "panel must not use negative horizontal margins that overflow mobile drawer");
     assert.match(embeddedDrawerHtml, /overflow-x-hidden/);
+    assert.match(
+      embeddedDrawerHtml,
+      /\[overflow-wrap:anywhere\][^>]*>t02-c02-u01-reciprocal-vs-reciprocal-squared-sign-trap/,
+      "long trap IDs must wrap anywhere so the matches badge is never clipped on a 390px mobile drawer"
+    );
+    assert.match(
+      embeddedDrawerHtml,
+      /flex flex-wrap items-baseline justify-between/,
+      "Due today header row must wrap cleanly on narrow mobile drawers"
+    );
 
     const shellSource = fs.readFileSync("src/components/shell/StudioShell.tsx", "utf8");
     const sidePanelDataSource = fs.readFileSync("src/hooks/useSidePanelData.ts", "utf8");
@@ -419,7 +451,13 @@ async function runTests() {
     assert.match(shellSource, /hidden lg:block/, "side panel visible on >=1024px");
     assert.match(shellSource, /lg:hidden/, "drawer only below 1024px");
     assert.match(shellSource, /embedded/, "drawer must pass embedded to StudioSidePanel");
+    assert.match(shellSource, /drillLoading=\{isLoadingDrill\}/, "shell must forward drillLoading state to side panel");
     assert.match(sidePanelDataSource, /api\/review-items\?limit=8/, "session size must come from the API-limited item batch");
+    assert.match(
+      sidePanelDataSource,
+      /weakLoadedScope === scope/,
+      "weak spots hook must keep loading state until the current unit scope resolves"
+    );
     assert.match(shellSource, /overflow-x-hidden/, "mobile drawer panel must prevent horizontal overflow");
     assert.doesNotMatch(shellSource, /calc\(100vw-2\.5rem\)/, "invalid space-less calc() width must not remain on mobile drawer");
 
