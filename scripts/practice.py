@@ -1,17 +1,37 @@
-"""Practise a math drill from the terminal without exposing solution data by default."""
+"""Pilot-only terminal tool for practising math drills outside Practice Studio.
+
+NOTE (learner decision 2026-11-20): this CLI is a **pilot-only** terminal runner
+intended for automated/AI stand-in practice (`LEARNINGOS_PILOT=1`). Real learner
+sessions use Practice Studio (`practice-studio/`), which enforces full reveal gating.
+This script intentionally does not implement pre-attempt reveal gating on `setup` or
+`solution`.
+"""
 
 from __future__ import annotations
 
 import argparse
 import datetime as dt
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
 
 from math_engine.answer_check import TRAP_VERDICTS, check_answer, match_trap
 from math_engine.figure_svg import figure_to_svg
-from progress_store import apply_progress, progress_root, save_progress, score_problem, workspace_root
+from progress_store import (
+    apply_progress,
+    is_locked_after_correct,
+    progress_root,
+    save_progress,
+    score_problem,
+    workspace_root,
+)
+
+PILOT_ONLY_BANNER = (
+    "[pilot-only] scripts.practice is a pilot-only terminal tool (no reveal gating); "
+    "use Practice Studio for real learner sessions."
+)
 
 
 def _repo_root() -> Path:
@@ -75,25 +95,28 @@ def _show(doc: dict[str, Any], qid: str | None) -> None:
 
 
 def _summary(doc: dict[str, Any]) -> dict[str, Any]:
-    scores = [p.get("state", {}).get("score") for p in doc.get("problems", [])]
-    attempted = [score for score in scores if score is not None]
-    total = len(scores)
+    is_prg = doc.get("subject") == "PRG"
+    problems = doc.get("problems", [])
+    scored = [score_problem(p.get("state"), is_prg=is_prg) for p in problems]
+    attempted = [res["score"] for res in scored if res["score"] is not None]
+    total = len(problems)
     score = sum(attempted)
-    skipped = [p["id"] for p in doc.get("problems", []) if p.get("state", {}).get("skipped")]
-    mistakes = sorted({tag for p in doc.get("problems", []) for tag in p.get("state", {}).get("mistakes", [])})
+    skipped = [p["id"] for p, res in zip(problems, scored) if res["outcome"] == "skipped"]
+    mistakes = sorted({tag for p in problems for tag in p.get("state", {}).get("mistakes", [])})
     if not attempted:
         status = "Ready"
     elif len(attempted) < total:
         status = "In Progress"
-    elif score >= total:
+    elif total > 0 and score / total >= 0.8:
         status = "Graded"
     else:
         status = "Needs Retry"
+    accuracy_pct = math.floor((score / total) * 1000 + 0.5) / 10 if total else 0
     return {
         "practiceStatus": status,
         "score": score,
         "maxScore": total,
-        "accuracyPct": round(score / total * 100) if total else 0,
+        "accuracyPct": accuracy_pct,
         "skippedCount": len(skipped),
         "skippedProblems": skipped,
         "mistakeCategories": mistakes,
@@ -124,15 +147,7 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
         result["trapMatched"] = True
 
     attempts = list(state.get("attempts") or [])
-    cycle_start = state.get("cycleStartedAt")
-    already_correct = any(
-        isinstance(a, dict)
-        and a.get("kind") != "variant"
-        and a.get("verdict") == "correct"
-        and (not cycle_start or (isinstance(a.get("ts"), str) and a["ts"] >= cycle_start))
-        for a in attempts
-    )
-    if already_correct:
+    if is_locked_after_correct(state):
         return state.get("lastCheck") or result
 
     mistakes = set(state.get("mistakes") or [])
@@ -192,8 +207,37 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
     return result
 
 
+def _has_cycle_original_check(state: dict[str, Any]) -> bool:
+    """Return True if the problem has an original (non-variant) check attempt in the current cycle."""
+    raw_cycle = state.get("cycleStartedAt")
+    cycle_start = raw_cycle if isinstance(raw_cycle, str) and raw_cycle else None
+    raw_attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
+    orig_attempts = [a for a in raw_attempts if isinstance(a, dict) and a.get("kind") != "variant"]
+    if orig_attempts:
+        return any(
+            not cycle_start or (isinstance(a.get("ts"), str) and bool(a["ts"]) and a["ts"] >= cycle_start)
+            for a in orig_attempts
+        )
+    return not cycle_start and bool(state.get("lastCheck"))
+
+
+def _mark_setup_reveal(state: dict[str, Any]) -> None:
+    if not _has_cycle_original_check(state):
+        state["setupRevealedBeforeAnswer"] = True
+
+
+def _mark_solution_reveal(state: dict[str, Any]) -> None:
+    if not is_locked_after_correct(state):
+        state["solutionRevealedBeforeAnswer"] = True
+
+
 def run(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Practise a math drill locally and save progress outside drill data.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Pilot-only terminal tool to practise a math drill locally and save progress "
+            "outside drill data. Use Practice Studio for real learner sessions."
+        )
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     show = sub.add_parser("show", help="Show learner-facing prompt, figure SVG path, and input hint")
     show.add_argument("drill_id")
@@ -209,6 +253,7 @@ def run(argv: list[str] | None = None) -> int:
     submit = sub.add_parser("submit", help="Save and print the completed practice session summary")
     submit.add_argument("drill_id")
     args = parser.parse_args(argv)
+    print(PILOT_ONLY_BANNER, file=sys.stderr)
     try:
         doc = _load_drill(args.drill_id)
         if args.command == "show":
@@ -224,15 +269,13 @@ def run(argv: list[str] | None = None) -> int:
         elif args.command == "setup":
             p = _problem(doc, args.qid)
             state = _state(p)
-            if not state.get("lastCheck"):
-                state["setupRevealedBeforeAnswer"] = True
+            _mark_setup_reveal(state)
             _save(doc)
             print(p.get("display") or p.get("plainText") or "No equation set-up is available.")
         elif args.command == "solution":
             p = _problem(doc, args.qid)
             state = _state(p)
-            if not any(a.get("verdict") == "correct" for a in state.get("attempts", [])):
-                state["solutionRevealedBeforeAnswer"] = True
+            _mark_solution_reveal(state)
             _save(doc)
             for i, step in enumerate(p.get("steps", []), 1):
                 print(f"{i}. {step.get('latex', '')}\n   {step.get('explain', '')}")

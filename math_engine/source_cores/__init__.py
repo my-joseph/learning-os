@@ -44,6 +44,7 @@ SOURCE_FAMILIES: dict[str, dict[str, str]] = {
     "mathsgenie": {"mode": "cores", "label": "MathsGenie GCSE worksheets & exam questions"},
     "thai-exams": {"mode": "cores", "label": "Thai O-NET & TCAS A-Level exams"},
     "illustrative-math": {"mode": "cores", "label": "Illustrative Mathematics"},
+    "smartmathpro": {"mode": "cores", "label": "SmartMathPro Thai past papers"},
 }
 
 _REQUIRED_TOP_KEYS: tuple[str, ...] = (
@@ -265,6 +266,18 @@ def validate_core_card(
         if key in card and (not isinstance(card[key], str) or not card[key].strip()):
             errors.append(f"{key}: must be a non-empty string.")
 
+    known_codes: set[str] | None = None
+
+    def _get_known_codes() -> set[str]:
+        nonlocal known_codes
+        if known_codes is None:
+            known_codes = (
+                {str(c).strip() for c in valid_unit_codes if isinstance(c, str) and c.strip()}
+                if valid_unit_codes is not None
+                else set(load_valid_unit_codes())
+            )
+        return known_codes
+
     if "laterUnit" in card and card["laterUnit"] is not None:
         if not isinstance(card["laterUnit"], str) or not card["laterUnit"].strip():
             errors.append("laterUnit: must be a non-empty string or null.")
@@ -274,12 +287,8 @@ def validate_core_card(
                 if not later[len(UNMAPPED_PREFIX) :].strip():
                     errors.append("laterUnit: 'UNMAPPED:' prefix must be followed by a non-empty label.")
             else:
-                known_codes = (
-                    {str(c).strip() for c in valid_unit_codes if isinstance(c, str) and c.strip()}
-                    if valid_unit_codes is not None
-                    else set(load_valid_unit_codes())
-                )
-                if known_codes and later not in known_codes:
+                known = _get_known_codes()
+                if known and later not in known:
                     warnings.warn(
                         f"Unknown laterUnit '{later}' is not in id_map.json unit/chapter codes.",
                         UserWarning,
@@ -304,6 +313,21 @@ def validate_core_card(
                     if cleaned in seen_u:
                         errors.append(f"units[{idx}]: duplicate unit code '{cleaned}'.")
                     seen_u.add(cleaned)
+                    if cleaned.startswith(UNMAPPED_PREFIX):
+                        if not cleaned[len(UNMAPPED_PREFIX) :].strip():
+                            errors.append(f"units[{idx}]: 'UNMAPPED:' prefix must be followed by a non-empty label.")
+                    else:
+                        known = _get_known_codes()
+                        if known and cleaned not in known:
+                            warnings.warn(
+                                f"Unknown units[{idx}] '{cleaned}' is not in id_map.json unit/chapter codes.",
+                                UserWarning,
+                                stacklevel=2,
+                            )
+                            errors.append(
+                                f"units[{idx}]: unknown unit/chapter code '{cleaned}' (not in id_map.json; "
+                                f"use a real unit/chapter code or prefix with '{UNMAPPED_PREFIX}')."
+                            )
 
     if "notes" in card and not isinstance(card["notes"], str):
         errors.append("notes: must be a string.")

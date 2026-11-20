@@ -45,3 +45,21 @@ def test_scoring_case_parity(case: dict):
 
     if "awaitingReview" in expected:
         assert ps.is_awaiting_review(case["state"]) is expected["awaitingReview"]
+
+
+def test_is_locked_after_correct_matches_studio_invariants():
+    first_try = {
+        "userInput": "5",
+        "score": 1,
+        "divergedStep": None,
+        "mistakes": [],
+        "attempts": [{"input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct"}],
+    }
+    assert ps.is_locked_after_correct(first_try) is True
+    assert ps.is_locked_after_correct({**first_try, "cycleStartedAt": "2026-11-20T12:00:00Z"}) is False
+    assert (
+        ps.is_locked_after_correct(
+            {"attempts": [{"input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct", "kind": "variant"}]}
+        )
+        is False
+    )

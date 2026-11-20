@@ -89,8 +89,13 @@ def test_tags_at_or_above_label_pass(level):
 
 
 def test_l3_must_reach_label_too():
-    with pytest.raises(AiContractError, match="give L2"):
+    with pytest.raises(AiContractError, match="give L2") as exc_info:
         check(problem(level=3, blindSolve={"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}))
+    msg = str(exc_info.value)
+    assert "scripts.issues" in msg
+    assert "drop the problem" in msg
+    assert "relabel" not in msg.lower()
+    assert "ask the learner" not in msg.lower()
 
 
 @pytest.mark.parametrize(("level", "shallow"), [(4, {**MODEL, "check": "none"}), (5, MODEL)])

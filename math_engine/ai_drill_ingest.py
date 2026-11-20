@@ -699,7 +699,7 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         floor = " It is a direct computation (mental-math level)." if got == 1 else ""
         raise AiContractError(
             f"[{pid}] Labelled L{level} but the blind solver's tags ({shape}) give L{got}.{floor} "
-            f"Redesign it once to add real demand, or relabel; if it still fails, ask the learner (06 §2.3)."
+            f"Redesign it once to add real demand; else drop the problem and log it with scripts.issues (06 §2.3)."
         )
 
 

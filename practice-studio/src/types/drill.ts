@@ -74,6 +74,9 @@ export interface Step {
   latex?: string;
   explain: string;
   unit?: string;
+  unitCode?: string;
+  eq?: string;
+  val?: string | number;
 }
 
 export interface ChoiceOption {
@@ -81,6 +84,14 @@ export interface ChoiceOption {
   label: string;
   trapTag?: string;
   tag?: string;
+}
+
+/** Client-facing redacted choice option (`provenance` stripped by `redact.ts`). */
+export type RedactedChoiceOption = ChoiceOption;
+
+/** Full on-disk choice option including distractor `provenance`. */
+export interface RawChoiceOption extends ChoiceOption {
+  provenance?: string;
 }
 
 export interface AnswerSpec {
@@ -94,12 +105,16 @@ export interface AnswerSpec {
     | "vector"
     | "choice"
     | "text"
-    | "code_output"
     | "predict_output"
+    /** @deprecated Legacy template type; use `predict_output`. */
+    | "code_output"
+    /** @deprecated Legacy template type; use `choice` for find-the-flaw drills. */
     | "line_number"
+    /** @deprecated Legacy template type; use `choice` for find-the-flaw drills. */
     | "find_bug";
   value?: string;
   forms?: string[];
+  variable?: string;
   variables?: string[];
   values?: string[];
   components?: (number | string)[];
@@ -107,6 +122,11 @@ export interface AnswerSpec {
   vectorNotation?: boolean;
   labels?: string[];
   acceptComplex?: boolean;
+  tolerance?: number;
+  tol?: number;
+  unit?: string;
+  allowPartial?: boolean;
+  allowFuncs?: string[];
   options?: ChoiceOption[];
   correct?: string;
   accepted?: string[];
@@ -117,6 +137,29 @@ export interface AnswerSpec {
   trapValue?: string;
   flawTag?: string;
 }
+
+/** Full on-disk `answerSpec` schema including raw choice option `provenance`. */
+export interface RawAnswerSpec extends Omit<AnswerSpec, "options"> {
+  options?: RawChoiceOption[];
+}
+
+/** Client-facing redacted `answerSpec` with all secret answer fields stripped by `redact.ts`. */
+export type RedactedAnswerSpec = Omit<
+  AnswerSpec,
+  | "value"
+  | "values"
+  | "components"
+  | "correct"
+  | "accepted"
+  | "tokens"
+  | "correctLine"
+  | "flawExplanation"
+  | "trapValue"
+  | "flawTag"
+  | "options"
+> & {
+  options?: RedactedChoiceOption[];
+};
 
 export interface ReferenceBadge {
   code: string;
@@ -387,6 +430,50 @@ export interface Problem {
   state: ProblemState;
 }
 
+/**
+ * Client-facing redacted problem (always-stripped secret fields removed by `redactProblem`).
+ * Conditional fields (`display`, `plainText`, `steps`, `answerDisplay`, `answerPlain`, `solutionCode`)
+ * are present only once unlocked by learner `state`.
+ */
+export type RedactedProblem = Omit<
+  Problem,
+  "hiddenTests" | "trapValue" | "flawTag" | "qualityGates" | "answerSpec"
+> & {
+  answerSpec: RedactedAnswerSpec;
+};
+
+/**
+ * Full on-disk problem schema stored in `drills/data/<UNIT>/DRL-*.json`.
+ * Includes server-only and ingest verification fields stripped before sending to the browser.
+ * On-disk drills are content-only (`state` lives in `progress/<DRILL_ID>.json`), AI drafts may
+ * omit `templateKey` / `checkpointHint`, and test-graded PRG problems may omit `answerSpec`.
+ */
+export interface RawProblem
+  extends Omit<Problem, "templateKey" | "checkpointHint" | "answerSpec" | "state"> {
+  templateKey?: string;
+  checkpointHint?: string;
+  answerSpec?: RawAnswerSpec;
+  state?: ProblemState;
+  givens?: Record<string, unknown>;
+  constants?: Record<string, unknown>;
+  variables?: Record<string, unknown> | string[];
+  trapDerivation?: unknown;
+  trapGivens?: Record<string, unknown>;
+  trapKind?: string;
+  trapMutant?: string | Record<string, unknown>;
+  mutants?: Array<Record<string, unknown>>;
+  verify?: Record<string, unknown>;
+  blindSolve?: Record<string, unknown>;
+  review?: Record<string, unknown>;
+  contextCheck?: Record<string, unknown>;
+  figureNone?: string;
+  figureWaiver?: string;
+  starterLintExpected?: unknown;
+  files?: Record<string, string> | Array<Record<string, unknown>>;
+  qualityChecks?: Array<Record<string, unknown>>;
+  unit?: string;
+}
+
 export interface MistakeTag {
   id: string;
   label: string;
@@ -438,6 +525,34 @@ export interface DrillDocument {
   sessionSummary: SessionSummary;
   localFilePath: string;
   labReadme?: string;
+}
+
+/** Client-facing redacted drill document returned by Studio API routes. */
+export type RedactedDrillDocument = Omit<DrillDocument, "problems"> & {
+  problems: RedactedProblem[];
+};
+
+/**
+ * Full on-disk drill document schema stored in `drills/data/<UNIT>/DRL-*.json`.
+ * Includes ingest/metadata fields and omits learner-owned `sessionSummary` / `state`.
+ */
+export interface RawDrillDocument
+  extends Omit<
+    DrillDocument,
+    "unitNotionUrl" | "mistakeTags" | "problems" | "sessionSummary" | "localFilePath"
+  > {
+  unitNotionUrl?: string | null;
+  mistakeTags?: MistakeTag[];
+  problems: RawProblem[];
+  sessionSummary?: SessionSummary;
+  localFilePath?: string;
+  environment?: string;
+  title?: string;
+  topicTitle?: string;
+  focusTags?: string[];
+  sourceAttribution?: unknown;
+  blindSolve?: Record<string, unknown>;
+  review?: Record<string, unknown>;
 }
 
 export interface DrillListItem {

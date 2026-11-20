@@ -66,3 +66,37 @@ def test_solution_set_decimal_approximation_requests_exact_form():
     result = math_check({"type": "solution_set", "values": ["sqrt(2)"]}, "1.4142")
     assert result["verdict"] == "incorrect"
     assert any(d["code"] == "decimal_not_exact" for d in result["diagnostics"])
+
+
+def test_legacy_prg_answer_spec_types_deprecated_consistently():
+    from code_engine.answer_check import CHECKERS, DEPRECATED_CHECKERS
+    from math_engine.answer_spec_registry import (
+        DEPRECATED_ANSWER_SPEC_TYPES,
+        get_registered_types,
+        validate_answer_spec,
+    )
+
+    legacy_types = ("code_output", "line_number", "find_bug")
+    active_code_types = set(get_registered_types("code"))
+    assert active_code_types == {"choice", "predict_output", "text"}
+    assert set(CHECKERS.keys()) == active_code_types
+    assert set(DEPRECATED_CHECKERS.keys()) == set(DEPRECATED_ANSWER_SPEC_TYPES.keys()) == set(legacy_types)
+
+    # predict_output validates against tokens or value (matching code_engine/answer_check.py)
+    assert validate_answer_spec({"type": "predict_output", "tokens": ["1", "3", "2"]}) == (True, None)
+    assert validate_answer_spec({"type": "predict_output", "value": "1, 3, 2"}) == (True, None)
+    ok_missing, err_missing = validate_answer_spec({"type": "predict_output"})
+    assert ok_missing is False and err_missing is not None
+    assert code_check({"type": "predict_output", "tokens": ["1", "3", "2"]}, "1, 3, 2")["verdict"] == "correct"
+
+    # Deprecated types are rejected by validate_answer_spec and warn in code_engine.answer_check
+    for legacy_type in legacy_types:
+        ok, err = validate_answer_spec({"type": legacy_type})
+        assert ok is False and err is not None and "Deprecated" in err
+
+    with pytest.warns(DeprecationWarning, match="code_output"):
+        assert code_check({"type": "code_output", "tokens": ["1", "2"]}, "1, 2")["verdict"] == "correct"
+    with pytest.warns(DeprecationWarning, match="line_number"):
+        assert code_check({"type": "line_number", "correctLine": 4}, "Line 4")["verdict"] == "correct"
+    with pytest.warns(DeprecationWarning, match="find_bug"):
+        assert code_check({"type": "find_bug", "correctLine": 8}, "8")["verdict"] == "correct"

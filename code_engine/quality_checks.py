@@ -17,7 +17,9 @@ from pathlib import Path
 from typing import Any
 
 from code_engine.lint_check import LintToolsMissingError, get_lint_binaries, lint_code_snippet
+from math_engine import figure_builder
 from math_engine.bridge import BRIDGE_SCOPE, validate_bridge_vault
+from math_engine.figure_autofill import figure_decision_missing
 
 CODE_ENGINE_DIR = Path(__file__).resolve().parent
 UNIVERSAL_CHECKS_PATH = CODE_ENGINE_DIR / "quality_checks.json"
@@ -281,6 +283,150 @@ def verify_known_bad_lint(check: dict[str, Any], *, label: str = "") -> tuple[bo
     return True, None
 
 
+def validate_math_archetype(
+    archetype: Any,
+    *,
+    seen_keys: set[str] | None = None,
+    prefix: str = "",
+) -> tuple[list[str], list[str]]:
+    """Validate one unit/chapter math vault archetype entry.
+
+    Required (errors): `archetypeKey`, `level` (1..5), `name`, `coreConcept`,
+    `governingRelation`, `cognitiveTraps`, figure decision (`figureBuilders` or `figureNone`).
+    Recommended (warnings): `unitCode`, `mentalModel`, `source`, object-form `cognitiveTraps`.
+
+    Returns ``(errors, warnings)``.
+    """
+    if not isinstance(archetype, dict):
+        return [f"{prefix or 'math archetype'} must be a JSON object."], []
+
+    errors: list[str] = []
+    warnings_list: list[str] = []
+    key = archetype.get("archetypeKey")
+    label = prefix or (str(key).strip() if isinstance(key, str) and key.strip() else "<unknown>")
+
+    if not isinstance(key, str) or not key.strip():
+        errors.append(f"{label}: 'archetypeKey' must be a non-empty string.")
+    elif seen_keys is not None:
+        if key in seen_keys:
+            errors.append(f"{label}: duplicate archetypeKey '{key}'.")
+        seen_keys.add(key)
+
+    level = archetype.get("level")
+    if isinstance(level, bool) or not isinstance(level, int) or not (1 <= level <= 5):
+        errors.append(f"{label}: 'level' must be an integer 1..5, got {level!r}.")
+
+    for req in ("name", "coreConcept", "governingRelation"):
+        val = archetype.get(req)
+        if not isinstance(val, str) or not val.strip():
+            errors.append(f"{label}: '{req}' must be a non-empty string.")
+
+    traps = archetype.get("cognitiveTraps")
+    if not isinstance(traps, list) or not traps:
+        errors.append(f"{label}: 'cognitiveTraps' must be a non-empty list.")
+    else:
+        has_legacy_str_trap = False
+        for idx, t in enumerate(traps):
+            if isinstance(t, str):
+                if not t.strip():
+                    errors.append(f"{label}.cognitiveTraps[{idx}]: trap tag must be a non-empty string.")
+                has_legacy_str_trap = True
+            elif isinstance(t, dict):
+                tag = t.get("trapTag")
+                if not isinstance(tag, str) or not tag.strip():
+                    errors.append(f"{label}.cognitiveTraps[{idx}].trapTag: must be a non-empty string.")
+                if "description" in t and (not isinstance(t["description"], str) or not t["description"].strip()):
+                    errors.append(f"{label}.cognitiveTraps[{idx}].description: must be a non-empty string.")
+            else:
+                errors.append(f"{label}.cognitiveTraps[{idx}]: must be a trap string or {{trapTag, description}}.")
+        if has_legacy_str_trap:
+            warnings_list.append(
+                f"{label}: 'cognitiveTraps' uses legacy string entries (prefer {{trapTag, description}} objects)."
+            )
+
+    if figure_decision_missing(archetype):
+        errors.append(f"{label}: must declare either 'figureBuilders' (non-empty list) or 'figureNone' (reason).")
+    elif "figureBuilders" in archetype:
+        builders = archetype["figureBuilders"]
+        if not isinstance(builders, list) or not builders:
+            errors.append(f"{label}: 'figureBuilders' must be a non-empty list when present.")
+        else:
+            for idx, spec in enumerate(builders):
+                if not isinstance(spec, dict) or not isinstance(spec.get("fn"), str) or not spec["fn"].strip():
+                    errors.append(f"{label}.figureBuilders[{idx}]: must be an object with a non-empty 'fn'.")
+                elif getattr(figure_builder, spec["fn"], None) is None:
+                    errors.append(f"{label}.figureBuilders[{idx}]: unknown builder function '{spec['fn']}'.")
+
+    for rec in ("unitCode", "source"):
+        val = archetype.get(rec)
+        if not isinstance(val, str) or not val.strip():
+            warnings_list.append(f"{label}: missing recommended field '{rec}'.")
+
+    mm = archetype.get("mentalModel")
+    valid_mm = (isinstance(mm, str) and bool(mm.strip())) or (
+        isinstance(mm, list) and bool(mm) and all(isinstance(x, str) and bool(x.strip()) for x in mm)
+    )
+    if not valid_mm:
+        warnings_list.append(f"{label}: missing recommended field 'mentalModel'.")
+
+    return errors, warnings_list
+
+
+def validate_math_vault(vault_data: Any, *, label: str = "math vault") -> tuple[list[str], list[str]]:
+    """Validate one unit/chapter math vault document. Returns ``(errors, warnings)``."""
+    if not isinstance(vault_data, dict):
+        return [f"{label}: vault file must contain a JSON object."], []
+
+    archetypes = vault_data.get("archetypes")
+    if not isinstance(archetypes, list):
+        return [f"{label}: 'archetypes' must be a list."], []
+
+    errors: list[str] = []
+    warnings_list: list[str] = []
+    seen_keys: set[str] = set()
+    for idx, arch in enumerate(archetypes):
+        key = arch.get("archetypeKey") if isinstance(arch, dict) else None
+        prefix = f"{label}[{idx}]/{key}" if isinstance(key, str) and key.strip() else f"{label}[{idx}]"
+        arch_errors, arch_warnings = validate_math_archetype(arch, seen_keys=seen_keys, prefix=prefix)
+        errors.extend(arch_errors)
+        warnings_list.extend(arch_warnings)
+    return errors, warnings_list
+
+
+def check_math_vaults(math_vault_dir: Path | None = None) -> tuple[list[str], list[str], int, int]:
+    """Validate all unit/chapter math vault files under ``math_engine/reasoning_vault/``.
+
+    Skips ``MTH-BRIDGE.json`` (validated by ``check_bridge_vault``) and ``MTH-TEMPLATE.json``.
+    Returns ``(errors, warnings, vault_count, archetype_count)``.
+    """
+    target_dir = Path(math_vault_dir) if math_vault_dir is not None else MATH_VAULT_DIR
+    if not target_dir.exists():
+        return [], [], 0, 0
+
+    errors: list[str] = []
+    warnings_list: list[str] = []
+    vault_count = 0
+    archetype_count = 0
+
+    for vf in sorted(target_dir.glob("*.json")):
+        if vf.stem in (BRIDGE_SCOPE, "MTH-TEMPLATE"):
+            continue
+        vault_count += 1
+        try:
+            data = json.loads(vf.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            errors.append(f"{vf.name}: invalid JSON: {exc}")
+            continue
+        v_errors, v_warnings = validate_math_vault(data, label=vf.name)
+        errors.extend(v_errors)
+        warnings_list.extend(v_warnings)
+        archetypes = data.get("archetypes") if isinstance(data, dict) else []
+        if isinstance(archetypes, list):
+            archetype_count += len(archetypes)
+
+    return errors, warnings_list, vault_count, archetype_count
+
+
 def check_bridge_vault(math_vault_dir: Path | None = None) -> tuple[list[str], int]:
     """Validate ``math_engine/reasoning_vault/MTH-BRIDGE.json`` if present.
 
@@ -304,8 +450,10 @@ def check_all_vaults(
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
     math_vault_dir: Path | None = None,
+    *,
+    warnings_out: list[str] | None = None,
 ) -> tuple[list[str], list[str], dict[str, int]]:
-    """Validate universal checks + all PRG vault files + MTH-BRIDGE vault schema."""
+    """Validate universal checks + all PRG vault files + math unit vaults + MTH-BRIDGE vault schema."""
     errors: list[str] = []
     skips: list[str] = []
 
@@ -343,22 +491,34 @@ def check_all_vaults(
                     skips.append(msg)
 
     bridge_archetypes = 0
+    math_vaults = 0
+    math_archetypes = 0
+    math_warnings: list[str] = []
     if math_vault_dir is not None or vault_dir is None:
         bridge_errors, bridge_archetypes = check_bridge_vault(math_vault_dir=math_vault_dir)
         errors.extend(bridge_errors)
+        math_errors, math_warnings, math_vaults, math_archetypes = check_math_vaults(math_vault_dir=math_vault_dir)
+        errors.extend(math_errors)
+        if warnings_out is not None:
+            warnings_out.extend(math_warnings)
 
     stats = {
         "universal": len(universal),
         "vaults": len(vault_files),
         "archetypes": archetype_count,
         "checks": check_count,
+        "mathVaults": math_vaults,
+        "mathArchetypes": math_archetypes,
+        "mathWarnings": len(math_warnings),
         "bridgeArchetypes": bridge_archetypes,
     }
     return errors, skips, stats
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate PRG qualityChecks and MTH-BRIDGE reasoning vault schema.")
+    parser = argparse.ArgumentParser(
+        description="Validate PRG qualityChecks, math unit vaults, and MTH-BRIDGE reasoning vault schema."
+    )
     parser.add_argument("--check-vaults", action="store_true", help="Validate all vaults and run knownBad lint checks")
     parser.add_argument("--vault-dir", default=None, help="Override code_engine/reasoning_vault directory")
     parser.add_argument("--math-vault-dir", default=None, help="Override math_engine/reasoning_vault directory")
@@ -369,18 +529,26 @@ def main(argv: list[str] | None = None) -> int:
 
     vault_dir = Path(args.vault_dir) if args.vault_dir else None
     math_vault_dir = Path(args.math_vault_dir) if args.math_vault_dir else None
-    errors, skips, stats = check_all_vaults(vault_dir=vault_dir, math_vault_dir=math_vault_dir)
+    warnings_list: list[str] = []
+    errors, skips, stats = check_all_vaults(
+        vault_dir=vault_dir,
+        math_vault_dir=math_vault_dir,
+        warnings_out=warnings_list,
+    )
 
     for s in skips:
         print(s)
+    for w in warnings_list:
+        print(f"WARN: {w}")
     for err in errors:
         print(f"ERROR: {err}", file=sys.stderr)
 
     print(
-        f"Checked {stats['universal']} universal check(s), {stats['vaults']} vault(s), "
-        f"{stats['archetypes']} archetype(s), {stats['checks']} archetype check(s), "
+        f"Checked {stats['universal']} universal check(s), {stats['vaults']} PRG vault(s), "
+        f"{stats['archetypes']} PRG archetype(s), {stats['checks']} archetype check(s), "
+        f"{stats['mathVaults']} math vault(s), {stats['mathArchetypes']} math archetype(s), "
         f"{stats['bridgeArchetypes']} bridge archetype(s): "
-        f"{len(errors)} error(s), {len(skips)} skipped."
+        f"{len(errors)} error(s), {stats['mathWarnings']} warning(s), {len(skips)} skipped."
     )
     return 1 if errors else 0
 

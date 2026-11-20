@@ -170,6 +170,44 @@ def test_core_card_schema_valid_and_invalid() -> None:
     )
     assert any("scope-only" in e for e in source_cores.validate_core_card(openstax_card))
 
+    # SmartMathPro is registered as a cores family
+    assert source_cores.SOURCE_FAMILIES["smartmathpro"] == {
+        "mode": "cores",
+        "label": "SmartMathPro Thai past papers",
+    }
+    assert source_cores.family_mode("SmartMathPro/tcas68.pdf") == "cores"
+    smp_card = _sample_card(sourceRef={"family": "smartmathpro", "file": "tcas68.pdf", "page": 2, "item": "Q3"})
+    assert source_cores.validate_core_card(smp_card) == []
+
+    # units[] validates every code against id_map.json (or UNMAPPED:) like laterUnit
+    assert (
+        source_cores.validate_core_card(
+            _sample_card(units=["MTH-T02-C01-U01", "MTH-T02-C01-U02"]),
+            valid_unit_codes={"MTH-T02-C01-U01", "MTH-T02-C01-U02"},
+        )
+        == []
+    )
+    assert (
+        source_cores.validate_core_card(
+            _sample_card(units=["MTH-T02-C01-U01", "UNMAPPED:MTH-FUTURE"]),
+            valid_unit_codes={"MTH-T02-C01-U01"},
+        )
+        == []
+    )
+    assert any(
+        "UNMAPPED:" in e
+        for e in source_cores.validate_core_card(
+            _sample_card(units=["MTH-T02-C01-U01", "UNMAPPED:"]),
+            valid_unit_codes={"MTH-T02-C01-U01"},
+        )
+    )
+    with pytest.warns(UserWarning, match="MTH-T99-BOGUS"):
+        bad_units_errs = source_cores.validate_core_card(
+            _sample_card(units=["MTH-T02-C01-U01", "MTH-T99-BOGUS"]),
+            valid_unit_codes={"MTH-T02-C01-U01", "MTH-T02-C01-U02"},
+        )
+    assert any("units[1]: unknown unit/chapter code" in e for e in bad_units_errs), bad_units_errs
+
     # 200-char field limit enforced everywhere (top-level & nested)
     long_text = "x" * 201
     assert any("200-char" in e for e in source_cores.validate_core_card(_sample_card(notes=long_text)))

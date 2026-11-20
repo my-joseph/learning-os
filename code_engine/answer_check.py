@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 Answer checker for Programming Practice Drills.
-Handles:
-- predict-output / code_output (token-aware, accepts newline, comma, space, bracketed inputs)
-- line_number / find-bug (extracts line numbers like "Line 4", "4", "line 4")
+Handles active types:
+- predict_output (token-aware, accepts newline, comma, space, bracketed inputs)
 - choice (exact option id match)
 - text (normalized accepted string match)
+
+Deprecated legacy template types (`code_output`, `line_number`, `find_bug`) are
+kept only as warning-emitting compatibility aliases until legacy templates are removed.
 Provides smart diagnostic feedback when known anti-patterns or misorderings are detected.
 """
 
 import json
 import re
 import sys
+import warnings
 
 
 def parse_tokens(raw: str) -> list[str]:
@@ -219,12 +222,16 @@ def check_text(spec: dict, raw: str) -> dict:
 
 
 CHECKERS = {
-    "code_output": check_code_output,
     "predict_output": check_code_output,
-    "line_number": check_line_number,
-    "find_bug": check_line_number,
     "choice": check_choice,
     "text": check_text,
+}
+
+# Deprecated legacy template aliases (mirrors math_engine.answer_spec_registry.DEPRECATED_ANSWER_SPEC_TYPES).
+DEPRECATED_CHECKERS = {
+    "code_output": (check_code_output, "predict_output"),
+    "line_number": (check_line_number, "choice"),
+    "find_bug": (check_line_number, "choice"),
 }
 
 
@@ -237,11 +244,19 @@ def check_answer(spec: dict, raw: str) -> dict:
             "diagnostics": [],
         }
 
-    stype = spec.get("type", "code_output")
+    stype = spec.get("type", "predict_output")
     fn = CHECKERS.get(stype)
     if not fn:
-        # Fallback to check_code_output if tokens or value exist
-        if "tokens" in spec or stype in ("text", "string"):
+        legacy = DEPRECATED_CHECKERS.get(stype)
+        if legacy:
+            fn, replacement = legacy
+            warnings.warn(
+                f"answerSpec type '{stype}' is deprecated; use '{replacement}' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        elif "tokens" in spec or stype == "string":
+            # Fallback to token output comparison if tokens exist
             fn = check_code_output
         else:
             return {

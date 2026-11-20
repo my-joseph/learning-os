@@ -231,9 +231,19 @@ def save_progress(
                 f"Refusing to overwrite practised progress for '{drill_id}' with empty state "
                 "(pass allow_reset=True to reset)"
             )
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(extract_progress(drill_doc), f, ensure_ascii=False, indent=2)
+    parent = os.path.dirname(path) or "."
+    os.makedirs(parent, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix=f".{drill_id}_", suffix=".tmp", dir=parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(extract_progress(drill_doc), f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
     return path
 
 
@@ -628,6 +638,34 @@ def is_awaiting_review(
     if not (data["reportInfo"]["hasData"] or data["cycleTestRuns"]):
         return False
     return _resolve_prg_latest_tests_status(data["reportInfo"], data["cycleRevs"], data["cycleTestRuns"]) == "pass"
+
+
+def is_locked_after_correct(
+    state: dict[str, Any] | None,
+    *,
+    cycle_started_at: str | None = None,
+    has_cycle_override: bool = False,
+    is_variant: bool = False,
+) -> bool:
+    """Return True once a math/choice/in-browser/variant problem has a correct substantive check
+    in the current cycle (mirror of `practice-studio/src/lib/scoring.ts:isLockedAfterCorrect`).
+    """
+    if not isinstance(state, dict):
+        return False
+    data = _extract_cycle_data(
+        state,
+        cycle_started_at=cycle_started_at,
+        has_cycle_override=has_cycle_override,
+        is_variant=is_variant,
+    )
+    if data["isStalePrevCycle"]:
+        return False
+    if any(a.get("verdict") == "correct" for a in data["substantiveAtts"]):
+        return True
+    last_check = state.get("lastCheck")
+    if len(data["allOrigAttempts"]) == 0 and isinstance(last_check, dict) and last_check.get("verdict") == "correct":
+        return True
+    return False
 
 
 def item_score(state: dict[str, Any], *, is_prg: bool = False) -> tuple[float, bool]:

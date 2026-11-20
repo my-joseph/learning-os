@@ -70,55 +70,73 @@ ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
         "optional_fields": ["case_sensitive"],
         "examples": [{"type": "text", "accepted": ["server-only"]}],
     },
-    "code_output": {
-        "engine": "code",
-        "description": "Standard output string comparison from code execution",
-        "required_fields": ["expected"],
-        "optional_fields": ["trim_whitespace", "ignore_trailing_newline"],
-        "examples": [{"type": "code_output", "expected": "hello\nworld"}],
-    },
     "predict_output": {
         "engine": "code",
-        "description": "Predicted execution logs or output array",
-        "required_fields": ["expected"],
-        "optional_fields": [],
-        "examples": [{"type": "predict_output", "expected": ["1", "3", "2"]}],
+        "description": "Predicted execution output token sequence",
+        "required_fields": [],
+        "required_any_of": ["tokens", "value"],
+        "optional_fields": ["tokens", "value", "commonTrapTag", "allowPartial"],
+        "examples": [
+            {"type": "predict_output", "tokens": ["1", "3", "2"]},
+            {"type": "predict_output", "value": "1, 3, 2"},
+        ],
+    },
+}
+
+# Deprecated PRG template answerSpec types (no drill/lab/variant uses them; kept here only for clear rejection messages).
+DEPRECATED_ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
+    "code_output": {
+        "engine": "code",
+        "deprecated": True,
+        "replacement": "predict_output",
+        "description": "Deprecated alias for 'predict_output' (legacy templates only).",
+        "required_fields": [],
+        "required_any_of": ["tokens", "value"],
+        "optional_fields": ["tokens", "value", "commonTrapTag", "allowPartial"],
     },
     "line_number": {
         "engine": "code",
-        "description": "Specific 1-indexed source line containing bug",
-        "required_fields": ["correct_line"],
-        "optional_fields": ["acceptable_range"],
-        "examples": [{"type": "line_number", "correct_line": 14}],
+        "deprecated": True,
+        "replacement": "choice",
+        "description": "Deprecated 1-indexed defective line number (use 'choice' for find-the-flaw drills).",
+        "required_fields": ["correctLine"],
+        "optional_fields": ["commonTrapTag", "flawExplanation"],
     },
     "find_bug": {
         "engine": "code",
-        "description": "Bug identification and categorization in source code",
-        "required_fields": ["bug_type"],
-        "optional_fields": ["line"],
-        "examples": [{"type": "find_bug", "bug_type": "this_binding", "line": 8}],
+        "deprecated": True,
+        "replacement": "choice",
+        "description": "Deprecated alias for 'line_number' (use 'choice' for find-the-flaw drills).",
+        "required_fields": ["correctLine"],
+        "optional_fields": ["commonTrapTag", "flawExplanation"],
     },
 }
 
 
 def validate_answer_spec(spec: dict[str, Any]) -> tuple[bool, Optional[str]]:
-    """Validate that an answerSpec dictionary conforms to registered schema."""
+    """Validate that an answerSpec dictionary conforms to the active registered schema."""
     if not isinstance(spec, dict):
         return False, "answerSpec must be a dictionary"
     stype = spec.get("type")
     if not stype:
         return False, "answerSpec must have a 'type' field"
+    deprecated = DEPRECATED_ANSWER_SPEC_TYPES.get(stype)
+    if deprecated:
+        return False, f"Deprecated answerSpec type: '{stype}' (use '{deprecated['replacement']}' instead)"
     info = ANSWER_SPEC_TYPES.get(stype)
     if not info:
         return False, f"Unknown answerSpec type: '{stype}'"
     for rf in info["required_fields"]:
         if rf not in spec:
             return False, f"Missing required field '{rf}' for answerSpec type '{stype}'"
+    any_of = info.get("required_any_of")
+    if any_of and not any(rf in spec for rf in any_of):
+        return False, f"Missing required field (one of {any_of}) for answerSpec type '{stype}'"
     return True, None
 
 
 def get_registered_types(engine: Optional[str] = None) -> list[str]:
-    """Return all registered answerSpec type names, optionally filtered by engine ('math', 'code', 'shared')."""
+    """Return active registered answerSpec type names, optionally filtered by engine ('math', 'code', 'shared')."""
     if not engine:
         return sorted(ANSWER_SPEC_TYPES.keys())
     return sorted(k for k, v in ANSWER_SPEC_TYPES.items() if v["engine"] in (engine, "shared"))

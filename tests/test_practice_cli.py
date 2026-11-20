@@ -63,3 +63,94 @@ def test_submit_saves_and_prints_session_summary(tmp_path):
     assert summary["practiceStatus"] == "In Progress"
     assert progress["sessionSummary"] == summary
     assert "sessionSummary" not in json.loads(DRILL_PATH.read_text(encoding="utf-8"))
+    assert "pilot-only" in result.stderr.lower()
+
+
+def test_pilot_only_docstring_and_banner(tmp_path):
+    import scripts.practice as practice
+
+    assert "pilot-only" in (practice.__doc__ or "").lower()
+    result = run_cli("summary", DRILL_ID, progress_dir=tmp_path / "progress")
+    assert result.returncode == 0
+    assert "pilot-only" in result.stderr.lower()
+    assert json.loads(result.stdout)["practiceStatus"] == "Ready"
+
+
+def test_reveal_flags_respect_cycle_started_at_and_variant_attempts(tmp_path):
+    doc = json.loads(DRILL_PATH.read_text(encoding="utf-8"))
+    qid = doc["problems"][0]["id"]
+    progress_dir = tmp_path / "progress"
+    progress_dir.mkdir(parents=True)
+
+    # Prior-cycle correct attempt + variant correct attempt in current cycle should NOT
+    # suppress setupRevealedBeforeAnswer or solutionRevealedBeforeAnswer in the new cycle.
+    progress_file = progress_dir / f"{DRILL_ID}.json"
+    progress_file.write_text(
+        json.dumps(
+            {
+                "drillId": DRILL_ID,
+                "unitCode": doc["unitCode"],
+                "sessionSummary": {},
+                "problems": {
+                    qid: {
+                        "userInput": "27/10",
+                        "score": 1,
+                        "divergedStep": None,
+                        "mistakes": [],
+                        "lastCheck": {"verdict": "correct"},
+                        "cycleStartedAt": "2026-11-20T12:00:00Z",
+                        "attempts": [
+                            {"input": "27/10", "ts": "2026-11-19T10:00:00Z", "verdict": "correct"},
+                            {
+                                "input": "99",
+                                "ts": "2026-11-20T12:05:00Z",
+                                "verdict": "correct",
+                                "kind": "variant",
+                            },
+                        ],
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    res_setup = run_cli("setup", DRILL_ID, qid, progress_dir=progress_dir)
+    assert res_setup.returncode == 0
+    st = json.loads(progress_file.read_text(encoding="utf-8"))["problems"][qid]
+    assert st.get("setupRevealedBeforeAnswer") is True
+
+    res_sol = run_cli("solution", DRILL_ID, qid, progress_dir=progress_dir)
+    assert res_sol.returncode == 0
+    st = json.loads(progress_file.read_text(encoding="utf-8"))["problems"][qid]
+    assert st.get("solutionRevealedBeforeAnswer") is True
+
+    # Once an original correct attempt exists in the current cycle, neither flag is set.
+    progress_file.write_text(
+        json.dumps(
+            {
+                "drillId": DRILL_ID,
+                "unitCode": doc["unitCode"],
+                "sessionSummary": {},
+                "problems": {
+                    qid: {
+                        "userInput": "27/10",
+                        "score": 1,
+                        "divergedStep": None,
+                        "mistakes": [],
+                        "lastCheck": {"verdict": "correct"},
+                        "cycleStartedAt": "2026-11-20T12:00:00Z",
+                        "attempts": [
+                            {"input": "27/10", "ts": "2026-11-20T12:10:00Z", "verdict": "correct"},
+                        ],
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert run_cli("setup", DRILL_ID, qid, progress_dir=progress_dir).returncode == 0
+    assert run_cli("solution", DRILL_ID, qid, progress_dir=progress_dir).returncode == 0
+    st_after = json.loads(progress_file.read_text(encoding="utf-8"))["problems"][qid]
+    assert not st_after.get("setupRevealedBeforeAnswer")
+    assert not st_after.get("solutionRevealedBeforeAnswer")
