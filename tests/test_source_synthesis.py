@@ -595,3 +595,19 @@ def test_cli_help_smoke() -> None:
             check=False,
         )
         assert proc.returncode == 0, f"{mod} --help failed: {proc.stderr}"
+
+
+def test_originality_short_prompts_and_unrelated_families(tmp_path):
+    """Short prompts with one or two numbers are only rejected on a verbatim copy; CS/physics books are ignored for MTH."""
+    from math_engine.source_cores import originality as og
+
+    assert og.MIN_MULTISET_NUMBERS >= 3
+    assert not og._family_relevant("openstax/cs-physics/Computer_Science/x.pdf", "MTH-T02-C01-U01")
+    assert og._family_relevant("SmartMathPro/a.pdf", "MTH-T02-C01-U01")
+    pages = [
+        {"loc": "src p.1", "text": "Simplify the expression i to the power eleven quickly. Another sentence here."}
+    ]
+    short_original = {"id": "Q1", "prompt": "Simplify $\\frac{1}{i^{11}}$."}
+    assert og.check_problem_originality(short_original, pages) == []
+    verbatim = {"id": "Q2", "prompt": "Simplify the expression i to the power eleven quickly."}
+    assert og.check_problem_originality(verbatim, pages)

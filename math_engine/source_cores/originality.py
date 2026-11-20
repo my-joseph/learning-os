@@ -34,7 +34,21 @@ from math_engine.source_cores import (
 DEFAULT_SHINGLE_SIZE = 8
 DEFAULT_SIMILARITY_THRESHOLD = 0.6
 MIN_WINDOW_CHARS = 15
-MIN_MULTISET_NUMBERS = 2
+# Two small numbers (e.g. {1, 11}) collide with unrelated pages everywhere; a set of
+# three or more numbers is distinctive enough to flag a reused item.
+MIN_MULTISET_NUMBERS = 3
+# Short task phrasings ("Simplify X.") are inherently similar to textbook wording;
+# copying of short prompts is still caught by the shingle and number-set checks.
+MIN_SIMILARITY_CHARS = 40
+
+
+def _family_relevant(rel_path: str, unit_code: str) -> bool:
+    """Compare MTH units only with math-relevant families (skip CS/physics books that merely mention a term)."""
+    rel = rel_path.replace("\\", "/")
+    if unit_code.startswith("MTH") and rel.startswith("openstax/cs-physics/"):
+        return False
+    return True
+
 
 _LATEX_STRIP_COMMANDS_RE = re.compile(
     r"\\(?:left|right|displaystyle|textstyle|quad|qquad|text|mathrm|mathbf|mathit|operatorname)\b"
@@ -190,6 +204,8 @@ def load_located_source_pages(
             located = {}
         for match in located.get("matches") or []:
             rel = str(match.get("relPath") or "")
+            if not _family_relevant(rel, unit_code):
+                continue
             cache_doc = None
             cache_file = match.get("cacheFile")
             if isinstance(cache_file, str):
@@ -344,6 +360,14 @@ def check_problem_originality(
 
     for label, norm_cand in sim_targets:
         if len(norm_cand) < MIN_WINDOW_CHARS:
+            continue
+        if len(norm_cand) < MIN_SIMILARITY_CHARS:
+            # Short prompts: only a verbatim copy counts (fuzzy similarity is meaningless here).
+            hit = next((loc for win, loc in prepared.windows if norm_cand in win), "")
+            if hit:
+                errors.append(
+                    f"[{pid}] Originality gate failed ({label}): verbatim copy of a source sentence in {hit}."
+                )
             continue
         best_ratio = 0.0
         best_loc = ""
