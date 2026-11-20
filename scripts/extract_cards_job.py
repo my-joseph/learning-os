@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from typing import Any, Iterable
@@ -103,6 +104,12 @@ def _default_run_id(unit_code: str, batch_num: int) -> str:
     return f"{unit_code}-b{batch_num}-{stamp}"
 
 
+def _run_id_token(run_id: str) -> str:
+    """Return a compact, ID-safe run token without collapsing distinct run IDs."""
+    token = re.sub(r"[^A-Za-z0-9]+", "-", run_id).strip("-")
+    return token or "run"
+
+
 def _abs_source_hint(sdir: str, rel_path: str) -> str:
     norm = normalize_rel_path(rel_path)
     if "::" in norm:
@@ -166,6 +173,15 @@ def build_worker_prompt(
             f"  - Raw source path: `{abs_src}`\n"
             f"  - File SHA-256: `{fhash}`"
         )
+        for answer in p.get("answerKeyPages") or []:
+            answer_cache = str(answer.get("cacheFile") or "")
+            answer_cache_abs = os.path.join(idx_dir, answer_cache) if answer_cache else "(not cached)"
+            answer_rel = str(answer.get("relPath") or "")
+            page_lines.append(
+                f"  - Answer-key reference ONLY (do not mine): `{answer_rel}` page={answer.get('page')}; "
+                f"cached text JSON: `{answer_cache_abs}`; raw source: `{_abs_source_hint(sdir, answer_rel)}`. "
+                "Consult only to confirm likely traps for this problem page."
+            )
 
     plan_arg = f" --plan {os.path.abspath(plan_file)}" if plan_file else ""
     sdir_arg = f" --sources-dir {sdir}" if sources_dir else ""
@@ -204,7 +220,7 @@ def build_worker_prompt(
             "   - Respect each chunk's `itemAllowance` cap; skip duplicate/trivial items.",
             '   - If an item goes beyond this unit\'s scope, keep the card with `"laterUnit": "<REAL_CODE>"` from '
             '`id_map.json` (or `"UNMAPPED:<label>"` if no unit exists yet).',
-            f"   - Use unique IDs scoped to this batch, e.g. `CORE-{unit_code}-B{batch_num:02d}-01`, ...",
+            f"   - Use unique IDs scoped to this extraction run and batch, e.g. `CORE-{unit_code}-R{_run_id_token(resolved_run_id)}-B{batch_num:02d}-01`, ...",
             "7. **Zero-leak output:** NEVER print source code excerpts, solutions, or answers in stdout or logs.",
             "8. **Programmatic validation:** Validate every card with "
             "`math_engine.source_cores.validate_core_card(card, source_item_text=page_text)` before writing.",
@@ -243,7 +259,7 @@ def build_worker_prompt(
             '`id_map.json` (or `"UNMAPPED:<label>"` if no unit exists yet).',
             '   - If an item genuinely combines >= 2 units, set `"units": ["<UNIT_A>", "<UNIT_B>"]` using real codes '
             "from `id_map.json`.",
-            f"   - Use unique IDs scoped to this batch, e.g. `CORE-{unit_code}-B{batch_num:02d}-01`, ...",
+            f"   - Use unique IDs scoped to this extraction run and batch, e.g. `CORE-{unit_code}-R{_run_id_token(resolved_run_id)}-B{batch_num:02d}-01`, ...",
             "7. **Zero-leak output:** NEVER print source problem excerpts, worked solutions, or answers in stdout or logs.",
             "8. **Programmatic validation:** Validate every card with "
             "`math_engine.source_cores.validate_core_card(card, source_item_text=page_text)` before writing.",
@@ -415,13 +431,25 @@ def commit_batch_cards(
         validate=False,
         include_carried=False,
     )
-    existing_ids = {str(c.get("id")) for c in existing_cards if isinstance(c.get("id"), str)}
+    existing_by_id = {str(c.get("id")): c for c in existing_cards if isinstance(c.get("id"), str)}
+
+    # Detect conflicting IDs before appending anything or recording ledger progress.
+    submitted_by_id: dict[str, dict[str, Any]] = {}
+    for card in cards:
+        cid = str(card["id"])
+        prior = submitted_by_id.get(cid) or existing_by_id.get(cid)
+        if prior is not None and _card_content(prior) != _card_content(card):
+            raise CoreCardError(
+                f"ID clash for {cid}: an existing/submitted card has different content; "
+                "use a new run-scoped card ID instead of skipping it."
+            )
+        submitted_by_id[cid] = card
 
     appended_ids: list[str] = []
     skipped_ids: list[str] = []
     for card in cards:
         cid = str(card["id"])
-        if cid in existing_ids:
+        if cid in existing_by_id:
             skipped_ids.append(cid)
             continue
         src_text = _match_page_text_for_card(card, page_texts)
@@ -433,7 +461,7 @@ def commit_batch_cards(
             valid_unit_codes=valid_unit_codes,
             registry_path=registry_path,
         )
-        existing_ids.add(cid)
+        existing_by_id[cid] = card
         appended_ids.append(cid)
 
     # Group produced card IDs by (normalized relPath, page) to record every batch page in the ledger
@@ -499,6 +527,16 @@ def commit_batch_cards(
             fh.write("\n")
 
     return summary
+
+
+def _card_content(card: dict[str, Any]) -> str:
+    """Canonical card payload for ID-clash checks; provenance may differ for the same core."""
+    return json.dumps(
+        {key: value for key, value in card.items() if key not in {"id", "sourceRef"}},
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:
