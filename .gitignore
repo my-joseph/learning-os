@@ -62,3 +62,6 @@ issues/
 
 # Pilot mode (AI stand-in learner state, never tracked)
 pilot/
+
+# Raw source material (textbooks, exam papers, worksheets); local only, never tracked
+sources/
