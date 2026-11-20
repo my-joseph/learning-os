@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from math_engine import ai_drill_ingest, source_cores, variant_bank
-from math_engine.source_cores import originality
+from math_engine.source_cores import code_originality, originality
 from scripts import source_cores_retag, source_find, source_gap
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -53,6 +53,34 @@ def _sample_card(**overrides) -> dict:
         },
         "representation": "symbolic",
         "notes": "Tests reverse solving with complex division",
+    }
+    card.update(overrides)
+    return card
+
+
+def _sample_prg_card(**overrides) -> dict:
+    card = {
+        "profile": "prg",
+        "id": "CORE-PRG-T00-C03-U01-01",
+        "unitCode": "PRG-T00-C03-U01",
+        "sourceRef": {
+            "family": "prg/exercism-typescript",
+            "file": "concepts/example.ts",
+            "page": "L1-L18",
+            "item": "exercise source",
+        },
+        "language": "typescript",
+        "archetypeKind": "find-the-bug",
+        "skill": "Preserve narrowing across a guarded property access",
+        "concept": "discriminated unions",
+        "bugPattern": "A mutable alias invalidates a previously established type guard",
+        "testsCatch": "A valid variant fails after control flow crosses a mutation boundary",
+        "difficultyDriver": "Reason across a helper call that can change the discriminant",
+        "level": 3,
+        "traps": [{"tag": "mutation-breaks-narrowing", "description": "Trusts stale narrowed state"}],
+        "qualityCheckIdeas": [
+            {"id": "QC-stable-boundary", "check": "Narrowed values remain stable across helper calls"}
+        ],
     }
     card.update(overrides)
     return card
@@ -893,3 +921,221 @@ def test_originality_short_prompts_and_unrelated_families(tmp_path):
     assert og.check_problem_originality(short_original, pages) == []
     verbatim = {"id": "Q2", "prompt": "Simplify the expression i to the power eleven quickly."}
     assert og.check_problem_originality(verbatim, pages)
+
+
+# ---------------------------------------------------------------------------
+# 6. PRG source indexing, cards, originality, and gap analysis
+# ---------------------------------------------------------------------------
+
+
+def test_prg_source_find_indexes_code_and_markdown(tmp_path: Path) -> None:
+    sources_dir = tmp_path / "sources"
+    ts_file = sources_dir / "prg" / "exercism-typescript" / "concepts" / "narrowing.ts"
+    md_file = sources_dir / "prg" / "javascript-questions" / "async.md"
+    json_file = sources_dir / "prg" / "exercism-typescript" / "tests" / "narrowing.json"
+    ts_file.parent.mkdir(parents=True)
+    md_file.parent.mkdir(parents=True)
+    json_file.parent.mkdir(parents=True)
+    ts_file.write_text(
+        "export function normalizeRecord(record: unknown) {\n"
+        "  if (record === null || typeof record !== 'object') return null;\n"
+        "  return record;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    md_file.write_text(
+        "# Async ordering\n\n"
+        "A closure can preserve a value while a promise callback runs later.\n\n"
+        "```js\nconst result = Promise.resolve('ready').then(value => value);\n```\n",
+        encoding="utf-8",
+    )
+    json_file.write_text(
+        json.dumps({"tests": [{"name": "handles unknown records", "testCode": "expect(isRecord(value)).toBe(true);"}]}),
+        encoding="utf-8",
+    )
+
+    result = source_find.find_sources(
+        "PRG-T00-C03-U01",
+        terms=["unknown", "closure", "promise"],
+        sources_dir=str(sources_dir),
+    )
+
+    assert result["track"] == "prg"
+    assert result["filesScanned"] == 3
+    assert result["pdfsScanned"] == 0
+    assert {item["relPath"] for item in result["coreMatches"]} == {
+        "prg/exercism-typescript/concepts/narrowing.ts",
+        "prg/javascript-questions/async.md",
+        "prg/exercism-typescript/tests/narrowing.json",
+    }
+    cache_files = list((sources_dir / "_index").glob("code_*.json"))
+    assert len(cache_files) == 3
+    cache_payloads = [json.loads(path.read_text(encoding="utf-8")) for path in cache_files]
+    assert all(payload["pages"][0]["text"] for payload in cache_payloads)
+    json_page = next(page for page in result["coreMatches"] if page["relPath"].endswith(".json"))
+    json_cache = next(path for path in cache_files if path.name == json_page["cacheFile"])
+    cached_text = json.loads(json_cache.read_text(encoding="utf-8"))["pages"][0]["text"]
+    assert code_originality.extract_code_blocks_from_source(json_page["relPath"], cached_text) == [
+        "expect(isRecord(value)).toBe(true);"
+    ]
+
+
+def test_prg_source_find_never_indexes_no_automation_families(tmp_path: Path) -> None:
+    sources_dir = tmp_path / "sources"
+    restricted = sources_dir / "prg" / "manual-only" / "lesson.ts"
+    restricted.parent.mkdir(parents=True)
+    restricted.write_text("export function readClosureState() { return undefined; }", encoding="utf-8")
+    registry = tmp_path / "sources.md"
+    registry.write_text(
+        "# Registry\n\n"
+        "## PRG Source Families (under sources/prg/)\n\n"
+        "| Family | Upstream | Licence | Allowed use | Coverage |\n"
+        "| :--- | :--- | :--- | :--- | :--- |\n"
+        "| `manual-only/` | local fixture | ARR | `NO-AUTOMATION` | closure |\n",
+        encoding="utf-8",
+    )
+
+    result = source_find.find_sources(
+        "PRG-T00-C03-U01",
+        terms=["closure"],
+        sources_dir=str(sources_dir),
+        registry_path=str(registry),
+    )
+
+    assert result["filesScanned"] == 0
+    assert result["coreMatches"] == []
+    assert result["skippedNoAutomation"] == ["prg/manual-only"]
+    assert list((sources_dir / "_index").glob("code_*.json")) == []
+
+
+def test_prg_core_card_rejects_copied_identifiers_and_strings() -> None:
+    source_text = (
+        "export function normalizeRecord(record: unknown) {\n"
+        "  if (record === null || typeof record !== 'object') return null;\n"
+        "  throw new TypeError('Expected record payload');\n"
+        "}\n"
+    )
+    clean = _sample_prg_card()
+    assert source_cores.validate_core_card(clean, source_item_text=source_text) == []
+
+    copied_identifier = _sample_prg_card(skill="normalizeRecord validates a guarded value")
+    ident_errors = source_cores.validate_core_card(copied_identifier, source_item_text=source_text)
+    assert any("copies source identifier 'normalizeRecord'" in error for error in ident_errors), ident_errors
+
+    copied_string = _sample_prg_card(notes="Expected record payload")
+    string_errors = source_cores.validate_core_card(copied_string, source_item_text=source_text)
+    assert any("copies source test name or string literal" in error for error in string_errors), string_errors
+
+
+def test_prg_code_originality_rejects_copies_and_allows_original() -> None:
+    source_code = """export async function loadAccountProfile(accountId: string) {
+  const response = await fetch(`/accounts/${accountId}/profile`);
+  if (!response.ok) {
+    throw new Error("Profile request failed");
+  }
+  const payload = await response.json();
+  return {
+    id: payload.id,
+    displayName: payload.displayName,
+    roles: Array.isArray(payload.roles) ? payload.roles : [],
+  };
+}
+"""
+    pages = [{"relPath": "prg/exercism-typescript/profile.ts", "page": 1, "text": source_code}]
+
+    copied_doc = {
+        "unitCode": "PRG-T00-C03-U01",
+        "problems": [{"id": "Q01", "prompt": "Implement profile loading.", "solutionCode": source_code}],
+    }
+    copied_errors, copied_notice = code_originality.check_code_drill_originality(copied_doc, source_pages=pages)
+    assert copied_notice is None
+    assert any("solutionCode" in error and "Code originality gate failed" in error for error in copied_errors)
+
+    renamed_code = (
+        source_code.replace("loadAccountProfile", "readMemberSummary")
+        .replace("accountId", "memberKey")
+        .replace("payload", "record")
+    )
+    renamed_doc = {
+        "unitCode": "PRG-T00-C03-U01",
+        "problems": [{"id": "Q01", "prompt": "Implement profile loading.", "solutionCode": renamed_code}],
+    }
+    renamed_errors, _ = code_originality.check_code_drill_originality(renamed_doc, source_pages=pages)
+    assert any("solutionCode" in error and "Code originality gate failed" in error for error in renamed_errors)
+
+    original_doc = {
+        "unitCode": "PRG-T00-C03-U01",
+        "problems": [
+            {
+                "id": "Q01",
+                "prompt": "Build a local summary from validated membership records.",
+                "solutionCode": """function summarizeMembership(members) {
+  const activeMembers = members.filter(member => member.status === "active");
+  const totalsByRegion = new Map();
+  for (const member of activeMembers) {
+    const current = totalsByRegion.get(member.region) || 0;
+    totalsByRegion.set(member.region, current + member.credit);
+  }
+  return [...totalsByRegion.entries()].map(([region, credits]) => ({ region, credits }));
+}
+""",
+            }
+        ],
+    }
+    original_errors, _ = code_originality.check_code_drill_originality(original_doc, source_pages=pages)
+    assert original_errors == []
+
+
+def test_prg_source_gap_reports_vault_gaps_read_only(tmp_path: Path) -> None:
+    unit = "PRG-T00-C03-U01"
+    vault_dir = tmp_path / "code-vault"
+    vault_dir.mkdir()
+    vault_file = vault_dir / "PRG-T00-C03.json"
+    vault_payload = {
+        "unitCode": "PRG-T00-C03",
+        "archetypes": [
+            {
+                "archetypeKey": "type-guard-stability",
+                "unitCode": unit,
+                "archetypeKind": "find-the-bug",
+                "level": 2,
+                "name": "Type guard stability",
+                "coreConcept": "Preserve narrowing across function boundaries",
+                "mentalModel": "A mutable alias can invalidate an earlier observation",
+                "cognitiveTraps": [
+                    {"trapTag": "mutation-breaks-narrowing", "description": "Trusts stale narrowed state"}
+                ],
+                "qualityChecks": [
+                    {"id": "QC-stable-boundary", "check": "Guarded values stay stable", "severity": "should"}
+                ],
+            }
+        ],
+    }
+    vault_bytes = json.dumps(vault_payload, indent=2).encode("utf-8")
+    vault_file.write_bytes(vault_bytes)
+
+    card = _sample_prg_card(
+        traps=[
+            {"tag": "mutation-breaks-narrowing", "description": "Trusts stale narrowed state"},
+            {"tag": "callback-mutates-discriminant", "description": "Ignores mutation by a callback"},
+        ],
+        qualityCheckIdeas=[
+            {"id": "QC-stable-boundary", "check": "Narrowed values remain stable across helper calls"},
+            {
+                "id": "QC-copy-before-callback",
+                "check": "Snapshot mutable state before deferred work",
+                "severity": "must",
+            },
+        ],
+    )
+    source_cores.save_core_cards(unit, [card], sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path), vault_dir=str(vault_dir))
+    assert report["track"] == "prg"
+    assert report["matchedCards"][0]["id"] == card["id"]
+    assert {trap["tag"] for trap in report["newTraps"]} == {"callback-mutates-discriminant"}
+    assert [qc["id"] for qc in report["newQualityChecks"]] == ["QC-copy-before-callback"]
+    assert "find-the-bug" in report["archetypeKinds"]["vaultKinds"]
+    assert report["levels"]["cardLevelsMissingInVault"] == [3]
+    assert "implement" in report["archetypeKinds"]["allVaultMissingKinds"]
+    assert vault_file.read_bytes() == vault_bytes

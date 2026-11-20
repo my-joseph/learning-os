@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learningos.local/schemas/prg-source-core-card.schema.json",
+  "title": "PRG Source Core Card",
+  "description": "Abstract, source-free programming problem core extracted from an allowed PRG source family. No field may contain copied source code, identifiers, test names, string literals, source wording, or exceed 200 characters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "unitCode",
+    "sourceRef",
+    "language",
+    "archetypeKind",
+    "skill",
+    "concept",
+    "bugPattern",
+    "testsCatch",
+    "difficultyDriver",
+    "level",
+    "traps",
+    "qualityCheckIdeas"
+  ],
+  "properties": {
+    "profile": {
+      "const": "prg"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "unitCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "laterUnit": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "units": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "file", "page", "item"],
+      "properties": {
+        "family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "page": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "string", "minLength": 1, "maxLength": 200 }
+          ]
+        },
+        "item": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "javascript",
+        "typescript",
+        "python",
+        "sql",
+        "html-css",
+        "shell",
+        "agnostic"
+      ]
+    },
+    "archetypeKind": {
+      "type": "string",
+      "enum": [
+        "implement",
+        "predict-output",
+        "find-the-bug",
+        "refactor",
+        "project-milestone"
+      ]
+    },
+    "skill": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "bugPattern": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "smell": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "testsCatch": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "difficultyDriver": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "traps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tag", "description"],
+        "properties": {
+          "tag": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "qualityCheckIdeas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "check"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^QC-[a-z0-9][a-z0-9-]*$",
+            "maxLength": 200
+          },
+          "check": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["must", "should"]
+          }
+        }
+      }
+    },
+    "reuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["license", "attribution"],
+      "properties": {
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "adaptedIdea": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 200
+    }
+  }
+}

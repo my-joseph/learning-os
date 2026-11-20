@@ -33,9 +33,11 @@ Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api 
 ## Policy & Local Layout
 
 - **`scope` families (OpenStax):** Read only table-of-contents and learning-objective pages to set unit scope (`rules/07` §4). Never extract core cards or mine exercises.
-- **`cores` families:** Abstract problems into source-free core cards (`sources/_cores/<UNIT>.jsonl`) recording only the mathematical skill, reasoning move, difficulty driver, traps, and format. **Never copy, translate, or paraphrase a source problem, and never reuse its numbers.**
+- **`no-automation` families:** Never indexed, cached, or extracted automatically by `scripts.source_find` or worker jobs; only individual items provided manually by the learner may be discussed.
+- **`cores` families:** Abstract problems into source-free core cards (`sources/_cores/<UNIT>.jsonl`) recording only the abstract skill, reasoning move/archetype kind, difficulty driver, traps, and format/QC ideas. **Never copy, translate, or paraphrase a source problem, and never reuse its numbers, code, identifiers, test names, or strings.**
+- **`reuse` families (PRG under `sources/prg/`):** Still extracted into source-free PRG core cards (`prg_schema.json`); may include an optional `reuse` block (`{license, attribution, adaptedIdea?}`) when a test idea is adapted (still rewritten from scratch, never pasted).
 - **Local artifacts (all gitignored under `sources/`):**
-  - `sources/_index/` — cached extracted PDF text, per-unit located-page manifests (`located_<UNIT>.json`), and budgeted extraction plans (`plan_<UNIT>.json`).
-  - `sources/_cores/<UNIT>.jsonl` — validated, source-free core cards (≤ 200 chars per field, zero copied wording or numbers).
+  - `sources/_index/` — cached extracted PDF/code/markdown text (`pdf_*.json`, `code_*.json`), per-unit located manifests (`located_<UNIT>.json`), and budgeted extraction plans (`plan_<UNIT>.json`).
+  - `sources/_cores/<UNIT>.jsonl` — validated, source-free core cards (≤ 200 chars per field, zero copied wording, numbers, code, identifiers, test names, or strings).
   - `sources/_cores/_ledger.json` — incremental extraction ledger keyed by `(unit, file, page)` with extraction timestamp, run ID, produced card IDs, and source file SHA-256 hash.
-- **Committed summaries:** Only original, source-free archetypes and traps enter `math_engine/reasoning_vault/<UNIT>.json`, citing `"source": "OpenStax <Book> §x.y; cores: <families>"`.
+- **Committed summaries:** Only original, source-free archetypes and traps enter `math_engine/reasoning_vault/<UNIT>.json` (`"source": "OpenStax <Book> §x.y; cores: <families>"`) or `code_engine/reasoning_vault/<CHAPTER>.json` (`"source": "docs: <primary doc>; cores: <families>"`).

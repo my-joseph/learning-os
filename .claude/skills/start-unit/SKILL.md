@@ -39,13 +39,13 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
   - `usedContexts: []`.
   Then run `.venv/bin/python -m code_engine.quality_checks --check-vaults` and fix any errors before continuing.
 
-## 4. Source synthesis (MTH)
+## 4. Source synthesis (MTH & PRG)
 
-Run `.venv/bin/python -m scripts.source_find <UNIT> --plan` (watch for any unregistered-folder warning; builds the budgeted, diverse, ledger-aware `sources/_index/plan_<UNIT>.json`) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units`).
+Run `.venv/bin/python -m scripts.source_find <UNIT> --plan` (watch for any unregistered-folder warning under `sources/` or `sources/prg/`; builds the budgeted, diverse, ledger-aware `sources/_index/plan_<UNIT>.json`, skipping `scope`-only and `NO-AUTOMATION` families) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units` and compares against `math_engine/reasoning_vault/` for MTH or `code_engine/reasoning_vault/` for PRG).
 - If `plan_<UNIT>.json` has planned batches **or** carried-forward cards exist for `<UNIT>`, run `.claude/skills/synthesize-source/SKILL.md` steps 3–5:
   - Step 3: run worker batches via `scripts.extract_cards_job <UNIT> --batch <k>` + `tools/agents/run-worker.sh` (with `DONE_FILE`) and check `scripts.source_gap <UNIT> --novelty <batch_jsonl>` after each batch, stopping on saturation (two consecutive batches adding `< 2` new cores) or when the plan budget is exhausted.
-  - Steps 4–5 (Claude): review `scripts.source_gap <UNIT>` output, update the reasoning vault, and run the vault reviewer subagent so the Notion page and first drill already use the synthesised archetypes and traps.
-- If neither exists, note that in one line and continue. (`synthesize-source` remains callable on its own.)
+  - Steps 4–5 (Claude): review `scripts.source_gap <UNIT>` output, update the reasoning vault (for PRG, run `.venv/bin/python -m code_engine.quality_checks --check-vaults`), and run the vault reviewer subagent so the Notion page and first drill already use the synthesised archetypes, traps, and `QC-*` checks.
+- If neither exists, note that in one line and continue. (`synthesize-source` remains callable on its own; PRG Similar/variants are out of scope.)
 
 ## 5. Notion page (`rules/02_pedagogy.md` §7a for MTH, §7b for PRG)
 
