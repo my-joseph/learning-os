@@ -45,6 +45,7 @@ from math_engine.ai_drill_ingest import (
     validate_review,
 )
 from math_engine.answer_check import check_answer
+from math_engine.figure_autofill import collect_figure_title_warnings
 from math_engine.fmt import LEVEL_LABELS
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
@@ -1010,6 +1011,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             if orig_notice:
                 print(f"NOTE: {orig_notice}")
             errs.extend(orig_errors)
+        for warn in collect_figure_title_warnings(doc.get("variants") or []):
+            print(f"WARNING: {warn}")
         for line in errs:
             print(f"  FAIL {line}")
         n = len(doc.get("variants") or [])
@@ -1028,6 +1031,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"FAIL {exc}")
             return 1
         print(f"OK: {saved['unitCode']} now holds {len(saved['variants'])} gated variant(s).")
+        for warn in collect_figure_title_warnings(saved.get("variants") or []):
+            print(f"WARNING: {warn}")
         return 0
 
     if args.from_templates:

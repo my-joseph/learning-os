@@ -295,6 +295,59 @@ def test_bridge_scope_eligibility_zero_one_two_units(tmp_path: Path, capsys) -> 
     assert cli_payload["eligibleUnitCount"] == 2
 
 
+def test_bridge_scope_worktree_reads_main_checkout_progress_and_env_wins(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
+    monkeypatch.delenv("LEARNINGOS_PILOT", raising=False)
+
+    main = tmp_path / "main"
+    (main / ".git" / "worktrees" / "wt-feature").mkdir(parents=True)
+    main_progress = main / "progress"
+
+    wt = tmp_path / "wt-feature"
+    wt.mkdir()
+    (wt / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'wt-feature'}\n", encoding="utf-8")
+    (wt / "id_map.json").write_text("{}", encoding="utf-8")
+    wt_data = wt / "drills" / "data"
+    vdir = _write_bridge_vault(wt, [_bridge_archetype("bridge-u1-u2", [U1, U2])])
+
+    _seed_unit_progress(wt_data, main_progress, U1, score_pattern=[(1, True), (2, True)])
+    _seed_unit_progress(wt_data, main_progress, U2, score_pattern=[(2, True), (3, True)])
+
+    # From the worktree (which has no local progress/), resolve_progress_dir and evaluate_bridge_scope
+    # read the main checkout's progress/ and report active instead of dormant.
+    monkeypatch.chdir(wt)
+    assert bridge_scope.resolve_progress_dir() == str(main_progress)
+    rep = bridge_scope.evaluate_bridge_scope(data_root=str(wt_data), vault_dir=str(vdir))
+    assert rep["dormant"] is False
+    assert [u["unitCode"] for u in rep["eligibleUnits"]] == [U1, U2]
+    assert [a["archetypeKey"] for a in rep["eligibleArchetypes"]] == ["bridge-u1-u2"]
+
+    # PROGRESS_DIR env still wins over the main checkout's progress/.
+    env_progress = tmp_path / "env_progress"
+    env_progress.mkdir()
+    monkeypatch.setenv("PROGRESS_DIR", str(env_progress))
+    assert bridge_scope.resolve_progress_dir() == str(env_progress)
+    rep_env = bridge_scope.evaluate_bridge_scope(data_root=str(wt_data), vault_dir=str(vdir))
+    assert rep_env["dormant"] is True
+    assert rep_env["eligibleUnitCount"] == 0
+
+    # Explicit progress_dir argument wins over PROGRESS_DIR env.
+    assert bridge_scope.resolve_progress_dir(str(main_progress)) == str(main_progress)
+
+    # A worktree's own progress/ wins when present (matching notion_sync.client.load_env).
+    monkeypatch.delenv("PROGRESS_DIR")
+    wt_progress = wt / "progress"
+    wt_progress.mkdir()
+    assert bridge_scope.resolve_progress_dir() == str(wt_progress)
+
+    # Plain non-worktree checkout without progress/ stays on its own default path.
+    plain = tmp_path / "plain"
+    (plain / ".git").mkdir(parents=True)
+    monkeypatch.chdir(plain)
+    assert bridge_scope.main_checkout_progress_dir() is None
+    assert bridge_scope.resolve_progress_dir() == str(plain / "progress")
+
+
 # ---------------------------------------------------------------------------
 # 3. load_scope_archetypes("MTH-BRIDGE") filtering
 # ---------------------------------------------------------------------------

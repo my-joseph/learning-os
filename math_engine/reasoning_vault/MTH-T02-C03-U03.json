@@ -48,7 +48,7 @@
             "points": "({x1:g},{y1:g}); ({x2:g},{y2:g}); ({x3:g},{y3:g}); ({x4:g},{y4:g})",
             "point_labels": "A|B|C|D"
           },
-          "title": "A scatter plot shows a broad downward trend"
+          "title": "Scatter Plot"
         }
       ]
     },
@@ -92,7 +92,7 @@
             "expr": "{m:g}*x+{b:g}",
             "label": "fitted line"
           },
-          "title": "A regression line summarizes a data trend"
+          "title": "Graph"
         }
       ]
     },
@@ -138,7 +138,7 @@
             "mark_x": "{xstar:g}",
             "mark_labels": "prediction"
           },
-          "title": "A prediction can fall beyond the observed input range"
+          "title": "Graph"
         }
       ]
     },

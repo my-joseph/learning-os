@@ -41,6 +41,8 @@ export function useSidePanelData(
   const [weakSpotUnits, setWeakSpotUnits] = useState<WeakSpotUnit[]>([]);
   const [weakLoading, setWeakLoading] = useState(false);
   const [weakError, setWeakError] = useState<string | null>(null);
+  const [weakLoadedScope, setWeakLoadedScope] = useState<string | null>(null);
+  const scope = unitCode?.trim() || null;
 
   useEffect(() => {
     let cancelled = false;
@@ -114,11 +116,11 @@ export function useSidePanelData(
   }, [workspaceSubject, otherSubject, refreshKey]);
 
   useEffect(() => {
-    const scope = unitCode?.trim();
     if (!scope) {
       setWeakSpotUnits([]);
       setWeakLoading(false);
       setWeakError(null);
+      setWeakLoadedScope(null);
       return;
     }
 
@@ -143,19 +145,23 @@ export function useSidePanelData(
         }
       })
       .finally(() => {
-        if (!cancelled) setWeakLoading(false);
+        if (!cancelled) {
+          setWeakLoadedScope(scope);
+          setWeakLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [unitCode, refreshKey]);
+  }, [scope, refreshKey]);
 
   const currentUnitMastery = useMemo(() => {
-    const code = unitCode?.trim();
-    if (!code) return null;
-    return unitMasteryByCode[code] ?? null;
-  }, [unitCode, unitMasteryByCode]);
+    if (!scope) return null;
+    return unitMasteryByCode[scope] ?? null;
+  }, [scope, unitMasteryByCode]);
+
+  const weakScopeMatches = scope !== null && weakLoadedScope === scope;
 
   return {
     dueReviewCount,
@@ -167,8 +173,8 @@ export function useSidePanelData(
     currentUnitMastery,
     dueLoading,
     dueError,
-    weakSpotUnits,
-    weakLoading,
-    weakError,
+    weakSpotUnits: weakScopeMatches ? weakSpotUnits : [],
+    weakLoading: scope !== null && (weakLoading || !weakScopeMatches),
+    weakError: weakScopeMatches ? weakError : null,
   };
 }

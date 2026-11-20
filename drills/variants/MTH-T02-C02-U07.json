@@ -476,7 +476,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "title": "Graph",
         "xRange": [
           -4.0,
           4.0
@@ -1547,7 +1547,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "title": "Graph",
         "xRange": [
           -4.0,
           4.0
@@ -2618,7 +2618,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A horizontal line meets a non-one-to-one graph twice",
+        "title": "Graph",
         "xRange": [
           -4.0,
           4.0

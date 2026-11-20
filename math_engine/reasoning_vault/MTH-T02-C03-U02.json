@@ -50,7 +50,7 @@
             "expr": "{V0:g}+{r:g}*x",
             "label": "Q(t)={V0:g}+{r:g}t"
           },
-          "title": "A starting quantity changes at a constant rate"
+          "title": "Graph"
         }
       ]
     },
@@ -96,7 +96,7 @@
             "expr": "{q1:g}+({q2:g}-{q1:g})/({t2:g}-{t1:g})*(x-{t1:g})",
             "label": "A linear model from paired observations"
           },
-          "title": "Two observations determine a constant-rate model"
+          "title": "Graph"
         }
       ]
     },
@@ -178,7 +178,7 @@
             "expr": "{V0:g}-{rate:g}*x",
             "label": "V(t)={V0:g}-{rate:g}t"
           },
-          "title": "A decreasing balance reaches a target value"
+          "title": "Graph"
         }
       ]
     }

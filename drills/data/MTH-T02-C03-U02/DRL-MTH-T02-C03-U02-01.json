@@ -92,7 +92,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A starting quantity changes at a constant rate",
+        "title": "Graph",
         "xRange": [
           0.0,
           10.0
@@ -1389,7 +1389,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "Two observations determine a constant-rate model",
+        "title": "Graph",
         "xRange": [
           2.0,
           16.0
@@ -2521,7 +2521,7 @@
       "figure": {
         "kind": "cartesian_graph",
         "theme": "indigo",
-        "title": "A decreasing balance reaches a target value",
+        "title": "Graph",
         "xRange": [
           0.0,
           12.5

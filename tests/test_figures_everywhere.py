@@ -364,3 +364,75 @@ def test_graph_tick_labels_skip_axis_and_dashed_lines():
     assert 0 not in labels
     assert 2 not in labels
     assert 4 not in labels
+
+
+def test_figure_builder_default_titles_are_neutral():
+    assert fb.build_function_graph_figure("x^2")["title"] == "Graph"
+    assert fb.build_cartesian_slope_triangle_figure((1, 2), (4, 8), 2)["title"] == "Graph"
+    assert fb.build_cartesian_parallel_lines_figure(2, 1, -3)["title"] == "Graph"
+    assert fb.build_angle_pair_figure(90, 35)["title"] == "Adjacent Angles"
+    assert fb.build_box3d_figure(3, 4, 5)["title"] == "Rectangular Solid"
+
+
+def test_method_naming_figure_title_warnings_and_clean_corpus():
+    from math_engine.ai_drill_ingest import check_ai_drill_warnings
+    from math_engine.figure_autofill import collect_figure_title_warnings, figure_title_warning_reason
+
+    for leaky in (
+        "Horizontal Line Test",
+        "Vertical Line Test",
+        "Vertical Line Test: Circle",
+        "Reciprocal Toolkit Function",
+        "Transformed quadratic graph",
+        "A horizontal line meets a non-one-to-one graph twice",
+        "Complementary Angles",
+        "Slope Triangle (m = 2)",
+        "Quadratic Formula",
+        "Pythagorean Theorem",
+    ):
+        assert figure_title_warning_reason(leaky) is not None, f"expected warning for {leaky!r}"
+
+    for neutral in (
+        "Graph",
+        "Graph of y = f(x)",
+        "Rectangle",
+        "Right Triangle",
+        "Circle",
+        "Complex Plane",
+        "Number Line",
+        "Mapping Diagram",
+        "Scatter Plot",
+        "Rectangular Sheet for an Open-Top Box",
+        "Three-Sided Enclosure",
+        "Pasture along a river",
+        "Adjacent Angles",
+        "Two Points on the Coordinate Plane",
+    ):
+        assert figure_title_warning_reason(neutral) is None, f"unexpected warning for {neutral!r}"
+
+    draft = {
+        "unitCode": "MTH-T02-C02-U01",
+        "problems": [
+            {"id": "Q01", "figure": {"kind": "cartesian_graph", "title": "Horizontal Line Test"}},
+            {"id": "Q02", "figure": {"kind": "cartesian_graph", "title": "Graph"}},
+        ],
+    }
+    warnings = check_ai_drill_warnings(draft)
+    assert len(warnings) == 1
+    assert "[Q01]" in warnings[0]
+    assert "Horizontal Line Test" in warnings[0]
+
+    # Every reasoning vault figureBuilders entry, active drill, and variant bank must have neutral figure titles.
+    for vpath in sorted(glob.glob("math_engine/reasoning_vault/*.json")):
+        for arch in json.load(open(vpath, encoding="utf-8")).get("archetypes", []):
+            for spec in arch.get("figureBuilders") or []:
+                title = spec.get("title")
+                assert figure_title_warning_reason(title) is None, f"{vpath} ({arch.get('archetypeKey')}): {title!r}"
+
+    for dpath in sorted(glob.glob("drills/data/MTH-*/*.json")):
+        probs = json.load(open(dpath, encoding="utf-8")).get("problems", [])
+        assert collect_figure_title_warnings(probs) == [], f"method-naming figure title in {dpath}"
+
+    for vbpath in sorted(glob.glob("drills/variants/MTH-*.json")):
+        variants = json.load(open(vbpath, encoding="utf-8")).get("variants", [])
+        assert collect_figure_title_warnings(variants) == [], f"method-naming figure title in {vbpath}"

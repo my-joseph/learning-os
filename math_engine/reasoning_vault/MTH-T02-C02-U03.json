@@ -67,7 +67,7 @@
             "expr": "x^3 - 3*x",
             "label": "f(x)"
           },
-          "title": "Graph behavior"
+          "title": "Graph"
         }
       ]
     },

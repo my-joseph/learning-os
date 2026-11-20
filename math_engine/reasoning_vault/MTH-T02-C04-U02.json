@@ -83,7 +83,7 @@
             "y_max": 10,
             "title": "Parity and sign determine the distant ends of a power graph"
           },
-          "title": "Power graphs reveal their end behavior"
+          "title": "Graph"
         }
       ]
     },
@@ -167,7 +167,7 @@
             "x_max": 3,
             "title": "The leading power controls the distant graph behavior"
           },
-          "title": "The degree and leading sign shape the graph ends"
+          "title": "Graph"
         }
       ]
     }

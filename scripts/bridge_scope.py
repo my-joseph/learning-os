@@ -19,12 +19,70 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from pathlib import Path
 from typing import Any
 
 from math_engine.bridge import BRIDGE_SCOPE, MIN_BRIDGE_UNITS, is_unit_code, load_bridge_vault
+from progress_store import find_repo_root, pilot_mode, progress_root
 from scripts import weak_spots
 
 DEFAULT_MIN_MASTERY = 2
+
+
+def _find_checkout_root(cwd: str | None = None) -> str:
+    """Locate the enclosing git checkout root (worktree or main), falling back to ``find_repo_root``."""
+    current = Path(cwd or Path.cwd()).resolve()
+    if current.is_file():
+        current = current.parent
+    for candidate in (current, *current.parents):
+        if (candidate / ".git").exists():
+            return str(candidate)
+    return find_repo_root(cwd)
+
+
+def main_checkout_progress_dir(cwd: str | None = None) -> str | None:
+    """In a git worktree `.git` is a file (`gitdir: <main>/.git/worktrees/<name>`).
+
+    Return `<main>/progress` (or `<main>/pilot/progress` in pilot mode) if it exists,
+    matching how ``notion_sync.client.load_env`` falls back to the main checkout's `.env`.
+    """
+    checkout_root = _find_checkout_root(cwd)
+    git_path = os.path.join(checkout_root, ".git")
+    if not os.path.isfile(git_path):
+        return None
+    try:
+        with open(git_path, "r", encoding="utf-8") as f:
+            text = f.read().strip()
+    except OSError:
+        return None
+    if not text.startswith("gitdir:"):
+        return None
+    gitdir = os.path.abspath(os.path.join(checkout_root, text.split(":", 1)[1].strip()))
+    worktrees_dir = os.path.dirname(gitdir)
+    if os.path.basename(worktrees_dir) != "worktrees":
+        return None
+    main_root = os.path.dirname(os.path.dirname(worktrees_dir))
+    sub = os.path.join("pilot", "progress") if pilot_mode() else "progress"
+    candidate = os.path.join(main_root, sub)
+    return candidate if os.path.isdir(candidate) else None
+
+
+def resolve_progress_dir(progress_dir: str | None = None, cwd: str | None = None) -> str:
+    """Resolve the progress directory to read for bridge eligibility.
+
+    Precedence: explicit ``progress_dir`` > ``PROGRESS_DIR`` env > local checkout's
+    ``progress/`` if present > main checkout's ``progress/`` when run from a git worktree >
+    local checkout default path.
+    """
+    if progress_dir:
+        return progress_dir
+    if os.environ.get("PROGRESS_DIR"):
+        return os.environ["PROGRESS_DIR"]
+    checkout_root = _find_checkout_root(cwd)
+    local = progress_root(checkout_root)
+    if os.path.isdir(local):
+        return local
+    return main_checkout_progress_dir(checkout_root) or local
 
 
 def _item_units_of(item: weak_spots.Item) -> tuple[str, ...]:
@@ -46,7 +104,8 @@ def evaluate_bridge_scope(
     min_mastery: int = DEFAULT_MIN_MASTERY,
 ) -> dict[str, Any]:
     """Compute passed math units and eligible bridge archetypes from local evidence only."""
-    items = weak_spots.load_items(data_root=data_root, progress_dir=progress_dir)
+    resolved_progress_dir = resolve_progress_dir(progress_dir)
+    items = weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress_dir)
     traps = weak_spots.trap_status(items)
     titles = weak_spots._load_titles()
 

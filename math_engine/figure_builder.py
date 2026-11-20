@@ -651,7 +651,7 @@ def build_box3d_figure(
     return {
         "kind": "geometry_2d",
         "theme": theme,
-        "title": title or "Cargo Container 3D Diagonal",
+        "title": title or "Rectangular Solid",
         "points": pts,
         "shapes": shapes,
         "labels": labels,
@@ -756,7 +756,7 @@ def build_cartesian_slope_triangle_figure(
     return {
         "kind": "cartesian_graph",
         "theme": theme,
-        "title": title or f"Slope Triangle (m = {m:g})",
+        "title": title or "Graph",
         "xRange": [math.floor(x_min), math.ceil(x_max)],
         "yRange": [math.floor(y_min), math.ceil(y_max)],
         "grid": True,
@@ -847,7 +847,7 @@ def build_cartesian_parallel_lines_figure(
     return {
         "kind": "cartesian_graph",
         "theme": theme,
-        "title": title or f"Parallel Lines (m = {m:g})",
+        "title": title or "Graph",
         "xRange": list(x_range),
         "yRange": list(y_range),
         "grid": True,
@@ -1000,7 +1000,7 @@ def build_angle_pair_figure(
     return {
         "kind": "geometry_2d",
         "theme": theme,
-        "title": title or ("Complementary Angles" if abs(total - 90) < 1e-9 else "Adjacent Angles"),
+        "title": title or "Adjacent Angles",
         "points": pts,
         "shapes": [
             {"type": "segment", "from": "O", "to": "R"},

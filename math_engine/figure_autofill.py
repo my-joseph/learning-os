@@ -16,10 +16,83 @@ label it `?` (rules/03_stem.md §3.1), so reverse and multi-step problems keep t
 An archetype with no figure says why: `"figureNone": "<reason>"` (gate: `require_figure_decision`).
 """
 
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from math_engine import figure_builder
 from math_engine.safe_expr import try_evaluate
+
+# Figure titles must describe the neutral visual object ("Graph", "Rectangle", "Number Line"),
+# never the test, method, theorem, or property the learner is supposed to recognize or choose.
+METHOD_NAMING_TITLE_PATTERNS: Tuple[Tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(
+            r"\b(?:horizontal|vertical)\s+line\s+test\b"
+            r"|\b(?:line|ratio|root|derivative|comparison|integral|divergence|alternating\s+series)\s+test\b",
+            re.IGNORECASE,
+        ),
+        "names a test",
+    ),
+    (
+        re.compile(
+            r"\b(?:quadratic|distance|midpoint|slope|heron'?s|euler'?s)\s+formula\b"
+            r"|\b(?:pythagorean|remainder|factor|rational\s+root|rational\s+zero|intermediate\s+value"
+            r"|mean\s+value|binomial|fundamental)\s+theorem\b"
+            r"|\b(?:chain|product|quotient|power|cramer'?s|l'?h[oô]pital'?s|descartes'?)\s+rule\b",
+            re.IGNORECASE,
+        ),
+        "names a formula, theorem, or rule",
+    ),
+    (
+        re.compile(
+            r"\b(?:completing\s+the\s+square|synthetic\s+division|long\s+division|u-substitution"
+            r"|integration\s+by\s+parts|implicit\s+differentiation|soh[\s-]*cah[\s-]*toa|foil)\b",
+            re.IGNORECASE,
+        ),
+        "names a solution method",
+    ),
+    (
+        re.compile(
+            r"\b(?:non-)?one-to-one\b"
+            r"|\b(?:complementary|supplementary)\s+angles?\b"
+            r"|\btoolkit\s+function\b"
+            r"|\b(?:transformation|transformed|horizontally\s+stretched|vertically\s+stretched"
+            r"|horizontally\s+compressed|vertically\s+compressed)\b"
+            r"|\b(?:slope\s+triangle|axis\s+of\s+symmetry|end\s+behavior|multiplicity|regression\s+line"
+            r"|extrapolation|interpolation|exchanged\s+coordinates|constant\s+slope|constant\s+rate"
+            r"|downward\s+trend|upward\s+trend|asymptotes?\s+separate)\b",
+            re.IGNORECASE,
+        ),
+        "hints the mathematical property or classification",
+    ),
+)
+
+
+def figure_title_warning_reason(title: Optional[str]) -> Optional[str]:
+    """Return a short reason if ``title`` names a method, test, or concept to choose, else None."""
+    if not isinstance(title, str) or not title.strip():
+        return None
+    for pattern, reason in METHOD_NAMING_TITLE_PATTERNS:
+        if pattern.search(title):
+            return reason
+    return None
+
+
+def collect_figure_title_warnings(problems: Iterable[Dict[str, Any]]) -> List[str]:
+    """Return non-blocking warning messages for problems with method-naming figure titles."""
+    warnings: List[str] = []
+    for idx, prob in enumerate(problems, 1):
+        if not isinstance(prob, dict):
+            continue
+        fig = prob.get("figure")
+        if not isinstance(fig, dict):
+            continue
+        title = fig.get("title")
+        reason = figure_title_warning_reason(title)
+        if reason:
+            pid = prob.get("id") or prob.get("variantId") or f"Q{idx:02d}"
+            warnings.append(f"[{pid}] Figure title '{title}' {reason}; keep figure titles neutral (e.g. 'Graph').")
+    return warnings
 
 
 def _numeric(givens: Dict[str, Any]) -> Dict[str, float]:
