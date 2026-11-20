@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from math_engine import answer_check, variant_bank
+from math_engine import ai_drill_ingest, answer_check, variant_bank
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -249,3 +249,121 @@ def test_answer_check_with_variant_id_python_and_cli() -> None:
     )
     cli_res = json.loads(proc.stdout)
     assert cli_res["verdict"] == "correct"
+
+
+def test_coverage_report_and_ingest_warning(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    unit = "MTH-T01-C04"
+    data_root = tmp_path / "drills_data"
+    variants_dir = tmp_path / "variants"
+    unit_dir = data_root / unit
+    unit_dir.mkdir(parents=True)
+    variants_dir.mkdir(parents=True)
+
+    # Fixture bank: 3 variants for c04-fraction-simplification-gcf@L1 (covered),
+    # 1 variant for c04-fraction-multiplication-product@L1 (uncovered: 1/3),
+    # 0 variants for c04-fraction-division-reciprocal@L2 (uncovered: 0/3).
+    seed_bank = _load_seed_bank()
+    simp_l1 = [
+        copy.deepcopy(v) for v in seed_bank["variants"] if v["archetypeKey"] == "c04-fraction-simplification-gcf"
+    ][:3]
+    for v in simp_l1:
+        v["level"] = 1
+    mult_l1 = [
+        copy.deepcopy(v) for v in seed_bank["variants"] if v["archetypeKey"] == "c04-fraction-multiplication-product"
+    ][:1]
+    for v in mult_l1:
+        v["level"] = 1
+    (variants_dir / f"{unit}.json").write_text(
+        json.dumps({"unitCode": unit, "variants": simp_l1 + mult_l1}),
+        encoding="utf-8",
+    )
+
+    drill_path = unit_dir / "DRL-MTH-T01-C04-99.json"
+    drill_doc = {
+        "drillId": "DRL-MTH-T01-C04-99",
+        "unitCode": unit,
+        "problems": [
+            {"id": "Q01", "archetypeKey": "c04-fraction-simplification-gcf", "level": 1},
+            {"id": "Q02", "archetypeKey": "c04-fraction-multiplication-product", "level": 1},
+            {"id": "Q03", "archetypeKey": "c04-fraction-division-reciprocal", "level": 2},
+        ],
+    }
+    drill_path.write_text(json.dumps(drill_doc), encoding="utf-8")
+
+    # 1. Coverage by unit code and by drill JSON path
+    cov_unit = variant_bank.compute_coverage(unit, variants_dir=str(variants_dir), data_root=str(data_root))
+    assert cov_unit["totalPairs"] == 3
+    assert cov_unit["coveredPairs"] == 1
+    uncovered_keys = {(e["archetypeKey"], e["level"]): e["variantCount"] for e in cov_unit["uncoveredPairs"]}
+    assert uncovered_keys == {
+        ("c04-fraction-multiplication-product", 1): 1,
+        ("c04-fraction-division-reciprocal", 2): 0,
+    }
+
+    monkeypatch.setenv("VARIANTS_DIR", str(variants_dir))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(data_root))
+
+    rc_unit = variant_bank.main(["--coverage", unit])
+    assert rc_unit == 0
+    out_unit = capsys.readouterr().out
+    assert "OK   c04-fraction-simplification-gcf @ L1: 3 variant(s)" in out_unit
+    assert "LOW  c04-fraction-multiplication-product @ L1: 1 variant(s) (need 2 more" in out_unit
+    assert "LOW  c04-fraction-division-reciprocal @ L2: 0 variant(s) (need 3 more" in out_unit
+    assert "1/3 pair(s) covered (>= 3 variants), 2 uncovered (< 3)." in out_unit
+
+    rc_file = variant_bank.main(["--coverage", str(drill_path), "--json"])
+    assert rc_file == 0
+    cov_json = json.loads(capsys.readouterr().out)
+    assert cov_json["drillCount"] == 1
+    assert len(cov_json["uncoveredPairs"]) == 2
+
+    # 2. Non-blocking ingest warning on ai_drill_ingest when drill has uncovered pairs (and silent when covered)
+    tpl_path = ROOT / ".claude" / "skills" / "new-math-drill" / "template" / "draft.json"
+    tpl_draft = json.loads(tpl_path.read_text(encoding="utf-8"))
+    # Keep just the L1 problem (ensure review verdict present) so ingest succeeds cleanly.
+    p1 = copy.deepcopy(tpl_draft["problems"][0])
+    p1.setdefault("review", {"verdict": "pass", "note": "Verified fixture problem."})
+    single_draft = {**tpl_draft, "problems": [p1]}
+    draft_file = tmp_path / "ingest_draft.json"
+    draft_file.write_text(json.dumps(single_draft), encoding="utf-8")
+
+    empty_variants = tmp_path / "empty_variants"
+    empty_variants.mkdir()
+    ingest_data_root = tmp_path / "ingest_data"
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(tpl_path.parent))
+    monkeypatch.setenv("VARIANTS_DIR", str(empty_variants))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(ingest_data_root))
+
+    rc_ingest = ai_drill_ingest.main(["--unit", single_draft["unitCode"], "--ingest-file", str(draft_file)])
+    assert rc_ingest == 0
+    ingest_out = capsys.readouterr().out.strip().splitlines()
+    assert ingest_out[-1].startswith("WARNING: Similar variant bank has 1 uncovered pair(s)"), ingest_out
+    assert f"{p1['archetypeKey']}@L{p1['level']} (0/3)" in ingest_out[-1]
+
+    # Now populate 3 variants for that exact (archetypeKey, level) -> ingest prints NO warning.
+    covered_variants = tmp_path / "covered_variants"
+    covered_variants.mkdir()
+    (covered_variants / f"{single_draft['unitCode']}.json").write_text(
+        json.dumps(
+            {
+                "unitCode": single_draft["unitCode"],
+                "variants": [
+                    {
+                        "variantId": f"VAR-{single_draft['unitCode']}-{p1['archetypeKey']}-{i:02d}",
+                        "archetypeKey": p1["archetypeKey"],
+                        "sourceArchetype": p1["archetypeKey"],
+                        "level": p1["level"],
+                    }
+                    for i in range(1, 4)
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("VARIANTS_DIR", str(covered_variants))
+    rc_ingest_ok = ai_drill_ingest.main(["--unit", single_draft["unitCode"], "--ingest-file", str(draft_file)])
+    assert rc_ingest_ok == 0
+    ok_out = capsys.readouterr().out
+    assert "WARNING:" not in ok_out

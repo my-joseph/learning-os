@@ -600,7 +600,10 @@ def _sample_card(**overrides) -> dict:
     return card
 
 
-def test_core_card_units_validation_and_source_gap_bridge_candidates(tmp_path: Path) -> None:
+def test_core_card_units_validation_and_source_gap_bridge_candidates(tmp_path: Path, monkeypatch) -> None:
+    # Synthetic U1/U2/U3 unit codes are not in id_map.json; inject them for hermetic laterUnit validation.
+    monkeypatch.setattr(source_cores, "load_valid_unit_codes", lambda id_map_path=None: {U1: "U1", U2: "U2", U3: "U3"})
+
     # Schema validation for optional `units`
     assert source_cores.validate_core_card(_sample_card(units=[U1, U2])) == []
     assert any("at least 2" in e for e in source_cores.validate_core_card(_sample_card(units=[U1])))
