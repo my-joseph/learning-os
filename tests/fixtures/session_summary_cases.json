@@ -1,0 +1,209 @@
+{
+  "description": "Shared Python/TS parity fixtures for covered units (drill_sync.covered_units vs sessionSummary.getCoveredUnits) and session summary metrics (practice._summary vs sessionSummary.computeSessionMetrics).",
+  "coveredUnitsCases": [
+    {
+      "id": "unit-drill-single-unit",
+      "drill": {
+        "drillId": "DRL-MTH-T02-C01-U01-01",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01" },
+          { "id": "Q02", "unitCode": "MTH-T02-C01-U01" }
+        ]
+      },
+      "expected": ["MTH-T02-C01-U01"]
+    },
+    {
+      "id": "chapter-mixed-drill-per-problem-units",
+      "drill": {
+        "drillId": "DRL-MTH-T01-C04-01",
+        "unitCode": "MTH-T01-C04",
+        "problems": [
+          { "id": "Q01", "unitCode": "MTH-T01-C04-U01" },
+          { "id": "Q02", "unitCode": "MTH-T01-C04-U02" },
+          { "id": "Q03", "unitCode": "MTH-T01-C04-U01" }
+        ]
+      },
+      "expected": ["MTH-T01-C04-U01", "MTH-T01-C04-U02"]
+    },
+    {
+      "id": "bridge-drill-unitCodes-and-references-skip-concepts",
+      "drill": {
+        "drillId": "DRL-MTH-BRIDGE-01",
+        "unitCode": "MTH-BRIDGE",
+        "problems": [
+          {
+            "id": "Q01",
+            "unitCode": "MTH-BRIDGE",
+            "unitCodes": ["MTH-T02-C01-U01", "MTH-T02-C01-U02"],
+            "references": ["CON-COMPLEX-CONJUGATE", "MTH-T02-C01-U02", "MTH-T02-C02-U01"]
+          },
+          {
+            "id": "Q02",
+            "references": ["MTH-T02-C01-U01", "MTH-T02-C03-U01", "CON-DISCRIMINANT"]
+          }
+        ]
+      },
+      "expected": [
+        "MTH-T02-C01-U01",
+        "MTH-T02-C01-U02",
+        "MTH-T02-C02-U01",
+        "MTH-T02-C03-U01"
+      ]
+    },
+    {
+      "id": "bridge-drill-references-only-without-unitCodes",
+      "drill": {
+        "drillId": "DRL-MTH-BRIDGE-02",
+        "unitCode": "MTH-BRIDGE",
+        "problems": [
+          {
+            "id": "Q01",
+            "references": ["CON-QUAD-FORMULA", "MTH-T02-C01-U02", "MTH-T02-C04-U01"]
+          }
+        ]
+      },
+      "expected": ["MTH-T02-C01-U02", "MTH-T02-C04-U01"]
+    },
+    {
+      "id": "chapter-drill-problem-with-unitCodes-and-no-unitCode",
+      "drill": {
+        "drillId": "DRL-MTH-T02-C01-01",
+        "unitCode": "MTH-T02-C01",
+        "problems": [
+          {
+            "id": "Q01",
+            "unitCodes": ["MTH-T02-C01-U01", "MTH-T02-C01-U03"],
+            "references": ["CON-MODULUS", "MTH-T02-C01-U02", "MTH-T02-C01"]
+          }
+        ]
+      },
+      "expected": ["MTH-T02-C01-U01", "MTH-T02-C01-U03", "MTH-T02-C01-U02"]
+    },
+    {
+      "id": "unit-drill-with-concept-and-non-unit-refs-ignored",
+      "drill": {
+        "drillId": "DRL-MTH-T02-C02-U01-01",
+        "unitCode": "MTH-T02-C02-U01",
+        "problems": [
+          {
+            "id": "Q01",
+            "unitCode": "MTH-T02-C02-U01",
+            "references": ["CON-DOMAIN", "MTH-T02-C01-U02"]
+          }
+        ]
+      },
+      "expected": ["MTH-T02-C02-U01"]
+    }
+  ],
+  "summaryCases": [
+    {
+      "id": "exactly-80-percent-is-graded",
+      "drill": {
+        "drillId": "DRL-MTH-SUM-01",
+        "subject": "MATH",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01", "state": { "score": 1, "attempts": [{ "input": "1", "ts": "2026-11-20T01:00:00Z", "verdict": "correct" }] } },
+          { "id": "Q02", "state": { "score": 1, "attempts": [{ "input": "2", "ts": "2026-11-20T01:01:00Z", "verdict": "correct" }] } },
+          { "id": "Q03", "state": { "score": 1, "attempts": [{ "input": "3", "ts": "2026-11-20T01:02:00Z", "verdict": "correct" }] } },
+          { "id": "Q04", "state": { "score": 1, "attempts": [{ "input": "4", "ts": "2026-11-20T01:03:00Z", "verdict": "correct" }] } },
+          { "id": "Q05", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:04:00Z", "verdict": "incorrect" }] } }
+        ]
+      },
+      "expected": {
+        "score": 4,
+        "maxScore": 5,
+        "accuracyPct": 80,
+        "practiceStatus": "Graded",
+        "skippedCount": 0
+      }
+    },
+    {
+      "id": "below-80-percent-needs-retry-one-decimal",
+      "drill": {
+        "drillId": "DRL-MTH-SUM-02",
+        "subject": "MATH",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01", "state": { "score": 1, "attempts": [{ "input": "1", "ts": "2026-11-20T01:00:00Z", "verdict": "correct" }] } },
+          { "id": "Q02", "state": { "score": 1, "attempts": [{ "input": "2", "ts": "2026-11-20T01:01:00Z", "verdict": "correct" }] } },
+          { "id": "Q03", "state": { "score": 0, "skipped": true, "attempts": [{ "input": "(Skipped)", "ts": "2026-11-20T01:02:00Z", "verdict": "skipped" }] } }
+        ]
+      },
+      "expected": {
+        "score": 2,
+        "maxScore": 3,
+        "accuracyPct": 66.7,
+        "practiceStatus": "Needs Retry",
+        "skippedCount": 1
+      }
+    },
+    {
+      "id": "assisted-score-83-point-3-is-graded",
+      "drill": {
+        "drillId": "DRL-MTH-SUM-03",
+        "subject": "MATH",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01", "state": { "score": 1, "attempts": [{ "input": "1", "ts": "2026-11-20T01:00:00Z", "verdict": "correct" }] } },
+          { "id": "Q02", "state": { "score": 1, "attempts": [{ "input": "2", "ts": "2026-11-20T01:01:00Z", "verdict": "correct" }] } },
+          { "id": "Q03", "state": { "score": 0.5, "hintsRevealed": 1, "attempts": [{ "input": "3", "ts": "2026-11-20T01:02:00Z", "verdict": "correct" }] } }
+        ]
+      },
+      "expected": {
+        "score": 2.5,
+        "maxScore": 3,
+        "accuracyPct": 83.3,
+        "practiceStatus": "Graded",
+        "skippedCount": 0
+      }
+    },
+    {
+      "id": "half-tenth-rounding-parity-1-of-16",
+      "drill": {
+        "drillId": "DRL-MTH-SUM-04",
+        "subject": "MATH",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01", "state": { "score": 0.5, "hintsRevealed": 1, "attempts": [{ "input": "1", "ts": "2026-11-20T01:00:00Z", "verdict": "correct" }] } },
+          { "id": "Q02", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:01:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q03", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:02:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q04", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:03:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q05", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:04:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q06", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:05:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q07", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:06:00Z", "verdict": "incorrect" }] } },
+          { "id": "Q08", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:07:00Z", "verdict": "incorrect" }] } }
+        ]
+      },
+      "expected": {
+        "score": 0.5,
+        "maxScore": 8,
+        "accuracyPct": 6.3,
+        "practiceStatus": "Needs Retry",
+        "skippedCount": 0
+      }
+    },
+    {
+      "id": "just-below-80-percent-75-is-needs-retry",
+      "drill": {
+        "drillId": "DRL-MTH-SUM-05",
+        "subject": "MATH",
+        "unitCode": "MTH-T02-C01-U01",
+        "problems": [
+          { "id": "Q01", "state": { "score": 1, "attempts": [{ "input": "1", "ts": "2026-11-20T01:00:00Z", "verdict": "correct" }] } },
+          { "id": "Q02", "state": { "score": 1, "attempts": [{ "input": "2", "ts": "2026-11-20T01:01:00Z", "verdict": "correct" }] } },
+          { "id": "Q03", "state": { "score": 1, "attempts": [{ "input": "3", "ts": "2026-11-20T01:02:00Z", "verdict": "correct" }] } },
+          { "id": "Q04", "state": { "score": 0, "attempts": [{ "input": "x", "ts": "2026-11-20T01:03:00Z", "verdict": "incorrect" }] } }
+        ]
+      },
+      "expected": {
+        "score": 3,
+        "maxScore": 4,
+        "accuracyPct": 75,
+        "practiceStatus": "Needs Retry",
+        "skippedCount": 0
+      }
+    }
+  ]
+}

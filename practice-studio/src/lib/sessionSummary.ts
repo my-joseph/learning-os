@@ -232,27 +232,50 @@ export function countSummaryChanges(
 
 /**
  * Unit codes a drill covers (mirrors `notion_sync.drill_sync.covered_units`):
- * a unit drill covers its own unitCode; a chapter mixed drill covers every problem's unitCode.
+ * a unit drill covers its own unitCode; a chapter mixed drill covers every problem's unitCode;
+ * a bridge drill covers every unit listed in each problem's `unitCodes`/`references`.
  */
 export function getCoveredUnits(drill: DrillDocument): string[] {
   const seen = new Set<string>();
   const codes: string[] = [];
+  const push = (raw: unknown) => {
+    if (typeof raw !== "string") return;
+    const trimmed = raw.trim();
+    if (trimmed && !seen.has(trimmed)) {
+      seen.add(trimmed);
+      codes.push(trimmed);
+    }
+  };
 
-  if (drill.unitCode && drill.unitCode.includes("-U")) {
-    seen.add(drill.unitCode);
-    codes.push(drill.unitCode);
+  const drillUnit = typeof drill.unitCode === "string" ? drill.unitCode.trim() : "";
+  if (drillUnit && drillUnit.includes("-U")) {
+    push(drillUnit);
   }
+  const isBridge = drillUnit === "MTH-BRIDGE";
 
   for (const prob of drill.problems || []) {
+    if (!prob || typeof prob !== "object") continue;
     const pUnit = typeof prob.unitCode === "string" ? prob.unitCode.trim() : "";
-    if (pUnit && !seen.has(pUnit)) {
-      seen.add(pUnit);
-      codes.push(pUnit);
+    if (pUnit && pUnit !== "MTH-BRIDGE") {
+      push(pUnit);
+    }
+    const pUnitCodes = Array.isArray(prob.unitCodes) ? prob.unitCodes : [];
+    for (const u of pUnitCodes) {
+      push(u);
+    }
+    if (isBridge || pUnitCodes.length > 0 || !pUnit) {
+      for (const ref of Array.isArray(prob.references) ? prob.references : []) {
+        if (typeof ref !== "string") continue;
+        const trimmed = ref.trim();
+        if (trimmed && !trimmed.startsWith("CON-") && (trimmed.includes("-U") || isBridge)) {
+          push(trimmed);
+        }
+      }
     }
   }
 
-  if (codes.length === 0 && drill.unitCode) {
-    codes.push(drill.unitCode);
+  if (codes.length === 0 && drillUnit) {
+    push(drillUnit);
   }
 
   return codes;
