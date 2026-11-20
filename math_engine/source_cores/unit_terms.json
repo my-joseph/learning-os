@@ -32,5 +32,3138 @@
       "ผลคูณราก",
       "รากของสมการ"
     ]
+  },
+  "PRG-T00-C01-U01": {
+    "title": "How the Web Works",
+    "terms": [
+      "Web",
+      "URL",
+      "entry",
+      "DNS",
+      "TCP",
+      "TLS",
+      "HTTP",
+      "request",
+      "response",
+      "flow"
+    ]
+  },
+  "PRG-T00-C01-U02": {
+    "title": "Semantic HTML",
+    "terms": [
+      "Semantic",
+      "HTML",
+      "wireframe",
+      "landmark",
+      "control",
+      "elements"
+    ]
+  },
+  "PRG-T00-C01-U03": {
+    "title": "CSS Fundamentals",
+    "terms": [
+      "CSS",
+      "conflicting",
+      "specificity",
+      "cascade",
+      "winners"
+    ]
+  },
+  "PRG-T00-C01-U04": {
+    "title": "Box Model and Layout",
+    "terms": [
+      "box-sizing",
+      "Box",
+      "Model",
+      "Layout",
+      "dimensions",
+      "calculate",
+      "rendered",
+      "width",
+      "spacing"
+    ]
+  },
+  "PRG-T00-C01-U05": {
+    "title": "Flexbox and Grid",
+    "terms": [
+      "Flexbox",
+      "Grid",
+      "layout",
+      "target",
+      "select",
+      "properties"
+    ]
+  },
+  "PRG-T00-C01-U06": {
+    "title": "Responsive Design",
+    "terms": [
+      "Responsive",
+      "viewport",
+      "breakpoints",
+      "adapt",
+      "layout",
+      "fluid",
+      "units",
+      "media",
+      "queries"
+    ]
+  },
+  "PRG-T00-C01-U07": {
+    "title": "Accessibility and Keyboard Navigation",
+    "terms": [
+      "Accessibility",
+      "Keyboard",
+      "Navigation",
+      "interactive",
+      "widget",
+      "identify",
+      "focus",
+      "order",
+      "label",
+      "requirements"
+    ]
+  },
+  "PRG-T00-C01-U08": {
+    "title": "Browser DevTools",
+    "terms": [
+      "Browser",
+      "DevTools",
+      "broken",
+      "layout",
+      "failed",
+      "request",
+      "inspect",
+      "DOM",
+      "Styles",
+      "Network",
+      "panels"
+    ]
+  },
+  "PRG-T00-C02-U01": {
+    "title": "Terminal and Project Structure",
+    "terms": [
+      "Terminal",
+      "Structure",
+      "fresh",
+      "directory",
+      "navigate",
+      "inspect",
+      "organize",
+      "shell",
+      "commands"
+    ]
+  },
+  "PRG-T00-C02-U02": {
+    "title": "npm and Package Scripts",
+    "terms": [
+      "package.json",
+      "npm",
+      "Package",
+      "Scripts",
+      "install",
+      "dependencies",
+      "explain",
+      "lockfiles"
+    ]
+  },
+  "PRG-T00-C02-U03": {
+    "title": "Git Repository Basics",
+    "terms": [
+      "Git",
+      "Repository",
+      "local",
+      "changes",
+      "stage",
+      "commit",
+      "inspect",
+      "history",
+      "diff",
+      "cleanly"
+    ]
+  },
+  "PRG-T00-C02-U04": {
+    "title": "Branches, Commits and Merge",
+    "terms": [
+      "Branches",
+      "Commits",
+      "Merge",
+      "feature",
+      "branch",
+      "conflict",
+      "commit",
+      "resolve",
+      "conflicts"
+    ]
+  },
+  "PRG-T00-C02-U05": {
+    "title": "GitHub Workflow and Pull Requests",
+    "terms": [
+      "GitHub",
+      "Pull",
+      "Requests",
+      "completed",
+      "branch",
+      "push",
+      "open",
+      "respond",
+      "review",
+      "feedback"
+    ]
+  },
+  "PRG-T00-C02-U06": {
+    "title": "README and Issue Tracking",
+    "terms": [
+      "README",
+      "Issue",
+      "Tracking",
+      "starter",
+      "setup",
+      "docs",
+      "actionable",
+      "PR",
+      "descriptions"
+    ]
+  },
+  "PRG-T00-C03-U01": {
+    "title": "Variables, Types & Control Flow Check",
+    "terms": [
+      "coercion",
+      "typeof",
+      "nullish",
+      "truthy",
+      "falsy",
+      "NaN",
+      "equality",
+      "strict equality",
+      "undefined",
+      "primitive",
+      "Variables"
+    ]
+  },
+  "PRG-T00-C03-U02": {
+    "title": "Functions, Arrays & Objects Check",
+    "terms": [
+      "array",
+      "map",
+      "filter",
+      "reduce",
+      "destructuring",
+      "spread",
+      "immutability",
+      "pure function",
+      "object",
+      "Functions",
+      "Arrays",
+      "Objects"
+    ]
+  },
+  "PRG-T00-C03-U03": {
+    "title": "Async & DOM Events Check",
+    "terms": [
+      "async",
+      "await",
+      "promise",
+      "event loop",
+      "rejection",
+      "addEventListener",
+      "fetch",
+      "callback",
+      "DOM",
+      "Events",
+      "event",
+      "snippet"
+    ]
+  },
+  "PRG-T00-C03-U04": {
+    "title": "TypeScript & Debugging Baseline",
+    "terms": [
+      "typescript",
+      "type annotation",
+      "interface",
+      "strict",
+      "debugging",
+      "stack trace",
+      "type error",
+      "untyped",
+      "buggy",
+      "failing",
+      "test"
+    ]
+  },
+  "PRG-T01-C01-U01": {
+    "title": "Execution Context and Scope",
+    "terms": [
+      "scope",
+      "lexical scope",
+      "hoisting",
+      "temporal dead zone",
+      "TDZ",
+      "let",
+      "const",
+      "var",
+      "execution context",
+      "Execution",
+      "Context",
+      "nested"
+    ]
+  },
+  "PRG-T01-C01-U02": {
+    "title": "Closures",
+    "terms": [
+      "closure",
+      "closures",
+      "lexical",
+      "factory",
+      "captured",
+      "stale closure",
+      "private state",
+      "encapsulation",
+      "stateful",
+      "loop",
+      "callback",
+      "bindings"
+    ]
+  },
+  "PRG-T01-C01-U03": {
+    "title": "this and Binding",
+    "terms": [
+      "bind",
+      "call",
+      "arrow function",
+      "method binding",
+      "context",
+      "Binding",
+      "method",
+      "callback",
+      "calls",
+      "lost"
+    ]
+  },
+  "PRG-T01-C01-U04": {
+    "title": "Prototypes and Inheritance",
+    "terms": [
+      "prototype",
+      "prototype chain",
+      "Object.create",
+      "inheritance",
+      "class",
+      "instanceof",
+      "__proto__",
+      "Prototypes",
+      "chain",
+      "property",
+      "lookup",
+      "shared"
+    ]
+  },
+  "PRG-T01-C01-U05": {
+    "title": "Modules and Module Systems",
+    "terms": [
+      "module",
+      "esm",
+      "commonjs",
+      "import",
+      "export",
+      "circular import",
+      "require",
+      "Modules",
+      "Systems",
+      "CJS",
+      "structure",
+      "exports"
+    ]
+  },
+  "PRG-T01-C01-U06": {
+    "title": "Promises and Async/Await",
+    "terms": [
+      "promise",
+      "async",
+      "await",
+      "Promise.all",
+      "Promise.allSettled",
+      "Promise.race",
+      "concurrency",
+      "allSettled",
+      "race",
+      "Promises",
+      "Async/Await",
+      "concurrent"
+    ]
+  },
+  "PRG-T01-C01-U07": {
+    "title": "Event Loop and Microtasks",
+    "terms": [
+      "event loop",
+      "microtask",
+      "macrotask",
+      "queueMicrotask",
+      "setTimeout",
+      "Promise.resolve",
+      "call stack",
+      "Event",
+      "Loop",
+      "Microtasks",
+      "timers",
+      "promises"
+    ]
+  },
+  "PRG-T01-C01-U08": {
+    "title": "Error Handling Patterns",
+    "terms": [
+      "try",
+      "catch",
+      "finally",
+      "custom error",
+      "Error cause",
+      "throw",
+      "unhandledRejection",
+      "failing",
+      "sync",
+      "async",
+      "boundaries",
+      "propagate"
+    ]
+  },
+  "PRG-T01-C01-U09": {
+    "title": "AbortController & Cancellation",
+    "terms": [
+      "AbortController",
+      "AbortSignal",
+      "abort",
+      "cancellation",
+      "timeout",
+      "cleanup",
+      "long-running",
+      "async",
+      "operation",
+      "cancel",
+      "in-flight",
+      "cleanly"
+    ]
+  },
+  "PRG-T01-C02-U01": {
+    "title": "Type Annotations and Inference",
+    "terms": [
+      "type annotation",
+      "type inference",
+      "typescript",
+      "return type",
+      "noImplicitAny",
+      "unknown",
+      "Annotations",
+      "Inference",
+      "functions",
+      "literals",
+      "let"
+    ]
+  },
+  "PRG-T01-C02-U02": {
+    "title": "Primitive, Literal and Object Types",
+    "terms": [
+      "readonly",
+      "as const",
+      "literal type",
+      "tuple",
+      "object type",
+      "interface",
+      "type alias",
+      "Primitive",
+      "Literal",
+      "Object",
+      "domain"
+    ]
+  },
+  "PRG-T01-C02-U03": {
+    "title": "Union Types",
+    "terms": [
+      "union",
+      "union type",
+      "intersection",
+      "optional property",
+      "tagged union",
+      "multi-shape",
+      "model",
+      "unions",
+      "optional-property",
+      "bags"
+    ]
+  },
+  "PRG-T01-C02-U04": {
+    "title": "Type Narrowing and Guards",
+    "terms": [
+      "narrowing",
+      "type guard",
+      "type predicate",
+      "typeof",
+      "instanceof",
+      "in operator",
+      "unknown",
+      "Guards",
+      "union"
+    ]
+  },
+  "PRG-T01-C02-U05": {
+    "title": "Generics",
+    "terms": [
+      "generics",
+      "generic",
+      "extends",
+      "keyof",
+      "constraint",
+      "type parameter",
+      "reusable",
+      "structures",
+      "functions",
+      "constrain",
+      "parameters",
+      "accurately"
+    ]
+  },
+  "PRG-T01-C02-U06": {
+    "title": "Utility Types",
+    "terms": [
+      "Pick",
+      "Omit",
+      "Partial",
+      "Required",
+      "Record",
+      "Readonly",
+      "ReturnType",
+      "utility types",
+      "Utility",
+      "domain",
+      "derive"
+    ]
+  },
+  "PRG-T01-C02-U07": {
+    "title": "Discriminated Unions",
+    "terms": [
+      "discriminated union",
+      "exhaustive",
+      "never",
+      "switch",
+      "state machine",
+      "assertNever",
+      "Discriminated",
+      "Unions",
+      "machines",
+      "API",
+      "results"
+    ]
+  },
+  "PRG-T01-C02-U08": {
+    "title": "Strict Mode and tsconfig",
+    "terms": [
+      "tsconfig",
+      "strictNullChecks",
+      "noUncheckedIndexedAccess",
+      "strict",
+      "tsc",
+      "compilerOptions",
+      "loose",
+      "enable",
+      "flags"
+    ]
+  },
+  "PRG-T01-C02-U09": {
+    "title": "Typing Functions and API Responses",
+    "terms": [
+      "unknown",
+      "API response",
+      "JSON.parse",
+      "Result",
+      "type guard",
+      "validation",
+      "function overload",
+      "Typing",
+      "Functions",
+      "API",
+      "Responses",
+      "external"
+    ]
+  },
+  "PRG-T01-C03-U01": {
+    "title": "Big-O Intuition & Time/Space Tradeoffs",
+    "terms": [
+      "Big-O",
+      "complexity",
+      "time complexity",
+      "space complexity",
+      "nested loop",
+      "O(n",
+      "O(n^2",
+      "O(log n",
+      "Intuition",
+      "Time",
+      "Space",
+      "Tradeoffs"
+    ]
+  },
+  "PRG-T01-C03-U02": {
+    "title": "Recursion & Call-Stack Tracing",
+    "terms": [
+      "recursion",
+      "recursive",
+      "base case",
+      "call stack",
+      "memoization",
+      "tail recursion",
+      "Call-Stack",
+      "Tracing",
+      "nested",
+      "structures",
+      "base",
+      "cases"
+    ]
+  },
+  "PRG-T01-C03-U03": {
+    "title": "Arrays, Stacks & Queues",
+    "terms": [
+      "stack",
+      "queue",
+      "LIFO",
+      "FIFO",
+      "bracket",
+      "ring buffer",
+      "deque",
+      "Arrays",
+      "Stacks",
+      "Queues",
+      "matching",
+      "scheduling"
+    ]
+  },
+  "PRG-T01-C03-U04": {
+    "title": "Map, Set & Hashing Patterns",
+    "terms": [
+      "Map",
+      "Set",
+      "hash",
+      "hashing",
+      "frequency",
+      "deduplicate",
+      "grouping",
+      "lookup",
+      "counting",
+      "dedupe",
+      "plain",
+      "objects"
+    ]
+  },
+  "PRG-T01-C03-U05": {
+    "title": "Linked Lists & Pointer Manipulation",
+    "terms": [
+      "linked list",
+      "singly linked",
+      "doubly linked",
+      "head",
+      "tail",
+      "pointer",
+      "node",
+      "Linked",
+      "Manipulation",
+      "insertion",
+      "deletion",
+      "requirements"
+    ]
+  },
+  "PRG-T01-C03-U06": {
+    "title": "Trees & Tree Traversals (DFS / BFS)",
+    "terms": [
+      "tree",
+      "binary tree",
+      "DFS",
+      "BFS",
+      "traversal",
+      "preorder",
+      "inorder",
+      "postorder",
+      "Trees",
+      "Traversals",
+      "hierarchical",
+      "DOM"
+    ]
+  },
+  "PRG-T01-C03-U07": {
+    "title": "Graphs & Shortest-Path Basics",
+    "terms": [
+      "graph",
+      "adjacency",
+      "BFS",
+      "shortest path",
+      "cycle detection",
+      "topological",
+      "visited",
+      "Graphs",
+      "Shortest-Path",
+      "dependency",
+      "route",
+      "edges"
+    ]
+  },
+  "PRG-T01-C04-U01": {
+    "title": "Problem Decomposition & Data Pipelines",
+    "terms": [
+      "pipeline",
+      "composition",
+      "pure function",
+      "refactor",
+      "decompose",
+      "immutability",
+      "reduce",
+      "Problem",
+      "Decomposition",
+      "Pipelines",
+      "multi-rule",
+      "business"
+    ]
+  },
+  "PRG-T01-C04-U02": {
+    "title": "Reusable Generic Utilities & Edge Cases",
+    "terms": [
+      "edge case",
+      "NaN",
+      "deepClone",
+      "cycle",
+      "boundary",
+      "generic utility",
+      "defensive",
+      "Reusable",
+      "Generic",
+      "Utilities",
+      "Edge",
+      "Cases"
+    ]
+  },
+  "PRG-T01-C04-U03": {
+    "title": "Testing Pyramid & Pure Unit Tests",
+    "terms": [
+      "unit test",
+      "node:test",
+      "assert",
+      "jest",
+      "vitest",
+      "test suite",
+      "assertion",
+      "Testing",
+      "Pyramid",
+      "Pure",
+      "Unit",
+      "Tests"
+    ]
+  },
+  "PRG-T01-C04-U04": {
+    "title": "Test Doubles: Stubs, Mocks & Fakes",
+    "terms": [
+      "mock",
+      "stub",
+      "fake",
+      "spy",
+      "dependency injection",
+      "fake clock",
+      "Date.now",
+      "Test",
+      "Doubles",
+      "Stubs",
+      "Mocks",
+      "Fakes"
+    ]
+  },
+  "PRG-T01-C04-U05": {
+    "title": "Error Paths, Fixtures & Test Quality",
+    "terms": [
+      "fixture",
+      "regression",
+      "mutation testing",
+      "error path",
+      "test coverage",
+      "assertion",
+      "Paths",
+      "Fixtures",
+      "Test",
+      "Quality",
+      "legacy"
+    ]
+  },
+  "PRG-T01-C04-U06": {
+    "title": "Packaging, Exports & DevVault Core",
+    "terms": [
+      "package.json",
+      "exports",
+      "module",
+      "ESM",
+      "library",
+      "TypeScript",
+      "devvault-core",
+      "Packaging",
+      "tested",
+      "docs"
+    ]
+  },
+  "PRG-T02-C01-U01": {
+    "title": "JSX and Component Basics",
+    "terms": [
+      "JSX",
+      "React",
+      "component",
+      "props",
+      "functional component",
+      "render",
+      "pure",
+      "functional",
+      "components",
+      "typed"
+    ]
+  },
+  "PRG-T02-C01-U02": {
+    "title": "Props and Component Composition",
+    "terms": [
+      "children",
+      "composition",
+      "prop drilling",
+      "slot",
+      "React",
+      "Props",
+      "Component",
+      "nested",
+      "variants",
+      "compose",
+      "slots",
+      "prop-drilling"
+    ]
+  },
+  "PRG-T02-C01-U03": {
+    "title": "State and Event Handling",
+    "terms": [
+      "useState",
+      "event handler",
+      "derived state",
+      "controlled",
+      "React",
+      "Event",
+      "interactions",
+      "manage",
+      "derived-state",
+      "duplication"
+    ]
+  },
+  "PRG-T02-C01-U04": {
+    "title": "State Updates and Immutability",
+    "terms": [
+      "functional updater",
+      "immutability",
+      "stale closure",
+      "setState",
+      "React",
+      "Updates",
+      "nested",
+      "stale",
+      "closures",
+      "functional",
+      "updaters"
+    ]
+  },
+  "PRG-T02-C01-U05": {
+    "title": "Effects and Synchronization",
+    "terms": [
+      "useEffect",
+      "cleanup",
+      "synchronization",
+      "dependency array",
+      "subscription",
+      "Effects",
+      "external",
+      "subscriptions",
+      "timers",
+      "synchronize",
+      "effect",
+      "abuse"
+    ]
+  },
+  "PRG-T02-C01-U06": {
+    "title": "Refs and DOM Access",
+    "terms": [
+      "useRef",
+      "ref",
+      "DOM",
+      "focus",
+      "imperative",
+      "Refs",
+      "Access",
+      "scroll",
+      "needs",
+      "breaking",
+      "React",
+      "render"
+    ]
+  },
+  "PRG-T02-C01-U07": {
+    "title": "Custom Hooks",
+    "terms": [
+      "custom hook",
+      "useSyncExternalStore",
+      "hook",
+      "React",
+      "Custom",
+      "Hooks",
+      "repeated",
+      "stateful",
+      "logic",
+      "typed",
+      "clear",
+      "contracts"
+    ]
+  },
+  "PRG-T02-C01-U08": {
+    "title": "Rendering, Re-renders & Component Boundaries",
+    "terms": [
+      "re-render",
+      "reconciliation",
+      "key prop",
+      "render boundary",
+      "React",
+      "Rendering",
+      "Re-renders",
+      "Component",
+      "Boundaries",
+      "tree",
+      "render",
+      "triggers"
+    ]
+  },
+  "PRG-T02-C02-U01": {
+    "title": "Local State vs Server State",
+    "terms": [
+      "Local",
+      "Server",
+      "requirements",
+      "ephemeral",
+      "cached",
+      "remote"
+    ]
+  },
+  "PRG-T02-C02-U02": {
+    "title": "Fetching Data and Async UI States",
+    "terms": [
+      "AbortController",
+      "Fetching",
+      "Async",
+      "endpoint",
+      "loading",
+      "empty",
+      "race",
+      "conditions"
+    ]
+  },
+  "PRG-T02-C02-U03": {
+    "title": "Caching and Query Keys",
+    "terms": [
+      "Caching",
+      "Query",
+      "Keys",
+      "parameterized",
+      "queries",
+      "deterministic",
+      "stale-time",
+      "policies"
+    ]
+  },
+  "PRG-T02-C02-U04": {
+    "title": "Refetching and Cache Invalidation",
+    "terms": [
+      "Refetching",
+      "Cache",
+      "Invalidation",
+      "mutation",
+      "invalidate",
+      "affected",
+      "query",
+      "keys",
+      "over-fetching"
+    ]
+  },
+  "PRG-T02-C02-U05": {
+    "title": "Mutations and Optimistic Updates",
+    "terms": [
+      "Mutations",
+      "Optimistic",
+      "Updates",
+      "toggle",
+      "create",
+      "action",
+      "deterministic",
+      "rollback"
+    ]
+  },
+  "PRG-T02-C02-U06": {
+    "title": "Pagination and Filtering",
+    "terms": [
+      "Pagination",
+      "Filtering",
+      "sync",
+      "filter",
+      "cursor",
+      "params",
+      "URL",
+      "query",
+      "cache",
+      "keys"
+    ]
+  },
+  "PRG-T02-C02-U07": {
+    "title": "Error and Retry Strategies",
+    "terms": [
+      "Retry",
+      "Strategies",
+      "transient",
+      "failures",
+      "bounded",
+      "retries",
+      "fallback",
+      "UI"
+    ]
+  },
+  "PRG-T02-C03-U01": {
+    "title": "Controlled and Uncontrolled Inputs",
+    "terms": [
+      "Controlled",
+      "Uncontrolled",
+      "form",
+      "fields",
+      "mixed-mode",
+      "warnings"
+    ]
+  },
+  "PRG-T02-C03-U02": {
+    "title": "Form State and Submission",
+    "terms": [
+      "Form",
+      "Submission",
+      "multi-field",
+      "dirty",
+      "touched",
+      "submitting",
+      "prevent",
+      "double",
+      "submits"
+    ]
+  },
+  "PRG-T02-C03-U03": {
+    "title": "Schema Validation with Zod",
+    "terms": [
+      "Schema",
+      "Validation",
+      "Zod",
+      "form",
+      "API",
+      "author",
+      "schemas",
+      "infer",
+      "TypeScript",
+      "cleanly"
+    ]
+  },
+  "PRG-T02-C03-U04": {
+    "title": "Field-level and Form-level Errors",
+    "terms": [
+      "Field-level",
+      "Form-level",
+      "validation",
+      "failures",
+      "map",
+      "Zod",
+      "issues",
+      "fields",
+      "form",
+      "banners"
+    ]
+  },
+  "PRG-T02-C03-U05": {
+    "title": "React Hook Form Fundamentals",
+    "terms": [
+      "React",
+      "Hook",
+      "Form",
+      "complex",
+      "wire",
+      "Zod",
+      "resolver"
+    ]
+  },
+  "PRG-T02-C03-U06": {
+    "title": "Async Validation",
+    "terms": [
+      "AbortSignal",
+      "Async",
+      "Validation",
+      "uniqueness",
+      "validate",
+      "asynchronously",
+      "debounce"
+    ]
+  },
+  "PRG-T02-C03-U07": {
+    "title": "Accessible Form UX",
+    "terms": [
+      "aria-invalid",
+      "aria-describedby",
+      "Accessible",
+      "Form",
+      "bind",
+      "focus-on-first-error"
+    ]
+  },
+  "PRG-T02-C04-U01": {
+    "title": "Design Tokens and Visual Consistency",
+    "terms": [
+      "Tokens",
+      "Visual",
+      "Consistency",
+      "specs",
+      "spacing",
+      "typography",
+      "semantic",
+      "color"
+    ]
+  },
+  "PRG-T02-C04-U02": {
+    "title": "Tailwind Fundamentals",
+    "terms": [
+      "Tailwind",
+      "component",
+      "mockup",
+      "compose",
+      "utility",
+      "classes",
+      "cleanly",
+      "unreadable",
+      "class",
+      "soup"
+    ]
+  },
+  "PRG-T02-C04-U03": {
+    "title": "Responsive Layout Patterns",
+    "terms": [
+      "Responsive",
+      "Layout",
+      "mobile",
+      "desktop",
+      "viewports",
+      "fluid",
+      "grid",
+      "sidebar",
+      "layouts"
+    ]
+  },
+  "PRG-T02-C04-U04": {
+    "title": "Component Variants and States",
+    "terms": [
+      "disabled",
+      "loading",
+      "Component",
+      "Variants",
+      "button",
+      "badge",
+      "model",
+      "typed"
+    ]
+  },
+  "PRG-T02-C04-U05": {
+    "title": "Keyboard and Focus Management",
+    "terms": [
+      "Escape",
+      "Keyboard",
+      "Focus",
+      "dialogs",
+      "menus",
+      "trapping",
+      "close",
+      "restoration"
+    ]
+  },
+  "PRG-T02-C04-U06": {
+    "title": "Semantic HTML & ARIA",
+    "terms": [
+      "Semantic",
+      "HTML",
+      "ARIA",
+      "custom",
+      "interactive",
+      "widgets",
+      "prefer",
+      "native",
+      "elements",
+      "valid",
+      "WAI-ARIA",
+      "roles"
+    ]
+  },
+  "PRG-T02-C04-U07": {
+    "title": "Dark Mode and Theming",
+    "terms": [
+      "Dark",
+      "Theming",
+      "theme",
+      "preferences",
+      "switch",
+      "semantic",
+      "CSS",
+      "variables",
+      "FOUC",
+      "contrast",
+      "regressions"
+    ]
+  },
+  "PRG-T02-C05-U01": {
+    "title": "Memoization: When and Why",
+    "terms": [
+      "React.memo",
+      "useMemo",
+      "useCallback",
+      "Memoization",
+      "profiler",
+      "measured"
+    ]
+  },
+  "PRG-T02-C05-U02": {
+    "title": "Code Splitting and Lazy Loading",
+    "terms": [
+      "React.lazy",
+      "Suspense",
+      "Splitting",
+      "Lazy",
+      "Loading",
+      "heavy",
+      "routes",
+      "panels",
+      "split",
+      "bundles",
+      "fallbacks"
+    ]
+  },
+  "PRG-T02-C05-U03": {
+    "title": "Image and Asset Optimization",
+    "terms": [
+      "Image",
+      "Asset",
+      "Optimization",
+      "media-heavy",
+      "prevent",
+      "CLS",
+      "optimize",
+      "loading",
+      "priority",
+      "formats"
+    ]
+  },
+  "PRG-T02-C05-U04": {
+    "title": "Performance Measurement & Architecture",
+    "terms": [
+      "Performance",
+      "Measurement",
+      "Architecture",
+      "sluggish",
+      "list",
+      "tree",
+      "profile",
+      "render",
+      "commits",
+      "virtualization",
+      "splitting"
+    ]
+  },
+  "PRG-T02-C06-U01": {
+    "title": "Testing Library Philosophy & Role Queries",
+    "terms": [
+      "Testing",
+      "Library",
+      "Philosophy",
+      "Role",
+      "Queries",
+      "React",
+      "component",
+      "query",
+      "accessible",
+      "label",
+      "internal",
+      "selectors"
+    ]
+  },
+  "PRG-T02-C06-U02": {
+    "title": "Testing User Interactions",
+    "terms": [
+      "userEvent",
+      "Testing",
+      "Interactions",
+      "interactive",
+      "controls",
+      "simulate",
+      "realistic",
+      "clicks",
+      "typing",
+      "keyboard",
+      "nav"
+    ]
+  },
+  "PRG-T02-C06-U03": {
+    "title": "Testing Forms and Validation",
+    "terms": [
+      "Testing",
+      "Forms",
+      "Validation",
+      "Zod-validated",
+      "form",
+      "assert",
+      "field",
+      "disabled",
+      "submit",
+      "valid"
+    ]
+  },
+  "PRG-T02-C06-U04": {
+    "title": "Async UI Testing",
+    "terms": [
+      "Async",
+      "Testing",
+      "fetching",
+      "test",
+      "loading",
+      "success",
+      "mocked",
+      "network",
+      "boundaries"
+    ]
+  },
+  "PRG-T02-C06-U05": {
+    "title": "Accessibility Assertions & DevVault Web",
+    "terms": [
+      "devvault-web",
+      "Accessibility",
+      "Assertions",
+      "Web",
+      "assert",
+      "accessible",
+      "React",
+      "SPA"
+    ]
+  },
+  "PRG-T03-C01-U01": {
+    "title": "Node.js Runtime and Event Loop",
+    "terms": [
+      "Node.js",
+      "event loop",
+      "libuv",
+      "blocking",
+      "non-blocking",
+      "process.nextTick",
+      "Runtime",
+      "Event",
+      "Loop",
+      "CPU",
+      "I/O",
+      "Node"
+    ]
+  },
+  "PRG-T03-C01-U02": {
+    "title": "Node Modules and Process Env",
+    "terms": [
+      "process.env",
+      "Node",
+      "Modules",
+      "Process",
+      "Env",
+      "CLI",
+      "server",
+      "read",
+      "signals",
+      "structure",
+      "ESM",
+      "entrypoints"
+    ]
+  },
+  "PRG-T03-C01-U03": {
+    "title": "Raw HTTP Server with node:http",
+    "terms": [
+      "node:http",
+      "createServer",
+      "IncomingMessage",
+      "ServerResponse",
+      "HTTP server",
+      "Raw",
+      "HTTP",
+      "Server",
+      "parse",
+      "URLs",
+      "JSON",
+      "bodies"
+    ]
+  },
+  "PRG-T03-C01-U04": {
+    "title": "Methods, Status Codes and Headers",
+    "terms": [
+      "HTTP",
+      "status code",
+      "idempotent",
+      "headers",
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "Methods",
+      "Status",
+      "Codes",
+      "scenarios"
+    ]
+  },
+  "PRG-T03-C01-U05": {
+    "title": "REST Resource Design",
+    "terms": [
+      "REST",
+      "Resource",
+      "domain",
+      "entities",
+      "noun-based",
+      "endpoints",
+      "sub-resources",
+      "query",
+      "conventions"
+    ]
+  },
+  "PRG-T03-C01-U06": {
+    "title": "API Response and Error Conventions",
+    "terms": [
+      "API",
+      "Response",
+      "Conventions",
+      "success",
+      "failure",
+      "cases",
+      "standardize",
+      "JSON",
+      "envelopes",
+      "problem-details",
+      "shapes"
+    ]
+  },
+  "PRG-T03-C01-U07": {
+    "title": "Async I/O and Stream Error Handling",
+    "terms": [
+      "stream",
+      "Readable",
+      "Writable",
+      "Transform",
+      "pipeline",
+      "backpressure",
+      "Async",
+      "I/O",
+      "file",
+      "network",
+      "streams",
+      "events"
+    ]
+  },
+  "PRG-T03-C02-U01": {
+    "title": "Express 5 Application Setup",
+    "terms": [
+      "Express",
+      "Application",
+      "Setup",
+      "JSON",
+      "parsing",
+      "health",
+      "routes",
+      "graceful",
+      "shutdown"
+    ]
+  },
+  "PRG-T03-C02-U02": {
+    "title": "Routing and Route Parameters",
+    "terms": [
+      "express.Router",
+      "Routing",
+      "Route",
+      "Parameters",
+      "nested",
+      "resources",
+      "mount",
+      "modules",
+      "validate",
+      "params"
+    ]
+  },
+  "PRG-T03-C02-U03": {
+    "title": "Middleware and Request Lifecycle",
+    "terms": [
+      "middleware",
+      "Express",
+      "request lifecycle",
+      "router",
+      "Request",
+      "Lifecycle",
+      "cross-cutting",
+      "concerns",
+      "order",
+      "short-circuiting"
+    ]
+  },
+  "PRG-T03-C02-U04": {
+    "title": "Request Validation",
+    "terms": [
+      "validation",
+      "Zod",
+      "schema",
+      "request body",
+      "middleware",
+      "body",
+      "query",
+      "params",
+      "Request",
+      "reject",
+      "invalid",
+      "payloads"
+    ]
+  },
+  "PRG-T03-C02-U05": {
+    "title": "Centralized & Async Error Handling (Express 5)",
+    "terms": [
+      "error middleware",
+      "async error",
+      "Express 5",
+      "centralized error",
+      "Centralized",
+      "Async",
+      "Express",
+      "rejected",
+      "handlers",
+      "rely",
+      "native"
+    ]
+  },
+  "PRG-T03-C02-U06": {
+    "title": "Structured Logging",
+    "terms": [
+      "Structured",
+      "Logging",
+      "HTTP",
+      "requests",
+      "emit",
+      "JSON",
+      "logs",
+      "request",
+      "IDs",
+      "latency",
+      "leaking",
+      "secrets"
+    ]
+  },
+  "PRG-T03-C02-U07": {
+    "title": "Typed CRUD Endpoints",
+    "terms": [
+      "Typed",
+      "CRUD",
+      "Endpoints",
+      "resource",
+      "spec",
+      "Create",
+      "Read",
+      "Update",
+      "Delete",
+      "status",
+      "codes"
+    ]
+  },
+  "PRG-T03-C03-U01": {
+    "title": "Routes, Controllers and Services",
+    "terms": [
+      "Routes",
+      "Controllers",
+      "Services",
+      "fat",
+      "route",
+      "handlers",
+      "HTTP",
+      "concerns",
+      "pure",
+      "domain"
+    ]
+  },
+  "PRG-T03-C03-U02": {
+    "title": "Data Access Layer",
+    "terms": [
+      "Access",
+      "service",
+      "logic",
+      "isolate",
+      "storage",
+      "behind",
+      "repository",
+      "interface",
+      "testability"
+    ]
+  },
+  "PRG-T03-C03-U03": {
+    "title": "Pagination, Sorting and Filtering",
+    "terms": [
+      "Pagination",
+      "Sorting",
+      "Filtering",
+      "collection",
+      "endpoints",
+      "cursor",
+      "offset",
+      "allowlisted",
+      "sort",
+      "fields"
+    ]
+  },
+  "PRG-T03-C03-U04": {
+    "title": "Consistent API Contracts & Documentation",
+    "terms": [
+      "Consistent",
+      "API",
+      "Contracts",
+      "Documentation",
+      "endpoints",
+      "DTOs",
+      "document",
+      "request",
+      "response",
+      "schemas",
+      "consistently",
+      "OpenAPI"
+    ]
+  },
+  "PRG-T03-C03-U05": {
+    "title": "Environment Configuration & Secrets Hygiene",
+    "terms": [
+      "env",
+      "Environment",
+      "Configuration",
+      "Secrets",
+      "Hygiene",
+      "vars",
+      "validate",
+      "startup",
+      "config",
+      "Zod",
+      "fail",
+      "missing"
+    ]
+  },
+  "PRG-T03-C03-U06": {
+    "title": "Backend Module Boundaries",
+    "terms": [
+      "Backend",
+      "Module",
+      "Boundaries",
+      "growing",
+      "modules",
+      "dependency",
+      "direction",
+      "constructor",
+      "injection"
+    ]
+  },
+  "PRG-T03-C03-U07": {
+    "title": "Service & API Integration Tests + DevVault API",
+    "terms": [
+      "devvault-api",
+      "Service",
+      "API",
+      "Integration",
+      "Tests",
+      "HTTP",
+      "against",
+      "isolated",
+      "test"
+    ]
+  },
+  "PRG-T04-C01-U01": {
+    "title": "Relational Database Concepts",
+    "terms": [
+      "Relational",
+      "Database",
+      "flat",
+      "JSON",
+      "tables",
+      "explain",
+      "rows",
+      "ACID",
+      "purpose",
+      "integrity"
+    ]
+  },
+  "PRG-T04-C01-U02": {
+    "title": "Entities, Attributes and Relationships",
+    "terms": [
+      "Entities",
+      "Attributes",
+      "Relationships",
+      "product",
+      "requirements",
+      "classify",
+      "M:N",
+      "join",
+      "tables"
+    ]
+  },
+  "PRG-T04-C01-U03": {
+    "title": "Primary and Foreign Keys",
+    "terms": [
+      "ON DELETE",
+      "Primary",
+      "Foreign",
+      "Keys",
+      "parent",
+      "child",
+      "tables",
+      "PKs",
+      "FKs",
+      "DELETE",
+      "behaviors"
+    ]
+  },
+  "PRG-T04-C01-U04": {
+    "title": "Normalization and Constraints",
+    "terms": [
+      "NOT NULL",
+      "UNIQUE",
+      "Normalization",
+      "Constraints",
+      "denormalized",
+      "tables",
+      "normalize",
+      "NOT",
+      "NULL"
+    ]
+  },
+  "PRG-T04-C01-U05": {
+    "title": "ERD Design and Schema Creation",
+    "terms": [
+      "ERD",
+      "Schema",
+      "Creation",
+      "domain",
+      "execute",
+      "PostgreSQL",
+      "DDL"
+    ]
+  },
+  "PRG-T04-C02-U01": {
+    "title": "Filtering, Sorting and Aggregation",
+    "terms": [
+      "SELECT",
+      "GROUP BY",
+      "HAVING",
+      "ORDER BY",
+      "SQL",
+      "aggregate",
+      "Filtering",
+      "Sorting",
+      "Aggregation",
+      "relational",
+      "ORDER",
+      "GROUP"
+    ]
+  },
+  "PRG-T04-C02-U02": {
+    "title": "INNER and OUTER JOINs",
+    "terms": [
+      "INNER JOIN",
+      "LEFT JOIN",
+      "OUTER JOIN",
+      "JOIN",
+      "SQL",
+      "INNER",
+      "OUTER",
+      "JOINs",
+      "multi-table",
+      "queries",
+      "LEFT",
+      "row"
+    ]
+  },
+  "PRG-T04-C02-U03": {
+    "title": "Subqueries and CTEs",
+    "terms": [
+      "Subqueries",
+      "CTEs",
+      "multi-step",
+      "aggregations",
+      "readable",
+      "correlated"
+    ]
+  },
+  "PRG-T04-C02-U04": {
+    "title": "Indexes and Query Plans",
+    "terms": [
+      "EXPLAIN ANALYZE",
+      "Indexes",
+      "Query",
+      "Plans",
+      "read",
+      "EXPLAIN",
+      "ANALYZE",
+      "B-tree",
+      "composite"
+    ]
+  },
+  "PRG-T04-C02-U05": {
+    "title": "Raw pg, Pooling & Parameterized Queries",
+    "terms": [
+      "parameterized query",
+      "pg",
+      "Pool",
+      "SQL injection",
+      "prepared statement",
+      "node-postgres",
+      "Raw",
+      "Pooling",
+      "Parameterized",
+      "Queries",
+      "prevent"
+    ]
+  },
+  "PRG-T04-C02-U06": {
+    "title": "Transactions and ACID",
+    "terms": [
+      "transaction",
+      "ACID",
+      "BEGIN",
+      "COMMIT",
+      "ROLLBACK",
+      "PostgreSQL",
+      "pg",
+      "Transactions",
+      "multi-step",
+      "writes",
+      "wrap",
+      "queries"
+    ]
+  },
+  "PRG-T04-C02-U07": {
+    "title": "Isolation, Concurrency & Optimization",
+    "terms": [
+      "SELECT ... FOR UPDATE",
+      "Isolation",
+      "Concurrency",
+      "Optimization",
+      "concurrent",
+      "updates",
+      "prevent",
+      "lost",
+      "levels",
+      "SELECT",
+      "UPDATE"
+    ]
+  },
+  "PRG-T04-C03-U01": {
+    "title": "Prisma Schema and Models",
+    "terms": [
+      "Prisma",
+      "Schema",
+      "Models",
+      "SQL",
+      "enums",
+      "indexes",
+      "accurately"
+    ]
+  },
+  "PRG-T04-C03-U02": {
+    "title": "Prisma Relations",
+    "terms": [
+      "Prisma",
+      "Relations",
+      "M:N",
+      "tables",
+      "relation",
+      "fields",
+      "referential",
+      "actions"
+    ]
+  },
+  "PRG-T04-C03-U03": {
+    "title": "Migrations and Schema Changes",
+    "terms": [
+      "Migrations",
+      "Schema",
+      "Changes",
+      "evolutions",
+      "create",
+      "non-destructive",
+      "applied",
+      "versions"
+    ]
+  },
+  "PRG-T04-C03-U04": {
+    "title": "CRUD Queries",
+    "terms": [
+      "CRUD",
+      "Queries",
+      "repository",
+      "methods",
+      "typed",
+      "Prisma",
+      "loops"
+    ]
+  },
+  "PRG-T04-C03-U05": {
+    "title": "Nested Reads and Writes",
+    "terms": [
+      "select",
+      "include",
+      "Nested",
+      "Reads",
+      "Writes",
+      "parent-child",
+      "operations"
+    ]
+  },
+  "PRG-T04-C03-U06": {
+    "title": "Transactions with Prisma",
+    "terms": [
+      "prisma.$transaction",
+      "Transactions",
+      "Prisma",
+      "atomic",
+      "workflows",
+      "transaction",
+      "retryable",
+      "conflicts"
+    ]
+  },
+  "PRG-T04-C03-U07": {
+    "title": "Seeding, Data Access & DevVault DB",
+    "terms": [
+      "devvault-api",
+      "pg",
+      "Seeding",
+      "Access",
+      "in-memory",
+      "storage",
+      "PostgreSQL",
+      "FTS",
+      "Prisma",
+      "seed"
+    ]
+  },
+  "PRG-T05-C01-U01": {
+    "title": "Authentication vs Authorization",
+    "terms": [
+      "401",
+      "403",
+      "authentication",
+      "authorization",
+      "AuthN",
+      "AuthZ",
+      "401 Unauthorized",
+      "403 Forbidden",
+      "access-control",
+      "failures",
+      "distinguish",
+      "Unauthorized"
+    ]
+  },
+  "PRG-T05-C01-U02": {
+    "title": "Password Storage and Hashing (OWASP)",
+    "terms": [
+      "Argon2",
+      "bcrypt",
+      "password hashing",
+      "salt",
+      "timingSafeEqual",
+      "Password",
+      "Storage",
+      "Hashing",
+      "credentials",
+      "hash",
+      "Argon2id",
+      "min"
+    ]
+  },
+  "PRG-T05-C01-U03": {
+    "title": "Sessions and Cookies",
+    "terms": [
+      "Sessions",
+      "Cookies",
+      "stateful",
+      "login",
+      "issue",
+      "opaque",
+      "session",
+      "IDs",
+      "stored",
+      "server-side",
+      "expiration",
+      "rotation"
+    ]
+  },
+  "PRG-T05-C01-U04": {
+    "title": "Secure Cookie Attributes",
+    "terms": [
+      "HttpOnly",
+      "SameSite",
+      "Secure",
+      "cookie",
+      "session",
+      "Path",
+      "Attributes",
+      "flags",
+      "block",
+      "theft"
+    ]
+  },
+  "PRG-T05-C01-U05": {
+    "title": "JWT and Token Concepts",
+    "terms": [
+      "JWT",
+      "JSON Web Token",
+      "signature",
+      "exp",
+      "alg: none",
+      "verify",
+      "aud",
+      "Token",
+      "stateless",
+      "tokens",
+      "signatures",
+      "reject"
+    ]
+  },
+  "PRG-T05-C01-U06": {
+    "title": "OAuth 2.0 / OIDC Flow Concepts",
+    "terms": [
+      "OAuth",
+      "OIDC",
+      "Flow",
+      "third-party",
+      "login",
+      "Authorization",
+      "PKCE",
+      "validate"
+    ]
+  },
+  "PRG-T05-C01-U07": {
+    "title": "Implementing Auth with a Trusted Library",
+    "terms": [
+      "Implementing",
+      "Auth",
+      "Trusted",
+      "Library",
+      "needs",
+      "integrate",
+      "vetted",
+      "session",
+      "rather",
+      "than",
+      "rolling",
+      "custom"
+    ]
+  },
+  "PRG-T05-C02-U01": {
+    "title": "Role-based Access Control",
+    "terms": [
+      "Role-based",
+      "Access",
+      "Control",
+      "role",
+      "hierarchies",
+      "centralized",
+      "RBAC",
+      "policy",
+      "guards",
+      "routes",
+      "services"
+    ]
+  },
+  "PRG-T05-C02-U02": {
+    "title": "Resource Ownership Checks",
+    "terms": [
+      "ownerId === session.userId",
+      "Resource",
+      "Ownership",
+      "IDOR-vulnerable",
+      "endpoints",
+      "scope",
+      "queries",
+      "mutations",
+      "ownerId",
+      "session.userId"
+    ]
+  },
+  "PRG-T05-C02-U03": {
+    "title": "XSS and Output Safety",
+    "terms": [
+      "XSS",
+      "cross-site scripting",
+      "escape",
+      "sanitize",
+      "HTML",
+      "javascript",
+      "Safety",
+      "untrusted",
+      "block"
+    ]
+  },
+  "PRG-T05-C02-U04": {
+    "title": "CSRF, SameSite & Origin Checks",
+    "terms": [
+      "CSRF",
+      "SameSite",
+      "Origin",
+      "anti-CSRF",
+      "token",
+      "SameSite=Lax",
+      "Strict",
+      "GET",
+      "cookie-authenticated",
+      "mutations",
+      "combine",
+      "Lax"
+    ]
+  },
+  "PRG-T05-C02-U05": {
+    "title": "SQL Injection and Parameterization",
+    "terms": [
+      "SQL injection",
+      "SQLi",
+      "parameterized",
+      "allowlist",
+      "prepared",
+      "SQL",
+      "Injection",
+      "Parameterization",
+      "concatenated",
+      "strings",
+      "refactor",
+      "queries"
+    ]
+  },
+  "PRG-T05-C02-U06": {
+    "title": "CORS Configuration",
+    "terms": [
+      "CORS",
+      "Access-Control-Allow-Origin",
+      "preflight",
+      "credentials",
+      "Configuration",
+      "cross-origin",
+      "browser",
+      "requests",
+      "explicit"
+    ]
+  },
+  "PRG-T05-C02-U07": {
+    "title": "Security Headers (CSP, HSTS, Nosniff)",
+    "terms": [
+      "CSP",
+      "Content-Security-Policy",
+      "HSTS",
+      "nosniff",
+      "security headers",
+      "X-Content-Type-Options: nosniff",
+      "Security",
+      "Headers",
+      "HTTP",
+      "responses",
+      "set",
+      "X-Content-Type-Options"
+    ]
+  },
+  "PRG-T05-C02-U08": {
+    "title": "Rate Limiting & Brute-Force Protection",
+    "terms": [
+      "rate limit",
+      "token bucket",
+      "sliding window",
+      "brute force",
+      "429",
+      "Rate",
+      "Limiting",
+      "Brute-Force",
+      "Protection",
+      "login",
+      "API",
+      "abuse"
+    ]
+  },
+  "PRG-T05-C02-U09": {
+    "title": "OWASP Risk Review & DevVault Auth",
+    "terms": [
+      "devvault-api",
+      "Risk",
+      "Review",
+      "Auth",
+      "audit",
+      "risks",
+      "multi-user",
+      "ownership",
+      "rate",
+      "limiting"
+    ]
+  },
+  "PRG-T06-C01-U01": {
+    "title": "Next.js Project Structure",
+    "terms": [
+      "app",
+      "next.config.*",
+      "Next.js",
+      "Structure",
+      "Router",
+      "repo",
+      "map",
+      "next.config",
+      "server",
+      "client",
+      "entrypoints"
+    ]
+  },
+  "PRG-T06-C01-U02": {
+    "title": "App Router and File-system Routing",
+    "terms": [
+      "page.tsx",
+      "Router",
+      "File-system",
+      "Routing",
+      "URL",
+      "requirements",
+      "map",
+      "route",
+      "segments",
+      "groups",
+      "conventions"
+    ]
+  },
+  "PRG-T06-C01-U03": {
+    "title": "Layouts and Nested Routes",
+    "terms": [
+      "layout.tsx",
+      "Layouts",
+      "Nested",
+      "Routes",
+      "shared",
+      "chrome",
+      "preserving",
+      "child",
+      "navigations"
+    ]
+  },
+  "PRG-T06-C01-U04": {
+    "title": "Loading and Error UI",
+    "terms": [
+      "loading.tsx",
+      "error.tsx",
+      "not-found.tsx",
+      "Loading",
+      "failing",
+      "routes",
+      "boundaries"
+    ]
+  },
+  "PRG-T06-C01-U05": {
+    "title": "Dynamic Routes and Route Parameters",
+    "terms": [
+      "slug",
+      "rest",
+      "params",
+      "searchParams",
+      "Dynamic",
+      "Routes",
+      "Route",
+      "Parameters",
+      "segments",
+      "await",
+      "async",
+      "invalid"
+    ]
+  },
+  "PRG-T06-C01-U06": {
+    "title": "Metadata and Navigation",
+    "terms": [
+      "Metadata",
+      "<Link>",
+      "useRouter",
+      "Navigation",
+      "dynamic",
+      "generate",
+      "typed",
+      "navigate",
+      "Link"
+    ]
+  },
+  "PRG-T06-C01-U07": {
+    "title": "Static and Dynamic Rendering",
+    "terms": [
+      "cookies",
+      "headers",
+      "dynamic",
+      "Static",
+      "Rendering",
+      "build",
+      "request",
+      "signals"
+    ]
+  },
+  "PRG-T06-C02-U01": {
+    "title": "Server Components",
+    "terms": [
+      "Server",
+      "Components",
+      "data-fetching",
+      "render",
+      "async",
+      "direct",
+      "DB",
+      "service",
+      "access"
+    ]
+  },
+  "PRG-T06-C02-U02": {
+    "title": "Client Components",
+    "terms": [
+      "'use client'",
+      "Client",
+      "Components",
+      "browser",
+      "hooks",
+      "events",
+      "isolate",
+      "leaves",
+      "bloating",
+      "bundles"
+    ]
+  },
+  "PRG-T06-C02-U03": {
+    "title": "Server/Client Boundary Design",
+    "terms": [
+      "children",
+      "Server",
+      "Client",
+      "Boundary",
+      "mixed",
+      "trees",
+      "compose",
+      "Components",
+      "inside",
+      "wrappers"
+    ]
+  },
+  "PRG-T06-C02-U04": {
+    "title": "Data Fetching on the Server",
+    "terms": [
+      "Fetching",
+      "Server",
+      "parallel",
+      "needs",
+      "fetch",
+      "concurrently",
+      "Components",
+      "waterfalls"
+    ]
+  },
+  "PRG-T06-C02-U05": {
+    "title": "Passing Data Across Component Boundaries",
+    "terms": [
+      "Date",
+      "Passing",
+      "Component",
+      "Boundaries",
+      "non-serializable",
+      "functions",
+      "secrets",
+      "serialize",
+      "DTOs",
+      "boundary"
+    ]
+  },
+  "PRG-T06-C02-U06": {
+    "title": "Caching and Revalidation (Next.js 15+)",
+    "terms": [
+      "fetch",
+      "no-store",
+      "GET",
+      "Caching",
+      "Revalidation",
+      "Next.js",
+      "uncached",
+      "defaults",
+      "Route",
+      "Handlers",
+      "Client",
+      "Router"
+    ]
+  },
+  "PRG-T06-C02-U07": {
+    "title": "Streaming and Suspense Basics",
+    "terms": [
+      "<Suspense>",
+      "Streaming",
+      "Suspense",
+      "secondary",
+      "panels",
+      "stream",
+      "progressively",
+      "boundaries"
+    ]
+  },
+  "PRG-T06-C03-U01": {
+    "title": "Route Handlers",
+    "terms": [
+      "GET",
+      "POST",
+      "Route",
+      "Handlers",
+      "API",
+      "webhook",
+      "needs",
+      "Next.js",
+      "typed",
+      "uncached",
+      "default"
+    ]
+  },
+  "PRG-T06-C03-U02": {
+    "title": "Server Actions and Form Mutations",
+    "terms": [
+      "Server",
+      "Actions",
+      "Form",
+      "Mutations",
+      "authZ",
+      "never",
+      "trusting",
+      "client"
+    ]
+  },
+  "PRG-T06-C03-U03": {
+    "title": "Input Validation with Zod",
+    "terms": [
+      "FormData",
+      "Validation",
+      "Zod",
+      "JSON",
+      "payloads",
+      "Actions",
+      "Handlers",
+      "parse",
+      "return",
+      "typed",
+      "field"
+    ]
+  },
+  "PRG-T06-C03-U04": {
+    "title": "Revalidation and Redirects",
+    "terms": [
+      "revalidatePath",
+      "revalidateTag",
+      "redirect",
+      "try",
+      "catch",
+      "Revalidation",
+      "Redirects",
+      "mutated",
+      "call",
+      "outside",
+      "traps"
+    ]
+  },
+  "PRG-T06-C03-U05": {
+    "title": "Error and Pending States",
+    "terms": [
+      "useActionState",
+      "useFormStatus",
+      "Pending",
+      "async",
+      "Server",
+      "Actions",
+      "surface"
+    ]
+  },
+  "PRG-T06-C03-U06": {
+    "title": "DevVault Next.js Full-Stack Migration",
+    "terms": [
+      "Next.js",
+      "Full-Stack",
+      "Migration",
+      "migrate",
+      "CRUD",
+      "mutations",
+      "Router",
+      "Server",
+      "Components",
+      "Actions"
+    ]
+  },
+  "PRG-T07-C01-U01": {
+    "title": "End-to-end Testing Concepts",
+    "terms": [
+      "End-to-end",
+      "Testing",
+      "unit",
+      "integration",
+      "E2E",
+      "suites",
+      "decide",
+      "which",
+      "journeys",
+      "belong"
+    ]
+  },
+  "PRG-T07-C01-U02": {
+    "title": "Playwright Setup and Browser Contexts",
+    "terms": [
+      "Playwright",
+      "Setup",
+      "Browser",
+      "Contexts",
+      "Next.js",
+      "isolated",
+      "webServer",
+      "startup"
+    ]
+  },
+  "PRG-T07-C01-U03": {
+    "title": "Locators and User Actions",
+    "terms": [
+      "getByRole",
+      "getByLabel",
+      "Locators",
+      "Actions",
+      "fragile",
+      "CSS",
+      "selectors"
+    ]
+  },
+  "PRG-T07-C01-U04": {
+    "title": "Assertions and Waiting",
+    "terms": [
+      "waitForTimeout",
+      "Assertions",
+      "Waiting",
+      "flaky",
+      "tests",
+      "Playwright",
+      "auto-retrying",
+      "web-first"
+    ]
+  },
+  "PRG-T07-C01-U05": {
+    "title": "Authentication State and Test Data",
+    "terms": [
+      "Authentication",
+      "Test",
+      "authenticated",
+      "E2E",
+      "flows",
+      "seed",
+      "isolated",
+      "reuse",
+      "storageState"
+    ]
+  },
+  "PRG-T07-C01-U06": {
+    "title": "Critical User Journey Tests",
+    "terms": [
+      "Critical",
+      "Journey",
+      "Tests",
+      "flows",
+      "E2E",
+      "signup",
+      "login",
+      "create",
+      "search",
+      "edit",
+      "delete"
+    ]
+  },
+  "PRG-T07-C01-U07": {
+    "title": "CI Quality Gates",
+    "terms": [
+      "Quality",
+      "Gates",
+      "lint",
+      "typecheck",
+      "unit",
+      "integration",
+      "E2E",
+      "suites",
+      "wire",
+      "failing",
+      "gate"
+    ]
+  },
+  "PRG-T07-C02-U01": {
+    "title": "Domain Spec & Architecture Freeze",
+    "terms": [
+      "Domain",
+      "Spec",
+      "Architecture",
+      "Freeze",
+      "scope",
+      "lock",
+      "entities",
+      "Snippets",
+      "Bookmarks",
+      "Notes",
+      "Tags",
+      "acceptance"
+    ]
+  },
+  "PRG-T07-C02-U02": {
+    "title": "Multi-Resource Workflows & Sharing",
+    "terms": [
+      "Multi-Resource",
+      "Workflows",
+      "Sharing",
+      "snippets",
+      "bookmarks",
+      "notes",
+      "collections",
+      "share",
+      "links",
+      "role",
+      "ownership",
+      "guards"
+    ]
+  },
+  "PRG-T07-C02-U03": {
+    "title": "Search, Tagging & File Attachments",
+    "terms": [
+      "Search",
+      "Tagging",
+      "Attachments",
+      "growing",
+      "vaults",
+      "PostgreSQL",
+      "full-text",
+      "tag",
+      "filters",
+      "attachment",
+      "metadata"
+    ]
+  },
+  "PRG-T07-C02-U04": {
+    "title": "UX Polish & Accessibility Audit",
+    "terms": [
+      "Polish",
+      "Accessibility",
+      "Audit",
+      "empty",
+      "loading",
+      "responsive",
+      "layout",
+      "keyboard",
+      "ARIA"
+    ]
+  },
+  "PRG-T07-C02-U05": {
+    "title": "Release Candidate & Walkthrough",
+    "terms": [
+      "Release",
+      "Candidate",
+      "Walkthrough",
+      "features",
+      "Playwright",
+      "E2E",
+      "verification",
+      "record",
+      "notes"
+    ]
+  },
+  "PRG-T08-C01-U01": {
+    "title": "System Design Fundamentals",
+    "terms": [
+      "System",
+      "traffic",
+      "latency",
+      "goals",
+      "estimate",
+      "throughput",
+      "storage",
+      "failure",
+      "domains"
+    ]
+  },
+  "PRG-T08-C01-U02": {
+    "title": "Identifying Bottlenecks",
+    "terms": [
+      "Identifying",
+      "Bottlenecks",
+      "endpoints",
+      "distinguish",
+      "CPU",
+      "I/O",
+      "lock",
+      "contention"
+    ]
+  },
+  "PRG-T08-C01-U03": {
+    "title": "Caching Concepts and Tradeoffs",
+    "terms": [
+      "Caching",
+      "Tradeoffs",
+      "read",
+      "write",
+      "ratios",
+      "cache-aside",
+      "write-through",
+      "quantify",
+      "stale-read",
+      "risk"
+    ]
+  },
+  "PRG-T08-C01-U04": {
+    "title": "Redis Data Structures",
+    "terms": [
+      "Redis",
+      "Structures",
+      "caching",
+      "rate-limit",
+      "leaderboard",
+      "pick",
+      "Strings",
+      "Hashes",
+      "Sets",
+      "Sorted"
+    ]
+  },
+  "PRG-T08-C01-U05": {
+    "title": "Cache Keys and Expiration",
+    "terms": [
+      "Cache",
+      "Keys",
+      "Expiration",
+      "multi-tenant",
+      "versioned",
+      "key",
+      "namespaces",
+      "TTL",
+      "jitter",
+      "stampede",
+      "protection"
+    ]
+  },
+  "PRG-T08-C01-U06": {
+    "title": "Cache Invalidation Strategies",
+    "terms": [
+      "Cache",
+      "Invalidation",
+      "Strategies",
+      "mutations",
+      "invalidate",
+      "keys",
+      "reliably",
+      "writes",
+      "leaving",
+      "orphan",
+      "stale",
+      "entries"
+    ]
+  },
+  "PRG-T08-C01-U07": {
+    "title": "Measuring Cache Effectiveness",
+    "terms": [
+      "Measuring",
+      "Cache",
+      "Effectiveness",
+      "hit",
+      "miss",
+      "counters",
+      "compute",
+      "ratio",
+      "verify",
+      "latency",
+      "improvement",
+      "tags"
+    ]
+  },
+  "PRG-T08-C02-U01": {
+    "title": "Realtime Communication Concepts",
+    "terms": [
+      "Realtime",
+      "Communication",
+      "update",
+      "requirements",
+      "short",
+      "polling",
+      "SSE",
+      "WebSockets"
+    ]
+  },
+  "PRG-T08-C02-U02": {
+    "title": "WebSocket Lifecycle",
+    "terms": [
+      "WebSocket",
+      "Lifecycle",
+      "connection",
+      "upgrade",
+      "heartbeats",
+      "reconnects",
+      "cleanup"
+    ]
+  },
+  "PRG-T08-C02-U03": {
+    "title": "Events and Message Design",
+    "terms": [
+      "Events",
+      "Message",
+      "realtime",
+      "versioned",
+      "Zod-validated",
+      "event",
+      "envelopes"
+    ]
+  },
+  "PRG-T08-C02-U04": {
+    "title": "Realtime UI Synchronization",
+    "terms": [
+      "Realtime",
+      "Synchronization",
+      "incoming",
+      "SSE",
+      "events",
+      "reconcile",
+      "client",
+      "cache",
+      "duplicate",
+      "race",
+      "conditions"
+    ]
+  },
+  "PRG-T08-C02-U05": {
+    "title": "Background Job Concepts",
+    "terms": [
+      "Background",
+      "Job",
+      "I/O",
+      "link",
+      "metadata",
+      "scraping",
+      "exports",
+      "offload",
+      "worker",
+      "queue"
+    ]
+  },
+  "PRG-T08-C02-U06": {
+    "title": "Retries and Idempotency",
+    "terms": [
+      "Retries",
+      "Idempotency",
+      "transient",
+      "worker",
+      "crashes",
+      "keys",
+      "exponential",
+      "backoff",
+      "DLQs"
+    ]
+  },
+  "PRG-T08-C02-U07": {
+    "title": "Choosing Realtime vs Polling",
+    "terms": [
+      "Choosing",
+      "Realtime",
+      "Polling",
+      "link-metadata",
+      "jobs",
+      "wire",
+      "async",
+      "worker",
+      "SSE",
+      "status",
+      "updates"
+    ]
+  },
+  "PRG-T09-C01-U01": {
+    "title": "Production Environment Configuration",
+    "terms": [
+      "NODE_ENV=production",
+      "Production",
+      "Environment",
+      "Configuration",
+      "dev",
+      "prod",
+      "builds",
+      "build-time",
+      "runtime",
+      "config",
+      "NODE_ENV"
+    ]
+  },
+  "PRG-T09-C01-U02": {
+    "title": "Docker Images and Containers",
+    "terms": [
+      "Docker",
+      "Images",
+      "Containers",
+      "VMs",
+      "inspect",
+      "layers",
+      "processes",
+      "ephemeral",
+      "filesystems"
+    ]
+  },
+  "PRG-T09-C01-U03": {
+    "title": "Dockerfile Fundamentals",
+    "terms": [
+      "Dockerfile",
+      "dockerignore",
+      "Node",
+      "Next.js",
+      "multi-stage",
+      "running",
+      "non-root"
+    ]
+  },
+  "PRG-T09-C01-U04": {
+    "title": "Volumes and Networking",
+    "terms": [
+      "Volumes",
+      "Networking",
+      "containers",
+      "named",
+      "bridge",
+      "DNS"
+    ]
+  },
+  "PRG-T09-C01-U05": {
+    "title": "Docker Compose v2 for App and Database",
+    "terms": [
+      "compose.yaml",
+      "version",
+      "docker compose",
+      "Docker",
+      "Compose",
+      "Database",
+      "multi-service",
+      "local",
+      "stacks",
+      "key"
+    ]
+  },
+  "PRG-T09-C01-U06": {
+    "title": "Container Logs and Debugging",
+    "terms": [
+      "docker compose logs",
+      "exec",
+      "Container",
+      "Logs",
+      "Debugging",
+      "failing",
+      "diagnose",
+      "docker",
+      "compose",
+      "healthchecks"
+    ]
+  },
+  "PRG-T09-C01-U07": {
+    "title": "Local Production-like Workflow",
+    "terms": [
+      "docker compose up",
+      "Local",
+      "Production-like",
+      "boot",
+      "entire",
+      "stack",
+      "locally",
+      "production",
+      "docker",
+      "compose"
+    ]
+  },
+  "PRG-T09-C02-U01": {
+    "title": "CI Pipeline Fundamentals",
+    "terms": [
+      "Pipeline",
+      "team",
+      "PRs",
+      "deterministic",
+      "stages",
+      "lint",
+      "typecheck",
+      "test"
+    ]
+  },
+  "PRG-T09-C02-U02": {
+    "title": "GitHub Actions Workflow Syntax",
+    "terms": [
+      "github",
+      "workflows",
+      "*.yml",
+      "Actions",
+      "Syntax",
+      "yml",
+      "triggers",
+      "caching",
+      "matrix",
+      "service",
+      "jobs"
+    ]
+  },
+  "PRG-T09-C02-U03": {
+    "title": "Automated Tests and Build Checks",
+    "terms": [
+      "Automated",
+      "Tests",
+      "Postgres",
+      "Docker",
+      "migrations",
+      "production",
+      "builds",
+      "automatically"
+    ]
+  },
+  "PRG-T09-C02-U04": {
+    "title": "Deployment Workflow",
+    "terms": [
+      "Deployment",
+      "main-branch",
+      "merges",
+      "trigger",
+      "gated",
+      "deploys",
+      "repository",
+      "secrets"
+    ]
+  },
+  "PRG-T09-C02-U05": {
+    "title": "Application Logs and Monitoring",
+    "terms": [
+      "Application",
+      "Logs",
+      "Monitoring",
+      "production",
+      "emit",
+      "structured",
+      "health",
+      "probes",
+      "latency",
+      "alerts"
+    ]
+  },
+  "PRG-T09-C02-U06": {
+    "title": "Database Backup Basics",
+    "terms": [
+      "pg_dump",
+      "pg_restore",
+      "Database",
+      "Backup",
+      "PostgreSQL",
+      "script",
+      "backups",
+      "verify",
+      "recovery"
+    ]
+  },
+  "PRG-T09-C02-U07": {
+    "title": "Rollback and Release Checklist",
+    "terms": [
+      "Rollback",
+      "Release",
+      "Checklist",
+      "deploy",
+      "execute",
+      "database",
+      "backward-compatibility"
+    ]
+  },
+  "PRG-T09-C03-U01": {
+    "title": "Choosing a Deployment Target",
+    "terms": [
+      "Choosing",
+      "Deployment",
+      "Target",
+      "requirements",
+      "PaaS",
+      "managed",
+      "containers",
+      "VPS",
+      "tradeoffs"
+    ]
+  },
+  "PRG-T09-C03-U02": {
+    "title": "Production Environment Variables",
+    "terms": [
+      "Production",
+      "Environment",
+      "Variables",
+      "hosting",
+      "secrets",
+      "env",
+      "vars",
+      "rotate",
+      "keys"
+    ]
+  },
+  "PRG-T09-C03-U03": {
+    "title": "Database Provisioning and Migrations",
+    "terms": [
+      "Database",
+      "Provisioning",
+      "Migrations",
+      "managed",
+      "Postgres",
+      "instance",
+      "production",
+      "before",
+      "traffic",
+      "cutover"
+    ]
+  },
+  "PRG-T09-C03-U04": {
+    "title": "Deploying the Application",
+    "terms": [
+      "Deploying",
+      "Application",
+      "CI/CD",
+      "deploy",
+      "production",
+      "verify",
+      "startup"
+    ]
+  },
+  "PRG-T09-C03-U05": {
+    "title": "Domain and HTTPS Basics",
+    "terms": [
+      "Domain",
+      "HTTPS",
+      "custom",
+      "DNS",
+      "records",
+      "TLS",
+      "termination"
+    ]
+  },
+  "PRG-T09-C03-U06": {
+    "title": "Production Smoke Testing",
+    "terms": [
+      "Production",
+      "Smoke",
+      "Testing",
+      "live",
+      "deploy",
+      "post-deploy",
+      "auth",
+      "health",
+      "endpoints"
+    ]
+  },
+  "PRG-T09-C03-U07": {
+    "title": "README, Demo and Retrospective",
+    "terms": [
+      "README",
+      "Demo",
+      "Retrospective",
+      "finished",
+      "product",
+      "architecture",
+      "docs",
+      "record",
+      "log",
+      "lessons"
+    ]
   }
 }
