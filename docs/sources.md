@@ -14,6 +14,20 @@ Local raw study materials live under `sources/` in the main checkout (gitignored
 | `SmartMathPro/ข้อสอบเก่า _ <ชุด>/{โจทย์,เฉลย}/` | Thai past exam papers grouped by exam (PAT 1, A-Level ประยุกต์ 1/2, วิชาสามัญ คณิต 1/2, O-NET-style พื้นฐาน) and by chapter (คณิตศาสตร์เพิ่มเติม: เซต … จำนวนเชิงซ้อน … สถิติ), with separate solution files | TH | © SmartMathPro and the original exam bodies (all rights reserved) | `cores` | Richest Thai source: many years of exam items per topic (e.g. `0010_จำนวนเชิงซ้อน`); text-extractable; use `เฉลย` only to confirm the core/trap, never copy solutions; ideas/cores only |
 | `illustrative-math/grade6-unit1/*.zip` | Illustrative Mathematics Grade 6 Unit 1 curriculum bundles | EN | CC BY 4.0 (ideas/cores only by our policy) | `cores` | Grade 6 geometry/area conceptual tasks and visual reasoning; ideas/cores only |
 
+## PRG Source Families (under `sources/prg/`)
+
+Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api repos/<owner>/<repo> --jq .license.spdx_id`. REUSE = may adapt with attribution (rewrite; never paste code, identifiers, test names or strings verbatim); extraction still produces source-free core cards.
+
+| Family (under `sources/prg/`) | Upstream | Licence | Allowed use | Coverage |
+| :--- | :--- | :--- | :--- | :--- |
+| `exercism-typescript/` | github.com/exercism/typescript | MIT | `reuse` | TS exercises with Jest + tsc checks (PRG-T00-C03, T01-C02..C04) |
+| `exercism-javascript/` | github.com/exercism/javascript | MIT | `reuse` | JS exercises with tests (PRG-T00-C03, T01-C01, C03..C04) |
+| `typescript-exercises/` | github.com/typescript-exercises/typescript-exercises | MIT | `reuse` | Type-level TS drills: narrowing, unions, generics (PRG-T00-C03, T01-C02) |
+| `eslint/` (sparse: `docs/src/rules`) | github.com/eslint/eslint | MIT | `reuse` | Incorrect/correct code pairs for find-the-bug & review (PRG-T00-C03, T01-C01, C04) |
+| `javascript-questions/` | github.com/lydiahallie/javascript-questions | MIT | `reuse` | Predict-output questions: scope, closures, this, async (PRG-T00-C03, T01-C01) |
+| `javascript-koans/` | github.com/mrdavidlaing/javascript-koans | MIT | `reuse` | Fill-in assertions on JS semantics (PRG-T00-C03, T01-C01) |
+| `wtfjs/` | github.com/denysdovhan/wtfjs | WTFPL | `reuse` | Coercion and runtime edge-case puzzles (PRG-T00-C03, T01-C01) |
+
 ## Policy & Local Layout
 
 - **`scope` families (OpenStax):** Read only table-of-contents and learning-objective pages to set unit scope (`rules/07` §4). Never extract core cards or mine exercises.
