@@ -209,7 +209,34 @@ def extract_code_blocks_from_source(rel_path: str, text: str) -> list[str]:
     if low.endswith((".md", ".markdown")):
         return [m.group(1) for m in _FENCED_CODE_BLOCK_RE.finditer(text or "") if m.group(1).strip()]
     if low.endswith(".json"):
-        return []
+        try:
+            payload = json.loads(text or "null")
+        except (TypeError, ValueError):
+            return []
+
+        code_keys = {
+            "code",
+            "testcode",
+            "source",
+            "sourcecode",
+            "startercode",
+            "solutioncode",
+            "snippet",
+        }
+        blocks: list[str] = []
+
+        def collect(value: Any, key: str = "") -> None:
+            if isinstance(value, dict):
+                for child_key, child in value.items():
+                    collect(child, str(child_key).lower())
+            elif isinstance(value, list):
+                for child in value:
+                    collect(child, key)
+            elif isinstance(value, str) and (key in code_keys or key.endswith("code")) and value.strip():
+                blocks.append(value)
+
+        collect(payload)
+        return blocks
     return [text] if (text or "").strip() else []
 
 
