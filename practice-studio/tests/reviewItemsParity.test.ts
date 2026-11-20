@@ -967,6 +967,86 @@ async function runTests() {
       else process.env.TZ = resetTestTz;
     }
 
+    // Bridge problem (multi-unit MTH-BRIDGE) parity: single scheduled entry matching both unit scopes
+    fs.mkdirSync(path.join(dataDir, "MTH-BRIDGE"), { recursive: true });
+    fs.writeFileSync(
+      path.join(dataDir, "MTH-BRIDGE", "DRL-MTH-BRIDGE-01.json"),
+      JSON.stringify({
+        drillId: "DRL-MTH-BRIDGE-01",
+        unitCode: "MTH-BRIDGE",
+        problems: [
+          {
+            id: "Q01",
+            level: 4,
+            commonTrapTag: "bridge-conjugate-product-sign-trap",
+            archetypeKey: "bridge-complex-quadratic",
+            unitCodes: ["MTH-T01-C04-U01", "MTH-T01-C04-U02"],
+            references: ["MTH-T01-C04-U01", "MTH-T01-C04-U02"],
+          },
+        ],
+      }),
+      "utf-8"
+    );
+    fs.writeFileSync(
+      path.join(progressDir, "DRL-MTH-BRIDGE-01.json"),
+      JSON.stringify({
+        drillId: "DRL-MTH-BRIDGE-01",
+        problems: {
+          Q01: {
+            attempts: [{ verdict: "correct", ts: "2026-11-10T10:00:00Z" }],
+            score: 1,
+          },
+        },
+      }),
+      "utf-8"
+    );
+
+    const tsBridgeDueU1 = getDueReviewItems({
+      today: "2026-11-20",
+      scope: "unit:MTH-T01-C04-U01",
+      dataDir,
+      progressDir,
+      labsDir,
+      rootDir: root,
+    }).items;
+    const tsBridgeDueU2 = getDueReviewItems({
+      today: "2026-11-20",
+      scope: "unit:MTH-T01-C04-U02",
+      dataDir,
+      progressDir,
+      labsDir,
+      rootDir: root,
+    }).items;
+    const pyBridgeU1Proc = spawnSync(
+      python,
+      [
+        "-m",
+        "scripts.review_items",
+        "--due",
+        "--today",
+        "2026-11-20",
+        "--scope",
+        "unit:MTH-T01-C04-U01",
+        "--data-root",
+        dataDir,
+        "--progress-dir",
+        progressDir,
+        "--json",
+      ],
+      { cwd: root, encoding: "utf8", env: { ...process.env, PROGRESS_DIR: progressDir, DRILLS_DATA_DIR: dataDir, LABS_DIR: labsDir } }
+    );
+    assert.equal(pyBridgeU1Proc.status, 0, pyBridgeU1Proc.stderr);
+    const pyBridgeDueU1 = (JSON.parse(pyBridgeU1Proc.stdout) as { items: ReviewItem[] }).items;
+    assert.deepEqual(tsBridgeDueU1, pyBridgeDueU1, "TS and Python must match for multi-unit bridge scope filtering");
+    assert.ok(
+      tsBridgeDueU1.some((it) => it.drillId === "DRL-MTH-BRIDGE-01" && it.qid === "Q01"),
+      "Bridge item must match first unit scope"
+    );
+    assert.ok(
+      tsBridgeDueU2.some((it) => it.drillId === "DRL-MTH-BRIDGE-01" && it.qid === "Q01"),
+      "Bridge item must match second unit scope"
+    );
+
     console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, variants, and /api/review-items routes match");
   } finally {
     if (prevProgressDir === undefined) delete process.env.PROGRESS_DIR;
