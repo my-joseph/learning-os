@@ -39,13 +39,40 @@ REASONING_MOVES: tuple[str, ...] = (
 FORMAT_KINDS: tuple[str, ...] = ("choice", "numeric", "expression", "proof-lite")
 REPRESENTATIONS: tuple[str, ...] = ("symbolic", "graph/plane", "table", "verbal")
 
-SOURCE_FAMILIES: dict[str, dict[str, str]] = {
-    "openstax": {"mode": "scope", "label": "OpenStax textbooks (TOC & learning objectives only)"},
-    "mathsgenie": {"mode": "cores", "label": "MathsGenie GCSE worksheets & exam questions"},
-    "thai-exams": {"mode": "cores", "label": "Thai O-NET & TCAS A-Level exams"},
-    "illustrative-math": {"mode": "cores", "label": "Illustrative Mathematics"},
-    "smartmathpro": {"mode": "cores", "label": "SmartMathPro Thai past papers"},
+SOURCE_FAMILIES: dict[str, dict[str, Any]] = {
+    "openstax": {
+        "mode": "scope",
+        "priority": 0,
+        "thaiExam": False,
+        "label": "OpenStax textbooks (TOC & learning objectives only)",
+    },
+    "smartmathpro": {
+        "mode": "cores",
+        "priority": 100,
+        "thaiExam": True,
+        "label": "SmartMathPro Thai past papers",
+    },
+    "thai-exams": {
+        "mode": "cores",
+        "priority": 95,
+        "thaiExam": True,
+        "label": "Thai O-NET & TCAS A-Level exams",
+    },
+    "illustrative-math": {
+        "mode": "cores",
+        "priority": 70,
+        "thaiExam": False,
+        "label": "Illustrative Mathematics",
+    },
+    "mathsgenie": {
+        "mode": "cores",
+        "priority": 50,
+        "thaiExam": False,
+        "label": "MathsGenie GCSE worksheets & exam questions",
+    },
 }
+
+DEFAULT_FAMILY_PRIORITY = 50
 
 _REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "id",
@@ -64,7 +91,7 @@ _ALLOWED_SOURCE_REF_KEYS: frozenset[str] = frozenset(("family", "file", "page", 
 _ALLOWED_TRAP_KEYS: frozenset[str] = frozenset(("tag", "description"))
 _ALLOWED_FORMAT_KEYS: frozenset[str] = frozenset(("kind", "optionCount", "distractorPatterns"))
 
-_DIGIT_RUN_RE = re.compile(r"(?<![A-Za-z_])\d+(?:\.\d+)?")
+_DIGIT_RUN_RE = re.compile(r"(?<![A-Za-z0-9_])\d+(?:\.\d+)?")
 _WORD_TOKEN_RE = re.compile(r"[a-z0-9]+|[\u0e00-\u0e7f]+")
 
 
@@ -124,8 +151,29 @@ def family_mode(family_or_relpath: str) -> str:
     root = family_root(family_or_relpath)
     meta = SOURCE_FAMILIES.get(root)
     if meta:
-        return meta["mode"]
+        return str(meta["mode"])
     return "scope" if root.startswith("openstax") else "cores"
+
+
+def family_priority(family_or_relpath: str) -> int:
+    """Return the default numeric priority for ``family_or_relpath`` (0 for scope-only)."""
+    if family_mode(family_or_relpath) == "scope":
+        return 0
+    root = family_root(family_or_relpath)
+    meta = SOURCE_FAMILIES.get(root)
+    if meta and isinstance(meta.get("priority"), int):
+        return int(meta["priority"])
+    return DEFAULT_FAMILY_PRIORITY
+
+
+def is_thai_exam_family(family_or_relpath: str) -> bool:
+    """Return True if ``family_or_relpath`` belongs to a Thai-exam-aligned source family."""
+    root = family_root(family_or_relpath)
+    meta = SOURCE_FAMILIES.get(root)
+    if meta is not None:
+        return bool(meta.get("thaiExam"))
+    low = family_or_relpath.replace("\\", "/").lower()
+    return any(tok in low for tok in ("smartmathpro", "thai-exam", "tcas", "a-level", "onet", "o-net", "pat1", "pat 1"))
 
 
 def load_schema() -> dict[str, Any]:

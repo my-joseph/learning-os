@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Compare extracted source core cards against a unit's reasoning vault (read-only gap report).
+"""Compare extracted source core cards against a unit's reasoning vault (read-only gap report)
+and measure batch novelty for saturation stopping.
 
 Reports:
 1. Core cards matched to existing vault archetypes (by trap tag or skill keywords) vs unmatched cards.
@@ -8,14 +9,20 @@ Reports:
 4. Exam formats seen across cards (e.g. 5-option choice with distractor patterns).
 5. ``laterUnit`` cards grouped by target future unit (kept for later, not drilled now).
 
+With ``--novelty <batch_cards.jsonl>``, reports how many cards in the batch represent new cores
+versus fuzzy duplicates of existing cards (same ``skill`` + ``reasoningMove`` + ``traps``) so
+batched extraction can stop once two consecutive batches add ``< 2`` new cores.
+
 Usage:
     python -m scripts.source_gap MTH-T02-C01-U01
     python -m scripts.source_gap MTH-T02-C01-U01 --json
+    python -m scripts.source_gap MTH-T02-C01-U02 --novelty batch1.jsonl
 """
 
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -30,8 +37,11 @@ from math_engine.source_cores import (
     CoreCardError,
     cores_path,
     load_core_cards,
+    validate_core_card,
 )
 from scripts.bridge_scope import eligible_units as load_eligible_units
+
+SATURATION_MIN_NEW_CORES = 2
 
 _STOPWORDS: frozenset[str] = frozenset(
     {
@@ -63,6 +73,9 @@ _STOPWORDS: frozenset[str] = frozenset(
     }
 )
 
+_TRAP_BOILERPLATE: frozenset[str] = frozenset({"trap", "error", "mistake", "bug", "sign", "wrong"})
+_UNIT_SLUG_TOKEN_RE = re.compile(r"^(?:mth|phy|prg|t\d+|c\d+|u\d+)$")
+
 _MOVE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "reverse": ("reverse", "backward", "backwards", "target", "parameter", "unknown", "missing", "given the result"),
     "translate": ("translate", "convert", "plane", "graph", "table", "polar", "visual", "represent"),
@@ -77,6 +90,283 @@ _MOVE_KEYWORDS: dict[str, tuple[str, ...]] = {
 def _tokens(text: str) -> set[str]:
     words = re.findall(r"[a-z]{3,}", (text or "").lower())
     return {w for w in words if w not in _STOPWORDS}
+
+
+def _light_stem(word: str) -> str:
+    if len(word) >= 5 and word.endswith("ing"):
+        return word[:-3]
+    if len(word) >= 4 and word.endswith("s") and not word.endswith(("ss", "us", "is")):
+        return word[:-1]
+    return word
+
+
+def _fuzzy_skill_tokens(text: str) -> set[str]:
+    return {_light_stem(w) for w in _tokens(text)}
+
+
+def _norm_skill_str(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
+
+
+def _card_trap_tags(card: dict[str, Any]) -> set[str]:
+    return {
+        t["tag"].strip().lower()
+        for t in card.get("traps") or []
+        if isinstance(t, dict) and isinstance(t.get("tag"), str) and t["tag"].strip()
+    }
+
+
+def _trap_slug_tokens(tag: str) -> set[str]:
+    parts = [p for p in re.split(r"[-_\s]+", tag.lower()) if p]
+    cleaned = {
+        _light_stem(p) for p in parts if len(p) >= 2 and not _UNIT_SLUG_TOKEN_RE.match(p) and p not in _TRAP_BOILERPLATE
+    }
+    if cleaned:
+        return cleaned
+    return {p for p in parts if not _UNIT_SLUG_TOKEN_RE.match(p)}
+
+
+def _trap_similarity(traps_a: set[str], traps_b: set[str]) -> float:
+    if not traps_a and not traps_b:
+        return 1.0
+    if not traps_a or not traps_b:
+        return 0.0
+    exact = len(traps_a & traps_b) / len(traps_a | traps_b)
+
+    toks_a = [_trap_slug_tokens(t) for t in traps_a]
+    toks_b = [_trap_slug_tokens(t) for t in traps_b]
+
+    def _avg_best(src: list[set[str]], dst: list[set[str]]) -> float:
+        total = 0.0
+        for sa in src:
+            best = 0.0
+            for sb in dst:
+                union = sa | sb
+                if union:
+                    score = len(sa & sb) / len(union)
+                    if score > best:
+                        best = score
+            total += best
+        return total / len(src)
+
+    fuzzy = 0.5 * (_avg_best(toks_a, toks_b) + _avg_best(toks_b, toks_a))
+    return max(exact, fuzzy)
+
+
+def cards_are_fuzzy_duplicate(
+    candidate: dict[str, Any],
+    existing: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Return ``(is_duplicate, details)`` comparing two core cards on ``skill + reasoningMove + traps``."""
+    move_a = str(candidate.get("reasoningMove") or "").strip().lower()
+    move_b = str(existing.get("reasoningMove") or "").strip().lower()
+    if move_a != move_b:
+        return (
+            False,
+            {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different reasoningMove"},
+        )
+
+    tok_a = _fuzzy_skill_tokens(str(candidate.get("skill") or ""))
+    tok_b = _fuzzy_skill_tokens(str(existing.get("skill") or ""))
+    union = tok_a | tok_b
+    tok_jaccard = (len(tok_a & tok_b) / len(union)) if union else 0.0
+    seq_ratio = difflib.SequenceMatcher(
+        None,
+        _norm_skill_str(str(candidate.get("skill") or "")),
+        _norm_skill_str(str(existing.get("skill") or "")),
+    ).ratio()
+    skill_sim = round(max(tok_jaccard, seq_ratio), 3)
+
+    traps_a = _card_trap_tags(candidate)
+    traps_b = _card_trap_tags(existing)
+    shared_traps = sorted(traps_a & traps_b)
+    trap_sim = round(_trap_similarity(traps_a, traps_b), 3)
+
+    if (shared_traps or (traps_a and traps_b and trap_sim >= 0.5)) and skill_sim >= 0.40:
+        return (
+            True,
+            {
+                "skillSimilarity": skill_sim,
+                "trapSimilarity": trap_sim,
+                "sharedTraps": shared_traps,
+                "reason": "same move + overlapping skill and trap tags",
+            },
+        )
+    if traps_a and traps_a == traps_b and skill_sim >= 0.30:
+        return (
+            True,
+            {
+                "skillSimilarity": skill_sim,
+                "trapSimilarity": trap_sim,
+                "sharedTraps": shared_traps,
+                "reason": "same move + identical trap tags and related skill",
+            },
+        )
+    if skill_sim >= 0.72 and (not traps_a or traps_a.issubset(traps_b) or trap_sim >= 0.30):
+        return (
+            True,
+            {
+                "skillSimilarity": skill_sim,
+                "trapSimilarity": trap_sim,
+                "sharedTraps": shared_traps,
+                "reason": "same move + high skill similarity",
+            },
+        )
+    return (
+        False,
+        {
+            "skillSimilarity": skill_sim,
+            "trapSimilarity": trap_sim,
+            "sharedTraps": shared_traps,
+            "reason": "distinct core",
+        },
+    )
+
+
+def _load_jsonl_batch(
+    batch_path: str,
+    *,
+    valid_unit_codes: Iterable[str] | None = None,
+) -> list[dict[str, Any]]:
+    if not os.path.isfile(batch_path):
+        raise FileNotFoundError(f"Batch cards file not found: {batch_path}")
+    cards: list[dict[str, Any]] = []
+    with open(batch_path, "r", encoding="utf-8") as fh:
+        for line_no, raw in enumerate(fh, 1):
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                card = json.loads(line)
+            except ValueError as exc:
+                raise CoreCardError(f"{batch_path}:{line_no}: invalid JSON: {exc}") from exc
+            errs = validate_core_card(card, valid_unit_codes=valid_unit_codes)
+            if errs:
+                raise CoreCardError(f"{batch_path}:{line_no}: invalid core card: " + "; ".join(errs))
+            cards.append(card)
+    return cards
+
+
+def _card_identity_key(card: dict[str, Any]) -> tuple[str, str]:
+    cid = str(card.get("id") or "")
+    ref = json.dumps(card.get("sourceRef") or {}, sort_keys=True, ensure_ascii=False)
+    return (cid, ref)
+
+
+def compute_batch_novelty(
+    unit_code: str,
+    batch_cards_path: str,
+    *,
+    sources_dir: str | None = None,
+    valid_unit_codes: Iterable[str] | None = None,
+) -> dict[str, Any]:
+    """Compare a batch of extracted core cards against existing cards for ``unit_code``.
+
+    Works whether ``batch_cards_path`` is evaluated before or after appending to
+    ``sources/_cores/<unit_code>.jsonl`` (exact self-copies with matching ``id`` and
+    ``sourceRef`` are excluded from the baseline pool). Within-batch duplicates are also
+    counted as duplicates so repeated items in one batch do not inflate novelty.
+    """
+    existing = load_core_cards(
+        unit_code,
+        sources_dir=sources_dir,
+        validate=True,
+        valid_unit_codes=valid_unit_codes,
+    )
+    batch_cards = _load_jsonl_batch(batch_cards_path, valid_unit_codes=valid_unit_codes)
+
+    batch_identities = {_card_identity_key(c) for c in batch_cards}
+    baseline = [c for c in existing if _card_identity_key(c) not in batch_identities]
+    pool: list[dict[str, Any]] = list(baseline)
+
+    new_cards: list[dict[str, Any]] = []
+    duplicate_cards: list[dict[str, Any]] = []
+
+    for card in batch_cards:
+        best_match: tuple[dict[str, Any], dict[str, Any]] | None = None
+        best_rank = (-1.0, -1.0)
+        for prior in pool:
+            is_dup, details = cards_are_fuzzy_duplicate(card, prior)
+            if is_dup:
+                rank_key = (float(details["skillSimilarity"]), float(details["trapSimilarity"]))
+                if rank_key > best_rank:
+                    best_rank = rank_key
+                    best_match = (prior, details)
+        if best_match is not None:
+            prior_card, details = best_match
+            duplicate_cards.append(
+                {
+                    "id": card["id"],
+                    "skill": card["skill"],
+                    "reasoningMove": card["reasoningMove"],
+                    "level": card["level"],
+                    "matchedCardId": prior_card["id"],
+                    "skillSimilarity": details["skillSimilarity"],
+                    "trapSimilarity": details["trapSimilarity"],
+                    "reason": details["reason"],
+                }
+            )
+        else:
+            new_cards.append(
+                {
+                    "id": card["id"],
+                    "skill": card["skill"],
+                    "reasoningMove": card["reasoningMove"],
+                    "level": card["level"],
+                    "traps": sorted(_card_trap_tags(card)),
+                }
+            )
+            pool.append(card)
+
+    new_count = len(new_cards)
+    return {
+        "unitCode": unit_code,
+        "batchPath": os.path.abspath(batch_cards_path),
+        "existingCardsCount": len(baseline),
+        "batchCardsCount": len(batch_cards),
+        "newCoresCount": new_count,
+        "duplicateCardsCount": len(duplicate_cards),
+        "saturationThreshold": SATURATION_MIN_NEW_CORES,
+        "belowSaturationThreshold": new_count < SATURATION_MIN_NEW_CORES,
+        "newCards": new_cards,
+        "duplicateCards": duplicate_cards,
+    }
+
+
+def format_novelty_report(report: dict[str, Any]) -> str:
+    """Format ``compute_batch_novelty`` output for CLI display."""
+    lines = [
+        f"Novelty report for {report['unitCode']}",
+        f"Batch file: {report['batchPath']}",
+        f"Result: {report['newCoresCount']} new core(s), {report['duplicateCardsCount']} duplicate(s) "
+        f"out of {report['batchCardsCount']} batch card(s) (baseline: {report['existingCardsCount']} existing)",
+    ]
+    if report["belowSaturationThreshold"]:
+        lines.append(
+            f"SATURATION SIGNAL: < {report['saturationThreshold']} new cores in this batch "
+            "(stop extraction when two consecutive batches add < 2 new cores)."
+        )
+
+    lines.append("")
+    lines.append(f"New cores ({report['newCoresCount']}):")
+    if not report["newCards"]:
+        lines.append("  (none)")
+    for item in report["newCards"]:
+        traps = f" [traps: {', '.join(item['traps'])}]" if item["traps"] else ""
+        lines.append(f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}{traps}")
+
+    lines.append("")
+    lines.append(f"Duplicates ({report['duplicateCardsCount']}):")
+    if not report["duplicateCards"]:
+        lines.append("  (none)")
+    for item in report["duplicateCards"]:
+        lines.append(
+            f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']} "
+            f"~= [{item['matchedCardId']}] (skill={item['skillSimilarity']:.2f}, trap={item['trapSimilarity']:.2f}; "
+            f"{item['reason']})"
+        )
+
+    return "\n".join(lines)
 
 
 def _archetype_traps(arch: dict[str, Any]) -> set[str]:
@@ -443,6 +733,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("unit", help="Target unit code (e.g. MTH-T02-C01-U01).")
     parser.add_argument(
+        "--novelty",
+        metavar="BATCH_JSONL",
+        default=None,
+        help="Compare a batch JSONL file against existing unit cards and report new cores vs fuzzy duplicates.",
+    )
+    parser.add_argument(
         "--sources-dir",
         default=None,
         help="Override sources directory (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
@@ -462,6 +758,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
     try:
+        if args.novelty:
+            novelty = compute_batch_novelty(
+                args.unit,
+                args.novelty,
+                sources_dir=args.sources_dir,
+            )
+            if args.json:
+                print(json.dumps(novelty, ensure_ascii=False, indent=2))
+            else:
+                print(format_novelty_report(novelty))
+            return 0
         report = build_gap_report(
             args.unit,
             sources_dir=args.sources_dir,
@@ -469,7 +776,7 @@ def main(argv: list[str] | None = None) -> int:
             data_root=args.data_root,
             progress_dir=args.progress_dir,
         )
-    except CoreCardError as exc:
+    except (CoreCardError, FileNotFoundError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

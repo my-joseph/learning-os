@@ -41,8 +41,10 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
 
 ## 4. Source synthesis (MTH)
 
-Run `.venv/bin/python -m scripts.source_find <UNIT>` (watch for any unregistered-folder warning) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units`).
-- If any `cores` mining targets exist **or** carried-forward cards exist for `<UNIT>`, run `.claude/skills/synthesize-source/SKILL.md` steps 3–5 (extract source-free core cards, `source_gap`, vault update + reviewer subagent) so the Notion page and first drill already use the synthesised archetypes and traps.
+Run `.venv/bin/python -m scripts.source_find <UNIT> --plan` (watch for any unregistered-folder warning; builds the budgeted, diverse, ledger-aware `sources/_index/plan_<UNIT>.json`) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units`).
+- If `plan_<UNIT>.json` has planned batches **or** carried-forward cards exist for `<UNIT>`, run `.claude/skills/synthesize-source/SKILL.md` steps 3–5:
+  - Step 3: run worker batches via `scripts.extract_cards_job <UNIT> --batch <k>` + `tools/agents/run-worker.sh` (with `DONE_FILE`) and check `scripts.source_gap <UNIT> --novelty <batch_jsonl>` after each batch, stopping on saturation (two consecutive batches adding `< 2` new cores) or when the plan budget is exhausted.
+  - Steps 4–5 (Claude): review `scripts.source_gap <UNIT>` output, update the reasoning vault, and run the vault reviewer subagent so the Notion page and first drill already use the synthesised archetypes and traps.
 - If neither exists, note that in one line and continue. (`synthesize-source` remains callable on its own.)
 
 ## 5. Notion page (`rules/02_pedagogy.md` §7a for MTH, §7b for PRG)

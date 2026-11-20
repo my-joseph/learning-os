@@ -14,32 +14,54 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
    - **OpenStax is `scope` only** (TOC + learning objectives): **never** extract core cards or mine exercises from OpenStax.
    - Allowed `cores` families (`smartmathpro`, `mathsgenie`, `thai-exams`, `illustrative-math`) are mined for abstract problem cores only — never copy, translate, paraphrase, or reuse numbers.
 
-## 2. Locate candidate pages (`source_find`)
+## 2. Locate, rank & plan candidate pages (`source_find --plan`)
 
 ```bash
-.venv/bin/python -m scripts.source_find <UNIT> [--terms ...] [--families ...]
+.venv/bin/python -m scripts.source_find <UNIT> --plan [--budget-pages 30 --budget-items 40] [--batch-size 10] [--refresh] [--terms ...] [--families ...]
 ```
 
-- Resolves `LEARNINGOS_SOURCES_DIR` (defaults to `<main checkout>/sources` even from a worktree), caches extracted PDF text under `sources/_index/`, writes `sources/_index/located_<UNIT>.json`, and warns if any top-level folder under `sources/` (excluding `_`-prefixed folders) is not registered in `docs/sources.md` — register its family, licence, and allowed use before mining it.
-- Review the three output groups:
-  - **Mining targets (`cores`)** — file + pages with hit counts (pass these to step 3).
-  - **Scope only (`scope`)** — OpenStax TOC/learning-objective pages to confirm unit boundaries only (never pass to card extraction).
-  - **Image pages (`image page — read visually`)** — scanned pages with no extractable text; note their page numbers for visual inspection in step 3.
+- Resolves `LEARNINGOS_SOURCES_DIR` (defaults to `<main checkout>/sources` even from a worktree), caches extracted PDF text under `sources/_index/`, writes `sources/_index/located_<UNIT>.json` (for the originality gate), and warns if any top-level folder under `sources/` (excluding `_`-prefixed folders) is not registered in `docs/sources.md` — register its family, licence, allowed use, and `priority` before mining it.
+- Writes a bounded extraction plan `sources/_index/plan_<UNIT>.json` (defaults: **30 pages / 40 items** per unit run, split into batches of **10 pages**):
+  - Ranked by **(a)** family priority (`docs/sources.md` `Priority` column / `SOURCE_FAMILIES` + `docs/source_backlog.md` rank), **(b)** term-hit density, **(c)** Thai-exam relevance boost (`SmartMathPro`, `thai-exams`), and **(d)** round-robin diversity across families so one source cannot fill the budget.
+  - Always skips **`scope`-only** families (`openstax`) — read OpenStax TOC/learning-objective pages only to confirm unit boundaries, never for card extraction.
+  - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` unless the source file's SHA-256 hash changed or `--refresh` is passed, so incremental runs only process newly added or updated sources.
+- Review the plan summary (selected pages per family, skipped ledger/scope counts, and batch count). If `selectedPageCount == 0` and carried-forward cards exist, proceed directly to step 4.
 
-## 3. Extract source-free core cards (subagent)
+## 3. Extract source-free core cards in bounded worker batches (`extract_cards_job` + `run-worker.sh`)
 
-Spawn **one** extractor subagent for the located `cores` pages (and relevant scanned pages). Give it:
-- The located `cores` file paths and page ranges (use the `Read` tool on PDF pages; inspect scanned pages visually).
-- The schema at `math_engine/source_cores/schema.json` and `docs/sources.md`.
-- Output path: `sources/_cores/<UNIT>.jsonl` (validate every card with `math_engine.source_cores.validate_core_card(card, source_item_text=...)` before saving).
+Run extraction in batches (default 10 pages per batch) on a **worker model** (Neon/Argon/Luna via `tools/agents/run-worker.sh` with `DONE_FILE`) rather than a Claude subagent reading raw PDFs — **Claude only reviews `source_gap` output** in steps 4–5.
 
-Mandatory extractor instructions:
+For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
+
+1. Render the worker prompt (embeds batch `k` pages, `math_engine/source_cores/schema.json`, strict no-copy/zero-leak rules, `validate_core_card`, append to `sources/_cores/<UNIT>.jsonl`, `_ledger.json` update, and `DONE_FILE`):
+   ```bash
+   .venv/bin/python -m scripts.extract_cards_job <UNIT> --batch <k> \
+     --batch-out sources/_cores/_batches/<UNIT>-batch-<k>.jsonl \
+     --done-file sources/_cores/_batches/<UNIT>-batch-<k>.done \
+     --out scratch/prompts/<UNIT>-extract-b<k>.txt
+   ```
+2. Launch the worker with `DONE_FILE` so `run-worker.sh` stops cleanly once the batch commits:
+   ```bash
+   DONE_FILE=sources/_cores/_batches/<UNIT>-batch-<k>.done \
+     tools/agents/run-worker.sh <worktree> <branch> \
+     scratch/prompts/<UNIT>-extract-b<k>.txt \
+     scratch/logs/<UNIT>-extract-b<k>.log
+   ```
+   The worker drafts batch cards into the batch JSONL and runs `.venv/bin/python -m scripts.extract_cards_job <UNIT> --batch <k> --commit <batch_jsonl> --run-id <run_id> --done-file <done_file>`, which validates every card with `validate_core_card(card, source_item_text=...)`, appends new cards to `sources/_cores/<UNIT>.jsonl`, updates `sources/_cores/_ledger.json` for every page in batch `k` (including 0-card pages), and writes `DONE_FILE`.
+3. Check batch novelty / saturation:
+   ```bash
+   .venv/bin/python -m scripts.source_gap <UNIT> --novelty sources/_cores/_batches/<UNIT>-batch-<k>.jsonl
+   ```
+4. **Saturation & budget stop rule:**
+   - Stop early if **two consecutive batches** each add **`< 2` new cores** (same `skill` + `reasoningMove` + `traps`, fuzzy).
+   - Otherwise stop when all planned batches (bounded by `--budget-pages` / `--budget-items`) are complete.
+
+Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
 - Abstract only the mathematical core (`skill`, `reasoningMove`, `difficultyDriver`, `level`, `traps`, `format`, `representation`, `notes`).
 - **No source wording and no source numbers** anywhere in content fields; every string field ≤ 200 characters.
 - Record provenance in `sourceRef` (`{family, file, page, item}`) — never `openstax`.
-- If a source problem goes deeper than `<UNIT>`'s scope, still keep its core card but set `"laterUnit": "<TARGET_UNIT>"` to a **real unit/chapter code from `id_map.json`** (unknown codes are warned and rejected by `validate_core_card` unless explicitly prefixed `"UNMAPPED:"`; remap older files with `.venv/bin/python -m scripts.source_cores_retag <file> [--apply]`).
-- If a source item genuinely combines skills from two or more units in one problem (e.g. complex numbers + quadratics), set `"units": ["<UNIT_A>", "<UNIT_B>", ...]` (≥ 2 distinct unit codes) in addition to `unitCode` (and `laterUnit` if any required unit is beyond `<UNIT>`).
-- Reply only `done`.
+- If a source problem goes deeper than `<UNIT>`'s scope, keep its core card with `"laterUnit": "<TARGET_UNIT>"` using a **real unit/chapter code from `id_map.json`** (unknown codes are warned and rejected unless prefixed `"UNMAPPED:"`; remap older files with `.venv/bin/python -m scripts.source_cores_retag <file> [--apply]`).
+- If a source item genuinely combines skills from two or more units in one problem, set `"units": ["<UNIT_A>", "<UNIT_B>", ...]` (≥ 2 distinct unit codes) in addition to `unitCode` (and `laterUnit` if any required unit is beyond `<UNIT>`).
 
 ## 4. Gap analysis (`source_gap`)
 
