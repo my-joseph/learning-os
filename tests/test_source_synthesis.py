@@ -170,9 +170,11 @@ def test_core_card_schema_valid_and_invalid() -> None:
     )
     assert any("scope-only" in e for e in source_cores.validate_core_card(openstax_card))
 
-    # SmartMathPro is registered as a cores family
+    # SmartMathPro is registered as a cores family with priority and Thai-exam flag
     assert source_cores.SOURCE_FAMILIES["smartmathpro"] == {
         "mode": "cores",
+        "priority": 100,
+        "thaiExam": True,
         "label": "SmartMathPro Thai past papers",
     }
     assert source_cores.family_mode("SmartMathPro/tcas68.pdf") == "cores"
@@ -628,6 +630,7 @@ def test_cli_help_smoke() -> None:
         "scripts.source_find",
         "scripts.source_gap",
         "scripts.source_cores_retag",
+        "scripts.extract_cards_job",
         "math_engine.source_cores.originality",
     ):
         proc = subprocess.run(
