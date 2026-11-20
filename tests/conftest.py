@@ -22,3 +22,21 @@ def _no_network(monkeypatch):
         raise RuntimeError("Network access is disabled in tests (patch urlopen in the test if needed).")
 
     monkeypatch.setattr(urllib.request, "urlopen", blocked)
+
+
+# PRG test files run ESLint/tsc/node for many cases and take ~3/4 of the suite's time.
+# They carry the `prg` marker so CI can run them only when PRG code or content changes
+# (`pytest -m "not prg"` / `pytest -m prg`); a plain `pytest` still runs everything.
+_PRG_TEST_PREFIXES = (
+    "test_new_code_drill",
+    "test_prg_",
+    "test_new_project",
+    "test_ai_code_ingest",
+    "test_lab_ingest",
+)
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        if item.path.name.startswith(_PRG_TEST_PREFIXES) or item.name.startswith("test_prg"):
+            item.add_marker(pytest.mark.prg)
