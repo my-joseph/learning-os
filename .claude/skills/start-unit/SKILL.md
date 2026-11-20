@@ -86,7 +86,11 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
 
 ## 7. Ship and report
 
-- **MTH:** Commit the new vault file on the drill's branch (or its own `drill/` branch): a PR that changes only that unit's vault file, the new drill and `id_map.json` may be merged by the agent; if variant bank files (`drills/variants/<UNIT>.json`) or anything else (code, rules, other vaults) changed, open the PR and wait for the learner to merge.
-- **PRG:** Open a PR on a branch for the chapter vault changes (waiting for the learner to merge).
+- Delivery follows `rules/00_core.md` §10; task-specific instructions may narrow its merge boundary.
+- **PRG:** Open a PR for the chapter vault changes; follow `rules/00_core.md` §10 for delivery.
 - Log every friction item (`.venv/bin/python -m scripts.issues add ...`).
 - Report in Thai in a few lines, with no problem prompts or answers: the page (new or extended, and which sections; the `page_audit` result), source-synthesis status, archetypes added, the drill ID / variant coverage / PR number (or `new-code-drill` next step for PRG), and issue-log IDs.
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.

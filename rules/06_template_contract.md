@@ -1,5 +1,7 @@
 # 06_TEMPLATE_CONTRACT — Problem Template & Quality Gate Engineering Contract
 
+> Templates are scheduled for removal; that work is on hold. This file will become the English **Quality Gates** module after removal.
+
 **Module Code:** `RULES-TEMPLATE-CONTRACT`  
 **Applies To:** Math & Code Problem Templates, Quality Gates G1–G6, Checker Parsers, Taxonomy & Verification  
 **Priority:** Mandatory for adding, modifying, or auditing problem templates  
@@ -59,12 +61,12 @@ TEMPLATES = [
 
 ---
 
-## 2. นิยามระดับ L1–L4, Tier และ `g2_profile` (Levels vs Tiers)
+## 2. นิยามระดับ L1–L5, Tier และ `g2_profile` (Levels vs Tiers)
 
 > [!IMPORTANT]
 > **ความสัมพันธ์กับกรอบการเรียนรู้หลัก:**
-> - **Pedagogy Reference**: ดูนิยามขอบเขตการฝึกตามระดับหลักสูตรใน [rules/02_pedagogy.md](file:///Users/Joseph/Documents/antigravity/brave-borg/rules/02_pedagogy.md#L87-L113) (Part 4: Multi-Level Practice Guides) และระดับความชำนาญใน [rules/01_arch.md](file:///Users/Joseph/Documents/antigravity/brave-borg/rules/01_arch.md#L78-L86) (`Mastery (0-4)`)
-> - **Template Usage**: ในระบบเทมเพลตปัจจุบัน ฟิลด์ `level` (L1–L4) ถูกนำมาใช้กำหนด **ชนิดงานทางพุทธิปัญญา (Cognitive Task Type)** ของโจทย์ในแต่ละ `form` เพื่อควบคุมจำนวน steps และโครงสร้างของโจทย์ผ่าน `g2_profile` ใน `skills_taxonomy.json`
+> - **Pedagogy Reference**: ดูนิยามขอบเขตการฝึกตามระดับหลักสูตรใน [rules/02_pedagogy.md](rules/02_pedagogy.md) §8 และระดับความชำนาญใน [rules/01_arch.md](rules/01_arch.md) §7 (`Mastery (0-4)`)
+> - **Template Usage**: ในระบบเทมเพลตปัจจุบัน ฟิลด์ `level` (L1–L5) ถูกนำมาใช้กำหนด **ชนิดงานทางพุทธิปัญญา (Cognitive Task Type)** ของโจทย์ในแต่ละ `form` เพื่อควบคุมจำนวน steps และโครงสร้างของโจทย์ผ่าน `g2_profile` ใน `skills_taxonomy.json`
 > - **Tier**: ใน `skills_taxonomy.json` (`foundational`, `intermediate`, `advanced`, `expert`) บ่งบอกลำดับความลึกขององค์ความรู้ในหลักสูตร ไม่ผูกขาดกับ Level เดียว
 
 | Level | Cognitive Task Type ในเทมเพลต | ลักษณะโครงสร้าง | ขอบเขต Steps ใน G2 | เป้าหมายความละเอียด Granular Steps (บังคับทุก Level L1–L5) |
@@ -179,7 +181,7 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 - **ตรวจรายงานทุกเทมเพลต**: `python -m scripts.accept_template --all` (แยกกลุ่ม Regression vs Backlog)
 - **สุ่มดูตัวอย่างโจทย์ทุกฟอร์ม**: `python -m scripts.sample_sheet <key>`
 - **สร้างรายงานครอบคลุม**: `python -m scripts.coverage_report`
-- **รันชุดทดสอบทั้งหมด**: `python -m unittest discover tests -v`
+- **Run the Python test suite**: `.venv/bin/python -m pytest -n auto -q`
 - **สแกนโหมด Audit (G5)**: `python -m math_engine.audit`
 - **สร้างชุดแบบฝึกหัด (Generate Drills)**:
   - ทั่วไป: `python -m math_engine.generate --unit <UNIT_CODE> --count <N>`
@@ -218,14 +220,17 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 
 ## 7. เช็กลิสต์การเพิ่ม `answerSpec` ชนิดใหม่ (New Answer Types Checklist)
 
-เมื่อต้องการเพิ่มชนิดคำตอบใหม่ (เช่น `vector`, `matrix`) ต้องปรับปรุงครบทั้ง **7 จุดทางวิศวกรรม** ดังนี้:
+เมื่อต้องการเพิ่มชนิดคำตอบใหม่ (เช่น `vector`, `matrix`) ให้ตรวจครบทุกชั้นที่รับหรือเปิดเผย answer spec ดังนี้:
 1. **`math_engine/answer_spec_registry.py`**: ลงทะเบียนชนิดคำตอบใน `ANSWER_SPEC_REGISTRY` กำหนด schema ฟิลด์บังคับ และ parser handler
 2. **`math_engine/answer_check.py`**: เพิ่มฟังก์ชันตรวจสอบเฉพาะ (เช่น `check_vector`), ระบบ normalizer วงเล็บ, diagnostics แบบ deterministic ที่จำกัดเวลา timeout, และ dispatch ใน `check_answer()`
 3. **`math_engine/verify.py`**: เพิ่มการตรวจเฉลยกับ `verify.source` (รองรับทั้ง SymPy analytical และ fallback เชิงตัวเลข)
 4. **`quality_rules.py`**: อัปเดตด่าน G1 (Anti-Leak component extraction), G2, G4, และ G6 ให้รองรับโครงสร้าง spec ใหม่
-5. **`practice-studio/src/types/drill.ts`**: ประกาศ TypeScript interface สำหรับ `AnswerSpec` และชนิดตัวแปรใหม่ให้ตรงกัน
-6. **`practice-studio/src/components/math/MathWorkspace.tsx`**: เพิ่มคอมโพเนนต์สำหรับรับค่า (Input Box / Bracket layout) และ placeholder
-7. **`tests/test_quality_gates.py`**: เพิ่ม unit test สำหรับ comparator, parser bounds, edge cases, unicode normalization, และ template round-trip
+5. **`practice-studio/src/types/drill.ts`**: ประกาศ TypeScript interface สำหรับ `AnswerSpec` ให้ตรงกัน
+6. **`practice-studio/src/lib/redact.ts`**: ตรวจ `STRIPPED_ANSWER_SPEC_FIELDS` และ `collectSecretAnswerTokens` เพื่อไม่ให้เฉลยรั่วสู่ client
+7. **`math_engine/ai_drill_ingest.py`**: อัปเดต `_trap_matches_spec` และ ingest validation สำหรับชนิดคำตอบใหม่
+8. **`code_engine/answer_check.py`**: Update the checker and dispatch when the answer type is used by PRG.
+9. **`practice-studio/src/components/math/MathWorkspace.tsx`**: เพิ่ม UI รับคำตอบเมื่อชนิดนั้นต้องใช้ input ใหม่
+10. **Tests**: เพิ่ม parity, parser bounds, edge cases, Unicode normalization, redaction, และ ingest/checker tests ที่เกี่ยวข้อง
 
 ---
 

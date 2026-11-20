@@ -85,18 +85,25 @@ The system tracks two distinct dimensions that must never be conflated:
 
 *Mastery must be assessed through actual recall and application, not familiarity alone. A Unit may remain `Done` even when its `Mastery` decreases over time. Do not change `Status` simply because the learner has forgotten previously learned material.*
 
+### 7a. Scoring contract
+The scoring rule is specified authoritatively in [`docs/studio_design.md`](../docs/studio_design.md), **“Scoring rule”**, and implemented by `practice-studio/src/lib/scoring.ts` and `progress_store.score_problem`. Apply these outcomes to the current cycle only:
+- First-try clean correct: `1.0`.
+- Otherwise-correct (retry, help, or partial credit): `0.5`.
+- Wrong or skipped: `0`.
+- PRG work awaiting review: `null` until a review supplies a score.
+- Lock an item after a correct check. Reset starts a new cycle at `cycleStartedAt` and retains prior history.
+- Self-score may only lower an automatic score; it cannot raise a wrong/skipped result.
+- Marking a diverged step adds a note only and does not change the score.
+
+When wording here and the named scoring rule differ, use the authoritative scoring rule and update this summary in the same documentation change.
+
 ### 8. Spaced Review Properties & Intervals
 Where available in the database, use:
 - `Mastery (0–4)`
 - `Last Reviewed`
 - `Next Review`
 
-Do not create duplicate properties if equivalent properties already exist. Review scheduling should respond dynamically to the learner's current Mastery:
-- Mastery 1: 1–2 days
-- Mastery 2: 4–7 days
-- Mastery 3: 14–21 days
-- Mastery 4: 30–60 days
-*(These intervals are starting guidelines, not inflexible rules).*
+Do not create duplicate properties if equivalent properties already exist. The current evidence-based unit schedule is 2 / 5 / 17 / 45 days for Mastery 1 / 2 / 3 / 4 respectively. This unit-level schedule is separate from the per-item schedule in §9a.
 
 ### 9. Spaced Review Workflow
 A review session should follow this sequence:
@@ -111,4 +118,11 @@ A review session should follow this sequence:
 
 The Review Queue view should surface Units whose `Next Review` date is due.
 
-`[code]` Drill practice updates these automatically: when a drill with an attempt is synced, `notion_sync.drill_sync.update_unit_reviews` writes, for every unit the drill covers, an evidence-based `Mastery (0–4)` from the learner's last 10 items in that unit (`scripts/weak_spots.suggest_mastery`: 1 under 50%; 3 when at least 3 recent L3+ items average ≥ 70%, no weak spot is open, and the unit has at least one correct L4+ item with no hint ("challenge"); otherwise 2), `Last Reviewed` = the attempt date, and `Next Review` = attempt date + 2 / 5 / 17 / 45 days for Mastery 1 / 2 / 3 / 4. Assisted items (hints, equation set-up, or solution steps revealed before answering) are weighted at half of fluent items (`0.5` vs `1.0`) and never qualify as the L4+ challenge, capping Mastery at 2 and returning `masteryCap: {capped, reason}` (e.g. `"needs one L4 challenge without hints"`) so Practice Studio can display why a unit is capped. Drills cannot show Mastery 4 (Feynman explanation, cross-subject synthesis): only the learner sets 4, and a learner-set 4 is kept while the evidence still says 3.
+`[code]` Drill practice updates these automatically: when a drill with an attempt is synced, `notion_sync.drill_sync.update_unit_reviews` writes, for every unit the drill covers, an evidence-based `Mastery (0–4)` from the learner's last 10 items in that unit (`scripts/weak_spots.evaluate_mastery` / `suggest_mastery(..., return_cap=True)` and `review_update`: 1 under 50%; 3 when at least 3 recent L3+ items average ≥ 70%, no weak spot is open, and the unit has at least one correct L4+ item with no hint ("challenge"); otherwise 2), `Last Reviewed` = the attempt date, and `Next Review` = attempt date + 2 / 5 / 17 / 45 days for Mastery 1 / 2 / 3 / 4. Assisted items (hints, equation set-up, or solution steps revealed before answering) are weighted at half of fluent items (`0.5` vs `1.0`) and never qualify as the L4+ challenge, capping Mastery at 2 and returning a cap reason so Practice Studio can display why a unit is capped. Drills cannot show Mastery 4 (Feynman explanation, cross-subject synthesis): only the learner sets 4, and a learner-set 4 is kept while the evidence still says 3.
+
+### 9a. Per-item review engine
+Unit Mastery in Notion (§8–9) and the per-item review engine are two separate review layers. Do not replace one schedule with the other.
+
+The per-item engine is implemented in `scripts/review_items.py` and `practice-studio/src/lib/reviewItems.ts`; parity is checked by `practice-studio/tests/reviewItemsParity.test.ts`. It stores item-level schedules in `progress/review_items.json` (pilot: `pilot/progress/review_items.json`) and uses five levels with intervals of **1 / 3 / 7 / 16 / 35 days**. Correct without help advances one level, correct with help keeps the level, and wrong halves the level (floor, minimum 1) and makes the item due tomorrow.
+
+The engine orders due work by priority, supports interleaving and the Daily Review `cycleStartedAt`, and isolates variants from the original item's score and review item. It also supports the current review scopes and bridge items. Item-level schedule state stays in `review_items.json` / progress storage; it is not the Notion unit Mastery property or the unit cache `progress/_review_schedule.json`.

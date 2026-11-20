@@ -1,5 +1,8 @@
 # Pilot quality workflow — successor to the old injection-only brief
 
+> **Pilot closed 2026-11-17 — historical.** This document is retained as a record and is not an active pilot runbook.
+
+
 Use with [protocol](pilot_quality_protocol.md) and [collection CLI](pilot_quality_runner.md). This workflow supplements existing content gates; it does not launch the paused content lanes. The private original `pilot/orchestrator/common.txt` remains historical. Do not execute its launcher or reuse its deliberate-error instructions in natural attempts.
 
 ## Supervisor preparation

@@ -31,13 +31,10 @@ These rules apply to every implementation task, including creating, editing, res
 - If a requested change cannot be implemented safely within the specified scope, explain the limitation before proceeding.
 
 ### 3. Source of Truth
-Use the following priority when interpreting the Learning System:
-1. Actual Notion database properties.
-2. Actual database relations and linked records.
-3. Existing page content.
-4. Connected Resources and their accessible source content.
-5. Relevant learning dependencies and roadmap context.
-6. External references, only when appropriate and authorized.
+Use the source that owns each kind of information:
+- **Local repository + `progress/`:** canonical for rules, drill and variant content, reasoning vaults, lab configuration, and learner progress. Progress is stored through `progress_store.py` / Practice Studio, not in content files. In pilot mode, use the isolated `pilot/` equivalents.
+- **Notion:** canonical for curriculum hierarchy (Topic → Chapter → Unit), page metadata and properties, relations, and `Resources` connections. Read the actual database records and page content when changing curriculum pages.
+- **Connected Resources and external references:** evidence for learning content, subject to the access and attribution rules below.
 
 Never invent property values, relationships, learning progress, resource contents, or completion states. If information is missing or contradictory, identify the issue instead of silently making assumptions.
 
@@ -93,7 +90,7 @@ Do not require the user to manually create the initial content structure for eve
 - Unverified information must be identified.
 - Existing user content must be protected.
 
-### 8. Three-Phase Generation Workflow
+#### Three-Phase Generation Workflow
 Always separate analysis from generation and finalize with cross-referencing:
 
 #### Phase A — Analyze
@@ -114,12 +111,9 @@ Always separate analysis from generation and finalize with cross-referencing:
 - Add source attribution.
 - Verify completeness and consistency.
 
-#### Phase C — Final-Pass: Concept Vault Cross-Referencing & Immediate Notion Sync
-- After generating or updating any page, drill, or problem specification, cross-reference the generated text against the `Concept Vault` database and `id_map.json` (all keys prefixed with `CON-`).
-- Detect matching domain terms and technical keywords (e.g., `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`).
-- Automatically bind matching terms using native `@Page` mentions (`[[CON-<KEY>]]`), turning dry terminology into an interactive, Wikipedia-style knowledge graph.
-- **Pristine Drill Sync Requirement:** Whenever a drill file (`drills/data/**/*.json`) or code lab is generated, immediately synchronize the initial pristine unattempted record (`Practice Status: "Ready"`, `Score: null/0`) into the `Learning Practice & Drills` Notion database with full question breakdown and learning focus. Never leave a newly authored drill existing only on local disk awaiting manual user sync.
-- Verify that every technical prerequisite or specialized concept provides instantaneous 1-click lookup.
+#### Phase C — Final Pass: References, Validation & Sync
+- Add Concept Vault references only where the current authoring workflow supports and calls for them; there is no system-wide automatic keyword-matching or auto-registration pass. Do not claim every technical term has a Concept Vault link.
+- Learning pages are written only through `python -m notion_sync.unit_page`; page audits use `python -m scripts.page_audit <CODE>`. Drill/lab sync follows the applicable authoring workflow and task instructions; do not sync during tests or when dry-run/pilot mode is required.
 
 Do not skip analysis and immediately generate generic content.
 
@@ -131,7 +125,7 @@ Do not skip analysis and immediately generate generic content.
 
 ### 10. Version Control & Git Hygiene Protocol
 - **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.
-- **Never commit or push on `main` (every agent, every change, however small).** Start every change on a branch (`feat/…`, `fix/…`, `docs/…`, `drill/…`, `lab/…`): `git switch -c <branch>` before the first edit, then commit, `git push -u origin <branch>` and `gh pr create`. The learner reads the PR and says "merge"; only then is it merged on GitHub. The one exception: a PR that changes only a new drill file, its unit/chapter vault and `id_map.json` — or only a new project lab (`labs/<LAB>/`, `labs/_reference/<LAB>/`, `id_map.json`) — may be merged by the agent that made it. A one-line UI fix is not an exception.
+- **Never commit or push on `main` (every agent, every change, however small).** Start every change on a branch before the first edit, commit, push the branch, and open one PR. The learner reads the PR and says "merge"; only then is it merged on GitHub. The only durable exceptions are PRs changing only a new drill and its unit/chapter vault plus `id_map.json`, or only a new project lab and its reference plus `id_map.json`; those may be merged by the agent. Task-specific instructions may narrow this policy and take precedence for that task.
 - **Guard:** `.githooks/pre-commit` and `.githooks/pre-push` refuse commits on `main` and pushes to `main` (enabled with `git config core.hooksPath .githooks`). If a hook blocks you, create a branch; never bypass it with `--no-verify`.
 - **Semantic commits:** `feat:`, `fix:`, `refactor:`, `docs(rules):`, one logical change per commit.
 

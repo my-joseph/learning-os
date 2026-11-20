@@ -6,7 +6,7 @@
 
 ---
 
-## PART 1 — Core Governing Principle: 100% Local IDE Execution & Dual-Engine Evaluation
+## PART 1 — Core Governing Principle: 100% Local IDE Execution & Three-Layer Evaluation
 
 ### 1. Zero In-Browser Code Editing Mandate
 All code authoring, multi-file browsing, refactoring, and debugging must take place natively inside **your local IDE (e.g. VS Code)** in the local workspace. In-browser web textareas promote toy single-file scripting and lack Language Server Protocols (LSP), linters, formatting, and real terminal execution.
@@ -25,14 +25,13 @@ To maintain the 100% Local IDE Execution mandate without breaking IDE context, a
 - **Defensive Frontend Resolution**:  
   If problem metadata omits `vscodeFolderUrl`, Practice Studio must compute the folder directory from `workspaceDir` or `workspaceFile` (by trimming filename), and must **never** fall back to opening an isolated file in place of the folder.
 
-### 2. Dual-Engine Evaluation: Automated Tests vs. AI Architectural Review
-Programming cannot be evaluated solely by mechanical test scripts like mathematics:
-1. **Engine A — Automated Test Scripts (Functional Correctness):**
+### 2. Three-Layer Evaluation: Tests, Lint/Types, and Rubric Review
+Programming work is evaluated in three layers:
+1. **Layer 1 — Automated Tests (Functional Correctness):**
    - **Scope:** Smoke tests, input/output validation, acceptance criteria verification, and regression prevention.
    - **Anti-Trap Invariant:** Scripts must **never** be over-assertive or attempt to rigidly assert internal class names, private members, or AST structures. Scripts verify *what the software does*, not *the exact internal code phrasing*. This prevents AI generators from retreating into trivial toy LeetCode problems.
-2. **Engine B — AI Senior Tech Lead (Architectural Quality & Code Craftsmanship):**
-   - **Scope:** Clean Architecture, Separation of Concerns, Design Patterns, SOLID principles, type-narrowing elegance, and refactoring trade-offs.
-   - **Review Workflow:** Once automated tests pass (Layer 1), the developer requests an AI Pull Request Code Review inside the workspace. The AI provides senior-level architectural guidance, identifies hidden coupling, and recommends cleaner abstractions.
+2. **Layer 2 — Lint and Types:** ESLint and `tsc` check style, static correctness, and supported TypeScript configurations via `code_engine/lint_check.py` and `tools/lint/`.
+3. **Layer 3 — Rubric Review:** `qualityChecks` evaluates architecture and code craft that tests cannot observe. Use `code_engine/quality_checks.py`, `review_run.py`, and `scripts/review_record.py` for rubric-bound review and recording.
 
 ### 2.1 Review rubric (`qualityChecks`)
 Layer 3 design review criteria live in `code_engine/quality_checks.json` (universal checks) and each archetype's `qualityChecks` in `code_engine/reasoning_vault/*.json` (see `docs/prg_reviewer_spec.md`):
@@ -129,18 +128,16 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
 
 New PRG coding drill problems and every lab milestone also include 2–3 LeetCode-style `examples` (`[{ input, output, explanation?, call? }]`, with `input`/`output` in JS/TS literal syntax and `call` verified against the reference solution at ingest and stripped before browser delivery) and optional `constraints: string[]` when inputs have limits; examples are visible before any attempt and must use normal cases only (never hidden-test inputs or `commonTrap` cases). Pure `code-tracing` / `predict-output` / `trace-explain` drill problems with a fixed `codeSnippet` (or without `solutionCode`/`visibleTests`) are exempt from `examples` so they do not spoil the answer.
 
-### 5. Final-Pass Concept Vault Cross-Referencing & Auto-Linking Protocol
-- **Final-Pass Cross-Reference:** In the final step of generating any drill problem, lab specification, or question README, AI must cross-reference the generated text against the `Concept Vault` database and `id_map.json` (keys prefixed with `CON-*`).
-- **Automatic Semantic Keyword Matching:** When the problem text references a foundational concept (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Sliding Window Rate Limiter`, `Promises`, `Closures`), AI must bind that term using a native `@Page` mention (`[[CON-<KEY>]]`).
-- **Instant In-Context Recovery:** This allows the developer to click or hover on the concept while solving the drill in their workspace to instantly review its invariants, mental model, and failure traps without breaking their focus.
+### 5. Concept Vault references
+The Concept Vault registry uses `CON-*` keys in `id_map.json`. Current authoring skills do not run a universal keyword-matching or auto-registration pass across PRG drills, labs, and question READMEs. Add a registered concept mention when the specific task workflow asks for one and its target format supports it; see `rules/00_core.md` §8.
 
 ### 6. Immediate Pristine Notion Sync on Drill Creation
 - **Mandatory Immediate Sync:** Whenever a drill file (`drills/data/**/*.json`) or code lab is authored or generated, AI must immediately synchronize a pristine initial snapshot into the `Learning Practice & Drills` Notion database. Never leave a newly generated drill existing only on local disk.
-- **Initial Pristine State:** The initial Notion page must be populated in an unattempted state (`Score = null / 0`, `Practice Status = "Ready"`, `Mistake Categories = []`, `Attempt Date = null`).
+- **Initial Pristine State:** The initial Notion page must be unattempted (`Score = null`, `Practice Status = "Ready"`, `Mistake Categories = []`, `Attempt Date = null`). Here `null` means unattempted or awaiting review; `0` means wrong or skipped.
 - **Comprehensive Body Content:** The initial page body must immediately provide:
   1. **Drill Overview & Focus:** Core learning objectives, primary skills drilled, and critical invariant failure modes to avoid.
   2. **Question Inventory & Breakdown:** Exact count and listing of all problems, hints, diagrams, and full vertical step-by-step solutions (in expandable toggle blocks).
-  3. **Curriculum & Concept Cross-References:** Native `@Page` mentions linking to parent Units, Chapters, and registered `Concept Vault` cards.
+  3. **Curriculum Cross-References:** Native `@Page` mentions linking to parent Units and Chapters. Add registered Concept Vault mentions only where the applicable workflow requires them.
 - **Subsequent Result Sync:** The user will practice locally or in Practice Studio. Only upon completion does the user or submit runner sync the live `Score`, `Mistake Categories`, and error telemetry to update the existing page record.
 
 ### 7. Strict Zero-Leak Placeholder & Hint Policy for Programming Drills
@@ -152,7 +149,7 @@ New PRG coding drill problems and every lab milestone also include 2–3 LeetCod
     - *Good (Disjoint):* `"Enter 3-digit HTTP status code (e.g. 200, 500)"`
     - *Bad (Leaking):* `"Type the sequence: SYN -> SYN-ACK -> ACK"` (when that is the exact answer)
     - *Good (Disjoint):* `"Enter 3-packet flag sequence (e.g. AAA -> BBB -> CCC)"`
-  - **Automated Validation Invariant:** All authoring scripts must run `validate_and_sanitize_drill_doc` to programmatically reject or scrub any placeholder matching `answerSpec.accepted` before saving or syncing to Notion.
+  - **Automated Validation Invariant:** `code_engine.ai_drill_ingest` runs `check_zero_leak_hint`; `notion_sync.drill_sync.validate_and_sanitize_drill_doc` validates/sanitizes before saving or syncing a drill to Notion.
 
 ### 8. Adaptive Choice vs. Input & Skip Telemetry Standards
 - **Adaptive Question Decision Framework:** In programming drills, AI generator scripts must evaluate the learning objective of each problem:
@@ -160,7 +157,7 @@ New PRG coding drill problems and every lab milestone also include 2–3 LeetCod
     - Status code triage when comparing authentication vs. authorization (401 vs 403) or gateway failures (502 vs 504).
     - Conceptual questions where distinguishing subtle protocol transitions (e.g. WebSocket 101 vs 200 vs 301) requires evaluating precise statements.
     - Architecture triage: diagnosing whether an issue is caused by thread pool exhaustion, socket disconnection, or DNS resolution failure.
-  - Use `type: "text"` / `predict-output` for:
+  - Use `answerSpec.type: "text"` / `predict_output` (underscore; curriculum practice labels may use `predict-output`) for:
     - Exact syntax parsing (HTTP method token, header name, status code number).
     - Sequential traces (TCP flag ordering, event loop execution order).
 - **Skip Protocol Integration:**
@@ -207,7 +204,7 @@ For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/ne
 5. **Scaffolding Starter Code:** Create starter stubs in `labs/<LAB_ID>/src/` with exported types/signatures, `_`-prefixed unused params, and `throw new Error("TODO [M1]: …");` bodies (ESLint-clean and `tsc`-clean).
 6. **Package Scripts Configuration:** Configure `package.json` scripts (`test`, `test:reference`, `lint`, `typecheck`, `check`, `check:reference`, `check:hidden`, `review`, `submit`, plus per-milestone `test:mN`/`check:mN`).
 7. **Baseline Negative & Gate Verification:** Run `python -m code_engine.lab_ingest --check labs/<LAB_ID>` to confirm stubs fail visible tests cleanly, `trapMutant` fails hidden tests, and blind-solve + reviewer gates pass, then finalise with `python -m code_engine.lab_ingest labs/<LAB_ID>`.
-8. **Final-Pass Concept Vault Auto-Linking:** Cross-reference specifications and README text against `Concept Vault` in `id_map.json`, linking matching domain keywords where applicable.
+8. **Concept References:** Follow the task-specific Concept Vault instructions in `rules/00_core.md` §8; no blanket auto-link pass is implemented.
 9. **Notion Registration:** Sync the pristine lab record to `Learning Practice & Drills` via `python -m notion_sync.lab_sync labs/<LAB_ID>` (`Format: "Code Test Suite"`).
 
 ---
@@ -230,7 +227,8 @@ For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/ne
 ## PART 9 — Interactive Studio & Storage Architecture
 
 1. **Clean Architectural Separation:**
-   - **JSON Data Layer (`drills/data/<UNIT>/`):** Pure verified problem specs, Acceptance Criteria, and session states without HTML pollution.
+   - **JSON Data Layer (`drills/data/<UNIT>/`):** Content-only problem specifications and acceptance criteria, without learner state or HTML. Never store attempts, scores, or session summaries in drill files.
+   - **Progress Layer (`progress/<DRILL_ID>.json`):** Learner attempts, scores, session summaries, and review state, managed by `progress_store.py` / Practice Studio (pilot data uses isolated `pilot/progress/`).
    - **Workspace Layer (`drills/workspace/<DRILL_ID>/` or `labs/<LAB_ID>/`):** Real TypeScript/Node workspaces on disk ready for your local IDE (e.g. VS Code).
    - **Central Next.js Practice Studio (`practice-studio`):** Mission Control Dashboard, launcher links, and live telemetry viewer.
    - **Notion Database (`Learning Practice & Drills`):** Permanent retention record and spaced review ledger.

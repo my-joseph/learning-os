@@ -1,5 +1,8 @@
 # Exercise quality calibration — 2026-11-17
 
+> **Pilot closed 2026-11-17 — historical.** This document is retained as a record and is not an active pilot runbook.
+
+
 This is a bounded AI feasibility and instrumentation study, not evidence of human learning gain. Source exercises were frozen at commit `1536d0efcfc62cef0894e785cf4cfa1b3a9964f1`. Private raw records, rejected drafts, page snapshots, submissions and grader output remain in ignored `pilot/quality/calibration-20261117/` and the referenced collection runs. No solutions are reproduced here.
 
 ## Sample and collection

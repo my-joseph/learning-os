@@ -98,3 +98,7 @@ the consequence; do not dispute.
 - Show hidden tests (`labs/_reference/<LAB_ID>/hidden/` for labs) or the reference (`labs/_reference/<LAB_ID>/src/`) before a pass.
 - Pass code by your own judgement: only the recorded verdict counts.
 - Edit `drills/workspace/`, `labs/<LAB_ID>/src/`, or `progress/` by hand.
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.
