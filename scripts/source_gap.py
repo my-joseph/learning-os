@@ -21,15 +21,17 @@ import os
 import re
 import sys
 from collections import Counter, defaultdict
-from typing import Any
+from typing import Any, Iterable
 
 from math_engine.ai_drill_ingest import load_scope_archetypes
+from math_engine.bridge import MIN_BRIDGE_UNITS
 from math_engine.source_cores import (
     REASONING_MOVES,
     CoreCardError,
     cores_path,
     load_core_cards,
 )
+from scripts.bridge_scope import eligible_units as load_eligible_units
 
 _STOPWORDS: frozenset[str] = frozenset(
     {
@@ -110,6 +112,9 @@ def build_gap_report(
     *,
     sources_dir: str | None = None,
     vault_dir: str | None = None,
+    eligible_units: Iterable[str] | None = None,
+    data_root: str | None = None,
+    progress_dir: str | None = None,
 ) -> dict[str, Any]:
     """Compute a read-only gap report comparing ``unit_code``'s core cards and reasoning vault."""
     cpath = cores_path(unit_code, sources_dir=sources_dir)
@@ -240,6 +245,44 @@ def build_gap_report(
         for target, items in sorted(later_by_unit.items())
     }
 
+    # Bridge candidates: multi-unit cards (`units` list with >= 2 unit codes) grouped by unit pair/set
+    bridge_by_pair: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
+    for card in cards:
+        raw_units = card.get("units")
+        if isinstance(raw_units, list):
+            pair = tuple(sorted({u.strip() for u in raw_units if isinstance(u, str) and u.strip()}))
+            if len(pair) >= MIN_BRIDGE_UNITS:
+                bridge_by_pair[pair].append(card)
+
+    if eligible_units is not None:
+        eligible_set = {u.strip() for u in eligible_units if isinstance(u, str) and u.strip()}
+    elif bridge_by_pair:
+        eligible_set = load_eligible_units(data_root=data_root, progress_dir=progress_dir)
+    else:
+        eligible_set = set()
+
+    bridge_candidates: list[dict[str, Any]] = []
+    for pair, items in sorted(bridge_by_pair.items()):
+        missing_units = [u for u in pair if u not in eligible_set]
+        is_eligible = len(eligible_set) >= MIN_BRIDGE_UNITS and not missing_units
+        bridge_candidates.append(
+            {
+                "units": list(pair),
+                "eligible": is_eligible,
+                "missingUnits": missing_units,
+                "cards": [
+                    {
+                        "id": c["id"],
+                        "level": c["level"],
+                        "reasoningMove": c["reasoningMove"],
+                        "skill": c["skill"],
+                        "sourceRef": c["sourceRef"],
+                    }
+                    for c in items
+                ],
+            }
+        )
+
     return {
         "unitCode": unit_code,
         "cardsPath": cpath,
@@ -265,6 +308,7 @@ def build_gap_report(
         "examFormats": exam_formats,
         "representations": dict(sorted(representations.items())),
         "laterUnitCards": later_groups,
+        "bridgeCandidates": bridge_candidates,
     }
 
 
@@ -348,6 +392,19 @@ def format_gap_report(report: dict[str, Any]) -> str:
         for c in items:
             lines.append(f"    - [{c['id']}] L{c['level']} {c['reasoningMove']} — {c['skill']}")
 
+    lines.append("")
+    bridges = report.get("bridgeCandidates") or []
+    total_bridge_cards = sum(len(g["cards"]) for g in bridges)
+    lines.append(f"Bridge candidates ({len(bridges)} pair(s), {total_bridge_cards} card(s)):")
+    if not bridges:
+        lines.append("  (none)")
+    for grp in bridges:
+        pair_label = " + ".join(grp["units"])
+        status = "ELIGIBLE" if grp["eligible"] else f"not eligible — needs {', '.join(grp['missingUnits'])}"
+        lines.append(f"  {pair_label} [{status}] ({len(grp['cards'])} card(s)):")
+        for c in grp["cards"]:
+            lines.append(f"    - [{c['id']}] L{c['level']} {c['reasoningMove']} — {c['skill']}")
+
     return "\n".join(lines)
 
 
@@ -367,6 +424,8 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override reasoning vault directory (default: math_engine/reasoning_vault).",
     )
+    parser.add_argument("--data-root", default=None, help="Override drills/data directory for bridge eligibility.")
+    parser.add_argument("--progress-dir", default=None, help="Override progress directory for bridge eligibility.")
     parser.add_argument("--json", action="store_true", help="Print structured JSON output.")
     return parser
 
@@ -379,6 +438,8 @@ def main(argv: list[str] | None = None) -> int:
             args.unit,
             sources_dir=args.sources_dir,
             vault_dir=args.vault_dir,
+            data_root=args.data_root,
+            progress_dir=args.progress_dir,
         )
     except CoreCardError as exc:
         print(f"Error: {exc}", file=sys.stderr)

@@ -33,6 +33,16 @@
       "minLength": 1,
       "maxLength": 200
     },
+    "units": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
     "sourceRef": {
       "type": "object",
       "additionalProperties": false,
