@@ -18,7 +18,7 @@
         {
           "trapTag": "c04-partial-common-factor-reduction",
           "description": "Subtracting components or reducing by an incomplete common factor.",
-          "trapFormula": "(b - a) / b"
+          "trapFormula": "(a / c) / (b / c), where c divides gcd(a, b) and 1 < c < gcd(a, b)"
         }
       ],
       "versatileDomains": [
