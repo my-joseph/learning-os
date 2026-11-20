@@ -2643,6 +2643,1534 @@
       "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-03",
       "levelLabel": "Level 3 - Trap & Diagnostic",
       "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|diagnose|An acoustic boundary calculation requires $\\dfrac{# + #i}{# - #i}$. A student wrote: Line #: $\\dfrac{# + #i}{# - #i} = \\dfrac{(# + #i)(# - #i)}{#^# + #^#}$ Line #: $= \\dfrac{# - #i + #i - #i^#}{# + #}$ Line #: $= \\dfrac{# - #i}{#}$ Line #: $= # - i$ Which line is the first one that is wrong?"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Simplify $i^{-17}$. ",
+      "plainText": "I**(-17)",
+      "display": "i^n,\\quad n\\bmod 4",
+      "givens": {
+        "n": 17
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        17,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "-I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-i",
+      "answerDisplay": "-i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-negative-power-same-as-positive-trap",
+      "trapDerivation": "I**(17 - 4*4)",
+      "trapValue": "I",
+      "verify": {
+        "source": "-I",
+        "trapValue": "I"
+      },
+      "checkpointHint": "Reduce the exponent by complete cycles while preserving its remainder.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^{-17}=i^{-17+20}",
+          "explain": "Add five complete cycles to the exponent."
+        },
+        {
+          "latex": "i^{-19 + 20} = i",
+          "explain": "Reduce the exponent to one."
+        },
+        {
+          "latex": "i^{-19} = i",
+          "explain": "Evaluate the reduced power.",
+          "val": "-I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-01",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-negative-power-same-as-positive-trap|direct|I**(-#)"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Evaluate $i^{5\\cdot 8 + 2}$. ",
+      "plainText": "I**(5*8+2)",
+      "display": "i^n,\\quad n\\bmod 4",
+      "givens": {
+        "five": 5,
+        "eight": 8,
+        "two": 2
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        5,
+        8,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "-1",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-1",
+      "answerDisplay": "-1",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-structured-exponent-residue-trap",
+      "trapDerivation": "I**(5*8 + 4)",
+      "trapValue": "1",
+      "verify": {
+        "source": "-1",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Only the remainder after complete cycles determines the power.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "5\\cdot 8 + 3 = 43",
+          "explain": "Evaluate the exponent."
+        },
+        {
+          "latex": "43 = 4\\cdot 10 + 3",
+          "explain": "Separate complete cycles from the remainder."
+        },
+        {
+          "latex": "i^{42}=-1",
+          "explain": "Use the remainder to evaluate the power.",
+          "val": "-1"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-02",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-structured-exponent-residue-trap|direct|I**(#*#+#)"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Find the positive integer $m$ such that $i^{m+2} = -1$ and $1 \\le m \\le 8$.",
+      "plainText": "I**(m+2)=-1; 1<=m<=8",
+      "display": "i^n,\\quad n\\bmod 4",
+      "givens": {
+        "one": 1,
+        "eight": 8,
+        "two": 2,
+        "target": -1
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        1,
+        8,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4"
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "8-1",
+      "trapValue": "7",
+      "verify": {
+        "source": "4",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Translate the target power into a remainder condition, then apply the stated range.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^{m+2} = -1",
+          "explain": "The power equals minus one when its exponent is congruent to two modulo four."
+        },
+        {
+          "latex": "m + 2 \\equiv 2 \\pmod 4",
+          "explain": "Apply the cycle condition."
+        },
+        {
+          "latex": "m \\equiv 0 \\pmod 4",
+          "explain": "Subtract two from both sides of the congruence."
+        },
+        {
+          "latex": "m = 4",
+          "explain": "Select the positive value in the stated range.",
+          "val": "4"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-03",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|reverse|I**(m+#)=-#; #<=m<=#"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "For how many integers $n$ with $2 \\le n \\le 37$ is $i^n + i^{2n} + i^{3n} = -1$?",
+      "plainText": "count n in [2,37] where I**n+I**(2*n)+I**(3*n)=-1",
+      "display": "i^n\\text{ depends only on }n\\bmod4",
+      "givens": {
+        "lo": 2,
+        "hi": 37,
+        "two": 2,
+        "three": 3,
+        "target": -1
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        37,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "27"
+      },
+      "answerPlain": "27",
+      "answerDisplay": "27",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-structured-exponent-residue-trap",
+      "trapDerivation": "(37-2+1)/2",
+      "trapValue": "18",
+      "verify": {
+        "source": "27",
+        "trapValue": "18"
+      },
+      "checkpointHint": "Test each possible remainder, reject those that miss the target, and count what remains.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^n+i^{2n}+i^{3n}\\text{ depends only on }n\\text{ modulo }4",
+          "explain": "Reduce each exponent by the same residue class."
+        },
+        {
+          "latex": "n \\equiv 1,2,3 \\pmod 4",
+          "explain": "Evaluate the expression for each residue that gives minus one."
+        },
+        {
+          "latex": "n \\equiv 0 \\pmod 4 \\Rightarrow 3",
+          "explain": "Reject residue zero because it gives three, not minus one."
+        },
+        {
+          "latex": "37 - 2 + 1 = 36",
+          "explain": "Count the integers in the inclusive interval."
+        },
+        {
+          "latex": "36 - 9 = 27",
+          "explain": "Remove the nine multiples of four that fail.",
+          "val": "27"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "edgeRejected": "Residue 0 gives 3, not the target -1.",
+        "answer": "27"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-04",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-04",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-structured-exponent-residue-trap|choose|count n in [#,#] where I**n+I**(#*n)+I**(#*n)=-#"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "How many integers $n$ from $1$ through $24$ make $i^n + i^{2n}$ a positive real number?",
+      "plainText": "count n in [1,24] where I**n+I**(2*n) is positive real",
+      "display": "i^n\\text{ depends only on }n\\bmod4",
+      "givens": {
+        "lo": 1,
+        "hi": 24,
+        "two": 2
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        1,
+        24,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-structured-exponent-residue-trap",
+      "trapDerivation": "24/2",
+      "trapValue": "12",
+      "verify": {
+        "source": "6",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Check both the real-value condition and strict positivity before counting.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^n+i^{2n}\\text{ depends only on }n\\text{ modulo }4",
+          "explain": "Reduce the powers by the exponent remainder."
+        },
+        {
+          "latex": "n \\equiv 0: 2; n \\equiv 2: 0",
+          "explain": "Evaluate the real-valued cases."
+        },
+        {
+          "latex": "n\\equiv2\\pmod4\\text{ gives zero, which is not positive}",
+          "explain": "Apply the strict positivity condition."
+        },
+        {
+          "latex": "6\\text{ multiples of four lie in the range}",
+          "explain": "Count the surviving residue class.",
+          "val": "6"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "ambiguous": false,
+        "edgeRejected": "Residue 2 gives 0, which is real but not positive.",
+        "answer": "6"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-05",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-05",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-structured-exponent-residue-trap|choose|count n in [#,#] where I**n+I**(#*n) is positive real"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "sourceArchetype": "t02-c01-u01-powers-of-i-cycle",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "How many of the exponents $1, 2, 3, 4, 5, 6$ make $i^n + i^{2n} + i^{3n}$ real and negative?",
+      "plainText": "count n in {1,2,3,4,5,6} where I**n+I**(2*n)+I**(3*n) is real and negative",
+      "display": "i^n\\text{ depends only on }n\\bmod4",
+      "givens": {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5"
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "6-2",
+      "trapValue": "4",
+      "verify": {
+        "source": "5",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Evaluate each residue class and retain only values that are both real and negative.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^n+i^{2n}+i^{3n}\\text{ depends only on }n\\text{ modulo }4",
+          "explain": "Group the listed exponents by their remainders."
+        },
+        {
+          "latex": "n\\equiv1,2,3\\pmod4\\text{ gives }-1",
+          "explain": "Evaluate the expression for each applicable remainder."
+        },
+        {
+          "latex": "n\\equiv0\\pmod4\\text{ gives }3",
+          "explain": "Reject exponent 4 because its value is not negative."
+        },
+        {
+          "latex": "5",
+          "explain": "Count the qualifying exponents.",
+          "val": "5"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "ambiguous": false,
+        "edgeRejected": "Exponent 4 has residue 0 and gives 3, not a negative real value.",
+        "answer": "5"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-06",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-06",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|choose|count n in {#,#,#,#,#,#} where I**n+I**(#*n)+I**(#*n) is real and negative"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Find $z$ satisfying $5z - 2\\bar{z} = 9 + 14i$.",
+      "plainText": "5*z-2*conjugate(z)=9+14*I",
+      "display": "z=a+bi,\\quad \\bar z=a-bi",
+      "givens": {
+        "a": 5,
+        "b": 2,
+        "r": 9,
+        "s": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        2,
+        9,
+        14
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "3+2*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "3 + 2i",
+      "answerDisplay": "3 + 2i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-conjugate-combined-as-like-term-trap",
+      "trapDerivation": "9/(5-2)+14*I",
+      "trapValue": "3+14*I",
+      "verify": {
+        "source": "3+2*I",
+        "trapValue": "3+14*I"
+      },
+      "checkpointHint": "Write the unknown and its conjugate in real and imaginary parts before collecting.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Represent the unknown and its conjugate by real coordinates."
+        },
+        {
+          "latex": "(5a - 2a) + (5b + 2b)i = 9 + 14i",
+          "explain": "Expand and collect real and imaginary parts."
+        },
+        {
+          "latex": "3a=9",
+          "explain": "Equate the real parts."
+        },
+        {
+          "latex": "7b=14",
+          "explain": "Equate the imaginary parts."
+        },
+        {
+          "latex": "a=3",
+          "explain": "Solve for the real part."
+        },
+        {
+          "latex": "b=2",
+          "explain": "Solve for the imaginary part."
+        },
+        {
+          "latex": "z = 3 + 2i",
+          "explain": "Combine the coordinates.",
+          "val": "3+2*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-01",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-conjugate-combined-as-like-term-trap|direct|#*z-#*conjugate(z)=#+#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "The number $z=-1+2i$ satisfies $kz+3\\bar z=-8+4i$ for real $k$. Find $k$.",
+      "plainText": "k*(-1+2*I)+3*(-1-2*I)=-8+4*I",
+      "display": "z=a+bi,\\quad \\bar z=a-bi",
+      "givens": {
+        "zr": 1,
+        "zi": 2,
+        "c": 3,
+        "r": 8,
+        "s": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        2,
+        3,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5"
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-equate-mismatched-parts-trap",
+      "trapDerivation": "(4 + 3*2)/(-1)",
+      "trapValue": "-10",
+      "verify": {
+        "source": "5",
+        "trapValue": "-10"
+      },
+      "checkpointHint": "Match real parts with real parts and imaginary parts with imaginary parts.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Substitute z and its conjugate."
+        },
+        {
+          "latex": "(-k - 3) + (2k - 6)i = -8 + 4i",
+          "explain": "Collect the real and imaginary terms."
+        },
+        {
+          "latex": "-k - 3 = -8",
+          "explain": "Equate the real parts."
+        },
+        {
+          "latex": "k = 5",
+          "explain": "Solve for k and verify the imaginary parts match.",
+          "val": "5",
+          "eq": [
+            "2*5-6",
+            "4"
+          ]
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-02",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-equate-mismatched-parts-trap|reverse|k*(-#+#*I)+#*(-#-#*I)=-#+#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Find $z$ satisfying $2z + 5\\bar{z} = 7 - 21i$.",
+      "plainText": "2*z+5*conjugate(z)=7-21*I",
+      "display": "z=a+bi,\\quad \\bar z=a-bi",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "r": 7,
+        "s": 21
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5,
+        7,
+        21
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "1+7*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "1 + 7i",
+      "answerDisplay": "1 + 7i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-report-z-instead-of-conjugate-trap",
+      "trapDerivation": "7/(2+5) + (-21/(2+5))*I",
+      "trapValue": "1-3*I",
+      "verify": {
+        "source": "1+7*I",
+        "trapValue": "1-3*I"
+      },
+      "checkpointHint": "Keep the sign change in the imaginary part of the conjugate when matching components.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Represent z and its conjugate."
+        },
+        {
+          "latex": "(2a + 5a) + (2b - 5b)i = 7 - 21i",
+          "explain": "Collect like real and imaginary terms."
+        },
+        {
+          "latex": "7a=7",
+          "explain": "Equate the real parts."
+        },
+        {
+          "latex": "-3b=-21",
+          "explain": "Equate the imaginary parts."
+        },
+        {
+          "latex": "a=1",
+          "explain": "Solve for the real part."
+        },
+        {
+          "latex": "b=7",
+          "explain": "Solve for the imaginary part."
+        },
+        {
+          "latex": "z = 1 + 7i",
+          "explain": "Combine the coordinates into z.",
+          "val": "1+7*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-03",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-report-z-instead-of-conjugate-trap|direct|#*z+#*conjugate(z)=#-#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find $z$ with positive real part satisfying $z\\bar z + 2z = 17 + 8i$. Give the answer as $a+bi$.",
+      "plainText": "z*conjugate(z)+2*z=17+8*I",
+      "display": "z=a+bi,\\quad z\\bar z=a^2+b^2",
+      "givens": {
+        "c": 2,
+        "r": 17,
+        "s": 8
+      },
+      "constants": {
+        "four": 4,
+        "two": 2
+      },
+      "trapGivens": [
+        2,
+        17,
+        8
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "sqrt(2)-1+4*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "(sqrt(2)-1)+4i",
+      "answerDisplay": "(sqrt(2)-1)+4i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-keep-rejected-root-trap",
+      "trapDerivation": "(-2 - sqrt(2**2 - 4*(4**2 - 17)))/2 + (4)*I",
+      "trapValue": "(-2 - sqrt(2**2 - 4*(4**2 - 17)))/2 + (4)*I",
+      "verify": {
+        "source": "sqrt(2)-1+4*I",
+        "trapValue": "(-2 - sqrt(2**2 - 4*(4**2 - 17)))/2 + (4)*I"
+      },
+      "checkpointHint": "Use the imaginary equation first, then apply the real-part condition to choose between candidates.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Write the complex unknown using real coordinates and use the conjugate product."
+        },
+        {
+          "latex": "z\\bar z=a^2+b^2",
+          "explain": "Replace the product by the squared modulus."
+        },
+        {
+          "latex": "2b=8",
+          "explain": "Equate imaginary parts."
+        },
+        {
+          "latex": "b=4",
+          "explain": "Solve the imaginary-part equation."
+        },
+        {
+          "latex": "a^2+2a+16=17",
+          "explain": "Equate real parts and substitute b."
+        },
+        {
+          "latex": "\\text{The quadratic has two roots; one is positive and one is negative.}",
+          "explain": "Solve the quadratic and identify both candidates."
+        },
+        {
+          "latex": "\\text{Select the root with positive real part.}",
+          "explain": "Apply the stated condition to reject the negative candidate."
+        },
+        {
+          "latex": "z=(sqrt(2)-1)+4i",
+          "explain": "Combine the accepted real part with the imaginary part.",
+          "val": "sqrt(2)-1+4*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 6,
+        "ambiguous": false,
+        "edgeRejected": "a=-1-sqrt(2) is rejected because its real part is negative.",
+        "answer": "sqrt(2)-1+4*I"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-04",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-04",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-keep-rejected-root-trap|choose|z*conjugate(z)+#*z=#+#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find $z$ with positive real part satisfying $z\\bar z + 4z = 10 - 12i$. Give the answer as $a+bi$.",
+      "plainText": "z*conjugate(z)+4*z=10-12*I",
+      "display": "z=a+bi,\\quad z\\bar z=a^2+b^2",
+      "givens": {
+        "c": 4,
+        "r": 10,
+        "s": 12
+      },
+      "constants": {
+        "three": 3,
+        "four": 4
+      },
+      "trapGivens": [
+        4,
+        10,
+        12
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "sqrt(5)-2-3*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "(sqrt(5)-2)-3i",
+      "answerDisplay": "(sqrt(5)-2)-3i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-keep-rejected-root-trap",
+      "trapDerivation": "(-4 - sqrt(4**2 - 4*(3**2 - 10)))/2 + (3)*I",
+      "trapValue": "(-4 - sqrt(4**2 - 4*(3**2 - 10)))/2 + (3)*I",
+      "verify": {
+        "source": "sqrt(5)-2-3*I",
+        "trapValue": "(-4 - sqrt(4**2 - 4*(3**2 - 10)))/2 + (3)*I"
+      },
+      "checkpointHint": "Use the imaginary equation first, then apply the real-part condition to choose between candidates.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Write the complex unknown using real coordinates and use the conjugate product."
+        },
+        {
+          "latex": "z\\bar z=a^2+b^2",
+          "explain": "Replace the product by the squared modulus."
+        },
+        {
+          "latex": "4b=12",
+          "explain": "Equate imaginary parts."
+        },
+        {
+          "latex": "b=3",
+          "explain": "Solve the imaginary-part equation."
+        },
+        {
+          "latex": "a^2+4a+9=10",
+          "explain": "Equate real parts and substitute b."
+        },
+        {
+          "latex": "\\text{The quadratic has two roots; one is positive and one is negative.}",
+          "explain": "Solve the quadratic and identify both candidates."
+        },
+        {
+          "latex": "\\text{Select the root with positive real part.}",
+          "explain": "Apply the stated condition to reject the negative candidate."
+        },
+        {
+          "latex": "z=(sqrt(5)-2)-3i",
+          "explain": "Combine the accepted real part with the imaginary part.",
+          "val": "sqrt(5)-2-3*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 6,
+        "ambiguous": false,
+        "edgeRejected": "a=-2-sqrt(5) is rejected because its real part is negative.",
+        "answer": "sqrt(5)-2-3*I"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-05",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-05",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-keep-rejected-root-trap|choose|z*conjugate(z)+#*z=#-#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "sourceArchetype": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find $z$ with positive real part satisfying $z\\bar z + 6z = 17 + 24i$. Give the answer as $a+bi$.",
+      "plainText": "z*conjugate(z)+6*z=17+24*I",
+      "display": "z=a+bi,\\quad z\\bar z=a^2+b^2",
+      "givens": {
+        "c": 6,
+        "r": 17,
+        "s": 24
+      },
+      "constants": {
+        "four": 4,
+        "two": 2
+      },
+      "trapGivens": [
+        6,
+        17,
+        24
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "sqrt(10)-3+4*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "(sqrt(10)-3)+4i",
+      "answerDisplay": "(sqrt(10)-3)+4i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-keep-rejected-root-trap",
+      "trapDerivation": "(-6 - sqrt(6**2 - 4*(4**2 - 17)))/2 + (4)*I",
+      "trapValue": "(-6 - sqrt(6**2 - 4*(4**2 - 17)))/2 + (4)*I",
+      "verify": {
+        "source": "sqrt(10)-3+4*I",
+        "trapValue": "(-6 - sqrt(6**2 - 4*(4**2 - 17)))/2 + (4)*I"
+      },
+      "checkpointHint": "Use the imaginary equation first, then apply the real-part condition to choose between candidates.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "z=a+bi",
+          "explain": "Write the complex unknown using real coordinates and use the conjugate product."
+        },
+        {
+          "latex": "z\\bar z=a^2+b^2",
+          "explain": "Replace the product by the squared modulus."
+        },
+        {
+          "latex": "6b=24",
+          "explain": "Equate imaginary parts."
+        },
+        {
+          "latex": "b=4",
+          "explain": "Solve the imaginary-part equation."
+        },
+        {
+          "latex": "a^2+6a+16=17",
+          "explain": "Equate real parts and substitute b."
+        },
+        {
+          "latex": "\\text{The quadratic has two roots; one is positive and one is negative.}",
+          "explain": "Solve the quadratic and identify both candidates."
+        },
+        {
+          "latex": "\\text{Select the root with positive real part.}",
+          "explain": "Apply the stated condition to reject the negative candidate."
+        },
+        {
+          "latex": "z=(sqrt(10)-3)+4i",
+          "explain": "Combine the accepted real part with the imaginary part.",
+          "val": "sqrt(10)-3+4*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 6,
+        "ambiguous": false,
+        "edgeRejected": "a=-3-sqrt(10) is rejected because its real part is negative.",
+        "answer": "sqrt(10)-3+4*I"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-06",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-conjugate-equation-equate-parts-06",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-keep-rejected-root-trap|choose|z*conjugate(z)+#*z=#+#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "sourceArchetype": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find the real value of $k$ for which $(k^2-5k+6)+(k^2-4k+3)i$ is purely imaginary.",
+      "plainText": "real k: (k**2-5*k+6)+(k**2-4*k+3)*I is purely imaginary",
+      "display": "X+Yi,\\quad X=0,\\quad Y\\ne0",
+      "givens": {
+        "five": 5,
+        "six": 6,
+        "four": 4,
+        "three": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        6,
+        4,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-missing-nonzero-check-trap",
+      "trapDerivation": "6-3",
+      "trapValue": "3",
+      "verify": {
+        "source": "2",
+        "trapValue": "3"
+      },
+      "checkpointHint": "A purely imaginary value must have zero real part and a nonzero imaginary part.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "k^2-5k+6=0",
+          "explain": "Set the real part equal to zero."
+        },
+        {
+          "latex": "(k-2)(k-3)=0",
+          "explain": "Factor to find candidate parameters."
+        },
+        {
+          "latex": "\\{2,3\\}",
+          "explain": "List both candidates."
+        },
+        {
+          "latex": "k=3",
+          "explain": "Test the candidate where both parts may vanish."
+        },
+        {
+          "latex": "k^2-4k+3",
+          "explain": "Evaluate the imaginary part; it is zero, so reject this candidate.",
+          "eq": [
+            "3**2-4*3+3",
+            "0"
+          ]
+        },
+        {
+          "latex": "2^2-4(2)+3",
+          "eq": [
+            "2**2-4*2+3",
+            "-1"
+          ],
+          "explain": "Evaluate the imaginary part at the surviving candidate; it is nonzero."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "edgeRejected": "Candidate k=3 makes the imaginary part zero, so it is not purely imaginary.",
+        "answer": "2"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-01",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-missing-nonzero-check-trap|choose|real k: (k**#-#*k+#)+(k**#-#*k+#)*I is purely imaginary"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "sourceArchetype": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find the real value of $t$ for which $(t^2+t-12)+(t^2-5t+6)i$ is purely imaginary.",
+      "plainText": "real t: (t**2+t-12)+(t**2-5*t+6)*I is purely imaginary",
+      "display": "X+Yi,\\quad X=0,\\quad Y\\ne0",
+      "givens": {
+        "twelve": 12,
+        "five": 5,
+        "six": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        12,
+        5,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-4"
+      },
+      "answerPlain": "-4",
+      "answerDisplay": "-4",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-missing-nonzero-check-trap",
+      "trapDerivation": "12-5-4",
+      "trapValue": "3",
+      "verify": {
+        "source": "-4",
+        "trapValue": "3"
+      },
+      "checkpointHint": "A purely imaginary value must have zero real part and a nonzero imaginary part.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "t^2+t-12=0",
+          "explain": "Set the real part equal to zero."
+        },
+        {
+          "latex": "(t+4)(t-3)=0",
+          "explain": "Factor the real-part equation."
+        },
+        {
+          "latex": "\\{-4,3\\}",
+          "explain": "List both candidates."
+        },
+        {
+          "latex": "t=3",
+          "explain": "Test the candidate where both parts may vanish."
+        },
+        {
+          "latex": "t^2-5t+6",
+          "explain": "Evaluate the imaginary part; it is zero, so reject this candidate.",
+          "eq": [
+            "3**2-5*3+6",
+            "0"
+          ]
+        },
+        {
+          "latex": "(-4)^2-5(-4)+6",
+          "eq": [
+            "(-4)**2-5*(-4)+6",
+            "42"
+          ],
+          "explain": "Evaluate the imaginary part at the surviving candidate; it is nonzero."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "edgeRejected": "Check that the imaginary part remains nonzero for each candidate.",
+        "answer": "-4"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-02",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-missing-nonzero-check-trap|choose|real t: (t**#+t-#)+(t**#-#*t+#)*I is purely imaginary"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "sourceArchetype": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find the real value of $x$ for which $(x^2-4x+3)+(x^2-x-6)i$ is purely imaginary.",
+      "plainText": "real x: (x**2-4*x+3)+(x**2-x-6)*I is purely imaginary",
+      "display": "X+Yi,\\quad X=0,\\quad Y\\ne0",
+      "givens": {
+        "four": 4,
+        "three": 3,
+        "six": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        4,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "1",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-missing-nonzero-check-trap",
+      "trapDerivation": "6-4+3-2",
+      "trapValue": "3",
+      "verify": {
+        "source": "1",
+        "trapValue": "3"
+      },
+      "checkpointHint": "A purely imaginary value must have zero real part and a nonzero imaginary part.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "x^2-4x+3=0",
+          "explain": "Set the real part equal to zero."
+        },
+        {
+          "latex": "(x-1)(x-3)=0",
+          "explain": "Factor the real-part equation."
+        },
+        {
+          "latex": "\\{1,3\\}",
+          "explain": "List both candidates."
+        },
+        {
+          "latex": "x=3",
+          "explain": "Test the candidate where both parts may vanish."
+        },
+        {
+          "latex": "x^2-x-6",
+          "explain": "Evaluate the imaginary part; it is zero, so reject this candidate.",
+          "eq": [
+            "3**2-3-6",
+            "0"
+          ]
+        },
+        {
+          "latex": "1^2-1-6",
+          "eq": [
+            "1**2-1-6",
+            "-6"
+          ],
+          "explain": "Evaluate the imaginary part at the surviving candidate; it is nonzero."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "edgeRejected": "A purely imaginary value must have a nonzero imaginary part; test every candidate.",
+        "answer": "1"
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-03",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-real-or-pure-imaginary-condition-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-missing-nonzero-check-trap|choose|real x: (x**#-#*x+#)+(x**#-x-#)*I is purely imaginary"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-power-periodicity",
+      "sourceArchetype": "t02-c01-u01-power-periodicity",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Find the positive integer $n$ for which $(1+i)^n=-8i$.",
+      "plainText": "(1+I)**n=-8*I",
+      "display": "(1+i)^2=2i",
+      "givens": {
+        "one": 1,
+        "eight": 8
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        1,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-drop-scale-after-base-reduction-trap",
+      "trapDerivation": "8/1",
+      "trapValue": "8",
+      "verify": {
+        "source": "6",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Reduce the base first, then track both the scale factor and the cycle.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(1+i)^2=2i",
+          "explain": "Square the base to expose its repeating factor."
+        },
+        {
+          "latex": "(1+i)^{2m}=2^m i^m",
+          "explain": "Raise the reduced base to an integer power while preserving the scale."
+        },
+        {
+          "latex": "2^m=8",
+          "explain": "Match magnitudes to determine m."
+        },
+        {
+          "latex": "m=3",
+          "explain": "Solve the magnitude equation."
+        },
+        {
+          "latex": "i^3=-i",
+          "explain": "Check the phase of the reduced power."
+        },
+        {
+          "latex": "n=6",
+          "explain": "Convert back to the original exponent and verify the target.",
+          "val": "6"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-01",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-drop-scale-after-base-reduction-trap|direct|(#+I)**n=-#*I"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-power-periodicity",
+      "sourceArchetype": "t02-c01-u01-power-periodicity",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "",
+      "prompt": "Find the least positive integer $n$ such that $((1+i)/(1-i))^n=-1$, using the 4-step cycle of $i$. ",
+      "plainText": "((1+I)/(1-I))**n=-1",
+      "display": "(1+i)/(1-i)=i",
+      "givens": {
+        "one": 1,
+        "four": 4
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-assume-period-four-trap",
+      "trapDerivation": "4*1",
+      "trapValue": "4",
+      "verify": {
+        "source": "2",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Reduce the base before using its period; distinguish the base period from the target condition.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "((1+i)/(1-i))=i",
+          "explain": "Reduce the quotient to its simple base."
+        },
+        {
+          "latex": "i^n=-1",
+          "explain": "Rewrite the target using the reduced base."
+        },
+        {
+          "latex": "n=2 mod 4",
+          "explain": "Use the cycle to identify the exponents giving minus one."
+        },
+        {
+          "latex": "n\\text{ has least positive value }2",
+          "explain": "Choose the least positive representative.",
+          "val": "2"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-02",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-assume-period-four-trap|choose|((#+I)/(#-I))**n=-#"
+    },
+    {
+      "unitCode": "MTH-T02-C01-U01",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-power-periodicity",
+      "sourceArchetype": "t02-c01-u01-power-periodicity",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "For the sequence $a_n=(1+i)^n$, find the positive integer $n$ for which $a_n=16$.",
+      "plainText": "(1+I)**n=16",
+      "display": "(1+i)^2=2i",
+      "givens": {
+        "one": 1,
+        "sixteen": 16
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        16,
+        1,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8"
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-report-reduced-exponent-trap",
+      "trapDerivation": "16/(2*2)",
+      "trapValue": "4",
+      "verify": {
+        "source": "8",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Keep the scale and phase conditions together when reversing the reduced power.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(1+i)^2=2i",
+          "explain": "Square the base once."
+        },
+        {
+          "latex": "(1+i)^{2m}=2^m i^m",
+          "explain": "Express an even power using the reduced base."
+        },
+        {
+          "latex": "2^m=16",
+          "explain": "Match magnitudes."
+        },
+        {
+          "latex": "m=4",
+          "explain": "Check that the phase is positive real."
+        },
+        {
+          "latex": "n=8",
+          "explain": "Convert to the original exponent.",
+          "val": "8"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Independently re-solved; the answer, derivation, misconception trap, and prompt are consistent."
+      },
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-03",
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-report-reduced-exponent-trap|reverse|(#+I)**n=#"
     }
   ]
 }
