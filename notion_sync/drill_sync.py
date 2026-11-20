@@ -119,9 +119,22 @@ def missing_sync_fields(drill_doc: dict) -> list[str]:
 
 def covered_units(drill_doc: dict, unit_code: str, id_map: dict) -> list[str]:
     """Unit codes a drill covers: a unit drill covers its unit; a chapter mixed drill covers every unit its
-    problems come from (ingest stamps each problem's `unitCode` from its archetype)."""
-    codes = [unit_code] if "-U" in unit_code else []
-    codes += [p.get("unitCode") for p in drill_doc.get("problems", []) if p.get("unitCode")]
+    problems come from; a bridge drill covers every unit listed in each problem's `unitCodes`/`references`."""
+    codes: list[str] = [unit_code] if "-U" in unit_code else []
+    is_bridge = unit_code == "MTH-BRIDGE" or drill_doc.get("unitCode") == "MTH-BRIDGE"
+    for p in drill_doc.get("problems", []):
+        if not isinstance(p, dict):
+            continue
+        if p.get("unitCode") and p.get("unitCode") != "MTH-BRIDGE":
+            codes.append(p["unitCode"])
+        for u in p.get("unitCodes") or []:
+            if isinstance(u, str) and u.strip():
+                codes.append(u.strip())
+        if is_bridge or p.get("unitCodes") or not p.get("unitCode"):
+            for ref in p.get("references") or []:
+                if isinstance(ref, str) and ref.strip() and not ref.strip().startswith("CON-"):
+                    if "-U" in ref or is_bridge:
+                        codes.append(ref.strip())
     return [u for u in dict.fromkeys(codes) if isinstance(id_map.get(u), dict)]
 
 
@@ -250,7 +263,7 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
     drill_kind = "Programming" if is_prg else "Math"
     title = f"{unit_title} — Verified {drill_kind} Drill ({q_count} Qs · {diff_mode})"
     is_unit = "-U" in unit_code
-    scope_name = "Unit Drill" if is_unit else "Chapter Mixed"
+    scope_name = "Bridge Synthesis" if unit_code == "MTH-BRIDGE" else ("Unit Drill" if is_unit else "Chapter Mixed")
 
     props = {
         "Drill": {"title": [{"type": "text", "text": {"content": title}}]},

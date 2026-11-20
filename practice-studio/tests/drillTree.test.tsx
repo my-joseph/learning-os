@@ -403,4 +403,36 @@ assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
 
+// Cross-unit bridge drills (MTH-BRIDGE) appear in the Math drill picker under a clean Bridge group
+const bridgeDrills: DrillListItem[] = [
+  ...sampleDrills,
+  makeDrill("DRL-MTH-BRIDGE-01", "MTH-BRIDGE", "Cross-Unit Bridge Synthesis", {
+    topicCode: "MTH-BRIDGE",
+    topicTitle: "MTH-BRIDGE",
+    chapterCode: "MTH-BRIDGE",
+    chapterTitle: "Cross-Unit Bridge Synthesis",
+    practiceStatus: "Ready",
+  }),
+];
+const bridgeItems = normalizeDrillPickerItems(bridgeDrills);
+const bridgeItem = bridgeItems.find((i) => i.id === "DRL-MTH-BRIDGE-01");
+assert.ok(bridgeItem, "MTH-BRIDGE drill must be normalized for the picker");
+assert.equal(bridgeItem.subject, "MATH");
+assert.equal(bridgeItem.topicCode, "MTH-BRIDGE");
+assert.equal(bridgeItem.topicTitle, "Cross-Unit Bridge Synthesis");
+assert.equal(extractShortCode(bridgeItem), "BRIDGE");
+assert.equal(extractChapterShortCode(bridgeItem.chapterCode), "BRIDGE");
+assert.equal(classifyPickerItemType(bridgeItem), "chapter-mixed");
+
+const bridgeSections = buildPickerSections({
+  items: bridgeItems,
+  currentId: "DRL-MTH-BRIDGE-01",
+  recentIds: [],
+  search: "",
+  filter: "ALL",
+});
+const bridgeTopic = bridgeSections.topicGroups.find((t) => t.topicCode === "MTH-BRIDGE");
+assert.ok(bridgeTopic, "MTH-BRIDGE topic group must appear in drill picker");
+assert.equal(bridgeTopic.containsCurrent, true);
+
 console.log("drill tree tests passed");

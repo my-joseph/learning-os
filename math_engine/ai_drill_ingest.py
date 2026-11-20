@@ -13,7 +13,7 @@ import glob
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from math_engine.answer_check import (
     CHECKERS,
@@ -26,6 +26,7 @@ from math_engine.answer_check import (
     to_expr,
 )
 from math_engine.answer_spec_registry import validate_answer_spec
+from math_engine.bridge import BRIDGE_SCOPE, BRIDGE_TITLE, MIN_BRIDGE_UNITS, validate_bridge_problem
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure, figure_decision_missing
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
@@ -714,7 +715,8 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
     key = prob.get("archetypeKey")
     arch = next((a for a in archetypes if a.get("archetypeKey") == key), None)
     if arch is None:
-        raise AiContractError(f"[{pid}] archetypeKey '{key}' is not in the {unit_code} reasoning vault.")
+        hint = " (or its units are not yet eligible)" if unit_code == BRIDGE_SCOPE else ""
+        raise AiContractError(f"[{pid}] archetypeKey '{key}' is not in the {unit_code} reasoning vault{hint}.")
 
     tag = prob.get("commonTrapTag")
     # Vaults list traps either as tag strings or as {"trapTag": ..., "description": ...}.
@@ -724,6 +726,11 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
             f"[{pid}] commonTrapTag '{tag}' is not one of archetype '{key}' cognitiveTraps {traps}. "
             f"Use a listed tag, or propose adding the trap to the vault first."
         )
+
+    if unit_code == BRIDGE_SCOPE:
+        bridge_errors = validate_bridge_problem(prob, arch)
+        if bridge_errors:
+            raise AiContractError("; ".join(bridge_errors))
 
     validate_context_check(prob)  # before the blind-solve gate, so a bad story is reported even if the level fails too
     level = prob.get("level")
@@ -793,17 +800,51 @@ def archetype_owner(archetype: Dict[str, Any]) -> str:
     return archetype.get("unitCode") or archetype.get("_vaultFile", "")
 
 
-def load_scope_archetypes(code: str, vault_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+def load_scope_archetypes(
+    code: str,
+    vault_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
+) -> List[Dict[str, Any]]:
     """Archetypes in scope for a drill on `code`, read across every vault file.
 
     - A unit code (`MTH-T01-C04-U03`) gets only that unit's archetypes, so a unit drill never mixes in another unit.
     - A chapter code (`MTH-T01-C04`) gets the archetypes of every unit in the chapter (chapter mixed drill).
+    - `MTH-BRIDGE` returns only bridge archetypes from `MTH-BRIDGE.json` whose `unitCodes` (>= 2) are all in
+      `eligible_units` (defaults to `scripts.bridge_scope.eligible_units()`, dormant when < 2 units qualify).
     An archetype belongs to its `unitCode`, or, without one, to the vault file it is stored in. Each returned
     dict carries `_vaultFile` (not saved anywhere) so callers can tell where it lives.
     """
+    if code == BRIDGE_SCOPE:
+        if eligible_units is not None:
+            eligible_set = {u.strip() for u in eligible_units if isinstance(u, str) and u.strip()}
+        else:
+            from scripts.bridge_scope import eligible_units as _load_eligible_units
+
+            eligible_set = _load_eligible_units()
+        if len(eligible_set) < MIN_BRIDGE_UNITS:
+            return []
+        bridge_path = os.path.join(_vault_dir(vault_dir), f"{BRIDGE_SCOPE}.json")
+        if not os.path.exists(bridge_path):
+            return []
+        try:
+            with open(bridge_path, "r", encoding="utf-8") as f:
+                archetypes = json.load(f).get("archetypes", [])
+        except (OSError, ValueError):
+            return []
+        eligible_archs: List[Dict[str, Any]] = []
+        for a in archetypes:
+            if not isinstance(a, dict):
+                continue
+            units = [u.strip() for u in (a.get("unitCodes") or []) if isinstance(u, str) and u.strip()]
+            if len(set(units)) >= MIN_BRIDGE_UNITS and all(u in eligible_set for u in units):
+                eligible_archs.append({**a, "_vaultFile": BRIDGE_SCOPE})
+        return eligible_archs
+
     found: List[Dict[str, Any]] = []
     for path in sorted(glob.glob(os.path.join(_vault_dir(vault_dir), "*.json"))):
         stem = os.path.basename(path)[:-5]
+        if stem == BRIDGE_SCOPE:
+            continue
         try:
             with open(path, "r", encoding="utf-8") as f:
                 archetypes = json.load(f).get("archetypes", [])
@@ -857,13 +898,19 @@ def register_archetype(unit_code: str, archetype: Dict[str, Any], vault_dir: Opt
     return archetype
 
 
-def mark_context_used(unit_code: str, archetype_key: str, context_tag: str, vault_dir: Optional[str] = None) -> None:
+def mark_context_used(
+    unit_code: str,
+    archetype_key: str,
+    context_tag: str,
+    vault_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
+) -> None:
     """Marks a context domain as used so future AI generations rotate to fresh domains.
     Writes to the vault file that holds the archetype (a unit drill may use a chapter vault's archetype)."""
     holder = next(
         (
             a["_vaultFile"]
-            for a in load_scope_archetypes(unit_code, vault_dir)
+            for a in load_scope_archetypes(unit_code, vault_dir, eligible_units=eligible_units)
             if a.get("archetypeKey") == archetype_key
         ),
         unit_code,
@@ -886,6 +933,7 @@ def check_ai_drill(
     vault_dir: Optional[str] = None,
     check_originality: bool = False,
     sources_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
 ) -> List[str]:
     """Run every ingest gate on a draft WITHOUT saving it or touching the vault.
 
@@ -899,7 +947,7 @@ def check_ai_drill(
     if not problems:
         return ["Drill document has no 'problems'."]
 
-    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
+    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
     errors: List[str] = []
     checked: List[Dict[str, Any]] = []
     for idx, original in enumerate(problems, 1):
@@ -938,6 +986,7 @@ def ingest_ai_drill(
     data_root: Optional[str] = None,
     rules: Optional[Dict[str, Any]] = None,
     vault_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
 ) -> Dict[str, Any]:
     """
     Verifies every problem in an AI-generated drill document using Machine Quality Gates G1–G6,
@@ -966,11 +1015,26 @@ def ingest_ai_drill(
         except Exception:
             pass
 
+    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
+
     for idx, prob in enumerate(problems, 1):
         if "id" not in prob:
             prob["id"] = f"Q{idx:02d}"
         if "verificationLevel" not in prob:
             prob["verificationLevel"] = "partial"
+
+        validate_against_vault(prob, vault_archs, unit_code)
+        arch = next((a for a in vault_archs if a.get("archetypeKey") == prob.get("archetypeKey")), None)
+        if unit_code == BRIDGE_SCOPE and arch:
+            arch_units = list(
+                dict.fromkeys(u.strip() for u in (arch.get("unitCodes") or []) if isinstance(u, str) and u.strip())
+            )
+            prob["unitCodes"] = arch_units
+            existing_refs = [r.strip() for r in (prob.get("references") or []) if isinstance(r, str) and r.strip()]
+            prob["references"] = list(dict.fromkeys([*arch_units, *existing_refs]))
+        elif arch and "-U" in archetype_owner(arch):
+            prob.setdefault("unitCode", archetype_owner(arch))  # lets a chapter drill link the units it covers
+
         # Auto-resolve referenceBadges if references are provided
         refs = prob.get("references")
         if refs and not prob.get("referenceBadges") and id_map:
@@ -989,12 +1053,6 @@ def ingest_ai_drill(
                 )
             prob["referenceBadges"] = badges
 
-        # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
-        vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
-        validate_against_vault(prob, vault_archs, unit_code)
-        arch = next((a for a in vault_archs if a.get("archetypeKey") == prob.get("archetypeKey")), None)
-        if arch and "-U" in archetype_owner(arch):
-            prob.setdefault("unitCode", archetype_owner(arch))  # lets a chapter drill link the units it covers
         validate_review(prob)
         require_figure_decision(prob, vault_archs)
         autofill_problem_figure(prob, vault_archs)
@@ -1024,7 +1082,9 @@ def ingest_ai_drill(
                 pass
 
     if not drill_doc.get("unitTitle"):
-        drill_doc["unitTitle"] = drill_doc.get("topicTitle") or unit_code
+        drill_doc["unitTitle"] = (
+            BRIDGE_TITLE if unit_code == BRIDGE_SCOPE else (drill_doc.get("topicTitle") or unit_code)
+        )
 
     if not drill_doc.get("title"):
         drill_doc["title"] = f"{drill_doc['unitTitle']} — Verified Math Drill ({len(problems)} Qs)"
@@ -1069,7 +1129,7 @@ def ingest_ai_drill(
         arch_key = prob.get("archetypeKey")
         ctx = prob.get("context")
         if arch_key and ctx:
-            mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir)
+            mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir, eligible_units=eligible_units)
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
     return drill_doc
@@ -1101,9 +1161,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.list_vault:
         archs = load_scope_archetypes(args.unit)
         print(f"\nReasoning Vault for {args.unit}: {len(archs)} archetypes")
+        if args.unit == BRIDGE_SCOPE and not archs:
+            print("  (none eligible — run `python -m scripts.bridge_scope` to check passed units)")
         for a in archs:
-            print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')} ({archetype_owner(a)}): {a.get('name')}")
-            print(f"      Governing: {a.get('governingRelation')}")
+            if args.unit == BRIDGE_SCOPE:
+                units_label = " + ".join(a.get("unitCodes") or [])
+                print(f"  [{a.get('level', 3)}] {a.get('archetypeKey')} ({units_label}): {a.get('name', '')}")
+                print(f"      Junction: {a.get('junction')}")
+            else:
+                print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')} ({archetype_owner(a)}): {a.get('name')}")
+                print(f"      Governing: {a.get('governingRelation')}")
             print(f"      Used Contexts: {a.get('usedContexts', [])}")
             figs = list(dict.fromkeys(b.get("fn") for b in a.get("figureBuilders") or []))
             decision = ", ".join(figs) if figs else (f"none ({a['figureNone']})" if a.get("figureNone") else None)

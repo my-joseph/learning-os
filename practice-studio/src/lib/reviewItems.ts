@@ -49,6 +49,7 @@ export interface ReviewItem {
   drillId: string;
   qid: string;
   unitCode: string;
+  unitCodes?: string[];
   subject: "MTH" | "PRG";
   commonTrapTag: string | null;
   archetypeKey: string | null;
@@ -128,8 +129,24 @@ export function parseReviewScope(raw?: string | null): ParsedReviewScope | null 
   throw new Error(`Unknown scope kind '${kind}'`);
 }
 
+function itemUnitList(item: Pick<ReviewItem, "unitCode" | "unitCodes">): string[] {
+  const out: string[] = [];
+  if (Array.isArray(item.unitCodes)) {
+    for (const u of item.unitCodes) {
+      if (typeof u === "string" && u.trim() && !out.includes(u.trim())) {
+        out.push(u.trim());
+      }
+    }
+  }
+  const uc = (item.unitCode || "").trim();
+  if (uc && !out.includes(uc)) {
+    out.push(uc);
+  }
+  return out;
+}
+
 export function matchesReviewScope(
-  item: Pick<ReviewItem, "subject" | "unitCode" | "commonTrapTag" | "drillId">,
+  item: Pick<ReviewItem, "subject" | "unitCode" | "unitCodes" | "commonTrapTag" | "drillId">,
   parsedScope: ParsedReviewScope | null
 ): boolean {
   if (!parsedScope) return true;
@@ -138,9 +155,9 @@ export function matchesReviewScope(
     case "subject":
       return item.subject === value;
     case "unit":
-      return item.unitCode === value;
+      return itemUnitList(item).includes(value);
     case "chapter":
-      return item.unitCode === value || item.unitCode.startsWith(`${value}-U`);
+      return itemUnitList(item).some((u) => u === value || u.startsWith(`${value}-U`));
     case "trap":
       return item.commonTrapTag === value;
     case "drill":
@@ -438,7 +455,14 @@ export function redactReviewItem(
       : typeof rec.unit === "string"
       ? rec.unit
       : "";
-  return {
+  const rawMulti = Array.isArray(rec.unitCodes) ? rec.unitCodes : [];
+  const unitCodes: string[] = [];
+  for (const u of rawMulti) {
+    if (typeof u === "string" && u.trim() && !unitCodes.includes(u.trim())) {
+      unitCodes.push(u.trim());
+    }
+  }
+  const out: ReviewItem = {
     drillId: typeof rec.drillId === "string" ? rec.drillId : "",
     qid: typeof rec.qid === "string" ? rec.qid : "",
     unitCode,
@@ -457,6 +481,10 @@ export function redactReviewItem(
     revisitNote: cleanRevisitNote(rec.revisitNote),
     lastWrong: Boolean(rec.lastWrong),
   };
+  if (unitCodes.length >= 2) {
+    out.unitCodes = unitCodes;
+  }
+  return out;
 }
 
 function cmpStr(a: string, b: string): number {
@@ -574,6 +602,7 @@ export function getReviewItemsPath(progressDir: string = getProgressDir()): stri
 interface ProblemMeta {
   id: string;
   unitCode: string;
+  unitCodes: string[];
   commonTrapTag: string | null;
   archetypeKey: string | null;
   qualityChecks: string[];
@@ -590,12 +619,14 @@ interface DrillMeta {
 
 interface VaultMeta {
   unitOf: Map<string, string>;
+  unitsOf: Map<string, string[]>;
   archChecks: Map<string, Set<string>>;
   universalIds: Set<string>;
 }
 
 function loadVaultMeta(rootDir: string): VaultMeta {
   const unitOf = new Map<string, string>();
+  const unitsOf = new Map<string, string[]>();
   const archChecks = new Map<string, Set<string>>();
   const universalIds = new Set<string>();
 
@@ -633,6 +664,7 @@ function loadVaultMeta(rootDir: string): VaultMeta {
           archetypes?: Array<{
             archetypeKey?: unknown;
             unitCode?: unknown;
+            unitCodes?: unknown[];
             qualityChecks?: Array<{ id?: unknown }>;
           }>;
         };
@@ -644,6 +676,14 @@ function loadVaultMeta(rootDir: string): VaultMeta {
             !unitOf.has(arch.archetypeKey)
           ) {
             unitOf.set(arch.archetypeKey, arch.unitCode);
+          }
+          if (Array.isArray(arch.unitCodes) && arch.unitCodes.length > 0 && !unitsOf.has(arch.archetypeKey)) {
+            const cleaned = arch.unitCodes
+              .filter((u): u is string => typeof u === "string" && Boolean(u.trim()))
+              .map((u) => u.trim());
+            if (cleaned.length > 0) {
+              unitsOf.set(arch.archetypeKey, Array.from(new Set(cleaned)));
+            }
           }
           if (isCodeVault) {
             const cids = new Set<string>();
@@ -660,13 +700,14 @@ function loadVaultMeta(rootDir: string): VaultMeta {
       }
     }
   }
-  return { unitOf, archChecks, universalIds };
+  return { unitOf, unitsOf, archChecks, universalIds };
 }
 
 function loadAllDrillMeta(
   dataDir: string,
   labsDir: string,
-  unitOf: Map<string, string>
+  unitOf: Map<string, string>,
+  unitsOf: Map<string, string[]> = new Map()
 ): Map<string, DrillMeta> {
   const drills = new Map<string, DrillMeta>();
 
@@ -708,10 +749,38 @@ function loadAllDrillMeta(
                   : typeof p.templateKey === "string" && p.templateKey
                   ? p.templateKey
                   : null;
+              const explicitMulti = Array.isArray(p.unitCodes)
+                ? Array.from(
+                    new Set(
+                      p.unitCodes
+                        .filter((u): u is string => typeof u === "string" && Boolean(u.trim()))
+                        .map((u) => u.trim())
+                    )
+                  )
+                : [];
+              const archMulti = (archKey && unitsOf.get(archKey)) || [];
+              const refMulti =
+                drillUnit === "MTH-BRIDGE" || !(typeof p.unitCode === "string" && p.unitCode)
+                  ? Array.from(
+                      new Set(
+                        (Array.isArray(p.references) ? p.references : [])
+                          .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
+                          .map((r) => r.trim())
+                      )
+                    )
+                  : [];
+              const resolvedMulti =
+                explicitMulti.length > 0
+                  ? explicitMulti
+                  : archMulti.length > 0
+                  ? archMulti
+                  : refMulti;
+              const fallbackUnit = (archKey && unitOf.get(archKey)) || drillUnit;
               const pUnit =
-                (typeof p.unitCode === "string" && p.unitCode) ||
-                (archKey && unitOf.get(archKey)) ||
-                drillUnit;
+                drillUnit === "MTH-BRIDGE" && resolvedMulti.length >= 2
+                  ? "MTH-BRIDGE"
+                  : (typeof p.unitCode === "string" && p.unitCode) ||
+                    (resolvedMulti.length > 0 ? resolvedMulti[0] : fallbackUnit);
               const trap =
                 typeof p.commonTrapTag === "string" && p.commonTrapTag
                   ? p.commonTrapTag
@@ -722,6 +791,7 @@ function loadAllDrillMeta(
               problems.set(p.id, {
                 id: p.id,
                 unitCode: pUnit,
+                unitCodes: resolvedMulti.length >= 2 ? resolvedMulti : [],
                 commonTrapTag: trap,
                 archetypeKey: archKey,
                 qualityChecks,
@@ -775,6 +845,7 @@ function loadAllDrillMeta(
           problems.set(ms.id, {
             id: ms.id,
             unitCode: msUnit,
+            unitCodes: [],
             commonTrapTag: null,
             archetypeKey: null,
             qualityChecks,
@@ -803,6 +874,7 @@ const WEAK_SPOT_CLOSE_AFTER = 2;
 interface LoadedProgressItem {
   drillId: string;
   unitCode: string;
+  unitCodes: string[];
   qid: string;
   subject: "MTH" | "PRG";
   trap: string | null;
@@ -1057,8 +1129,8 @@ function loadProgressContext(options?: ReviewStoreOptions): {
   const progressDir = options?.progressDir ?? getProgressDir();
   const labsDir = options?.labsDir ?? getLabsDir();
 
-  const { unitOf, archChecks, universalIds } = loadVaultMeta(rootDir);
-  const drills = loadAllDrillMeta(dataDir, labsDir, unitOf);
+  const { unitOf, unitsOf, archChecks, universalIds } = loadVaultMeta(rootDir);
+  const drills = loadAllDrillMeta(dataDir, labsDir, unitOf, unitsOf);
 
   if (!fs.existsSync(progressDir)) {
     return { loaded: [], drills };
@@ -1124,6 +1196,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
         loaded.push({
           drillId,
           unitCode: probMeta.unitCode,
+          unitCodes: probMeta.unitCodes,
           qid,
           subject: "PRG",
           trap: probMeta.commonTrapTag || (sigs[0] ?? null),
@@ -1149,6 +1222,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
         loaded.push({
           drillId,
           unitCode: probMeta.unitCode,
+          unitCodes: probMeta.unitCodes,
           qid,
           subject: "MTH",
           trap: probMeta.commonTrapTag,
@@ -1202,6 +1276,7 @@ function buildScheduleFromLoaded(
       drillId: item.drillId,
       qid: item.qid,
       unitCode: item.unitCode,
+      ...(item.unitCodes.length >= 2 ? { unitCodes: item.unitCodes } : {}),
       subject: item.subject,
       commonTrapTag: trapTag,
       archetypeKey: item.archetypeKey,
@@ -1309,6 +1384,9 @@ function mergeSavedSchedule(
       if (!entry.unitCode && bf.unitCode) {
         entry.unitCode = bf.unitCode;
       }
+      if (!entry.unitCodes && bf.unitCodes) {
+        entry.unitCodes = [...bf.unitCodes];
+      }
       if (!entry.commonTrapTag && bf.commonTrapTag) {
         entry.commonTrapTag = bf.commonTrapTag;
       }
@@ -1411,6 +1489,7 @@ function lookupProblemMetadata(
   options?: ReviewStoreOptions
 ): {
   unitCode: string;
+  unitCodes?: string[];
   subject: "MTH" | "PRG";
   commonTrapTag: string | null;
   archetypeKey: string | null;
@@ -1421,8 +1500,8 @@ function lookupProblemMetadata(
   const labsDir = options?.labsDir ?? getLabsDir();
   const progressDir = options?.progressDir ?? getProgressDir();
 
-  const { unitOf } = loadVaultMeta(rootDir);
-  const drills = loadAllDrillMeta(dataDir, labsDir, unitOf);
+  const { unitOf, unitsOf } = loadVaultMeta(rootDir);
+  const drills = loadAllDrillMeta(dataDir, labsDir, unitOf, unitsOf);
   const drill = drills.get(drillId);
   const prob = drill?.problems.get(qid);
 
@@ -1444,6 +1523,7 @@ function lookupProblemMetadata(
 
   return {
     unitCode: prob?.unitCode || drill?.unitCode || "",
+    ...(prob && prob.unitCodes.length >= 2 ? { unitCodes: prob.unitCodes } : {}),
     subject:
       drill?.subject ||
       (drillId.startsWith("DRL-PRG-") || drillId.startsWith("LAB-") ? "PRG" : "MTH"),

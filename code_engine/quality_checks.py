@@ -17,10 +17,12 @@ from pathlib import Path
 from typing import Any
 
 from code_engine.lint_check import LintToolsMissingError, get_lint_binaries, lint_code_snippet
+from math_engine.bridge import BRIDGE_SCOPE, validate_bridge_vault
 
 CODE_ENGINE_DIR = Path(__file__).resolve().parent
 UNIVERSAL_CHECKS_PATH = CODE_ENGINE_DIR / "quality_checks.json"
 VAULT_DIR = CODE_ENGINE_DIR / "reasoning_vault"
+MATH_VAULT_DIR = CODE_ENGINE_DIR.parent / "math_engine" / "reasoning_vault"
 
 QC_ID_PATTERN = re.compile(r"^QC-[a-z0-9]+(?:-[a-z0-9]+)*$")
 UNIVERSAL_ID_PATTERN = re.compile(r"^U-[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -279,11 +281,31 @@ def verify_known_bad_lint(check: dict[str, Any], *, label: str = "") -> tuple[bo
     return True, None
 
 
+def check_bridge_vault(math_vault_dir: Path | None = None) -> tuple[list[str], int]:
+    """Validate ``math_engine/reasoning_vault/MTH-BRIDGE.json`` if present.
+
+    Returns ``(errors, bridge_archetype_count)``.
+    """
+    target_dir = Path(math_vault_dir) if math_vault_dir is not None else MATH_VAULT_DIR
+    bridge_path = target_dir / f"{BRIDGE_SCOPE}.json"
+    if not bridge_path.exists():
+        return [], 0
+    try:
+        data = json.loads(bridge_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"{bridge_path.name}: invalid JSON: {exc}"], 0
+    errors = validate_bridge_vault(data, label=bridge_path.name)
+    archetypes = data.get("archetypes") if isinstance(data, dict) else []
+    count = len(archetypes) if isinstance(archetypes, list) else 0
+    return errors, count
+
+
 def check_all_vaults(
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
+    math_vault_dir: Path | None = None,
 ) -> tuple[list[str], list[str], dict[str, int]]:
-    """Validate universal checks + all vault files and verify every `lint:<rule>` knownBad snippet."""
+    """Validate universal checks + all PRG vault files + MTH-BRIDGE vault schema."""
     errors: list[str] = []
     skips: list[str] = []
 
@@ -320,26 +342,34 @@ def check_all_vaults(
                 elif ok and msg:
                     skips.append(msg)
 
+    bridge_archetypes = 0
+    if math_vault_dir is not None or vault_dir is None:
+        bridge_errors, bridge_archetypes = check_bridge_vault(math_vault_dir=math_vault_dir)
+        errors.extend(bridge_errors)
+
     stats = {
         "universal": len(universal),
         "vaults": len(vault_files),
         "archetypes": archetype_count,
         "checks": check_count,
+        "bridgeArchetypes": bridge_archetypes,
     }
     return errors, skips, stats
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate PRG qualityChecks in universal list and reasoning vaults.")
+    parser = argparse.ArgumentParser(description="Validate PRG qualityChecks and MTH-BRIDGE reasoning vault schema.")
     parser.add_argument("--check-vaults", action="store_true", help="Validate all vaults and run knownBad lint checks")
     parser.add_argument("--vault-dir", default=None, help="Override code_engine/reasoning_vault directory")
+    parser.add_argument("--math-vault-dir", default=None, help="Override math_engine/reasoning_vault directory")
     args = parser.parse_args(argv)
 
     if not args.check_vaults:
         parser.error("Specify --check-vaults")
 
     vault_dir = Path(args.vault_dir) if args.vault_dir else None
-    errors, skips, stats = check_all_vaults(vault_dir=vault_dir)
+    math_vault_dir = Path(args.math_vault_dir) if args.math_vault_dir else None
+    errors, skips, stats = check_all_vaults(vault_dir=vault_dir, math_vault_dir=math_vault_dir)
 
     for s in skips:
         print(s)
@@ -348,7 +378,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"Checked {stats['universal']} universal check(s), {stats['vaults']} vault(s), "
-        f"{stats['archetypes']} archetype(s), {stats['checks']} archetype check(s): "
+        f"{stats['archetypes']} archetype(s), {stats['checks']} archetype check(s), "
+        f"{stats['bridgeArchetypes']} bridge archetype(s): "
         f"{len(errors)} error(s), {len(skips)} skipped."
     )
     return 1 if errors else 0

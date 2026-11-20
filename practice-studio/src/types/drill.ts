@@ -73,6 +73,7 @@ export interface VisualSpec {
 export interface Step {
   latex?: string;
   explain: string;
+  unit?: string;
 }
 
 export interface ChoiceOption {
@@ -318,6 +319,7 @@ export interface Problem {
   sourceArchetype?: string;
   archetypeKey?: string;
   unitCode?: string;
+  unitCodes?: string[];
   templateKey: string;
   level: number;
   levelLabel: string;

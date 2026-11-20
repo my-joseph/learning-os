@@ -120,6 +120,10 @@ export function cleanCurriculumTitle(title: string | null | undefined): string {
   return plainTitle(title);
 }
 
+export function isBridgeScopeCode(unitCode: string): boolean {
+  return /^[A-Za-z]+-BRIDGE$/i.test(unitCode.trim());
+}
+
 /**
  * Derive `topicCode` and `chapterCode` from a unit code (e.g. `MTH-T02-C01-U01` ->
  * `MTH-T02` and `MTH-T02-C01`), honoring explicit overrides when present.
@@ -132,6 +136,14 @@ export function parseCurriculumCodes(
   const cleanUnit = (unitCode || "").trim();
   const cleanTopic = (explicitTopicCode || "").trim();
   const cleanChapter = (explicitChapterCode || "").trim();
+
+  if (isBridgeScopeCode(cleanUnit)) {
+    const upper = cleanUnit.toUpperCase();
+    return {
+      topicCode: cleanTopic || upper,
+      chapterCode: cleanChapter || upper,
+    };
+  }
 
   const match = /^([A-Za-z]+-T\d+)(?:-(C\d+))?(?:-U\d+)?$/i.exec(cleanUnit);
   const derivedTopic = match ? match[1].toUpperCase() : "";
@@ -239,11 +251,17 @@ export function normalizeDrillPickerItems(drills: readonly DrillListItem[]): Pic
       d.topicCode,
       d.chapterCode
     );
-    const title = cleanCurriculumTitle(d.unitTitle) || unitCode;
+    const isBridge = isBridgeScopeCode(unitCode);
+    const bridgeFallbackTitle = isBridge ? "Cross-Unit Bridge Synthesis" : "";
+    const title = cleanCurriculumTitle(d.unitTitle) || bridgeFallbackTitle || unitCode;
     const chapterTitle =
       cleanCurriculumTitle(d.chapterTitle) ||
-      (chapterCode === unitCode ? title : chapterCode);
-    const topicTitle = cleanCurriculumTitle(d.topicTitle) || topicCode;
+      (chapterCode === unitCode ? title : bridgeFallbackTitle || chapterCode);
+    const rawTopicTitle = cleanCurriculumTitle(d.topicTitle);
+    const topicTitle =
+      (rawTopicTitle && (!isBridge || rawTopicTitle !== topicCode) ? rawTopicTitle : "") ||
+      bridgeFallbackTitle ||
+      topicCode;
     const hasMultipleSets = (unitCounts.get(unitCode) ?? 0) > 1;
     const setLabel = hasMultipleSets ? formatDrillSetLabel(d.drillId) : null;
 
@@ -781,6 +799,7 @@ export function extractShortCode(
     return item.id.trim();
   }
   const code = item.unitCode.trim();
+  if (isBridgeScopeCode(code)) return "BRIDGE";
   const unitMatch = /-(U\d+)$/i.exec(code);
   if (unitMatch) return unitMatch[1].toUpperCase();
   const chapterMatch = /-(C\d+)$/i.exec(code);
@@ -791,6 +810,7 @@ export function extractShortCode(
 /** Extract short chapter code from a chapter code (e.g. `MTH-T02-C01` -> `C01`). */
 export function extractChapterShortCode(chapterCode: string): string {
   const trimmed = chapterCode.trim();
+  if (isBridgeScopeCode(trimmed)) return "BRIDGE";
   const match = /-(C\d+)$/i.exec(trimmed);
   return match ? match[1].toUpperCase() : trimmed;
 }
@@ -821,7 +841,9 @@ export function classifyPickerItemType(
   item: Pick<PickerItem, "kind" | "subject" | "unitCode">
 ): DrillTypeIconKind {
   if (item.kind === "lab") return "lab";
-  if (isChapterMixedUnitCode(item.unitCode)) return "chapter-mixed";
+  if (isChapterMixedUnitCode(item.unitCode) || isBridgeScopeCode(item.unitCode)) {
+    return "chapter-mixed";
+  }
   if (item.subject === "PRG" || item.unitCode.trim().toUpperCase().startsWith("PRG-")) {
     return "code-unit";
   }

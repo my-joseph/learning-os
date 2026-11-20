@@ -52,7 +52,7 @@ _REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "format",
     "representation",
 )
-_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes"))
+_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units"))
 _ALLOWED_SOURCE_REF_KEYS: frozenset[str] = frozenset(("family", "file", "page", "item"))
 _ALLOWED_TRAP_KEYS: frozenset[str] = frozenset(("tag", "description"))
 _ALLOWED_FORMAT_KEYS: frozenset[str] = frozenset(("kind", "optionCount", "distractorPatterns"))
@@ -235,6 +235,21 @@ def validate_core_card(card: Any, source_item_text: str | None = None) -> list[s
     if "laterUnit" in card and card["laterUnit"] is not None:
         if not isinstance(card["laterUnit"], str) or not card["laterUnit"].strip():
             errors.append("laterUnit: must be a non-empty string or null.")
+
+    if "units" in card:
+        units = card["units"]
+        if not isinstance(units, list) or len(units) < 2:
+            errors.append("units: must be a list of at least 2 distinct unit codes.")
+        else:
+            seen_u: set[str] = set()
+            for idx, u in enumerate(units):
+                if not isinstance(u, str) or not u.strip():
+                    errors.append(f"units[{idx}]: must be a non-empty string.")
+                else:
+                    cleaned = u.strip()
+                    if cleaned in seen_u:
+                        errors.append(f"units[{idx}]: duplicate unit code '{cleaned}'.")
+                    seen_u.add(cleaned)
 
     if "notes" in card and not isinstance(card["notes"], str):
         errors.append("notes: must be a string.")
