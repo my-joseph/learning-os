@@ -38,6 +38,7 @@ Mandatory extractor instructions:
 - **No source wording and no source numbers** anywhere in content fields; every string field ≤ 200 characters.
 - Record provenance in `sourceRef` (`{family, file, page, item}`) — never `openstax`.
 - If a source problem goes deeper than `<UNIT>`'s scope, still keep its core card but set `"laterUnit": "<TARGET_UNIT>"` so it is deferred rather than drilled now.
+- If a source item genuinely combines skills from two or more units in one problem (e.g. complex numbers + quadratics), set `"units": ["<UNIT_A>", "<UNIT_B>", ...]` (≥ 2 distinct unit codes) in addition to `unitCode` (and `laterUnit` if any required unit is beyond `<UNIT>`).
 - Reply only `done`.
 
 ## 4. Gap analysis (`source_gap`)
@@ -52,14 +53,16 @@ Read-only report comparing `sources/_cores/<UNIT>.jsonl` against `math_engine/re
 - Reasoning moves and levels the vault lacks.
 - Exam formats seen (e.g. 5-option choice with trap distractors).
 - Deferred `laterUnit` cards grouped for future units (leave for later; do not drill now).
+- **Bridge candidates**: multi-unit cards (`units`) grouped by unit pair and marked `ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`.
 
 ## 5. Update the Reasoning Vault (with reviewer subagent)
 
 Update `math_engine/reasoning_vault/<UNIT>.json` from the gap report:
 - Add new archetypes for genuine unmatched cores; extend existing archetypes' `cognitiveTraps`, `levelNote`s, and `usedContexts` (preserving existing fields and figure decisions per `rules/03` §3.1).
+- **Bridge archetypes (`MTH-BRIDGE.json`)**: when `source_gap` shows **eligible** bridge candidates (all units in the pair are passed per `scripts.bridge_scope`), add bridge archetypes to `math_engine/reasoning_vault/MTH-BRIDGE.json` with `unitCodes` (≥ 2), `junction` (abstract link where one skill's output feeds the next), `skillsByUnit`, `cognitiveTraps` (junction traps), base `level` ≥ 3, `levelNote`, `figureNone`/`figureBuilders`, and `source`. Leave non-eligible bridge candidates deferred.
 - Cite provenance on every added/updated archetype as:
   `"source": "OpenStax <Book> §x.y; cores: <families>"` (e.g. `"OpenStax Algebra and Trigonometry 2e §2.4; cores: mathsgenie, thai-exams"`).
-- Spawn **one** fresh reviewer subagent with the vault diff, `docs/sources.md`, and OpenStax unit scope. Ask it to check that every new or updated archetype is (1) 100% original and source-free (no copied wording/numbers), (2) strictly within `<UNIT>` scope (deeper items stayed in `laterUnit`), and (3) has valid traps and figure decision. Have it write its verdict to `scratch/reviews/<UNIT>-vault-review.json` and reply only `done`. Fix any flagged items before step 6.
+- Spawn **one** fresh reviewer subagent with the vault diff, `docs/sources.md`, and OpenStax unit scope. Ask it to check that every new or updated archetype is (1) 100% original and source-free (no copied wording/numbers), (2) strictly within `<UNIT>` scope (deeper items stayed in `laterUnit`), (3) has valid traps and figure decision, and (4) for any `MTH-BRIDGE.json` addition, that each `junction` is real (one skill's output genuinely feeds the next) and all `unitCodes` are passed per `bridge_scope`. Have it write its verdict to `scratch/reviews/<UNIT>-vault-review.json` and reply only `done`. Fix any flagged items before step 6.
 
 ## 6. Generate drills (and optional variants / exam-style set)
 

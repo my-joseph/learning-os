@@ -7,7 +7,7 @@
 **Labels:** `[code]` = enforced by tooling today. `[manual]` = procedure for the agent or learner; no tooling yet.
 
 ## 1. Scope and composition
-- `[code]` A drill's scope is one unit (unit-only drill) or one chapter (mixed over its units); see §4 "Scope and levels". Multi-topic synthesis drills have no vault yet; create one when the learner asks for cross-chapter practice.
+- `[code]` A drill's scope is one unit (unit-only drill), one chapter (mixed over its units), or cross-unit bridge synthesis (`MTH-BRIDGE`, `math_engine/reasoning_vault/MTH-BRIDGE.json`); see §4 "Scope and levels". Bridge archetypes combine skills from ≥2 passed units (mastery ≥ 2 per `scripts/bridge_scope.py`) at L3+ only, remain dormant until ≥2 units qualify, and require every referenced unit to be tagged on at least one step (`steps[].unit`).
 - `[code]` Default count is 5. `--difficulty` takes one level (1-5) or ALL; any other value, or a level the Unit has no templates for, raises ValueError (06 §2.1).
 - Composition follows the Unit Practice Guide (02 §8) as a sequence of drills, not a mix inside one drill. `[manual]` Per study session on a Unit:
   1. Core drill: `--difficulty 1` or `2` (or `ALL`), including at least one reverse form.
