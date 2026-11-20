@@ -115,17 +115,29 @@ def build_gap_report(
     eligible_units: Iterable[str] | None = None,
     data_root: str | None = None,
     progress_dir: str | None = None,
+    valid_unit_codes: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     """Compute a read-only gap report comparing ``unit_code``'s core cards and reasoning vault."""
     cpath = cores_path(unit_code, sources_dir=sources_dir)
-    cards = load_core_cards(unit_code, sources_dir=sources_dir, validate=True)
+    cards = load_core_cards(
+        unit_code,
+        sources_dir=sources_dir,
+        validate=True,
+        valid_unit_codes=valid_unit_codes,
+    )
     archetypes = load_scope_archetypes(unit_code, vault_dir=vault_dir)
 
     current_cards: list[dict[str, Any]] = []
     later_by_unit: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    carried_count = 0
     for card in cards:
+        carried = bool(card.get("carriedFrom"))
+        if carried:
+            carried_count += 1
         later = card.get("laterUnit")
-        if isinstance(later, str) and later.strip() and later.strip() != unit_code:
+        raw_units = card.get("units")
+        in_units = isinstance(raw_units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in raw_units)
+        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not (carried and in_units):
             later_by_unit[later.strip()].append(card)
         else:
             current_cards.append(card)
@@ -173,6 +185,8 @@ def build_gap_report(
             "level": card["level"],
             "reasoningMove": card["reasoningMove"],
         }
+        if card.get("carriedFrom"):
+            summary["carriedFrom"] = card["carriedFrom"]
         if hits:
             matched_cards.append({**summary, "matches": hits})
         else:
@@ -289,6 +303,7 @@ def build_gap_report(
         "cardsFileExists": os.path.isfile(cpath),
         "totalCards": len(cards),
         "currentCardsCount": len(current_cards),
+        "carriedCardsCount": carried_count,
         "laterCardsCount": sum(len(v) for v in later_groups.values()),
         "vaultArchetypeCount": len(archetypes),
         "matchedCards": matched_cards,
@@ -314,14 +329,23 @@ def build_gap_report(
 
 def format_gap_report(report: dict[str, Any]) -> str:
     """Format ``build_gap_report`` output as a concise human-readable report."""
+    carried = int(report.get("carriedCardsCount") or 0)
+    carried_note = f" ({carried} carried-forward)" if carried else ""
+    file_note = (
+        f"file: {report['cardsPath']}"
+        if report["cardsFileExists"]
+        else f"no local file at {report['cardsPath']}; carried-forward only"
+        if carried
+        else f"file: {report['cardsPath']}"
+    )
     lines = [
         f"Source Gap Report for {report['unitCode']}",
-        f"Cards: {report['currentCardsCount']} current-unit, {report['laterCardsCount']} laterUnit "
-        f"(file: {report['cardsPath']})",
+        f"Cards: {report['currentCardsCount']} current-unit{carried_note}, {report['laterCardsCount']} laterUnit "
+        f"({file_note})",
         f"Vault archetypes in scope: {report['vaultArchetypeCount']}",
     ]
 
-    if not report["cardsFileExists"]:
+    if not report["cardsFileExists"] and report["totalCards"] == 0:
         lines.append("")
         lines.append("No core cards file found yet. Run scripts.source_find and extract core cards first.")
         return "\n".join(lines)
@@ -339,14 +363,18 @@ def format_gap_report(report: dict[str, Any]) -> str:
             + ")"
             for m in item["matches"]
         )
-        lines.append(f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']} -> {targets}")
+        carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
+        lines.append(
+            f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}{carried_tag} -> {targets}"
+        )
 
     lines.append("")
     lines.append(f"Unmatched cards — candidate new archetypes ({len(unmatched)}):")
     if not unmatched:
         lines.append("  (none)")
     for item in unmatched:
-        lines.append(f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}")
+        carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
+        lines.append(f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}{carried_tag}")
 
     lines.append("")
     new_traps = report["newTraps"]

@@ -21,7 +21,7 @@ import pytest
 
 from math_engine import ai_drill_ingest, source_cores, variant_bank
 from math_engine.source_cores import originality
-from scripts import source_find, source_gap
+from scripts import source_cores_retag, source_find, source_gap
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -586,7 +586,12 @@ def test_source_gap_report_and_read_only(tmp_path: Path) -> None:
 
 
 def test_cli_help_smoke() -> None:
-    for mod in ("scripts.source_find", "scripts.source_gap", "math_engine.source_cores.originality"):
+    for mod in (
+        "scripts.source_find",
+        "scripts.source_gap",
+        "scripts.source_cores_retag",
+        "math_engine.source_cores.originality",
+    ):
         proc = subprocess.run(
             [sys.executable, "-m", mod, "--help"],
             cwd=str(ROOT),
@@ -595,6 +600,242 @@ def test_cli_help_smoke() -> None:
             check=False,
         )
         assert proc.returncode == 0, f"{mod} --help failed: {proc.stderr}"
+
+
+def test_carried_forward_cards_and_source_gap(tmp_path: Path) -> None:
+    u1 = "MTH-T02-C01-U01"
+    u2 = "MTH-T02-C01-U02"
+    u3 = "MTH-T02-C01-U03"
+    valid_codes = {u1, u2, u3}
+
+    # Unit 1 file stores cards targeting U2 via laterUnit and via multi-unit `units`, plus one for U3.
+    u1_cards = [
+        _sample_card(id="CORE-LOCAL-U1", unitCode=u1, skill="Direct complex addition"),
+        _sample_card(
+            id="CORE-CF-LATER",
+            unitCode=u1,
+            laterUnit=u2,
+            skill="Recover quadratic coefficients from conjugate pair roots",
+            traps=[{"tag": "quad-vieta-sign-trap", "description": "Sign error in sum of roots"}],
+        ),
+        _sample_card(
+            id="CORE-CF-UNITS",
+            unitCode=u1,
+            units=[u1, u2],
+            skill="Combine complex modulus with quadratic discriminant",
+            traps=[{"tag": "quad-discriminant-trap", "description": "Misreads negative discriminant"}],
+        ),
+        _sample_card(id="CORE-OTHER-U3", unitCode=u1, laterUnit=u3, skill="Radical equation extraneous root"),
+    ]
+    source_cores.save_core_cards(u1, u1_cards, sources_dir=str(tmp_path), valid_unit_codes=valid_codes)
+
+    # Unit 2 has NO local JSONL file yet — load_core_cards(u2) must return both carried-forward cards.
+    loaded_u2 = source_cores.load_core_cards(u2, sources_dir=str(tmp_path), valid_unit_codes=valid_codes)
+    assert [c["id"] for c in loaded_u2] == ["CORE-CF-LATER", "CORE-CF-UNITS"]
+    assert all(c["carriedFrom"] == u1 for c in loaded_u2)
+
+    # Deduplication by id: if U2 also stores CORE-CF-LATER locally, it appears once without carriedFrom.
+    local_dup = _sample_card(id="CORE-CF-LATER", unitCode=u2, skill="Local quadratic conjugate root card")
+    source_cores.save_core_cards(u2, [local_dup], sources_dir=str(tmp_path), valid_unit_codes=valid_codes)
+    loaded_dedup = source_cores.load_core_cards(u2, sources_dir=str(tmp_path), valid_unit_codes=valid_codes)
+    assert [c["id"] for c in loaded_dedup] == ["CORE-CF-LATER", "CORE-CF-UNITS"]
+    assert "carriedFrom" not in loaded_dedup[0]
+    assert loaded_dedup[1]["carriedFrom"] == u1
+
+    # Remove U2's local file again and verify source_gap still shows carried-forward cards as current cards.
+    Path(source_cores.cores_path(u2, sources_dir=str(tmp_path))).unlink()
+    vault_dir = tmp_path / "vault"
+    vault_dir.mkdir()
+    (vault_dir / f"{u2}.json").write_text(
+        json.dumps(
+            {
+                "unitCode": u2,
+                "archetypes": [
+                    {
+                        "archetypeKey": "u2-quadratic-formula",
+                        "level": 2,
+                        "name": "Quadratic Formula and Complex Roots",
+                        "coreConcept": "Solve quadratic equations with discriminant and conjugate roots.",
+                        "mentalModel": "Discriminant classifies real vs complex conjugate roots.",
+                        "cognitiveTraps": ["quad-discriminant-trap"],
+                        "figureNone": "Symbolic algebra.",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = source_gap.build_gap_report(
+        u2,
+        sources_dir=str(tmp_path),
+        vault_dir=str(vault_dir),
+        eligible_units=set(),
+        valid_unit_codes=valid_codes,
+    )
+    assert report["cardsFileExists"] is False
+    assert report["currentCardsCount"] == 2
+    assert report["carriedCardsCount"] == 2
+    assert report["laterCardsCount"] == 0
+    assert {c["id"] for c in report["matchedCards"] + report["unmatchedCards"]} == {"CORE-CF-LATER", "CORE-CF-UNITS"}
+    assert all(c["carriedFrom"] == u1 for c in report["matchedCards"] + report["unmatchedCards"])
+    assert any(t["tag"] == "quad-vieta-sign-trap" for t in report["newTraps"])
+
+    text = source_gap.format_gap_report(report)
+    assert "No core cards file found yet" not in text
+    assert "2 carried-forward" in text
+    assert f"[carried from {u1}]" in text
+    assert "CORE-CF-LATER" in text and "CORE-CF-UNITS" in text
+
+
+def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    fixture_id_map = {
+        "MTH-T02-C01-U01": {"title": "Complex Numbers"},
+        "MTH-T02-C01-U02": {"title": "Quadratic Equations"},
+        "MTH-T02-C04-U05": {"title": "Zeros of Polynomial Functions"},
+        "MTH-T02-C09-U05": {"title": "Polar Form of Complex Numbers"},
+        "MTH-T02-C09-U08": {"title": "Vectors"},
+        "MTH-T02": {"title": "Topic Should Be Ignored"},
+    }
+    id_map_file = tmp_path / "id_map.json"
+    id_map_file.write_text(json.dumps(fixture_id_map), encoding="utf-8")
+
+    valid_codes = source_cores.load_valid_unit_codes(id_map_path=str(id_map_file))
+    assert "MTH-T02-C09-U05" in valid_codes
+    assert "MTH-T02" not in valid_codes
+
+    # Valid code passes; UNMAPPED: passes; empty UNMAPPED: rejected; unknown code warns AND rejects.
+    assert (
+        source_cores.validate_core_card(_sample_card(laterUnit="MTH-T02-C01-U02"), valid_unit_codes=valid_codes) == []
+    )
+    assert (
+        source_cores.validate_core_card(
+            _sample_card(laterUnit="UNMAPPED:MTH-T04-LEGACY"),
+            valid_unit_codes=valid_codes,
+        )
+        == []
+    )
+    assert any(
+        "UNMAPPED:" in e
+        for e in source_cores.validate_core_card(_sample_card(laterUnit="UNMAPPED:"), valid_unit_codes=valid_codes)
+    )
+
+    with pytest.warns(UserWarning, match="MTH-T04-COMPLEX-ADV"):
+        bad_errs = source_cores.validate_core_card(
+            _sample_card(laterUnit="MTH-T04-COMPLEX-ADV"),
+            valid_unit_codes=valid_codes,
+        )
+    assert any("unknown unit/chapter code" in e for e in bad_errs), bad_errs
+
+    # Build a fixture JSONL with valid, None, and invalid laterUnit cards.
+    jsonl_path = tmp_path / "fixture_cards.jsonl"
+    fixture_cards = [
+        _sample_card(id="FX-CURR", skill="Add two complex numbers in standard form"),
+        _sample_card(id="FX-QUAD-KEEP", laterUnit="MTH-T02-C01-U02", skill="Quadratic with complex roots"),
+        _sample_card(
+            id="FX-POLAR",
+            laterUnit="MTH-T04-COMPLEX-ADV",
+            skill="Compute cube roots in trigonometric form using De Moivre theorem",
+            notes="Polar angle and modulus on the unit circle",
+        ),
+        _sample_card(
+            id="FX-PLANE",
+            laterUnit="MTH-T04-COMPLEX-ADV",
+            skill="Identify the plane region inside an open disc and half-plane",
+            notes="Distance to centre below radius",
+        ),
+        _sample_card(
+            id="FX-POLY",
+            laterUnit="MTH-T04-COMPLEX-ADV",
+            skill="Find a real cubic polynomial coefficients from a complex linear factor",
+            notes="Conjugate root gives a real quadratic factor",
+        ),
+        _sample_card(
+            id="FX-OVERRIDE",
+            laterUnit="MTH-T99-BOGUS",
+            skill="Abstract task overridden explicitly",
+            notes="Uses explicit override map",
+        ),
+        _sample_card(
+            id="FX-UNMAPPED",
+            laterUnit="MTH-T99-UNKNOWN",
+            skill="Elliptic modular form homology",
+            notes="Outside curriculum scope",
+        ),
+    ]
+    jsonl_path.write_text("\n".join(json.dumps(c) for c in fixture_cards) + "\n", encoding="utf-8")
+    orig_bytes = jsonl_path.read_bytes()
+
+    overrides_file = tmp_path / "overrides.json"
+    overrides_file.write_text(json.dumps({"FX-OVERRIDE": "MTH-T02-C09-U08"}), encoding="utf-8")
+
+    # Dry-run prints summary without modifying file
+    rc_dry = source_cores_retag.main(
+        [str(jsonl_path), "--id-map", str(id_map_file), "--overrides", str(overrides_file)]
+    )
+    assert rc_dry == 0
+    dry_out = capsys.readouterr().out
+    assert "DRY-RUN" in dry_out
+    assert "MTH-T02-C09-U05: 2" in dry_out
+    assert "MTH-T02-C04-U05: 1" in dry_out
+    assert "MTH-T02-C09-U08: 1" in dry_out
+    assert "UNMAPPED:MTH-T99-UNKNOWN: 1" in dry_out
+    assert jsonl_path.read_bytes() == orig_bytes
+
+    # Apply rewrites file atomically and every card passes validate_core_card
+    rc_apply = source_cores_retag.main(
+        [str(jsonl_path), "--apply", "--id-map", str(id_map_file), "--overrides", str(overrides_file)]
+    )
+    assert rc_apply == 0
+    apply_out = capsys.readouterr().out
+    assert "APPLIED" in apply_out
+
+    rewritten = [json.loads(line) for line in jsonl_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    by_id = {c["id"]: c for c in rewritten}
+    assert by_id["FX-CURR"].get("laterUnit") is None
+    assert by_id["FX-QUAD-KEEP"]["laterUnit"] == "MTH-T02-C01-U02"
+    assert by_id["FX-POLAR"]["laterUnit"] == "MTH-T02-C09-U05"
+    assert by_id["FX-PLANE"]["laterUnit"] == "MTH-T02-C09-U05"
+    assert by_id["FX-POLY"]["laterUnit"] == "MTH-T02-C04-U05"
+    assert by_id["FX-OVERRIDE"]["laterUnit"] == "MTH-T02-C09-U08"
+    assert by_id["FX-UNMAPPED"]["laterUnit"] == "UNMAPPED:MTH-T99-UNKNOWN"
+    for card in rewritten:
+        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes) == []
+
+
+def test_source_find_warns_on_unregistered_folders(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    sources_dir = tmp_path / "sources"
+    (sources_dir / "mathsgenie").mkdir(parents=True)
+    (sources_dir / "new-publisher").mkdir(parents=True)
+    (sources_dir / "AnotherSource").mkdir(parents=True)
+    (sources_dir / "_index").mkdir(parents=True)
+    (sources_dir / "_scratch").mkdir(parents=True)
+    (sources_dir / ".hidden").mkdir(parents=True)
+    (sources_dir / "README.txt").write_text("top-level file ignored", encoding="utf-8")
+
+    registry = tmp_path / "sources.md"
+    registry.write_text(
+        "# Source Registry\n\n"
+        "| Family (under `sources/`) | What it is | Licence | Allowed use |\n"
+        "| :--- | :--- | :--- | :--- |\n"
+        "| `mathsgenie/Grade_N/` | MathsGenie | Free | `cores` |\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(source_find, "extract_pdf_pages", lambda source: [])
+    res = source_find.find_sources(
+        "MTH-T02-C01-U01",
+        sources_dir=str(sources_dir),
+        registry_path=str(registry),
+    )
+    assert res["unregisteredSources"] == ["AnotherSource", "new-publisher"]
+
+    report = source_find.format_find_report(res)
+    assert "WARNING: Unregistered top-level folder(s)" in report
+    assert "AnotherSource" in report
+    assert "new-publisher" in report
+    assert "_index" not in report and "_scratch" not in report
+    assert "family, licence, allowed use" in report
 
 
 def test_originality_short_prompts_and_unrelated_families(tmp_path):
