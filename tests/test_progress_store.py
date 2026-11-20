@@ -187,3 +187,68 @@ def test_revisit_note_persists_in_progress_without_touching_drill_content(tmp_pa
     note_only = _doc()
     note_only["problems"][0]["state"] = {"userInput": "", "revisitNote": "Invert divisor first"}
     assert ps.has_practice(note_only)
+
+
+def test_save_progress_writes_atomically_and_preserves_existing_on_failure(tmp_path, monkeypatch):
+    progress_dir = tmp_path / "progress"
+    first = _doc()
+    first["problems"][0]["state"] = {"userInput": "42", "score": 1, "attempts": [{"input": "42", "verdict": "correct"}]}
+    first["sessionSummary"] = {"score": 1, "attemptDate": "2026-11-20", "practiceStatus": "Graded"}
+
+    replace_calls: list[tuple[str, str]] = []
+    real_replace = ps.os.replace
+
+    def spy_replace(src: str, dst: str) -> None:
+        replace_calls.append((src, dst))
+        real_replace(src, dst)
+
+    monkeypatch.setattr(ps.os, "replace", spy_replace)
+    saved_path = ps.save_progress(first)
+    assert len(replace_calls) == 1
+    assert replace_calls[0][1] == saved_path
+    assert list(progress_dir.glob("*.tmp")) == []
+
+    # Failed serialization leaves the prior progress file intact and cleans up its temp file
+    broken = _doc()
+    broken["problems"][0]["state"] = {"userInput": "99", "score": 1, "bad": object()}
+    with pytest.raises(TypeError):
+        ps.save_progress(broken)
+    assert list(progress_dir.glob("*.tmp")) == []
+    assert ps.load_progress("DRL-MTH-X-01")["problems"]["Q01"]["userInput"] == "42"
+
+    # Simulated os.replace failure also preserves the prior file and cleans up the temp file
+    def fail_replace(src: str, dst: str) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(ps.os, "replace", fail_replace)
+    second = _doc()
+    second["problems"][0]["state"] = {"userInput": "100", "score": 0.5}
+    with pytest.raises(OSError, match="disk full"):
+        ps.save_progress(second)
+    assert list(progress_dir.glob("*.tmp")) == []
+    assert ps.load_progress("DRL-MTH-X-01")["problems"]["Q01"]["userInput"] == "42"
+
+
+def test_is_locked_after_correct_respects_cycle_and_variant():
+    assert ps.is_locked_after_correct(None) is False
+    assert ps.is_locked_after_correct({}) is False
+
+    # Normal correct attempt locks
+    correct_state = {
+        "attempts": [{"input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct"}],
+    }
+    assert ps.is_locked_after_correct(correct_state) is True
+
+    # New cycle unlocks prior-cycle correct attempt
+    assert ps.is_locked_after_correct({**correct_state, "cycleStartedAt": "2026-11-20T12:00:00Z"}) is False
+
+    # Variant correct attempt does NOT lock original problem, but DOES lock when is_variant=True
+    variant_only = {
+        "attempts": [{"input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct", "kind": "variant"}],
+    }
+    assert ps.is_locked_after_correct(variant_only) is False
+    assert ps.is_locked_after_correct(variant_only, is_variant=True) is True
+
+    # Lightweight legacy state with lastCheck and no attempts
+    assert ps.is_locked_after_correct({"lastCheck": {"verdict": "correct"}}) is True
+    assert ps.is_locked_after_correct({"lastCheck": {"verdict": "incorrect"}}) is False

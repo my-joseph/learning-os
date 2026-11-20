@@ -19,7 +19,14 @@ from typing import Any
 
 from math_engine.answer_check import TRAP_VERDICTS, check_answer, match_trap
 from math_engine.figure_svg import figure_to_svg
-from progress_store import apply_progress, progress_root, save_progress, score_problem, workspace_root
+from progress_store import (
+    apply_progress,
+    is_locked_after_correct,
+    progress_root,
+    save_progress,
+    score_problem,
+    workspace_root,
+)
 
 PILOT_ONLY_BANNER = (
     "[pilot-only] scripts.practice is a pilot-only terminal tool (no reveal gating); "
@@ -140,15 +147,7 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
         result["trapMatched"] = True
 
     attempts = list(state.get("attempts") or [])
-    cycle_start = state.get("cycleStartedAt")
-    already_correct = any(
-        isinstance(a, dict)
-        and a.get("kind") != "variant"
-        and a.get("verdict") == "correct"
-        and (not cycle_start or (isinstance(a.get("ts"), str) and a["ts"] >= cycle_start))
-        for a in attempts
-    )
-    if already_correct:
+    if is_locked_after_correct(state):
         return state.get("lastCheck") or result
 
     mistakes = set(state.get("mistakes") or [])
@@ -208,6 +207,30 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
     return result
 
 
+def _has_cycle_original_check(state: dict[str, Any]) -> bool:
+    """Return True if the problem has an original (non-variant) check attempt in the current cycle."""
+    raw_cycle = state.get("cycleStartedAt")
+    cycle_start = raw_cycle if isinstance(raw_cycle, str) and raw_cycle else None
+    raw_attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
+    orig_attempts = [a for a in raw_attempts if isinstance(a, dict) and a.get("kind") != "variant"]
+    if orig_attempts:
+        return any(
+            not cycle_start or (isinstance(a.get("ts"), str) and bool(a["ts"]) and a["ts"] >= cycle_start)
+            for a in orig_attempts
+        )
+    return not cycle_start and bool(state.get("lastCheck"))
+
+
+def _mark_setup_reveal(state: dict[str, Any]) -> None:
+    if not _has_cycle_original_check(state):
+        state["setupRevealedBeforeAnswer"] = True
+
+
+def _mark_solution_reveal(state: dict[str, Any]) -> None:
+    if not is_locked_after_correct(state):
+        state["solutionRevealedBeforeAnswer"] = True
+
+
 def run(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -246,15 +269,13 @@ def run(argv: list[str] | None = None) -> int:
         elif args.command == "setup":
             p = _problem(doc, args.qid)
             state = _state(p)
-            if not state.get("lastCheck"):
-                state["setupRevealedBeforeAnswer"] = True
+            _mark_setup_reveal(state)
             _save(doc)
             print(p.get("display") or p.get("plainText") or "No equation set-up is available.")
         elif args.command == "solution":
             p = _problem(doc, args.qid)
             state = _state(p)
-            if not any(a.get("verdict") == "correct" for a in state.get("attempts", [])):
-                state["solutionRevealedBeforeAnswer"] = True
+            _mark_solution_reveal(state)
             _save(doc)
             for i, step in enumerate(p.get("steps", []), 1):
                 print(f"{i}. {step.get('latex', '')}\n   {step.get('explain', '')}")
