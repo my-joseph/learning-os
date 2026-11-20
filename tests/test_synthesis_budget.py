@@ -65,6 +65,39 @@ def _card(
     }
 
 
+def _prg_card(
+    cid: str,
+    *,
+    skill: str,
+    concept: str,
+    trap: str,
+    kind: str = "predict-output",
+    language: str = "javascript",
+) -> dict[str, Any]:
+    return {
+        "profile": "prg",
+        "id": cid,
+        "unitCode": "PRG-T00-C03",
+        "sourceRef": {
+            "family": "prg/javascript-questions",
+            "file": "prg/javascript-questions/q.md",
+            "page": 1,
+            "item": cid,
+        },
+        "language": language,
+        "archetypeKind": kind,
+        "skill": skill,
+        "concept": concept,
+        "bugPattern": "",
+        "testsCatch": "Observe the resulting asynchronous state",
+        "difficultyDriver": "Track control flow across callbacks",
+        "level": 2,
+        "traps": [{"tag": trap, "description": "Confuses deferred result flow"}],
+        "qualityCheckIdeas": [],
+        "notes": "Follow the promise result through each continuation",
+    }
+
+
 def _write_fixture_registry(path: Path) -> Path:
     path.write_text(
         "# Source Registry\n\n"
@@ -241,6 +274,70 @@ def test_plan_ranking_thai_boost_scope_skip_and_round_robin_diversity(
     # Batching splits 8 pages with batch_size=4 into 2 batches of 4
     assert len(plan["batches"]) == 2
     assert [b["pageCount"] for b in plan["batches"]] == [4, 4]
+
+
+# ---------------------------------------------------------------------------
+# Answer-key page selection
+# ---------------------------------------------------------------------------
+
+
+def test_plan_skips_answer_keys_but_links_them_for_confirmation(tmp_path: Path) -> None:
+    sdir = tmp_path / "sources"
+    problem_path = "SmartMathPro/ชุด/โจทย์/paper-01.pdf"
+    answer_path = "SmartMathPro/ชุด/เฉลย/paper-01.pdf"
+    for rel in (problem_path, answer_path):
+        target = sdir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"fixture source")
+    registry = _write_fixture_registry(tmp_path / "registry.md")
+    backlog = _write_fixture_backlog(tmp_path / "backlog.md")
+    page = {"page": 1, "hits": 3, "terms": {"quadratic": 3}, "charLen": 800, "estimatedItems": 1}
+    find_result = {
+        "unitCode": UNIT,
+        "track": "math",
+        "sourcesDir": str(sdir),
+        "terms": ["quadratic"],
+        "coreMatches": [
+            {
+                "relPath": problem_path,
+                "family": "SmartMathPro",
+                "mode": "cores",
+                "cacheFile": "p.json",
+                "pages": [page],
+            },
+            {"relPath": answer_path, "family": "SmartMathPro", "mode": "cores", "cacheFile": "a.json", "pages": [page]},
+        ],
+    }
+    plan = source_find.build_extraction_plan(
+        find_result,
+        budget_pages=5,
+        budget_items=5,
+        sources_dir=str(sdir),
+        registry_path=str(registry),
+        backlog_path=str(backlog),
+    )
+    assert [p["relPath"] for p in plan["selectedPages"]] == [problem_path]
+    assert plan["summary"]["skippedAnswerKeyPages"] == 1
+    assert plan["selectedPages"][0]["answerKeyPages"] == [
+        {"family": "SmartMathPro", "relPath": answer_path, "page": 1, "cacheFile": "a.json", "hits": 3}
+    ]
+    assert "answer key: " + answer_path in source_find.format_plan_report(plan)
+    worker_prompt = extract_cards_job.build_worker_prompt(UNIT, 1, sources_dir=str(sdir))
+    assert f"Answer-key reference ONLY (do not mine): `{answer_path}` page=1" in worker_prompt
+    assert "Consult only to confirm likely traps" in worker_prompt
+
+    override = source_find.build_extraction_plan(
+        find_result,
+        budget_pages=5,
+        budget_items=5,
+        sources_dir=str(sdir),
+        registry_path=str(registry),
+        backlog_path=str(backlog),
+        include_answer_keys=True,
+    )
+    assert {p["relPath"] for p in override["selectedPages"]} == {problem_path, answer_path}
+    assert override["summary"]["includeAnswerKeys"] is True
+    assert source_find._build_parser().parse_args([UNIT, "--plan", "--include-answer-keys"]).include_answer_keys
 
 
 # ---------------------------------------------------------------------------
@@ -461,6 +558,47 @@ def test_source_gap_novelty_fuzzy_duplicates_and_saturation(
     assert "SATURATION SIGNAL" in out
 
 
+def test_prg_novelty_detects_exact_and_reworded_cores_with_ad_hoc_tags(tmp_path: Path) -> None:
+    baseline = [
+        _prg_card(
+            "CORE-PRG-OLD-01",
+            skill="Trace promise reaction order relative to synchronous work",
+            concept="Promise continuations run after the current stack and pass settled values downstream",
+            trap="turn-order",
+        ),
+        _prg_card(
+            "CORE-PRG-OLD-02",
+            skill="Select array entries with a predicate and transform the retained values",
+            concept="Filtering chooses entries while mapping transforms each retained entry",
+            trap="collection-pipeline",
+            kind="implement",
+        ),
+    ]
+    exact = {
+        **baseline[0],
+        "id": "CORE-PRG-NEW-EXACT",
+        "sourceRef": {**baseline[0]["sourceRef"], "item": "exact-copy"},
+        "traps": [{"tag": "turn_order", "description": "Confuses deferred result flow"}],
+    }
+    near = _prg_card(
+        "CORE-PRG-NEW-NEAR",
+        skill="Observe promise reactions after immediate work has completed",
+        concept="Deferred handlers receive the settled result after synchronous execution",
+        trap="promise-reaction-sequence",
+    )
+    cards = [exact, near]
+    for card in cards:
+        is_duplicate, details = source_gap.cards_are_fuzzy_duplicate(card, baseline[0])
+        assert is_duplicate
+        assert details["duplicateType"] == ("exact" if card is exact else "near")
+    assert source_gap._normalize_tag("PRG-T00-C03-Queue_Order-Trap") == source_gap._normalize_tag("queue order")
+    is_duplicate, _ = source_gap.cards_are_fuzzy_duplicate(near, baseline[1])
+    assert not is_duplicate  # Different archetype kinds do not collapse into one core.
+    other_language = {**near, "language": "typescript"}
+    is_duplicate, _ = source_gap.cards_are_fuzzy_duplicate(other_language, baseline[0])
+    assert not is_duplicate
+
+
 # ---------------------------------------------------------------------------
 # 5. Worker extraction prompt generation & --commit validation/ledger/DONE_FILE
 # ---------------------------------------------------------------------------
@@ -521,6 +659,7 @@ def test_extract_cards_job_prompt_and_commit(
     assert "NEVER extract from `openstax`" in prompt
     assert str(batch_out) in prompt
     assert str(done_file) in prompt
+    assert f"CORE-{UNIT}-Rtest-run-b1-B01-01" in prompt
     assert "--commit" in prompt
     assert "source_gap" in prompt and "--novelty" in prompt
     # Both batch-1 pages appear in prompt
@@ -605,6 +744,17 @@ def test_extract_cards_job_prompt_and_commit(
     # Core cards file now contains CORE-U02-B01-01
     loaded_cards = source_cores.load_core_cards(UNIT, sources_dir=str(sdir))
     assert [c["id"] for c in loaded_cards] == ["CORE-U02-B01-01"]
+
+    # Reusing an ID for different content fails explicitly and leaves the committed core file intact.
+    conflicting = {**good_card, "notes": "A different abstract factoring pattern"}
+    batch_out.write_text(json.dumps(conflicting) + "\n", encoding="utf-8")
+    cores_before = Path(source_cores.cores_path(UNIT, sources_dir=str(sdir))).read_text(encoding="utf-8")
+    rc_clash = extract_cards_job.main(
+        [UNIT, "--batch", "1", "--sources-dir", str(sdir), "--commit", str(batch_out), "--run-id", "test-run-b1"]
+    )
+    assert rc_clash == 1
+    assert "ID clash for CORE-U02-B01-01" in capsys.readouterr().err
+    assert Path(source_cores.cores_path(UNIT, sources_dir=str(sdir))).read_text(encoding="utf-8") == cores_before
 
     # Ledger records BOTH pages from Batch 1 (page 0 with 1 card, page 1 with 0 cards)
     led = ledger.load_ledger(sources_dir=str(sdir))

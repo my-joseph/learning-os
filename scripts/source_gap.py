@@ -83,6 +83,39 @@ _STOPWORDS: frozenset[str] = frozenset(
 
 _TRAP_BOILERPLATE: frozenset[str] = frozenset({"trap", "error", "mistake", "bug", "sign", "wrong"})
 _UNIT_SLUG_TOKEN_RE = re.compile(r"^(?:mth|phy|prg|t\d+|c\d+|u\d+)$")
+_PRG_TOKEN_ALIASES = {
+    "asynchronous": "async",
+    "async": "async",
+    "awaiting": "await",
+    "awaited": "await",
+    "handlers": "continuation",
+    "handler": "continuation",
+    "reactions": "continuation",
+    "reaction": "continuation",
+    "callbacks": "continuation",
+    "callback": "continuation",
+    "returned": "return",
+    "returns": "return",
+    "returning": "return",
+    "exposes": "return",
+    "expose": "return",
+    "forwards": "return",
+    "forward": "return",
+    "values": "result",
+    "value": "result",
+    "results": "result",
+    "propagation": "propagate",
+    "operations": "operation",
+    "transformations": "transform",
+    "transformation": "transform",
+    "filtering": "filter",
+    "mapping": "map",
+    "aggregation": "aggregate",
+    "accumulation": "accumulate",
+    "collections": "collection",
+    "entries": "entry",
+    "elements": "element",
+}
 
 _MOVE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "reverse": ("reverse", "backward", "backwards", "target", "parameter", "unknown", "missing", "given the result"),
@@ -156,6 +189,74 @@ def _card_trap_tags(card: dict[str, Any]) -> set[str]:
     }
 
 
+def _normalize_tag(tag: str) -> str:
+    """Normalize ad-hoc trap tags so punctuation, separators, and suffixes do not dominate matching."""
+    tokens = _trap_slug_tokens(tag)
+    return " ".join(sorted(tokens))
+
+
+def _prg_content_tokens(card: dict[str, Any]) -> set[str]:
+    fields = (
+        "skill",
+        "concept",
+        "bugPattern",
+        "smell",
+        "testsCatch",
+        "difficultyDriver",
+        "notes",
+    )
+    parts = [str(card.get(field) or "") for field in fields]
+    parts.extend(str(trap.get("description") or "") for trap in card.get("traps") or [] if isinstance(trap, dict))
+    parts.extend(str(qc.get("check") or "") for qc in card.get("qualityCheckIdeas") or [] if isinstance(qc, dict))
+    return {_canonical_prg_token(token) for token in _tokens(" ".join(parts))}
+
+
+def _prg_identity_tokens(card: dict[str, Any]) -> set[str]:
+    return {_canonical_prg_token(token) for token in _tokens(f"{card.get('skill', '')} {card.get('concept', '')}")}
+
+
+def _jaccard(left: set[str], right: set[str]) -> float:
+    union = left | right
+    return len(left & right) / len(union) if union else 0.0
+
+
+def _canonical_prg_token(token: str) -> str:
+    return _PRG_TOKEN_ALIASES.get(token, _PRG_TOKEN_ALIASES.get(_light_stem(token), _light_stem(token)))
+
+
+def _exact_prg_core(candidate: dict[str, Any], existing: dict[str, Any]) -> bool:
+    """Exact core means normalized descriptions and trap/QC content match, independent of provenance."""
+    fields = ("skill", "concept", "bugPattern", "smell", "testsCatch", "difficultyDriver", "notes")
+    text_matches = all(
+        _norm_skill_str(str(candidate.get(k) or "")) == _norm_skill_str(str(existing.get(k) or "")) for k in fields
+    )
+    if not text_matches:
+        return False
+
+    def trap_signature(card: dict[str, Any]) -> list[tuple[str, str]]:
+        return sorted(
+            (
+                _normalize_tag(str(trap.get("tag") or "")),
+                _norm_skill_str(str(trap.get("description") or "")),
+            )
+            for trap in card.get("traps") or []
+            if isinstance(trap, dict)
+        )
+
+    def qc_signature(card: dict[str, Any]) -> list[tuple[str, str, str]]:
+        return sorted(
+            (
+                str(qc.get("id") or "").strip().lower(),
+                _norm_skill_str(str(qc.get("check") or "")),
+                str(qc.get("severity") or "").strip().lower(),
+            )
+            for qc in card.get("qualityCheckIdeas") or []
+            if isinstance(qc, dict)
+        )
+
+    return trap_signature(candidate) == trap_signature(existing) and qc_signature(candidate) == qc_signature(existing)
+
+
 def _card_qc_ids(card: dict[str, Any]) -> set[str]:
     return {
         qc["id"].strip()
@@ -214,13 +315,59 @@ def cards_are_fuzzy_duplicate(
     if cand_prg:
         kind_a = str(candidate.get("archetypeKind") or "").strip().lower()
         kind_b = str(existing.get("archetypeKind") or "").strip().lower()
-        if kind_a != kind_b:
+        language_a = str(candidate.get("language") or "").strip().lower()
+        language_b = str(existing.get("language") or "").strip().lower()
+        if kind_a != kind_b or language_a != language_b:
             return (
                 False,
-                {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different archetypeKind"},
+                {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different archetypeKind or language"},
             )
-        desc_a = " ".join(str(candidate.get(k) or "") for k in ("skill", "concept", "bugPattern", "smell")).strip()
-        desc_b = " ".join(str(existing.get(k) or "") for k in ("skill", "concept", "bugPattern", "smell")).strip()
+        if _exact_prg_core(candidate, existing):
+            return (
+                True,
+                {
+                    "skillSimilarity": 1.0,
+                    "trapSimilarity": round(
+                        _trap_similarity(
+                            {_normalize_tag(t) for t in _card_trap_tags(candidate)},
+                            {_normalize_tag(t) for t in _card_trap_tags(existing)},
+                        ),
+                        3,
+                    ),
+                    "duplicateType": "exact",
+                    "reason": "same normalized core description, archetypeKind, and language",
+                },
+            )
+        identity_sim = _jaccard(_prg_identity_tokens(candidate), _prg_identity_tokens(existing))
+        content_sim = _jaccard(_prg_content_tokens(candidate), _prg_content_tokens(existing))
+        # Require overlap in the stated skill/concept as well as the broader card, so shared boilerplate alone
+        # cannot mark two cards as repeats. Tags are normalized but are not required to match.
+        if identity_sim >= 0.05 and content_sim >= 0.10:
+            return (
+                True,
+                {
+                    "skillSimilarity": round(identity_sim, 3),
+                    "contentSimilarity": round(content_sim, 3),
+                    "trapSimilarity": round(
+                        _trap_similarity(
+                            {_normalize_tag(t) for t in _card_trap_tags(candidate)},
+                            {_normalize_tag(t) for t in _card_trap_tags(existing)},
+                        ),
+                        3,
+                    ),
+                    "duplicateType": "near",
+                    "reason": "same archetypeKind and language with overlapping skill, concept, and card content",
+                },
+            )
+        return (
+            False,
+            {
+                "skillSimilarity": round(identity_sim, 3),
+                "contentSimilarity": round(content_sim, 3),
+                "trapSimilarity": 0.0,
+                "reason": "distinct core",
+            },
+        )
     else:
         move_a = str(candidate.get("reasoningMove") or "").strip().lower()
         move_b = str(existing.get("reasoningMove") or "").strip().lower()
@@ -260,6 +407,7 @@ def cards_are_fuzzy_duplicate(
                 "trapSimilarity": trap_sim,
                 "sharedTraps": shared_traps,
                 "reason": f"same {axis} + overlapping skill and trap tags",
+                "duplicateType": "near",
             },
         )
     if traps_a and traps_a == traps_b and skill_sim >= 0.30:
@@ -270,6 +418,7 @@ def cards_are_fuzzy_duplicate(
                 "trapSimilarity": trap_sim,
                 "sharedTraps": shared_traps,
                 "reason": f"same {axis} + identical trap tags and related skill",
+                "duplicateType": "near",
             },
         )
     if skill_sim >= 0.72 and (not traps_a or traps_a.issubset(traps_b) or trap_sim >= 0.30):
@@ -280,6 +429,7 @@ def cards_are_fuzzy_duplicate(
                 "trapSimilarity": trap_sim,
                 "sharedTraps": shared_traps,
                 "reason": f"same {axis} + high skill similarity",
+                "duplicateType": "near",
             },
         )
     return (
@@ -358,6 +508,8 @@ def compute_batch_novelty(
 
     new_cards: list[dict[str, Any]] = []
     duplicate_cards: list[dict[str, Any]] = []
+    exact_duplicate_cards: list[dict[str, Any]] = []
+    near_duplicate_cards: list[dict[str, Any]] = []
 
     for card in batch_cards:
         best_match: tuple[dict[str, Any], dict[str, Any]] | None = None
@@ -381,9 +533,15 @@ def compute_batch_novelty(
                 "matchedCardId": prior_card["id"],
                 "skillSimilarity": details["skillSimilarity"],
                 "trapSimilarity": details["trapSimilarity"],
+                "contentSimilarity": details.get("contentSimilarity"),
+                "duplicateType": details.get("duplicateType", "near"),
                 "reason": details["reason"],
             }
             duplicate_cards.append(dup_entry)
+            if dup_entry["duplicateType"] == "exact":
+                exact_duplicate_cards.append(dup_entry)
+            else:
+                near_duplicate_cards.append(dup_entry)
         else:
             new_entry: dict[str, Any] = {
                 "id": card["id"],
@@ -404,10 +562,14 @@ def compute_batch_novelty(
         "batchCardsCount": len(batch_cards),
         "newCoresCount": new_count,
         "duplicateCardsCount": len(duplicate_cards),
+        "exactDuplicatesCount": len(exact_duplicate_cards),
+        "nearDuplicatesCount": len(near_duplicate_cards),
         "saturationThreshold": SATURATION_MIN_NEW_CORES,
         "belowSaturationThreshold": new_count < SATURATION_MIN_NEW_CORES,
         "newCards": new_cards,
         "duplicateCards": duplicate_cards,
+        "exactDuplicates": exact_duplicate_cards,
+        "nearDuplicates": near_duplicate_cards,
     }
 
 
@@ -417,6 +579,7 @@ def format_novelty_report(report: dict[str, Any]) -> str:
         f"Novelty report for {report['unitCode']}",
         f"Batch file: {report['batchPath']}",
         f"Result: {report['newCoresCount']} new core(s), {report['duplicateCardsCount']} duplicate(s) "
+        f"({report['exactDuplicatesCount']} exact, {report['nearDuplicatesCount']} near) "
         f"out of {report['batchCardsCount']} batch card(s) (baseline: {report['existingCardsCount']} existing)",
     ]
     if report["belowSaturationThreshold"]:
@@ -435,14 +598,23 @@ def format_novelty_report(report: dict[str, Any]) -> str:
         lines.append(f"  - [{item['id']}] L{item['level']} {axis} — {item['skill']}{traps}")
 
     lines.append("")
-    lines.append(f"Duplicates ({report['duplicateCardsCount']}):")
-    if not report["duplicateCards"]:
+    lines.append(f"Exact duplicates ({report['exactDuplicatesCount']}):")
+    if not report["exactDuplicates"]:
         lines.append("  (none)")
-    for item in report["duplicateCards"]:
+    for item in report["exactDuplicates"]:
+        axis = item.get("archetypeKind") or item.get("reasoningMove") or "?"
+        lines.append(f"  - [{item['id']}] {axis} — {item['skill']} = [{item['matchedCardId']}]")
+
+    lines.append("")
+    lines.append(f"Near-duplicates ({report['nearDuplicatesCount']}):")
+    if not report["nearDuplicates"]:
+        lines.append("  (none)")
+    for item in report["nearDuplicates"]:
         axis = item.get("archetypeKind") or item.get("reasoningMove") or "?"
         lines.append(
             f"  - [{item['id']}] L{item['level']} {axis} — {item['skill']} "
-            f"~= [{item['matchedCardId']}] (skill={item['skillSimilarity']:.2f}, trap={item['trapSimilarity']:.2f}; "
+            f"~= [{item['matchedCardId']}] (skill={item['skillSimilarity']:.2f}, "
+            f"content={(item.get('contentSimilarity') or 0.0):.2f}, trap={item['trapSimilarity']:.2f}; "
             f"{item['reason']})"
         )
 

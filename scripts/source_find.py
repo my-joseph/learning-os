@@ -122,6 +122,36 @@ _ITEM_MARKER_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 _MD_HEADING_RE = re.compile(r"^#{1,6}\s+")
+_ANSWER_DIR_RE = re.compile(r"^(?:answers?|solutions?|เฉลย)$", re.IGNORECASE)
+_PROBLEM_DIR_RE = re.compile(r"^(?:questions?|problems?|โจทย์)$", re.IGNORECASE)
+_ANSWER_FILE_SUFFIX_RE = re.compile(r"(?:[-_. ]?(?:ans(?:wer)?s?|solutions?))+$", re.IGNORECASE)
+
+
+def _is_answer_key_path(rel_path: str) -> bool:
+    """Identify likely answer-key files/folders so they are not selected as primary targets."""
+    path = normalize_rel_path(rel_path).replace("::", "/")
+    parts = path.split("/")
+    if any("เฉลย" in part for part in parts):
+        return True
+    if any(_ANSWER_DIR_RE.fullmatch(part) for part in parts[:-1]):
+        return True
+    stem = os.path.splitext(parts[-1])[0]
+    return bool(_ANSWER_FILE_SUFFIX_RE.search(stem))
+
+
+def _answer_pair_key(rel_path: str) -> str:
+    """Return a normalized source key that pairs problem and answer-key folder/file naming."""
+    path = normalize_rel_path(rel_path).replace("::", "/")
+    parts = path.split("/")
+    normalized: list[str] = []
+    for part in parts[:-1]:
+        if _ANSWER_DIR_RE.fullmatch(part) or _PROBLEM_DIR_RE.fullmatch(part) or "เฉลย" in part:
+            continue
+        normalized.append(part.lower())
+    stem = os.path.splitext(parts[-1])[0]
+    stem = re.sub(r"(?:[-_. ]?(?:ans(?:wer)?s?|solutions?))+$", "", stem, flags=re.IGNORECASE)
+    normalized.append(stem.lower())
+    return "/".join(normalized)
 
 
 def _clean_family_prefix(raw_token: str) -> str:
@@ -916,6 +946,7 @@ def build_extraction_plan(
     sources_dir: str | None = None,
     registry_path: str | None = None,
     backlog_path: str | None = None,
+    include_answer_keys: bool = False,
 ) -> dict[str, Any]:
     """Rank and select a bounded, diverse set of candidate pages/chunks and write ``plan_<UNIT>.json``.
 
@@ -950,6 +981,8 @@ def build_extraction_plan(
     hash_cache: dict[str, str] = {}
 
     by_family: dict[str, list[dict[str, Any]]] = {}
+    answer_key_pages: list[dict[str, Any]] = []
+    skipped_answer_key_pages = 0
     candidates_by_family: Counter[str] = Counter()
 
     for match in find_result.get("coreMatches") or []:
@@ -968,8 +1001,23 @@ def build_extraction_plan(
         cache_file = str(match.get("cacheFile") or "")
         lic = match.get("license") or family_license(rel_path, registry_path=registry_path)
 
+        is_answer_key = _is_answer_key_path(rel_path)
+
         for p_entry in match.get("pages") or []:
             pnum = int(p_entry["page"])
+            if is_answer_key:
+                answer_key_pages.append(
+                    {
+                        "family": fam,
+                        "relPath": rel_path,
+                        "page": pnum,
+                        "cacheFile": cache_file,
+                        "hits": int(p_entry.get("hits") or 0),
+                    }
+                )
+                if not include_answer_keys:
+                    skipped_answer_key_pages += 1
+                    continue
             if not refresh and is_page_extracted(
                 ledger,
                 unit_code,
@@ -1072,6 +1120,18 @@ def build_extraction_plan(
             }
         )
 
+    if not include_answer_keys:
+        for candidate in selected:
+            pair_key = _answer_pair_key(candidate["relPath"])
+            matches = [
+                answer
+                for answer in answer_key_pages
+                if answer["family"] == candidate["family"] and _answer_pair_key(answer["relPath"]) == pair_key
+            ]
+            if matches:
+                same_page = [match for match in matches if match["page"] == candidate["page"]]
+                candidate["answerKeyPages"] = sorted(same_page or matches, key=lambda p: (p["page"], p["relPath"]))
+
     pages_by_family = dict(sorted(Counter(c["family"] for c in selected).items()))
     total_candidates = sum(candidates_by_family.values())
 
@@ -1094,6 +1154,8 @@ def build_extraction_plan(
             "totalCandidates": total_candidates,
             "skippedLedgerPages": skipped_ledger_pages,
             "skippedScopePages": skipped_scope_pages,
+            "skippedAnswerKeyPages": skipped_answer_key_pages,
+            "includeAnswerKeys": include_answer_keys,
             "skippedNoAutomationFamilies": sorted(skipped_no_auto),
             "selectedPageCount": len(selected),
             "selectedEstimatedItems": cumulative_items,
@@ -1200,7 +1262,8 @@ def format_plan_report(plan: dict[str, Any]) -> str:
         f"Budget: max {b['maxPages']} page(s), max {b['maxItems']} item(s), "
         f"batch size {b['batchSize']}{' [REFRESH]' if b['refresh'] else ''}",
         f"Candidates: {s['totalCandidates']} eligible, {s['skippedLedgerPages']} skipped (ledger), "
-        f"{s['skippedScopePages']} skipped (scope-only)",
+        f"{s['skippedScopePages']} skipped (scope-only), "
+        f"{s.get('skippedAnswerKeyPages', 0)} skipped (answer-key primary targets)",
         f"Selected: {s['selectedPageCount']} page(s), ~{s['selectedEstimatedItems']} item(s) "
         f"in {s['batchCount']} batch(es)",
     ]
@@ -1240,6 +1303,10 @@ def format_plan_report(plan: dict[str, Any]) -> str:
                     f"    #{p['rank']:02d} [{p['family']}{mode_tag}] {p['relPath']} p.{p['page']} "
                     f"(score={p['score']}, hits={p['hits']}, items<={p['itemAllowance']})"
                 )
+                for answer in p.get("answerKeyPages") or []:
+                    lines.append(
+                        f"      ↳ answer key: {answer['relPath']} p.{answer['page']} (consult for trap confirmation)"
+                    )
 
     return "\n".join(lines)
 
@@ -1308,6 +1375,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include pages/chunks already recorded in sources/_cores/_ledger.json when building --plan.",
     )
+    parser.add_argument(
+        "--include-answer-keys",
+        action="store_true",
+        help="Allow answer-key pages/files to be selected as primary mining targets in --plan.",
+    )
     parser.add_argument("--json", action="store_true", help="Print structured JSON output.")
     return parser
 
@@ -1331,6 +1403,7 @@ def main(argv: list[str] | None = None) -> int:
                 batch_size=args.batch_size,
                 refresh=args.refresh,
                 sources_dir=args.sources_dir,
+                include_answer_keys=args.include_answer_keys,
             )
             if args.json:
                 print(json.dumps(plan, ensure_ascii=False, indent=2))
