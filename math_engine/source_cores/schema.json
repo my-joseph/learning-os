@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learningos.local/schemas/source-core-card.schema.json",
+  "title": "Source Core Card",
+  "description": "Abstract, source-free mathematical problem core extracted from an allowed source family. No field may contain source wording, source numbers, or exceed 200 characters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "unitCode",
+    "sourceRef",
+    "skill",
+    "reasoningMove",
+    "difficultyDriver",
+    "level",
+    "traps",
+    "format",
+    "representation"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "unitCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "laterUnit": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "file", "page", "item"],
+      "properties": {
+        "family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "page": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "string", "minLength": 1, "maxLength": 200 }
+          ]
+        },
+        "item": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "skill": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "reasoningMove": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "reverse",
+        "translate",
+        "diagnose",
+        "multi-relation",
+        "case-check",
+        "generalise",
+        "model"
+      ]
+    },
+    "difficultyDriver": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "traps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tag", "description"],
+        "properties": {
+          "tag": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["choice", "numeric", "expression", "proof-lite"]
+        },
+        "optionCount": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20
+        },
+        "distractorPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "representation": {
+      "type": "string",
+      "enum": ["symbolic", "graph/plane", "table", "verbal"]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 200
+    }
+  }
+}

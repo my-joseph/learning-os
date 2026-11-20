@@ -45,6 +45,8 @@ from math_engine.ai_drill_ingest import (
 )
 from math_engine.answer_check import check_answer
 from math_engine.fmt import LEVEL_LABELS
+from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores.originality import check_document_originality
 from math_engine.templates import load_unit
 from math_engine.verify import verify_problem
 from progress_store import find_repo_root, strip_progress
@@ -324,6 +326,8 @@ def check_variant_bank(
     data_root: Optional[str] = None,
     vault_dir: Optional[str] = None,
     rules: Optional[Dict[str, Any]] = None,
+    check_originality: bool = False,
+    sources_dir: Optional[str] = None,
 ) -> List[str]:
     """Run every single-problem ingest gate + variant uniqueness checks on ``bank_doc``."""
     errors: List[str] = []
@@ -415,6 +419,10 @@ def check_variant_bank(
         else:
             # Still record for duplicate detection against later variants in the same bank
             accepted.append((pid, prob))
+
+    if check_originality:
+        orig_errors, _ = check_document_originality(bank_doc, unit_code=unit_code, sources_dir=sources_dir)
+        errors.extend(orig_errors)
 
     return errors
 
@@ -678,6 +686,17 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--seed", type=int, default=20261119, help="Deterministic RNG seed for --from-templates.")
     parser.add_argument("--overwrite", action="store_true", help="Replace existing bank file on --from-templates.")
+    parser.add_argument(
+        "--originality",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="With --check: run the source originality gate (default: ON when sources dir exists, skipped with a notice when absent).",
+    )
+    parser.add_argument(
+        "--sources-dir",
+        default=None,
+        help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
+    )
     return parser
 
 
@@ -695,6 +714,20 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"FAIL Invalid JSON in '{args.check}': {exc}")
             return 1
         errs = check_variant_bank(doc)
+        resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+        if args.originality is False:
+            pass
+        elif not os.path.isdir(resolved_sources):
+            print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
+        else:
+            orig_errors, orig_notice = check_document_originality(
+                doc,
+                unit_code=args.unit or doc.get("unitCode"),
+                sources_dir=resolved_sources,
+            )
+            if orig_notice:
+                print(f"NOTE: {orig_notice}")
+            errs.extend(orig_errors)
         for line in errs:
             print(f"  FAIL {line}")
         n = len(doc.get("variants") or [])

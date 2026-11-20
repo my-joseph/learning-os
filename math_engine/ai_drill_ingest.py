@@ -30,6 +30,8 @@ from math_engine.figure_autofill import archetype_requires_figure, autofill_prob
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.latex_guard import find_bare_words
+from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores.originality import check_document_originality
 from math_engine.verify import verify_problem
 from progress_store import strip_progress
 from quality_rules import (
@@ -882,6 +884,8 @@ def check_ai_drill(
     drill_doc: Dict[str, Any],
     rules: Optional[Dict[str, Any]] = None,
     vault_dir: Optional[str] = None,
+    check_originality: bool = False,
+    sources_dir: Optional[str] = None,
 ) -> List[str]:
     """Run every ingest gate on a draft WITHOUT saving it or touching the vault.
 
@@ -923,6 +927,9 @@ def check_ai_drill(
         check_gate_g3_set(checked, rules=rules or QUALITY_RULES)
     except QualityError as exc:
         errors.append(str(exc))
+    if check_originality:
+        orig_errors, _ = check_document_originality(drill_doc, unit_code=unit_code, sources_dir=sources_dir)
+        errors.extend(orig_errors)
     return errors
 
 
@@ -1068,7 +1075,7 @@ def ingest_ai_drill(
     return drill_doc
 
 
-if __name__ == "__main__":
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Ingest AI-generated drill or inspect Reasoning Vault.")
     parser.add_argument("--unit", default="MTH-T01-C06", help="Unit code (e.g. MTH-T01-C06)")
     parser.add_argument("--list-vault", action="store_true", help="List registered reasoning archetypes")
@@ -1078,7 +1085,18 @@ if __name__ == "__main__":
         action="store_true",
         help="With --ingest-file: run all gates and list every error; save nothing, do not touch the vault.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--originality",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="With --check: run the source originality gate (default: ON when sources dir exists, skipped with a notice when absent).",
+    )
+    parser.add_argument(
+        "--sources-dir",
+        default=None,
+        help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
+    )
+    args = parser.parse_args(argv)
 
     if args.list_vault:
         archs = load_scope_archetypes(args.unit)
@@ -1096,6 +1114,20 @@ if __name__ == "__main__":
             drill_data = json.load(f)
         if args.check:
             problems_found = check_ai_drill(drill_data)
+            resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+            if args.originality is False:
+                pass
+            elif not os.path.isdir(resolved_sources):
+                print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
+            else:
+                orig_errors, orig_notice = check_document_originality(
+                    drill_data,
+                    unit_code=drill_data.get("unitCode") or args.unit,
+                    sources_dir=resolved_sources,
+                )
+                if orig_notice:
+                    print(f"NOTE: {orig_notice}")
+                problems_found.extend(orig_errors)
             for line in problems_found:
                 print(f"  FAIL {line}")
             n = len(drill_data.get("problems") or [])
@@ -1104,6 +1136,11 @@ if __name__ == "__main__":
                 if problems_found
                 else f"OK: all {n} problems pass every gate (nothing saved)."
             )
-            raise SystemExit(1 if problems_found else 0)
+            return 1 if problems_found else 0
         saved = ingest_ai_drill(drill_data)
         print(f"Successfully verified and ingested drill: {saved.get('drillId')}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

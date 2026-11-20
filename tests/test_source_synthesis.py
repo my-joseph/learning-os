@@ -1,0 +1,597 @@
+"""Hermetic tests for the source-synthesis pipeline.
+
+Covers core-card schema & copied-number validation, originality gate (CLI + ingest & variant_bank
+integration), scripts.source_find (term matching, scope-only OpenStax, scans, zip PDFs, cache),
+and scripts.source_gap (matched/unmatched cards, new traps, missing moves/levels, exam formats,
+laterUnit grouping). Never reads the real ``sources/`` directory.
+"""
+
+from __future__ import annotations
+
+import builtins
+import copy
+import importlib.util
+import json
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+import pytest
+
+from math_engine import ai_drill_ingest, source_cores, variant_bank
+from math_engine.source_cores import originality
+from scripts import source_find, source_gap
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def _sample_card(**overrides) -> dict:
+    card = {
+        "id": "CORE-MTH-T02-C01-U01-01",
+        "unitCode": "MTH-T02-C01-U01",
+        "sourceRef": {
+            "family": "thai-exams/tcas68-a-level",
+            "file": "math1-2568.pdf",
+            "page": 4,
+            "item": "Q12",
+        },
+        "skill": "Rationalize a complex quotient using the denominator conjugate",
+        "reasoningMove": "reverse",
+        "difficultyDriver": "Unknown real coefficient inside numerator determined from target imaginary part",
+        "level": 3,
+        "traps": [
+            {
+                "tag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+                "description": "Subtracts squared imaginary coefficient instead of adding in denominator",
+            }
+        ],
+        "format": {
+            "kind": "choice",
+            "optionCount": 5,
+            "distractorPatterns": ["denominator sign flip", "omitted conjugate on numerator"],
+        },
+        "representation": "symbolic",
+        "notes": "Tests reverse solving with complex division",
+    }
+    card.update(overrides)
+    return card
+
+
+def _minimal_pdf_bytes(text: str) -> bytes:
+    """Build a tiny, valid single-page PDF 1.4 containing ``text`` (pure Python, no external libs)."""
+    safe = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    stream = f"BT /F1 12 Tf 72 720 Td ({safe}) Tj ET\n".encode("latin-1")
+    objs = [
+        b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
+        b"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
+        b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n",
+        b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
+        (f"5 0 obj << /Length {len(stream)} >> stream\n".encode("ascii") + stream + b"endstream endobj\n"),
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objs:
+        offsets.append(len(out))
+        out.extend(obj)
+    xref_pos = len(out)
+    out.extend(f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode("ascii"))
+    for off in offsets[1:]:
+        out.extend(f"{off:010d} 00000 n \n".encode("ascii"))
+    out.extend(f"trailer << /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n".encode("ascii"))
+    return bytes(out)
+
+
+def _write_located_cache(sources_dir: Path, unit_code: str, rel_path: str, page_text: str) -> None:
+    idx_dir = sources_dir / "_index"
+    idx_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = "pdf_testfixture0001.json"
+    (idx_dir / cache_file).write_text(
+        json.dumps(
+            {
+                "relPath": rel_path,
+                "family": source_cores.family_root(rel_path),
+                "mode": source_cores.family_mode(rel_path),
+                "mtime": 1.0,
+                "size": 100,
+                "pages": [{"page": 1, "text": page_text, "isImagePage": False}],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (idx_dir / f"located_{unit_code}.json").write_text(
+        json.dumps(
+            {
+                "unitCode": unit_code,
+                "terms": ["complex"],
+                "matches": [
+                    {
+                        "relPath": rel_path,
+                        "family": source_cores.family_root(rel_path),
+                        "mode": source_cores.family_mode(rel_path),
+                        "cacheFile": cache_file,
+                        "totalHits": 2,
+                        "pages": [{"page": 1, "hits": 2, "terms": {"complex": 2}}],
+                        "imagePages": [],
+                    }
+                ],
+                "imageOnlyFiles": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+
+# ---------------------------------------------------------------------------
+# 1. Sources directory resolution & core-card schema validation
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_sources_dir_env_and_worktree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    main_repo = tmp_path / "main-repo"
+    wt_dir = tmp_path / "wt-branch"
+    git_wt = main_repo / ".git" / "worktrees" / "wt-branch"
+    git_wt.mkdir(parents=True)
+    wt_dir.mkdir()
+    (wt_dir / ".git").write_text(f"gitdir: {git_wt}\n", encoding="utf-8")
+
+    monkeypatch.delenv("LEARNINGOS_SOURCES_DIR", raising=False)
+    assert source_cores.resolve_sources_dir(cwd=str(wt_dir)) == str(main_repo / "sources")
+
+    custom = tmp_path / "custom-sources"
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(custom))
+    assert source_cores.resolve_sources_dir(cwd=str(wt_dir)) == str(custom)
+
+
+def test_core_card_schema_valid_and_invalid() -> None:
+    schema = source_cores.load_schema()
+    assert schema["title"] == "Source Core Card"
+    assert source_cores.validate_core_card(_sample_card()) == []
+    assert source_cores.validate_core_card(_sample_card(laterUnit="MTH-T02-C01-U03")) == []
+
+    # Missing required field
+    bad_missing = _sample_card()
+    del bad_missing["reasoningMove"]
+    assert any("reasoningMove" in e for e in source_cores.validate_core_card(bad_missing))
+
+    # Invalid enum & bounds
+    assert any("reasoningMove" in e for e in source_cores.validate_core_card(_sample_card(reasoningMove="guess")))
+    assert any("level" in e for e in source_cores.validate_core_card(_sample_card(level=6)))
+    assert any("level" in e for e in source_cores.validate_core_card(_sample_card(level=True)))
+    assert any("representation" in e for e in source_cores.validate_core_card(_sample_card(representation="audio")))
+    assert any("format.kind" in e for e in source_cores.validate_core_card(_sample_card(format={"kind": "essay"})))
+
+    # OpenStax family rejected for core cards (scope only)
+    openstax_card = _sample_card(
+        sourceRef={"family": "openstax/math/algebra-trig", "file": "ch2.pdf", "page": 10, "item": "Ex 1"}
+    )
+    assert any("scope-only" in e for e in source_cores.validate_core_card(openstax_card))
+
+    # 200-char field limit enforced everywhere (top-level & nested)
+    long_text = "x" * 201
+    assert any("200-char" in e for e in source_cores.validate_core_card(_sample_card(notes=long_text)))
+    nested_long = _sample_card(traps=[{"tag": "trap-a", "description": long_text}])
+    assert any("traps[0].description" in e for e in source_cores.validate_core_card(nested_long))
+
+
+def test_core_card_rejects_copied_numbers_and_wording(tmp_path: Path) -> None:
+    source_text = "Question 12. Find the value of a such that (a + 17i) / (3 - 4i) has imaginary part 42."
+
+    # Abstract card (no source digits; unit-code digits in trap tag 't02-c01-u01' are allowed)
+    clean = _sample_card()
+    assert source_cores.validate_core_card(clean, source_item_text=source_text) == []
+
+    # Card leaking copied source numbers
+    leaked_num = _sample_card(notes="Divide by 3 - 4i to hit target 42")
+    errs_num = source_cores.validate_core_card(leaked_num, source_item_text=source_text)
+    assert any("digit run" in e for e in errs_num), errs_num
+
+    # Card leaking copied source wording (6-word shingle overlap)
+    leaked_words = _sample_card(difficultyDriver="Find the value of a such that quotient is imaginary")
+    errs_words = source_cores.validate_core_card(leaked_words, source_item_text=source_text)
+    assert any("source wording overlap" in e for e in errs_words), errs_words
+
+    # Save + load JSONL round-trip
+    saved_path = source_cores.save_core_cards("MTH-T02-C01-U01", [clean], sources_dir=str(tmp_path))
+    assert Path(saved_path).is_file()
+    loaded = source_cores.load_core_cards("MTH-T02-C01-U01", sources_dir=str(tmp_path))
+    assert loaded == [clean]
+
+    with pytest.raises(source_cores.CoreCardError):
+        source_cores.append_core_card(
+            "MTH-T02-C01-U01",
+            leaked_num,
+            sources_dir=str(tmp_path),
+            source_item_text=source_text,
+        )
+
+
+# ---------------------------------------------------------------------------
+# 2. Originality gate (unit + CLI + ingest & variant_bank wiring)
+# ---------------------------------------------------------------------------
+
+
+def test_originality_gate_copy_paraphrase_similarity_and_original() -> None:
+    source_pages = [
+        {
+            "relPath": "mathsgenie/Grade_8/Exam_Questions/complex.pdf",
+            "page": 2,
+            "text": (
+                "1. Expand and simplify the complex product (3 + 4i)(5 - 2i) in standard form.\n"
+                "2. Determine the real parameter k when the quadratic equation x^2 + 6x + k = 0 "
+                "has non-real roots with modulus 5."
+            ),
+        }
+    ]
+
+    # 1. Verbatim copy (>= 8-word shingle overlap) -> reject
+    copied = {
+        "id": "Q01",
+        "prompt": "Expand and simplify the complex product $(3 + 4i)(5 - 2i)$ in standard form.",
+    }
+    errs_copy = originality.check_problem_originality(copied, source_pages)
+    assert any("shingle" in e for e in errs_copy), errs_copy
+
+    # 2. Paraphrase reusing exact source number multiset {3, 4, 5, 2} -> reject
+    same_nums = {
+        "id": "Q02",
+        "prompt": "Given $z_1 = 3 + 4i$ and $z_2 = 5 - 2i$, compute $z_1 z_2$.",
+    }
+    errs_nums = originality.check_problem_originality(same_nums, source_pages)
+    assert any("number multiset" in e for e in errs_nums), errs_nums
+
+    # 3. High normalised similarity (>= 0.6) even with changed numbers -> reject
+    near_copy = {
+        "id": "Q03",
+        "prompt": "Expand and simplify the complex product $(7 + 8i)(9 - 6i)$ in standard form.",
+    }
+    errs_sim = originality.check_problem_originality(near_copy, source_pages)
+    assert any("normalised similarity" in e for e in errs_sim), errs_sim
+
+    # 4. Choice option copying source sentence -> reject
+    copied_opt = {
+        "id": "Q04",
+        "prompt": "Select the statement that matches the identity.",
+        "answerSpec": {
+            "type": "choice",
+            "options": [
+                {"id": "A", "label": "Expand and simplify the complex product (3 + 4i)(5 - 2i) in standard form."}
+            ],
+        },
+    }
+    errs_opt = originality.check_problem_originality(copied_opt, source_pages)
+    assert any("option 1" in e for e in errs_opt), errs_opt
+
+    # 5. Fresh original problem (different wording, fresh numbers, low similarity) -> pass
+    fresh = {
+        "id": "Q05",
+        "prompt": "Write the quotient $\\frac{11 - 7i}{2 + 3i}$ as $a + bi$.",
+    }
+    assert originality.check_problem_originality(fresh, source_pages) == []
+
+
+def test_originality_cli_and_ingest_variant_wiring(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    unit = "MTH-T01-C04"
+    sources_dir = tmp_path / "sources"
+    source_text = "1. Reduce the fraction 14/35 to its lowest terms by dividing by the greatest common factor."
+    _write_located_cache(sources_dir, unit, "mathsgenie/Grade_4/fractions.pdf", source_text)
+
+    # Load a real passing template draft and inject a copied prompt for testing CLI gates
+    tpl_path = ROOT / ".claude" / "skills" / "new-math-drill" / "template" / "draft.json"
+    draft = json.loads(tpl_path.read_text(encoding="utf-8"))
+    draft_unit = draft["unitCode"]
+    draft_copy = copy.deepcopy(draft)
+    _write_located_cache(
+        sources_dir,
+        draft_unit,
+        "mathsgenie/Grade_5/sample.pdf",
+        f"1. {draft_copy['problems'][0]['prompt']}",
+    )
+    draft_file = tmp_path / "draft.json"
+    draft_file.write_text(json.dumps(draft_copy), encoding="utf-8")
+
+    # Standalone originality CLI rejects copied draft
+    rc_fail = originality.main([str(draft_file), "--unit", draft_unit, "--sources-dir", str(sources_dir)])
+    assert rc_fail == 1
+    out = capsys.readouterr().out
+    assert "FAIL" in out
+
+    # Standalone originality CLI skips cleanly with notice when sources dir is absent
+    missing_dir = tmp_path / "no-such-sources"
+    rc_skip = originality.main([str(draft_file), "--unit", draft_unit, "--sources-dir", str(missing_dir)])
+    assert rc_skip == 0
+    assert "skipped" in capsys.readouterr().out.lower()
+
+    # Direct Python API check_ai_drill(..., check_originality=True)
+    api_ingest_errs = ai_drill_ingest.check_ai_drill(
+        draft_copy,
+        vault_dir=str(tpl_path.parent),
+        check_originality=True,
+        sources_dir=str(sources_dir),
+    )
+    assert any("Originality gate failed" in e for e in api_ingest_errs), api_ingest_errs
+
+    # ai_drill_ingest --check: default ON when sources dir exists -> rejects copied prompt
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(tpl_path.parent))
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(sources_dir))
+    rc_ingest_fail = ai_drill_ingest.main(["--unit", draft_unit, "--ingest-file", str(draft_file), "--check"])
+    assert rc_ingest_fail == 1
+    assert "Originality gate failed" in capsys.readouterr().out
+
+    # ai_drill_ingest --check --no-originality skips originality check
+    rc_ingest_no_orig = ai_drill_ingest.main(
+        ["--unit", draft_unit, "--ingest-file", str(draft_file), "--check", "--no-originality"]
+    )
+    assert rc_ingest_no_orig == 0
+    capsys.readouterr()
+
+    # ai_drill_ingest --check skips with a notice when sources dir does not exist (CI behaviour)
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(missing_dir))
+    rc_ingest_ci = ai_drill_ingest.main(["--unit", draft_unit, "--ingest-file", str(draft_file), "--check"])
+    assert rc_ingest_ci == 0
+    assert "Originality gate skipped" in capsys.readouterr().out
+
+    # variant_bank --check: default ON when sources dir exists -> rejects variant copying source prompt
+    monkeypatch.delenv("REASONING_VAULT_DIR", raising=False)
+    seed_bank = json.loads((ROOT / "drills" / "variants" / "MTH-T01-C04.json").read_text(encoding="utf-8"))
+    first_var = copy.deepcopy(seed_bank["variants"][0])
+    _write_located_cache(
+        sources_dir,
+        "MTH-T01-C04",
+        "mathsgenie/Grade_4/fractions.pdf",
+        f"1. {first_var['prompt']}",
+    )
+    var_file = tmp_path / "variants.json"
+    var_file.write_text(json.dumps({"unitCode": "MTH-T01-C04", "variants": [first_var]}), encoding="utf-8")
+
+    # Direct Python API check_variant_bank(..., check_originality=True)
+    api_vb_errs = variant_bank.check_variant_bank(
+        {"unitCode": "MTH-T01-C04", "variants": [first_var]},
+        check_originality=True,
+        sources_dir=str(sources_dir),
+    )
+    assert any("Originality gate failed" in e for e in api_vb_errs), api_vb_errs
+
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(sources_dir))
+    rc_vb_fail = variant_bank.main(["--check", str(var_file), "--originality"])
+    assert rc_vb_fail == 1
+    assert "Originality gate failed" in capsys.readouterr().out
+
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(missing_dir))
+    rc_vb_ci = variant_bank.main(["--check", str(var_file)])
+    assert rc_vb_ci == 0
+    assert "Originality gate skipped" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# 3. scripts.source_find (terms, scope-only OpenStax, scans, zip, cache, pypdf)
+# ---------------------------------------------------------------------------
+
+
+def test_source_find_matching_scope_scans_zip_and_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    sources_dir = tmp_path / "sources"
+    mg_pdf = sources_dir / "mathsgenie" / "Grade_8" / "Exam_Questions" / "complex.pdf"
+    thai_pdf = sources_dir / "thai-exams" / "tcas68-a-level" / "math1.pdf"
+    scan_pdf = sources_dir / "thai-exams" / "onet-2568" / "m6-scan.pdf"
+    os_pdf = sources_dir / "openstax" / "math" / "algebra-trig" / "book.pdf"
+    zip_path = sources_dir / "illustrative-math" / "grade6-unit1" / "bundle.zip"
+
+    for p in (mg_pdf, thai_pdf, scan_pdf, os_pdf):
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(b"%PDF-1.4 dummy")
+
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("lesson1.pdf", b"%PDF-1.4 zip-dummy")
+
+    extract_calls: list[str] = []
+
+    def fake_extract(source: str | bytes) -> list[dict]:
+        if isinstance(source, bytes):
+            extract_calls.append("zip::lesson1.pdf")
+            return [{"page": 1, "text": "Intro to a + bi and conjugate symmetry", "isImagePage": False}]
+        name = Path(source).name
+        extract_calls.append(name)
+        if name == "complex.pdf":
+            return [
+                {"page": 1, "text": "Simplify complex conjugate expressions in a + bi form.", "isImagePage": False},
+                {"page": 2, "text": "", "isImagePage": True},
+            ]
+        if name == "math1.pdf":
+            return [{"page": 1, "text": "ข้อ 1 จำนวนเชิงซ้อน และ สังยุค ของจำนวนจินตภาพ", "isImagePage": False}]
+        if name == "m6-scan.pdf":
+            return [
+                {"page": 1, "text": "", "isImagePage": True},
+                {"page": 2, "text": "   ", "isImagePage": True},
+            ]
+        if name == "book.pdf":
+            return [
+                {
+                    "page": 1,
+                    "text": "Table of Contents - Learning Objectives: Complex Numbers and imaginary unit",
+                    "isImagePage": False,
+                }
+            ]
+        return []
+
+    monkeypatch.setattr(source_find, "extract_pdf_pages", fake_extract)
+
+    # Verify seeded terms exist for MTH-T02-C01-U01
+    seeded = source_cores.get_unit_terms("MTH-T02-C01-U01")
+    assert "complex" in seeded and "จำนวนเชิงซ้อน" in seeded and "สังยุค" in seeded
+
+    res = source_find.find_sources("MTH-T02-C01-U01", sources_dir=str(sources_dir))
+    assert res["pdfsScanned"] == 5
+    core_paths = {m["relPath"] for m in res["coreMatches"]}
+    scope_paths = {m["relPath"] for m in res["scopeMatches"]}
+    scan_paths = {m["relPath"] for m in res["imageOnlyFiles"]}
+
+    assert "mathsgenie/Grade_8/Exam_Questions/complex.pdf" in core_paths
+    assert "thai-exams/tcas68-a-level/math1.pdf" in core_paths
+    assert "illustrative-math/grade6-unit1/bundle.zip::lesson1.pdf" in core_paths
+    # OpenStax MUST be scope-only, never in mining targets
+    assert "openstax/math/algebra-trig/book.pdf" in scope_paths
+    assert not any(p.startswith("openstax/") for p in core_paths)
+    # All-scan PDF reported in imageOnlyFiles
+    assert "thai-exams/onet-2568/m6-scan.pdf" in scan_paths
+
+    # Report formatting checks
+    report = source_find.format_find_report(res)
+    assert "[scope:openstax]" in report
+    assert "image page — read visually" in report
+
+    # Located manifest and PDF text cache written under sources/_index/
+    assert Path(res["manifestPath"]).is_file()
+    assert len(list((sources_dir / "_index").glob("pdf_*.json"))) == 5
+
+    # Second run hits cache (zero new extract calls)
+    extract_calls.clear()
+    res2 = source_find.find_sources("MTH-T02-C01-U01", sources_dir=str(sources_dir))
+    assert extract_calls == []
+    assert len(res2["coreMatches"]) == len(res["coreMatches"])
+
+    # Family filter narrows search
+    res_thai = source_find.find_sources(
+        "MTH-T02-C01-U01",
+        families=["thai-exams/tcas68-a-level"],
+        sources_dir=str(sources_dir),
+    )
+    assert [m["relPath"] for m in res_thai["coreMatches"]] == ["thai-exams/tcas68-a-level/math1.pdf"]
+    assert res_thai["scopeMatches"] == []
+
+
+def test_source_find_missing_pypdf_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    real_import = builtins.__import__
+
+    def fake_import(name: str, *args, **kwargs):
+        if name == "pypdf":
+            raise ImportError("No module named 'pypdf'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    with pytest.raises(RuntimeError, match="requirements-dev.txt"):
+        source_find.extract_pdf_pages(b"%PDF-1.4")
+
+
+@pytest.mark.skipif(importlib.util.find_spec("pypdf") is None, reason="pypdf not installed in this venv")
+def test_source_find_real_pypdf_extraction(tmp_path: Path) -> None:
+    sources_dir = tmp_path / "sources"
+    pdf_path = sources_dir / "mathsgenie" / "Grade_8" / "complex_real.pdf"
+    pdf_path.parent.mkdir(parents=True)
+    pdf_path.write_bytes(_minimal_pdf_bytes("Complex conjugate and imaginary numbers"))
+
+    res = source_find.find_sources("MTH-T02-C01-U01", sources_dir=str(sources_dir))
+    assert len(res["coreMatches"]) == 1
+    assert res["coreMatches"][0]["pages"][0]["hits"] >= 3
+
+
+# ---------------------------------------------------------------------------
+# 4. scripts.source_gap (read-only gap report)
+# ---------------------------------------------------------------------------
+
+
+def test_source_gap_report_and_read_only(tmp_path: Path) -> None:
+    unit = "MTH-T02-C01-U01"
+    vault_dir = tmp_path / "vault"
+    vault_dir.mkdir()
+    vault_file = vault_dir / f"{unit}.json"
+    vault_payload = {
+        "unitCode": unit,
+        "archetypes": [
+            {
+                "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+                "level": 2,
+                "name": "Dividing Complex Numbers via Conjugate Rationalization",
+                "coreConcept": "Multiply numerator and denominator by denominator conjugate.",
+                "mentalModel": "Normalize complex ratio to real denominator.",
+                "cognitiveTraps": ["t02-c01-u01-denominator-conjugate-sign-error-trap"],
+                "figureNone": "Symbolic algebra.",
+            }
+        ],
+    }
+    vault_bytes = json.dumps(vault_payload, indent=2).encode("utf-8")
+    vault_file.write_bytes(vault_bytes)
+
+    cards = [
+        # 1. Matches existing archetype by trap tag, adds a new trap, L3 reverse, 5-option choice
+        _sample_card(
+            id="CORE-01",
+            level=3,
+            reasoningMove="reverse",
+            traps=[
+                {
+                    "tag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+                    "description": "Wrong denominator sign",
+                },
+                {
+                    "tag": "t02-c01-u01-swap-real-imag-target-trap",
+                    "description": "Equates real part to target imaginary part",
+                },
+            ],
+        ),
+        # 2. Unmatched card (candidate new archetype), L5 generalise
+        _sample_card(
+            id="CORE-02",
+            skill="Cyclic sum cancellation for consecutive high powers of imaginary unit",
+            reasoningMove="generalise",
+            difficultyDriver="Group four consecutive powers summing to zero across arbitrary length",
+            level=5,
+            traps=[{"tag": "t02-c01-u01-off-by-one-cycle-count-trap", "description": "Miscounts terms in sum"}],
+            format={"kind": "numeric"},
+        ),
+        # 3. Deeper-than-unit card deferred via laterUnit
+        _sample_card(
+            id="CORE-03",
+            laterUnit="MTH-T02-C01-U03",
+            skill="De Moivre power expansion in polar coordinates",
+            reasoningMove="translate",
+            level=4,
+            traps=[{"tag": "t02-c01-u03-argument-wrap-trap", "description": "Fails to reduce angle mod 2pi"}],
+            format={"kind": "expression"},
+        ),
+    ]
+    source_cores.save_core_cards(unit, cards, sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path), vault_dir=str(vault_dir))
+    assert report["currentCardsCount"] == 2
+    assert report["laterCardsCount"] == 1
+    assert [m["id"] for m in report["matchedCards"]] == ["CORE-01"]
+    assert [u["id"] for u in report["unmatchedCards"]] == ["CORE-02"]
+
+    new_trap_tags = {t["tag"] for t in report["newTraps"]}
+    assert "t02-c01-u01-swap-real-imag-target-trap" in new_trap_tags
+    assert "t02-c01-u01-off-by-one-cycle-count-trap" in new_trap_tags
+    assert "t02-c01-u01-denominator-conjugate-sign-error-trap" not in new_trap_tags
+    # laterUnit traps must not pollute current-unit newTraps
+    assert "t02-c01-u03-argument-wrap-trap" not in new_trap_tags
+
+    assert report["levels"]["cardLevelsMissingInVault"] == [3, 5]
+    assert set(report["reasoningMoves"]["cardMovesMissingInVault"]) == {"generalise", "reverse"}
+    assert any(f["kind"] == "choice" and f["optionCount"] == 5 for f in report["examFormats"])
+    assert "MTH-T02-C01-U03" in report["laterUnitCards"]
+    assert [c["id"] for c in report["laterUnitCards"]["MTH-T02-C01-U03"]] == ["CORE-03"]
+
+    text = source_gap.format_gap_report(report)
+    assert "5 options" in text
+    assert "MTH-T02-C01-U03" in text
+    assert "t02-c01-u01-swap-real-imag-target-trap" in text
+
+    # Strictly read-only: vault file unchanged
+    assert vault_file.read_bytes() == vault_bytes
+
+
+def test_cli_help_smoke() -> None:
+    for mod in ("scripts.source_find", "scripts.source_gap", "math_engine.source_cores.originality"):
+        proc = subprocess.run(
+            [sys.executable, "-m", mod, "--help"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == 0, f"{mod} --help failed: {proc.stderr}"
