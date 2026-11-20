@@ -708,7 +708,8 @@ async function runRouteTests() {
     assert.equal(revStepsUnlocked.status, 200, "explicit steps reveal in review cycle must unlock steps");
 
     // 4g. Drill Reset (resetProblemForRetry) locks /api/reveal until answered or explicitly revealed in the new cycle
-    const resetTs = "2026-11-20T10:00:00.000Z";
+    // Must be later than every timestamp stamped with the real clock earlier in this test.
+    const resetTs = new Date(Date.now() + 60_000).toISOString();
     const resetProb = resetProblemForRetry(
       {
         ...leakingMathProblem,
@@ -776,7 +777,7 @@ async function runRouteTests() {
             ...resetProb.state,
             attempts: [
               ...(resetProb.state.attempts || []),
-              { input: "99", ts: "2026-11-20T10:01:00.000Z", verdict: "incorrect" },
+              { input: "99", ts: new Date(Date.parse(resetTs) + 60_000).toISOString(), verdict: "incorrect" },
             ],
           },
         },
