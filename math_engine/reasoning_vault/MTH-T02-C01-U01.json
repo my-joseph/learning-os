@@ -1,7 +1,7 @@
 {
   "unitCode": "MTH-T02-C01-U01",
   "topicTitle": "Complex Numbers",
-  "description": "Comprehensive reasoning vault for complex numbers, imaginary unit powers, square roots of negative numbers, addition, subtraction, multiplication, conjugates, division, modulus, and AC circuit impedance synthesis.",
+  "description": "Comprehensive reasoning vault for complex numbers, imaginary unit powers, square roots of negative numbers, addition, subtraction, multiplication, conjugates, division, modulus, and AC circuit impedance synthesis; synthesis 2026-11-20 added powers-of-i cycles, conjugate equations, real/purely-imaginary conditions and periodic powers (exam-style 4-5 option choice formats with trap distractors).",
   "archetypes": [
     {
       "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
@@ -195,7 +195,8 @@
       "governingRelation": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
       "cognitiveTraps": [
         "t02-c01-u01-positive-last-term-trap",
-        "t02-c01-u01-cross-term-omission-trap"
+        "t02-c01-u01-cross-term-omission-trap",
+        "t02-c01-u01-i-cubed-in-cubed-binomial-trap"
       ],
       "versatileDomains": [
         "complex_power_s_vi",
@@ -206,7 +207,9 @@
         "dsp_fourier_kernel_modulation",
         "phasor_gain_stage_check"
       ],
-      "figureNone": "Complex-number algebra in standard form; the work is symbolic."
+      "figureNone": "Complex-number algebra in standard form; the work is symbolic.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro",
+      "levelNote": "Cubes or products of three binomials are in scope; trap i-cubed-in-cubed-binomial = i^3 taken as +i inside the binomial-cube expansion (distinct from misreading the remainder cycle)."
     },
     {
       "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
@@ -254,7 +257,8 @@
       "governingRelation": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
       "cognitiveTraps": [
         "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
-        "t02-c01-u01-denominator-conjugate-sign-error-trap"
+        "t02-c01-u01-denominator-conjugate-sign-error-trap",
+        "t02-c01-u01-reciprocal-parts-inverted-trap"
       ],
       "versatileDomains": [
         "ac_admittance_inversion",
@@ -266,7 +270,9 @@
         "filter_transfer_ratio_check",
         "antenna_impedance_ratio_check"
       ],
-      "figureNone": "Complex-number algebra in standard form; the work is symbolic."
+      "figureNone": "Complex-number algebra in standard form; the work is symbolic.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro",
+      "levelNote": "Reverse form in scope: given 1/z, find z (the reciprocal of a+bi is its conjugate over a^2+b^2); trap reciprocal-parts-inverted = taking 1/a + (1/b)i."
     },
     {
       "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
@@ -311,6 +317,93 @@
         "damped_harmonic_oscillator_roots"
       ],
       "figureNone": "Complex-number algebra in standard form; the work is symbolic."
+    },
+    {
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "level": 2,
+      "name": "Powers of i Beyond the First Cycle",
+      "coreConcept": "Any integer power of i (large, negative, or given by an expression) reduces through the period-4 cycle i, -1, -i, 1; sums of four consecutive powers cancel. L2 asks for a single structured power or a short sum; L3 asks which exponents (from a set or range) make a sum or product take a stated value, so the solver must test the residues mod 4 case by case.",
+      "mentalModel": "A four-hour clock: only the exponent's remainder mod 4 matters, and a full lap of four consecutive powers adds to zero.",
+      "governingRelation": "i^{n} = i^{n \\bmod 4} \\land i^{-1} = -i \\land i^{k} + i^{k+1} + i^{k+2} + i^{k+3} = 0",
+      "cognitiveTraps": [
+        "t02-c01-u01-power-of-i-remainder-trap",
+        "t02-c01-u01-negative-power-same-as-positive-trap",
+        "t02-c01-u01-structured-exponent-residue-trap",
+        "t02-c01-u01-ordered-versus-unordered-count-trap"
+      ],
+      "versatileDomains": [
+        "number_theory_residues",
+        "signal_phase_rotation"
+      ],
+      "usedContexts": [],
+      "figureNone": "Pure exponent arithmetic on i; a plane figure would not add information at this level.",
+      "levelNote": "L2: one structured exponent (negative, or built from a product/factorial/sum) or a short sum. L3 only when the solver must count or choose exponents and reject the residues that fail the stated value (check=edge, listed in blindSolve.edgeRejected) or pick the method (strategy=choose). A single large exponent is L1-L2, never L3.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
+    },
+    {
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "level": 2,
+      "name": "Equations in z and Its Conjugate by Equating Parts",
+      "coreConcept": "An equation that mixes z and its conjugate is solved by writing z = a + bi, collecting real and imaginary parts on each side, and equating them to get two real equations. L2: linear in z and its conjugate. L3: includes the product of z and its conjugate (a^2 + b^2) or asks for a derived quantity of the solution.",
+      "mentalModel": "One complex equation is two real equations stacked together: the real line and the imaginary line must both balance.",
+      "governingRelation": "z = a + bi,\\ \\bar{z} = a - bi \\land (p + qi = r + si \\iff p = r \\land q = s)",
+      "cognitiveTraps": [
+        "t02-c01-u01-conjugate-combined-as-like-term-trap",
+        "t02-c01-u01-equate-mismatched-parts-trap",
+        "t02-c01-u01-report-z-instead-of-conjugate-trap",
+        "t02-c01-u01-keep-rejected-root-trap"
+      ],
+      "versatileDomains": [
+        "linear_systems_two_unknowns",
+        "signal_in_phase_quadrature"
+      ],
+      "usedContexts": [],
+      "figureNone": "Symbolic equation solving; the answer is a single complex number.",
+      "levelNote": "L2 for a linear equation in z and its conjugate, including a derived follow-up quantity of the solution (one more step stays L2). L3 only when the z times conjugate term produces two candidates and one is ruled out by a stated condition (check=edge with edgeRejected), or two conditions must be combined (setup=model). Reverse form: give the solution and ask for a coefficient.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
+    },
+    {
+      "archetypeKey": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "level": 3,
+      "name": "Parameter Conditions for a Real or Purely Imaginary Result",
+      "coreConcept": "Choose a real parameter so that a product or quotient of complex numbers is real (imaginary part zero) or purely imaginary (real part zero and imaginary part nonzero). The solver must simplify to standard form first, then set the correct part to zero and check the other part is not also zero.",
+      "mentalModel": "Simplify, then look at the two coordinates: 'real' means the point sits on the real axis, 'purely imaginary' means it sits on the imaginary axis but not at the origin.",
+      "governingRelation": "w = X + Yi:\\ w \\in \\mathbb{R} \\iff Y = 0;\\ w \\text{ purely imaginary} \\iff X = 0 \\land Y \\neq 0",
+      "cognitiveTraps": [
+        "t02-c01-u01-real-condition-wrong-part-trap",
+        "t02-c01-u01-pure-imaginary-wrong-part-trap",
+        "t02-c01-u01-missing-nonzero-check-trap"
+      ],
+      "versatileDomains": [
+        "ac_circuit_resonance",
+        "filter_phase_condition"
+      ],
+      "usedContexts": [],
+      "figureNone": "The condition is algebraic on the simplified parts; a figure would show the answer.",
+      "levelNote": "Earns L3 only with check=edge: the nonzero check (purely imaginary needs Y != 0) rejects at least one candidate parameter, recorded in blindSolve.edgeRejected. Rationalising first is extra steps (L2) unless it forces a method choice. Applying the condition to an already simplified a + bi is L2.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
+    },
+    {
+      "archetypeKey": "t02-c01-u01-power-periodicity",
+      "level": 2,
+      "name": "Periodic Powers of a Simple Complex Number",
+      "coreConcept": "Some complex numbers reduce to a simple power of i after one or two steps: a quotient of conjugate binomials gives i or -i, and the square of a binomial with equal parts gives an integer times i. Reduce the base first, keep any integer scale factor, then use the period of the reduced base to find the least exponent giving a stated value or a far term of a repeating sequence.",
+      "mentalModel": "Shrink the base to something you know cycles, then let the cycle do the work instead of expanding a huge power.",
+      "governingRelation": "\\frac{1+i}{1-i} = i \\land (1+i)^2 = 2i \\land i^{n} \\text{ has period } 4",
+      "cognitiveTraps": [
+        "t02-c01-u01-drop-scale-after-base-reduction-trap",
+        "t02-c01-u01-assume-period-four-trap",
+        "t02-c01-u01-cross-term-omission-trap",
+        "t02-c01-u01-report-reduced-exponent-trap"
+      ],
+      "versatileDomains": [
+        "sequence_periodicity",
+        "rotation_by_right_angles"
+      ],
+      "usedContexts": [],
+      "figureNone": "Algebraic reduction and periodicity; no figure needed at this level.",
+      "levelNote": "Base L2 (reduce, then use the cycle on an obviously reducible base). L3 when the base is not obviously reducible so the solver must choose the reduction (strategy=choose), or a recurrence start index / rejected exponents give check=edge. Allowed bases reduce to +-i, -1 or k*i^m with integer k (conjugate quotients, squares of binomials with equal parts); no sqrt(2)-normalised bases, no modulus or polar form (later unit). Ask for a result 'equal to 1' or 'real', never 'unit'. Derive assume-period-four from a base of period 2 (a quotient reducing to -1) or a recurrence.",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
     }
   ]
 }

@@ -1,0 +1,1123 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Equations and Inequalities",
+  "unitTitle": "Complex Numbers",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "context": "",
+      "prompt": "Simplify $\\frac{1}{i^{11}}$.",
+      "display": "\\frac{1}{i^{n}} = i^{-n}",
+      "plainText": "1/I**11",
+      "givens": {
+        "one": 1,
+        "n": 11
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        11,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "i",
+      "answerDisplay": "i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-negative-power-same-as-positive-trap",
+      "trapDerivation": "I**(11 - 2*4)",
+      "trapValue": "-I",
+      "verify": {
+        "source": "1/I**11",
+        "trapValue": "-I"
+      },
+      "checkpointHint": "Adding a whole lap of the cycle to the exponent never changes the power, so move the exponent into the familiar range first.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\frac{1}{i^{11}} = i^{-11}",
+          "explain": "Write the reciprocal of a power as a negative power.",
+          "eq": [
+            "1/I**11",
+            "I**(-11)"
+          ]
+        },
+        {
+          "latex": "i^{-11} = i^{-11 + 12}",
+          "explain": "Add three full cycles of four to the exponent; this does not change the value.",
+          "eq": [
+            "I**(-11)",
+            "I**(-11 + 12)"
+          ]
+        },
+        {
+          "latex": "i^{-11 + 12} = i",
+          "explain": "The exponent simplifies to one, and that power of i is i itself.",
+          "val": "I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved; answer, negative-power trap and steps are correct, and the L2 label now matches the archetype levelNote."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-negative-power-same-as-positive-trap|direct|#/I**#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-negative-power-same-as-positive-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "context": "",
+      "prompt": "Evaluate $i^{2} + i^{3} + i^{4} + \\cdots + i^{23}$. Write the answer as $a + bi$.",
+      "display": "i^{k} + i^{k+1} + i^{k+2} + i^{k+3} = 0",
+      "plainText": "sum(I**k, k = 2..23)",
+      "givens": {
+        "start": 2,
+        "second": 3,
+        "third": 4,
+        "end": 23
+      },
+      "constants": {},
+      "trapGivens": [
+        23,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "-1 - I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-1 - i",
+      "answerDisplay": "-1 - i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "I**(23 - 4*5)",
+      "trapValue": "-I",
+      "verify": {
+        "source": "I**22 + I**23",
+        "trapValue": "-I"
+      },
+      "checkpointHint": "Group the terms into blocks of four consecutive powers and ask what each full block adds up to, then deal only with the terms left over.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "i^{2} + i^{3} + \\cdots + i^{21} = 0",
+          "explain": "The twenty terms from the second to the twenty-first power form five full cycles, and each cycle sums to zero.",
+          "eq": [
+            "I**2 + I**3 + I**4 + I**5",
+            "0"
+          ]
+        },
+        {
+          "latex": "S = i^{22} + i^{23}",
+          "explain": "Only the last two terms remain after removing the full cycles."
+        },
+        {
+          "latex": "i^{22} + i^{23} = i^{2} + i^{3}",
+          "explain": "Reduce each exponent by twenty, a multiple of four.",
+          "eq": [
+            "I**22 + I**23",
+            "I**2 + I**3"
+          ]
+        },
+        {
+          "latex": "i^{2} + i^{3} = -1 - i",
+          "explain": "Use i squared equals minus one and i cubed equals minus i.",
+          "val": "-1 - I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved; answer and steps are correct and the trap now operationally reduces only the final exponent, a recognisable leftover-remainder slip, with a digit-free hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|direct|sum(I**k, k = #..#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-power-of-i-remainder-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "context": "",
+      "prompt": "Find the complex number $z$ that satisfies $3z - 2\\bar{z} = 5 + 10i$. Write the answer as $a + bi$.",
+      "display": "z = a + bi,\\ \\bar{z} = a - bi",
+      "plainText": "3*z - 2*conjugate(z) = 5 + 10*I",
+      "givens": {
+        "p": 3,
+        "q": 2,
+        "r": 5,
+        "s": 10
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        10,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "5 + 2*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "5 + 2i",
+      "answerDisplay": "5 + 2i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-conjugate-combined-as-like-term-trap",
+      "trapDerivation": "(5 + 10*I)/(3 - 2)",
+      "trapValue": "5 + 10*I",
+      "verify": {
+        "source": "5 + 2*I",
+        "trapValue": "5 + 10*I"
+      },
+      "checkpointHint": "The number and its conjugate are different numbers, so write both in terms of the real and imaginary parts before collecting anything.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "3(a + bi) - 2(a - bi) = 5 + 10i",
+          "explain": "Write z as a + bi and its conjugate as a - bi."
+        },
+        {
+          "latex": "a + 5bi = 5 + 10i",
+          "explain": "Collect the real terms and the imaginary terms on the left side."
+        },
+        {
+          "latex": "a = 5",
+          "explain": "Equate the real parts."
+        },
+        {
+          "latex": "5b = 10",
+          "explain": "Equate the imaginary parts.",
+          "eq": [
+            "5 * 2",
+            "10"
+          ]
+        },
+        {
+          "latex": "z = 5 + 2i",
+          "explain": "Combine the two parts and check that the equation holds.",
+          "eq": [
+            "3*(5 + 2*I) - 2*(5 - 2*I)",
+            "5 + 10*I"
+          ],
+          "val": "5 + 2*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, steps and the like-term trap are correct and operational, and the hint and display guide without leaking."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-conjugate-combined-as-like-term-trap|direct|#*z - #*conjugate(z) = # + #*I",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-conjugate-combined-as-like-term-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "context": "",
+      "prompt": "The number $z = 2 - 3i$ satisfies $kz + 4\\bar{z} = 14 + 3i$ for a real number $k$. Find $k$.",
+      "display": "k z + 4\\bar{z} = 14 + 3i",
+      "plainText": "k*(2 - 3*I) + 4*(2 + 3*I) = 14 + 3*I",
+      "givens": {
+        "zr": 2,
+        "zi": 3,
+        "c": 4,
+        "r": 14,
+        "s": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0.001
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-equate-mismatched-parts-trap",
+      "trapDerivation": "(3 - 4*2)/2",
+      "trapValue": "-5/2",
+      "verify": {
+        "source": "(14 - 4*2)/2",
+        "trapValue": "-5/2"
+      },
+      "checkpointHint": "Expand the left side into a real part and an imaginary part, then match each part with the part of the same kind on the right.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "k(2 - 3i) + 4(2 + 3i) = 14 + 3i",
+          "explain": "Substitute z and its conjugate."
+        },
+        {
+          "latex": "(2k + 8) + (12 - 3k)i = 14 + 3i",
+          "explain": "Group the real parts and the imaginary parts."
+        },
+        {
+          "latex": "2k + 8 = 14",
+          "explain": "Equate the real parts.",
+          "eq": [
+            "2*3 + 8",
+            "14"
+          ]
+        },
+        {
+          "latex": "k = 3",
+          "explain": "Solve for k and confirm the imaginary parts also match.",
+          "eq": [
+            "12 - 3*3",
+            "3"
+          ],
+          "val": "3"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Reverse form is consistent in both parts, the mismatched-parts trap is derived operationally, and the hint does not leak."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-equate-mismatched-parts-trap|reverse|k*(# - #*I) + #*(# + #*I) = # + #*I",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-equate-mismatched-parts-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-real-or-pure-imaginary-condition",
+      "context": "",
+      "prompt": "For which real number $k$ is $(k^2 + k - 6) + (k^2 - k - 2)i$ purely imaginary?",
+      "display": "X + Yi \\text{ purely imaginary} \\iff X = 0,\\ Y \\neq 0",
+      "givens": {
+        "c1": 6,
+        "c2": 2
+      },
+      "constants": {
+        "four": 4,
+        "two": 2,
+        "one": 1
+      },
+      "trapGivens": [
+        6,
+        4
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$k = -3$"
+          },
+          {
+            "id": "B",
+            "label": "No real value of $k$",
+            "provenance": "Rejects every candidate after a sign slip in the nonzero check, concluding that no k works."
+          },
+          {
+            "id": "C",
+            "label": "$k = -3$ or $k = 2$",
+            "trapTag": "t02-c01-u01-missing-nonzero-check-trap",
+            "provenance": "Solves the real-part equation but never checks that the imaginary part stays nonzero."
+          },
+          {
+            "id": "D",
+            "label": "$k = -1$ or $k = 2$",
+            "trapTag": "t02-c01-u01-pure-imaginary-wrong-part-trap",
+            "provenance": "Sets the imaginary part to zero instead of the real part."
+          },
+          {
+            "id": "E",
+            "label": "$k = 3$ or $k = -2$",
+            "provenance": "Sign slip when factoring the real part."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Choose one option.",
+      "commonTrapTag": "t02-c01-u01-missing-nonzero-check-trap",
+      "trapDerivation": "(-1 + (1 + 4*6)**(1/2))/2",
+      "trapValue": "2",
+      "verify": {
+        "source": "-3",
+        "trapValue": "2"
+      },
+      "checkpointHint": "A purely imaginary number sits on the imaginary axis but not at the origin, so test every candidate against both parts.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "k^2 + k - 6 = 0",
+          "explain": "A purely imaginary number has real part zero."
+        },
+        {
+          "latex": "(k + 3)(k - 2) = 0",
+          "explain": "Factor the quadratic to get the candidates k = -3 and k = 2."
+        },
+        {
+          "latex": "2^2 - 2 - 2 = 0",
+          "explain": "At the candidate k = 2 the imaginary part is also zero, so the number is zero and k = 2 is rejected.",
+          "eq": [
+            "2**2 - 2 - 2",
+            "0"
+          ]
+        },
+        {
+          "latex": "(-3)^2 - (-3) - 2 = 10",
+          "explain": "At the candidate k = -3 the imaginary part is nonzero, so the number is purely imaginary.",
+          "eq": [
+            "(-3)**2 - (-3) - 2",
+            "10"
+          ]
+        },
+        {
+          "latex": "k = -3",
+          "explain": "Only one candidate survives the nonzero check, which is option A.",
+          "eq": [
+            "(-3)**2 + (-3) - 6",
+            "0"
+          ]
+        }
+      ],
+      "blindSolve": {
+        "answer": "A",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "edgeRejected": "k = 2 (makes the imaginary part (k-2)(k+1) zero, so the number is 0, not purely imaginary)"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved; the correct option is unique, options are mutually exclusive, every provenance now leads to its own option, the trap derivation keeps the extra real-part root operationally, and the hint has no digits and does not leak."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-missing-nonzero-check-trap|choose|For which real number $k$ is $(k^# + k - #) + (k^# - k - #)i$ purely imaginary?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-missing-nonzero-check-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 4
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-power-periodicity",
+      "context": "",
+      "prompt": "Find the positive integer $n$ for which $(1 + i)^n = 256$.",
+      "display": "(1 + i)^{2} = 2i",
+      "givens": {
+        "one": 1,
+        "t": 256
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        256,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$4$",
+            "provenance": "Uses only the sign condition and reports the smallest power of i equal to one."
+          },
+          {
+            "id": "B",
+            "label": "$8$",
+            "trapTag": "t02-c01-u01-report-reduced-exponent-trap",
+            "provenance": "Finds the exponent of the squared base but forgets to double it."
+          },
+          {
+            "id": "C",
+            "label": "$16$"
+          },
+          {
+            "id": "D",
+            "label": "$32$",
+            "provenance": "Doubles the exponent twice."
+          },
+          {
+            "id": "E",
+            "label": "$128$",
+            "provenance": "Halves the target instead of working with powers."
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Choose one option.",
+      "commonTrapTag": "t02-c01-u01-report-reduced-exponent-trap",
+      "trapDerivation": "log(256)/log(2)",
+      "trapValue": "8",
+      "verify": {
+        "source": "16",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Square the base once to get something simpler, and keep every factor that appears when you raise it further.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(1 + i)^2 = 2i",
+          "explain": "Square the base first.",
+          "eq": [
+            "(1 + I)**2",
+            "2*I"
+          ]
+        },
+        {
+          "latex": "(1 + i)^{2m} = 2^{m} i^{m}",
+          "explain": "Raise the squared base to the power m, keeping the factor two."
+        },
+        {
+          "latex": "2^{m} = 256",
+          "explain": "Match the size of the target, so m = 8.",
+          "eq": [
+            "2**8",
+            "256"
+          ]
+        },
+        {
+          "latex": "i^{8} = 1",
+          "explain": "Check the sign: i to the eighth is one, so the target is reached.",
+          "eq": [
+            "I**8",
+            "1"
+          ]
+        },
+        {
+          "latex": "n = 16",
+          "explain": "The exponent of the original base is twice m, which is option C.",
+          "eq": [
+            "(1 + I)**16",
+            "256"
+          ]
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved; the correct option is unique, all five options are distinct, each provenance now produces its value, and the reduced-exponent trap derivation is operational."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-report-reduced-exponent-trap|choose|Find the positive integer $n$ for which $(# + i)^n = #$.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-report-reduced-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 4
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q07",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+      "context": "",
+      "prompt": "For how many integers $n$ with $1 \\le n \\le 30$ is $i^{n} + i^{2n} + i^{3n} = -1$?",
+      "display": "i^{n} \\text{ depends only on } n \\bmod 4",
+      "givens": {
+        "lo": 1,
+        "hi": 30,
+        "two": 2,
+        "three": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        30,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$7$",
+            "provenance": "Counts the exponents where the sum fails instead of where it holds."
+          },
+          {
+            "id": "B",
+            "label": "$15$",
+            "trapTag": "t02-c01-u01-structured-exponent-residue-trap",
+            "provenance": "Treats i to the power two n as minus one for every n, so only odd n seem to work."
+          },
+          {
+            "id": "C",
+            "label": "$22$",
+            "provenance": "Off by one at the end of the range."
+          },
+          {
+            "id": "D",
+            "label": "$23$"
+          },
+          {
+            "id": "E",
+            "label": "$30$",
+            "provenance": "Assumes the sum is always minus one."
+          }
+        ],
+        "correct": "D"
+      },
+      "answerPlain": "D",
+      "answerDisplay": "D",
+      "inputHint": "Choose one option.",
+      "commonTrapTag": "t02-c01-u01-structured-exponent-residue-trap",
+      "trapDerivation": "30/2",
+      "trapValue": "15",
+      "verify": {
+        "source": "30 - 7",
+        "trapValue": "15"
+      },
+      "checkpointHint": "The value depends only on the remainder of n after division by four, so test each possible remainder once and then count.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "n \\equiv 1:\\ i + i^{2} + i^{3} = -1",
+          "explain": "Test remainder one.",
+          "eq": [
+            "I + I**2 + I**3",
+            "-1"
+          ]
+        },
+        {
+          "latex": "n \\equiv 2:\\ i^{2} + i^{4} + i^{6} = -1",
+          "explain": "Test remainder two.",
+          "eq": [
+            "I**2 + I**4 + I**6",
+            "-1"
+          ]
+        },
+        {
+          "latex": "n \\equiv 3:\\ i^{3} + i^{6} + i^{9} = -1",
+          "explain": "Test remainder three.",
+          "eq": [
+            "I**3 + I**6 + I**9",
+            "-1"
+          ]
+        },
+        {
+          "latex": "n \\equiv 0:\\ i^{4} + i^{8} + i^{12} = 3",
+          "explain": "Test remainder zero; the sum is three, so these n are rejected.",
+          "eq": [
+            "I**4 + I**8 + I**12",
+            "3"
+          ]
+        },
+        {
+          "latex": "30 - 7 = 23",
+          "explain": "Seven multiples of four lie in the range; every other n works, which is option D.",
+          "eq": [
+            "30 - 7",
+            "23"
+          ]
+        }
+      ],
+      "blindSolve": {
+        "answer": "D",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": false,
+        "steps": 6,
+        "edgeRejected": "the case n ≡ 0 (mod 4), where the sum is 3, not -1 (7 such n in 1..30)"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved by testing all four residues; the answer, the residue trap distractor and the edge rejection are correct, options are mutually exclusive, and the hint has no digits."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-structured-exponent-residue-trap|choose|For how many integers $n$ with $# \\le n \\le #$ is $i^{n} + i^{#n} + i^{#n} = -#$?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-structured-exponent-residue-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 4
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q08",
+      "level": 3,
+      "category": "Case Analysis",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
+      "context": "",
+      "prompt": "Find the complex number $z$ with positive real part such that $z\\bar{z} + 3z = 8 + 6i$. Write the answer as $a + bi$.",
+      "display": "z\\bar{z} = a^2 + b^2",
+      "plainText": "z*conjugate(z) + 3*z = 8 + 6*I",
+      "givens": {
+        "c": 3,
+        "r": 8,
+        "s": 6
+      },
+      "constants": {
+        "four": 4,
+        "two": 2
+      },
+      "trapGivens": [
+        3,
+        6,
+        8
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "1 + 2*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "1 + 2i",
+      "answerDisplay": "1 + 2i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-keep-rejected-root-trap",
+      "trapDerivation": "(-3 - (3**2 - 4*((6/3)**2 - 8))**(1/2))/2 + (6/3)*I",
+      "trapValue": "-4 + 2*I",
+      "verify": {
+        "source": "1 + 2*I",
+        "trapValue": "-4 + 2*I"
+      },
+      "checkpointHint": "Split the equation into a real equation and an imaginary equation, and use the stated condition to decide between any candidates.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(a^2 + b^2 + 3a) + 3bi = 8 + 6i",
+          "explain": "Write z as a + bi; the product of z and its conjugate is a squared plus b squared."
+        },
+        {
+          "latex": "3b = 6",
+          "explain": "Equate the imaginary parts, so b = 2.",
+          "eq": [
+            "3*2",
+            "6"
+          ]
+        },
+        {
+          "latex": "a^2 + 3a + 4 = 8",
+          "explain": "Equate the real parts with b = 2."
+        },
+        {
+          "latex": "(a + 4)(a - 1) = 0",
+          "explain": "Rearrange to a^2 + 3a - 4 = 0 and factor; the candidates are a = -4 and a = 1.",
+          "eq": [
+            "(-4)**2 + 3*(-4) + 4",
+            "8"
+          ]
+        },
+        {
+          "latex": "z = 1 + 2i",
+          "explain": "Only a = 1 gives a positive real part; check the equation.",
+          "eq": [
+            "(1 + 2*I)*(1 - 2*I) + 3*(1 + 2*I)",
+            "8 + 6*I"
+          ],
+          "val": "1 + 2*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1 + 2*I",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5,
+        "edgeRejected": "a = -4 (z = -4 + 2i), which has negative real part"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved; the trap now operationally keeps the rejected root of the real-part quadratic, and the answer, steps and hint are correct without leaking."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U01",
+      "fingerprint": "t02-c01-u01-keep-rejected-root-trap|direct|z*conjugate(z) + #*z = # + #*I",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-keep-rejected-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U01-05",
+  "title": "Complex Numbers — Verified Math Drill (8 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C01",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-20 13:35:14",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-05.json"
+}
