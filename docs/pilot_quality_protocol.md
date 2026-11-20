@@ -1,5 +1,8 @@
 # Exercise quality assessment — pilot protocol v1
 
+> **Pilot closed 2026-11-17 — historical.** This document is retained as a record and is not an active pilot runbook.
+
+
 Status: calibration protocol with a local collection CLI; see [runner commands](pilot_quality_runner.md). Collection does not automatically instrument the existing learner runners or change generation skills.
 Scope: assess exercises and design useful observations, not restart content production.
 Read the [initial assessment](pilot_quality_baseline.md) before interpreting historical results.
@@ -7,7 +10,7 @@ Read the [initial assessment](pilot_quality_baseline.md) before interpreting his
 ## Roles and separation
 
 - Supervisor selects the objective and sample, checks evidence, adjudicates disagreements, and decides what to revise.
-- Author follows existing page, vault, drill, blind-solve and review gates. This protocol does not replace them or expand self-merge permissions.
+- Author follows existing page, vault, drill, blind-solve and review gates. This protocol does not change the canonical branch, PR, or merge policy in `rules/00_core.md` §10.
 - Learner receives only the permitted page and visible workspace. Never provide vaults, reference solutions, hidden tests, planted-error manifests, or quality-review notes before submission.
 - Quality reviewer evaluates exercise design separately from the existing code reviewer. The latter evaluates submitted code; a PASS is not an exercise-quality verdict.
 - Record actual model ID, effort and role. Do not silently substitute a model. Use one bounded worker batch before expanding; do not launch an unattended loop.

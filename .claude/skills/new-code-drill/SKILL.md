@@ -1,6 +1,6 @@
 ---
 name: new-code-drill
-description: Create a new verified programming drill (PRG-*) from a short brief — inspect the unit page, vault_report and weak_spots, pick reasoning-vault archetypes, write the draft JSON, run --check, run a blind-solve subagent and a reviewer subagent, ingest into drills/data and workspace, run pytest, sync pristine record to Notion, and ship a drill-only PR with no learner approval step. Use when asked to make, generate, write or add code problems, a programming drill, or practice for a PRG unit or chapter.
+description: Create a new verified programming drill (PRG-*) from a short brief — inspect the unit page, vault_report and weak_spots, pick reasoning-vault archetypes, write the draft JSON, run --check, run a blind-solve subagent and a reviewer subagent, ingest into drills/data and workspace, run pytest, sync pristine record to Notion, and ship a drill-only PR with branch and PR handling per `rules/00_core.md` §10. Use when asked to make, generate, write or add code problems, a programming drill, or practice for a PRG unit or chapter.
 ---
 
 # New code drill
@@ -15,7 +15,7 @@ Take the brief from the request; ask only if the unit is missing or no vault exi
   1. Read the unit's Notion page via `id_map.json` (`from notion_sync.client import load_env, require_token, get_all_blocks; token = require_token(load_env().get("NOTION_TOKEN")); blocks = get_all_blocks(page_id, token)`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
   2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels.
   3. Run `.venv/bin/python -m scripts.weak_spots <UNIT>` to see open weak spots (`matchedTrap >= 2`, ESLint rules, `QC-*` findings, and the `NEXT` line). Target open weak spots when present.
-- **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
+- **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4/L5), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
 - **Environment preset**: `node-vanilla` (JS) or `typescript-strict` / `backend-sqlite` / `react-dom` (TS) per the curriculum row.
 
 State the brief in one line and continue without waiting.
@@ -107,10 +107,14 @@ Report to the learner in polite Thai in a few lines, **without prompts, code, or
 
 ## 9. Sync, then ship (in this order)
 
-1. Sync the pristine drill record to Notion (`rules/00_core.md` §8) from repo root:
+1. Sync the pristine drill record to Notion per this skill’s workflow from repo root:
    ```bash
    .venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json
    ```
    (If `degraded: true`, report that Notion was not updated.)
 2. Create a branch `drill/<DRILL_ID>` (never on `main`), commit **only** the new drill file under `drills/data/<UNIT>/`, its unit/chapter vault file, and `id_map.json`, push, and open a PR (`gh pr create`).
-3. Verify `git diff --stat origin/main...HEAD` touches only those three items, wait for CI, self-merge (`gh pr merge --merge --delete-branch`), and return the checkout to `main` (`git checkout main && git pull --ff-only`).
+3. Verify the PR diff and CI result, then follow `rules/00_core.md` §10 for delivery. Do not repeat or expand the policy here.
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.

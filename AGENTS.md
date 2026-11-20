@@ -1,7 +1,5 @@
-# Instructions for AI agents (Gemini / Antigravity and others)
+# Agent instructions
 
-**Never commit or push on `main`.** Before the first edit, create a branch (`git switch -c fix/<short-name>`); commit there, `git push -u origin <branch>`, `gh pr create`, and stop: the learner reads the PR and says "merge". The only exception is a PR that changes just a new drill file, its unit/chapter vault and `id_map.json` — or just a new project lab (`labs/<LAB>/`, `labs/_reference/<LAB>/`, `id_map.json`) — which you may merge yourself. A small UI fix is not an exception. Git hooks in `.githooks/` block commits and pushes on `main`; if one blocks you, make a branch, never use `--no-verify`.
+Read `CLAUDE.md`, `rules/README.md`, and `rules/00_core.md` before working. The canonical branch, PR, and merge policy is `rules/00_core.md` §10; do not duplicate or override it here. Task-specific instructions may narrow that policy.
 
-**Notion learning pages are written only with `python -m notion_sync.unit_page`** (new pages, adding sections, `--set` for properties including the `Resources` relation, figures). Never call the Notion API directly to create, edit or delete blocks or properties. To check pages against the standard, run `python -m scripts.page_audit <CODE>` (read-only) instead of judging by block counts.
-
-Then read `CLAUDE.md` (project facts, commands, do-nots) and `rules/README.md` (which rule module to load for your task). Talk to the learner in Thai; everything written to Notion and drills is English. The learner studies the drills: never show them prompts' answers.
+Follow the Notion write and audit routes in `rules/00_core.md` and `rules/02_pedagogy.md`. Speak with the learner in polite Thai. Write learning content in English. Never expose drill prompts, answers, steps, or hidden tests before a real attempt.

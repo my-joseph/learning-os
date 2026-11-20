@@ -1,6 +1,6 @@
 ---
 name: new-math-drill
-description: Create a new verified math drill (MTH-*) from a short brief — pick reasoning-vault archetypes, write the problems as a JSON draft, run every ingest gate with --check, have a reviewer subagent check the whole draft, then ingest into drills/data and sync to Notion with no learner approval step. Use when asked to make, generate, write or add math problems, a math drill, or practice for a MTH unit or chapter.
+description: Create a new verified math drill (MTH-*) from a short brief — pick reasoning-vault archetypes, write the problems as a JSON draft, run every ingest gate with --check, have a reviewer subagent check the whole draft, then ingest into drills/data and sync to Notion with branch and PR handling per `rules/00_core.md` §10. Use when asked to make, generate, write or add math problems, a math drill, or practice for a MTH unit or chapter.
 ---
 
 # New math drill
@@ -11,7 +11,7 @@ Goal: a drill that matches what the learner asked for and passes every gate on t
 
 Take the brief from the request; ask only if the unit is missing or no vault exists for it. Defaults:
 - **Scope**: a unit (`MTH-T01-C04-U03`) or a chapter (`MTH-T01-C04`). A **unit drill** uses only that unit's archetypes, never another unit's, so the learner can drill one weak unit on its own. A **chapter drill** mixes the archetypes of all its units. Archetypes belong to a unit through their `unitCode` (or by living in a unit vault file such as `MTH-T02-C01-U01.json`); the ingest CLI's `--list-vault` and `vault_report` show the scope. Use the scope code as the draft's `unitCode`.
-- **Levels** and **count**: every level the vault has (usually L1–L4), 2 problems each, unless the request says otherwise. Plain prompts unless word problems are asked for.
+- **Levels** and **count**: every level the vault has (usually L1–L5), 2 problems each, unless the request says otherwise. Plain prompts unless word problems are asked for.
 - **Focus** (optional): specific archetypes, trap tags / weak spots, or contexts to use or avoid.
 - **Weak-spot drill**: when the learner asks what to practise or says "ดูจุดอ่อน", run `.venv/bin/python -m scripts.weak_spots [SCOPE]` and show its output (it has no answers). A request "focused on <trap>" (the script's `NEXT` line) makes a weak-spot drill: use only archetypes in scope whose `cognitiveTraps` include that tag, make it the `commonTrapTag` of every problem (or a diagnose option's `trapTag`), include at least one reverse-form problem, and set top-level `"focusTags": ["<trap>"]` in the draft. Keep 1–2 tags per drill (`rules/07` §2). Use the unit from the `NEXT` line as the scope. **Levels for a weak-spot drill** come from the script's `levels` line for that unit, not the default: 2 problems per level from the archetypes' base level up to and including the lowest level marked `down` (that is where the weakness shows), never above it; if no level is marked `down`, go one level above the highest `stay`. At least 4 problems.
 - **Bridge drill** (trigger `"ขอโจทย์ผสม"` / `"bridge drill"`): run `.venv/bin/python -m scripts.bridge_scope` first (read-only). If it reports `dormant` (< 2 passed units at mastery ≥ 2) or has no eligible bridge archetypes, tell the learner in polite Thai which units are already passed and which units still need passing, and **stop** — never invent or force a bridge drill. Otherwise use scope `MTH-BRIDGE` (`--unit MTH-BRIDGE --list-vault` lists only eligible bridge archetypes), author **L3+ problems only** (each with `blindSolve` and `review`), set `references` and `unitCodes` to all of the archetype's `unitCodes`, and tag at least one step per unit via `steps[].unit` (enforced by `--check` and ingest; saved to `drills/data/MTH-BRIDGE/DRL-MTH-BRIDGE-NN.json`).
@@ -136,7 +136,11 @@ Report to the learner in a few lines and **without answers or prompts**: drill I
 
 Only after every test in step 8 (and any variant checks in step 9) passed: (1) sync to Notion, which adds the drill's entry to `id_map.json`; (2) commit the drill, its vault, `id_map.json` (and any updated variant bank); (3) push and open the PR.
 
-- Ship it without being asked (learner decision 2026-11-15): commit on a branch `drill/<drill-id>` (never on `main`), push, open a PR and merge it yourself (`gh pr merge --merge --delete-branch`), then return the checkout to `main` (`git checkout main && git pull --ff-only`). Self-merge is allowed **only** when the PR changes nothing but the new drill file under `drills/data/<UNIT>/`, that unit's vault file and `id_map.json`; check with `git diff --stat origin/main...HEAD` before merging. Anything else (variant bank files, rules, code, tests, other drills) needs the learner's go-ahead.
+- Follow the canonical branch, PR, and merge policy in `rules/00_core.md` §10; task-specific instructions may narrow it.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
-- Sync the new drill's pristine record to Notion once the tests pass (`rules/00_core.md` §8); no need to wait for the merge or ask. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
+- Sync the new drill’s pristine record to Notion once the tests pass per this skill’s sync workflow; no need to wait for the merge or ask. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.

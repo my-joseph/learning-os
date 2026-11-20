@@ -112,9 +112,11 @@ This is the default for new and upgraded math and physics pages (§1 still allow
 
 **Upgrading an existing page:** never rewrite it. Add the missing v4 parts by inserting blocks after the right heading, delete nothing, and leave section 6 untouched (`rules/00_core.md` §4).
 
-**Checking pages:** `python -m scripts.page_audit <TOPIC|CHAPTER|UNIT>` (read-only) reports every page against this structure: FAIL for a missing part, WARN for a judgement call (e.g. no figure). "Is this page up to standard?" is answered by this script, not by counting blocks.
+**Checking pages:** `python -m scripts.page_audit <TOPIC|CHAPTER|UNIT>` (read-only) reports every page against this structure: FAIL for a missing part, WARN for a judgement call (e.g. no figure). "Is this page up to standard?" is answered by this script, not by counting blocks. MTH-T01 pages predate v4; their `page_audit` FAIL findings are accepted as legacy and fixed only when that unit is revisited.
 
 **Writing pages:** agents write learning pages only with `python -m notion_sync.unit_page` (`--mode new`, `--mode add`, `--set`; it renders and uploads figures) and drill results only through drill sync. No direct Notion API calls that create, edit or delete blocks or properties on learning pages: they bypass the guards (no rewrite, section 6 untouched). Math in any page text, figure captions included, is written as `$...$` (it renders as a Notion equation); the tool refuses `sqrt(x)` or `x^2` outside `$`. A figure caption that needs fixing is replaced with `--recaption N="..."`, and a figure itself is redrawn in place with `--refigure N=figure.json` (the page's N-th image; never in section 6; the caption is kept). If the tool cannot do what is needed (e.g. fix the text of an existing block), log a `tool-gap` (`rules/00_core.md` §11) and leave the page as it is.
+
+Before creating a unit page, `start-unit` runs `python -m scripts.source_find <UNIT>` and, when source-core targets or carried-forward cards exist, the source synthesis workflow. For legacy section order, `notion_sync.unit_page --move-section-to-end "<heading>"` and `--renumber` are available; dry-run and audit the result.
 
 ### 7b. Default Page Structure for `PRG` Units and Chapters (learner decision 2026-11-16)
 This is the default for new and upgraded programming pages (§1 still allows adapting it to the material). The `start-unit` skill builds pages from it.
@@ -166,13 +168,8 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
 
 ---
 
-### 9. Wikipedia-Style Concept Vault & Final-Pass Auto-Linking Protocol
-- **Concept Retention Invariant:** Technical terms, foundational protocols, and architectural models (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Event Loop`, `Closures`) are indexed centrally in the `Concept Vault` (`id_map.json` under `CON-*`).
-- **Mandatory Final-Pass Cross-Reference:** During the final step of generating or updating any Unit, Chapter, Topic, or Practice problem:
-  1. AI must inspect the generated text against all registered `Concept Vault` records in `id_map.json`.
-  2. Any technical term that matches a registered Concept Vault record must be linked natively using `@Page` mentions (`[[CON-<KEY>]]`).
-  3. This ensures the student can hover/click any unfamiliar term to open a 60-second recovery note (What is it, Analogy, How it works, Comparison, Gotchas) without breaking their reading flow.
-  4. If a fundamental concept appears frequently but has no existing Concept Vault entry, AI should proactively register a concise Concept Note to expand the vault continuously.
+### 9. Concept Vault references
+The Concept Vault registry uses `CON-*` keys in `id_map.json`. Current authoring skills do not run a universal keyword-matching, auto-link, or auto-registration pass across every page and drill. Add a registered Concept Vault mention when the task's specific workflow asks for one and the target writer supports it; do not claim that every technical term is automatically linked. See `rules/00_core.md` §8 for the system-wide scope.
 
 ---
 
@@ -187,12 +184,12 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
 ---
 
 ### 11. Adaptive Interaction Modes: Multiple Choice vs. Direct Input
-- **Decision Engine (`interactionMode: "adaptive"`):** AI problem generators dynamically determine whether each problem should be **Multiple Choice (`type: "choice"`)** or **Direct Input (`type: "text"` / `"predict-output"` / `"number"`)** based on pedagogical effectiveness:
+- Choose whether each problem should be **Multiple Choice (`answerSpec.type: "choice"`)** or Direct Input based on pedagogical effectiveness. `interactionMode` is not a drill schema field. The `answerSpec.type` value for output prediction is `predict_output` (underscore); `predict-output` may still appear as a curriculum or practice-type label.
   - **When to choose Multiple Choice (`choice`):**
     - Conceptual discrimination between closely related entities (e.g., 401 Unauthorized vs. 403 Forbidden; 502 Bad Gateway vs. 504 Gateway Timeout).
     - Identifying the correct architectural statement or edge-case trade-off among plausible system designs.
     - **High-Quality Distractors Rule:** All 3 wrong options (distractors) must represent actual, prevalent student misconceptions or common failure modes—never silly, trivial, or joke answers. Distractors must force rigorous conceptual precision.
-  - **When to choose Direct Input (`text` / `predict-output`):**
+  - **When to choose Direct Input (`text` / `predict_output`):**
     - Tracing execution order or exact sequence (e.g., Call Stack, Event Loop microtasks, TCP 3-Way Handshake flag sequence).
     - Numerical calculations, exact HTTP status code recall, or formula outputs where multiple choice would spoil the answer space.
 
@@ -205,3 +202,4 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
   - Skipping sets score to `0`, flags `skipped: true`, and assigns a `concept-gap` mistake tag.
   - **Instant Learning Loop:** Skipping immediately unrolls the mental model hint and vertical step-by-step solution, allowing the learner to immediately learn the missing prerequisite without frustration.
   - **Notion Spaced Repetition Ledger:** Skipped questions are logged specifically as **Concept Gaps** in Notion (`Skipped Questions for Review`), surfacing them as the highest priority items for subsequent review sessions.
+  - Self-scoring cannot raise a skipped score or clear its `skipped` flag. Reset begins a new `cycleStartedAt`; a prior cycle's skip does not unlock or score the new cycle.

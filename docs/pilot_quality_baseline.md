@@ -1,5 +1,8 @@
 # Initial exercise-quality assessment
 
+> **Pilot closed 2026-11-17 — historical.** This document is retained as a record and is not an active pilot runbook.
+
+
 Date: 2026-11-17. Source commit: `b204415df01693884c3c063369bb1725d7fd94f2` (PR #149 merged).
 Scope: local artifact inventory plus targeted historical evidence, not a full pedagogical audit or a new pilot run. No Notion pages audited in this task.
 

@@ -1,6 +1,6 @@
 ---
 name: new-project
-description: Create a new verified PRG project lab (chapter lab from docs/prg_curriculum_v2.md §4, or extra project on request "ขอโปรเจคเพิ่ม <CHAPTER|TOPIC>") — inspect studied units and weak_spots, design lab.config.json + README, author stubs/visible tests/reference/hidden tests/trapMutants, run lab_ingest --check, blind-solve subagent, reviewer subagent, finalise, pytest, sync pristine record to Notion, and ship a lab-only PR with no learner approval step.
+description: Create a new verified PRG project lab (chapter lab from docs/prg_curriculum_v2.md §4, or extra project on request "ขอโปรเจคเพิ่ม <CHAPTER|TOPIC>") — inspect studied units and weak_spots, design lab.config.json + README, author stubs/visible tests/reference/hidden tests/trapMutants, run lab_ingest --check, blind-solve subagent, reviewer subagent, finalise, pytest, sync pristine record to Notion, and ship a lab-only PR with branch and PR handling per `rules/00_core.md` §10.
 ---
 
 # New project lab
@@ -130,10 +130,14 @@ Report to the learner in polite Thai in a few lines, **without reference code or
 
 ## 9. Sync, then ship (in this order)
 
-1. Sync the pristine lab record to Notion (`rules/00_core.md` §8) from repo root:
+1. Sync the pristine lab record to Notion per this skill’s workflow from repo root:
    ```bash
    .venv/bin/python -m notion_sync.lab_sync labs/<LAB_ID>
    ```
    (If `degraded: true`, report that Notion was not updated.)
 2. Create a branch `lab/<LAB_ID>` (never on `main`), commit **only** `labs/<LAB_ID>/`, `labs/_reference/<LAB_ID>/`, and `id_map.json`, push, and open a PR (`gh pr create`).
-3. Verify `git diff --stat origin/main...HEAD` touches only those items, wait for CI, self-merge (`gh pr merge --merge --delete-branch`), and return the checkout to `main` (`git checkout main && git pull --ff-only`).
+3. Verify the PR diff and CI result, then follow `rules/00_core.md` §10 for delivery. Do not repeat or expand the policy here.
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.

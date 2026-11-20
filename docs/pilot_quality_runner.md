@@ -1,5 +1,8 @@
 # Pilot Quality Collection Runner (`scripts/pilot_quality.py`)
 
+> **Pilot closed 2026-11-17 — historical.** This document is retained as a record and is not an active pilot runbook.
+
+
 Stdlib-only instrumentation CLI implementing the minimum data contract from [pilot_quality_protocol.md](pilot_quality_protocol.md) for isolated exercise-quality runs. It never writes to Notion, learner `progress/`, `drills/workspace/`, or `drills/data/`.
 
 ## Storage & Isolation Layout
@@ -7,7 +10,7 @@ Stdlib-only instrumentation CLI implementing the minimum data contract from [pil
 All artifacts are written strictly under gitignored `pilot/quality/<run-id>/`:
 
 - `run.json` — run provenance (`mode`, `started_at`, `ended_at`, `closure_status`, `closed_observed_at`, `quarantine`, `model_id`, `effort`, `source_commit`, `content_sha256`, `drill_path`, `unit_id`, `drill_id`, `allowed_materials`, `prior_exposure`, `contamination`, `missing_reasons`, and `isolation_check`).
-- `progress/` & `workspace/` — isolated directories created per run. **Note:** these directories are **not automatically wired** to existing `scripts/practice.py`, `code_engine`, or Practice Studio workspace runners; runners or operators must explicitly direct outputs into `pilot/quality/<run-id>/workspace/` and keep protected `progress/` and `drills/workspace/` untouched.
+- `progress/` & `workspace/` — isolated directories created per run. **Note:** these directories are **not automatically wired** to existing runners; `scripts/practice.py` is a pilot-only terminal tool, not the production learner workflow. `code_engine` and Practice Studio workspace runners also require explicit pilot routing. Keep protected `progress/` and `drills/workspace/` untouched.
 - `snapshots/` — read-only (`0444`) copies of `first_submission_ref` captured at `record` time.
 - `items.jsonl` — append-only item attempt and revision records.
 - `summary.md` — optional answer-free markdown summary created by `summary --write-md`.

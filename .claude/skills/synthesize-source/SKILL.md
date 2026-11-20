@@ -12,7 +12,7 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
 1. Take `<UNIT>` (and optional focus, exam-style request, or family filter) from the request; ask only if `<UNIT>` is missing. State the brief in one line and continue without waiting.
 2. Read `docs/sources.md` and `rules/07_problem_generation.md` §4.
    - **OpenStax is `scope` only** (TOC + learning objectives): **never** extract core cards or mine exercises from OpenStax.
-   - Allowed `cores` families (`mathsgenie`, `thai-exams`, `illustrative-math`) are mined for abstract problem cores only — never copy, translate, paraphrase, or reuse numbers.
+   - Allowed `cores` families (`smartmathpro`, `mathsgenie`, `thai-exams`, `illustrative-math`) are mined for abstract problem cores only — never copy, translate, paraphrase, or reuse numbers.
 
 ## 2. Locate candidate pages (`source_find`)
 
@@ -90,6 +90,10 @@ Rejections (8-word shingle overlap, identical prompt number multiset to a source
 2. Verify `git status` shows **nothing** staged under `sources/` or `scratch/`.
 3. Follow `new-math-drill` step 10 for Notion sync (`drill_sync`) and PR workflow:
    - Never commit or push on `main`.
-   - Vault + new drill + `id_map.json` only → follows existing self-merge rule (`git diff --stat origin/main...HEAD` must contain only the new drill, that unit's vault, and `id_map.json`).
-   - Any other changes (variant banks, scripts, rules, multiple units) → open PR and wait for the learner to say "merge".
+   - Follow `rules/00_core.md` §10 for branch, PR, and merge handling; task-specific instructions may narrow it.
+   - For any other changes (variant banks, scripts, rules, multiple units), follow `rules/00_core.md` §10 and task-specific instructions for delivery.
 4. Report concisely in polite Thai **without showing prompts, answers, or source text**: families scanned, core cards extracted (current vs `laterUnit`), vault archetypes/traps added, drill ID / variant counts, originality gate pass, and PR link/status.
+
+## Final documentation check
+
+- [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.
