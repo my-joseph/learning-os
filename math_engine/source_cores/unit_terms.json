@@ -12,5 +12,25 @@
       "ส่วนจริง",
       "ส่วนจินตภาพ"
     ]
+  },
+  "MTH-T02-C01-U02": {
+    "title": "Quadratic Equations",
+    "terms": [
+      "quadratic",
+      "discriminant",
+      "completing the square",
+      "quadratic formula",
+      "factoring",
+      "factorise",
+      "สมการกำลังสอง",
+      "กำลังสองสมบูรณ์",
+      "พหุนามกำลังสอง",
+      "พหุนามดีกรีสอง",
+      "แยกตัวประกอบ",
+      "ดิสคริมิแนนต์",
+      "ผลบวกราก",
+      "ผลคูณราก",
+      "รากของสมการ"
+    ]
   }
 }
