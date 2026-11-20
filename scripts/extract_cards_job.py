@@ -3,12 +3,14 @@
 
 Enables running source-card extraction on a worker model (Neon/Argon/Luna via
 ``tools/agents/run-worker.sh`` with ``DONE_FILE``) instead of spending Claude tokens reading
-raw source PDFs. Claude only reviews ``scripts.source_gap`` output afterwards.
+raw source PDFs or PRG code repositories. Claude only reviews ``scripts.source_gap`` output afterwards.
+
+Supports both Math/PHY units (``schema.json``) and PRG units (``prg_schema.json``).
 
 Usage:
     python -m scripts.extract_cards_job MTH-T02-C01-U02 --batch 1
-    python -m scripts.extract_cards_job MTH-T02-C01-U02 --batch 1 --out scratch/prompts/u02-b1.txt
-    python -m scripts.extract_cards_job MTH-T02-C01-U02 --batch 1 --commit batch1.jsonl --done-file batch1.done
+    python -m scripts.extract_cards_job PRG-T01-C01-U02 --batch 1 --out scratch/prompts/prg-u02-b1.txt
+    python -m scripts.extract_cards_job PRG-T01-C01-U02 --batch 1 --commit batch1.jsonl --done-file batch1.done
 """
 
 from __future__ import annotations
@@ -23,6 +25,9 @@ from typing import Any, Iterable
 from math_engine.source_cores import (
     FORMAT_KINDS,
     MAX_FIELD_LENGTH,
+    PRG_ARCHETYPE_KINDS,
+    PRG_LANGUAGES,
+    PRG_SCHEMA_PATH,
     REASONING_MOVES,
     REPRESENTATIONS,
     SCHEMA_PATH,
@@ -30,6 +35,7 @@ from math_engine.source_cores import (
     append_core_card,
     cores_path,
     index_dir,
+    is_prg_unit,
     load_core_cards,
     load_schema,
     resolve_sources_dir,
@@ -128,7 +134,9 @@ def build_worker_prompt(
     out_done = os.path.abspath(done_file) if done_file else default_done_file_path(unit_code, batch_num, sdir)
     resolved_run_id = (run_id or _default_run_id(unit_code, batch_num)).strip()
 
-    schema = load_schema()
+    prg_mode = is_prg_unit(unit_code)
+    schema_path = PRG_SCHEMA_PATH if prg_mode else SCHEMA_PATH
+    schema = load_schema("prg" if prg_mode else "math")
     schema_json = json.dumps(schema, ensure_ascii=False, indent=2)
 
     pages = batch.get("pages") or []
@@ -148,9 +156,12 @@ def build_worker_prompt(
         allowance = int(p.get("itemAllowance") or p.get("estimatedItems") or 1)
         fhash = str(p.get("fileHash") or "")
         terms_str = ", ".join(f"{k}={v}" for k, v in sorted((p.get("terms") or {}).items()))
+        mode_part = f" | mode={p['mode']}" if p.get("mode") else ""
+        lic_part = f" | license={p['license']}" if p.get("license") else ""
+        span_part = f" (L{p['lineStart']}-L{p['lineEnd']})" if p.get("lineStart") and p.get("lineEnd") else ""
         page_lines.append(
-            f"- Rank #{p.get('rank', '?')} | family=`{fam}` | file=`{rel}` | page={pnum} | "
-            f"itemAllowance<={allowance} | hits={hits} ({terms_str})\n"
+            f"- Rank #{p.get('rank', '?')} | family=`{fam}`{mode_part}{lic_part} | file=`{rel}` | "
+            f"page={pnum}{span_part} | itemAllowance<={allowance} | hits={hits} ({terms_str})\n"
             f"  - Cached text JSON: `{cache_abs}` (read page {pnum} text from `pages[]`)\n"
             f"  - Raw source path: `{abs_src}`\n"
             f"  - File SHA-256: `{fhash}`"
@@ -164,11 +175,94 @@ def build_worker_prompt(
     )
     novelty_cmd = f".venv/bin/python -m scripts.source_gap {unit_code} --novelty {out_batch}{sdir_arg}"
 
+    if prg_mode:
+        intro = (
+            "Read ONLY the assigned code/markdown chunks listed below, abstract source-free PRG core cards, "
+            "validate every card"
+        )
+        rules_section = [
+            "## Strict No-Copy, Zero-Leak & Validation Rules (PRG)",
+            "1. **Abstract PRG cores ONLY:** extract `language`, `archetypeKind`, `skill`, `concept`, "
+            "`bugPattern` (abstract bug/smell), optional `smell`, `testsCatch` (abstract invariant verified by tests), "
+            "`difficultyDriver`, `level` (1-5), `traps` (`[{tag, description}]`), `qualityCheckIdeas` "
+            "(`[{id: 'QC-...', check, severity?}]`), and optional `notes`.",
+            "2. **ZERO copied source code, identifiers, test names, or strings:** NEVER paste code snippets, "
+            "function/variable/class identifiers, `describe`/`it`/`test` names, or string literals from source files "
+            "(also rejected: 6-word wording overlaps and multi-line text).",
+            f"3. **Length limit:** EVERY string field (top-level and nested) MUST be <= {MAX_FIELD_LENGTH} characters.",
+            "4. **Allowed enums:**",
+            f"   - `language`: {list(PRG_LANGUAGES)}",
+            f"   - `archetypeKind`: {list(PRG_ARCHETYPE_KINDS)}",
+            "   - `qualityCheckIdeas[].id`: must match `^QC-[a-z0-9][a-z0-9-]*$`",
+            "5. **REUSE attribution (optional):** For `mode=reuse` families ONLY, you may add an optional "
+            '`"reuse": {"license": "<SPDX>", "attribution": "<source attribution>", "adaptedIdea": "<abstract test idea>"}` '
+            "block when a test idea is adapted — still rewritten from scratch, NEVER pasted. Do NOT add `reuse` on "
+            "`CORES` families.",
+            "6. **Scope & provenance:**",
+            '   - Set `sourceRef` to `{"family": "<family>", "file": "<relPath>", "page": <int>, "item": "<item id>"}`.',
+            "   - NEVER extract from `scope`-only (`openstax`) or `NO-AUTOMATION` families.",
+            "   - Respect each chunk's `itemAllowance` cap; skip duplicate/trivial items.",
+            '   - If an item goes beyond this unit\'s scope, keep the card with `"laterUnit": "<REAL_CODE>"` from '
+            '`id_map.json` (or `"UNMAPPED:<label>"` if no unit exists yet).',
+            f"   - Use unique IDs scoped to this batch, e.g. `CORE-{unit_code}-B{batch_num:02d}-01`, ...",
+            "7. **Zero-leak output:** NEVER print source code excerpts, solutions, or answers in stdout or logs.",
+            "8. **Programmatic validation:** Validate every card with "
+            "`math_engine.source_cores.validate_core_card(card, source_item_text=page_text)` before writing.",
+        ]
+        schema_heading = "## PRG Core Card Schema (`math_engine/source_cores/prg_schema.json`)"
+        step1 = (
+            f"1. Read each assigned chunk's cached text JSON (or the source file under `sources/prg/`) and draft "
+            f"source-free PRG JSONL cards into `{out_batch}` (create an empty file if a batch yields 0 usable cards)."
+        )
+        step3 = (
+            "3. If `--commit` reports any validation errors (copied identifiers, test names, string literals, "
+            "code syntax, wording overlap, length > 200, invalid `QC-*` id, or unknown `laterUnit`), fix the flagged "
+            "card(s) in the batch JSONL and re-run the commit command until it exits 0."
+        )
+    else:
+        intro = "Read ONLY the assigned pages listed below, abstract source-free mathematical core cards, validate every card"
+        rules_section = [
+            "## Strict No-Copy, Zero-Leak & Validation Rules",
+            "1. **Abstract mathematical cores ONLY:** extract `skill`, `reasoningMove`, `difficultyDriver`, `level` (1-5), "
+            "`traps` (`[{tag, description}]`), `format` (`{kind, optionCount?, distractorPatterns?}`), `representation`, "
+            "and optional `notes`.",
+            "2. **ZERO source wording:** NEVER copy, translate, or paraphrase source sentences or phrases (even short "
+            "6-word overlaps are rejected by `validate_core_card`).",
+            "3. **ZERO source numbers:** NEVER reuse any numeric literal from the source item text anywhere in content "
+            "fields (`skill`, `difficultyDriver`, `traps`, `format.distractorPatterns`, `notes`).",
+            f"4. **Length limit:** EVERY string field (top-level and nested) MUST be <= {MAX_FIELD_LENGTH} characters.",
+            "5. **Allowed enums:**",
+            f"   - `reasoningMove`: {list(REASONING_MOVES)}",
+            f"   - `format.kind`: {list(FORMAT_KINDS)}",
+            f"   - `representation`: {list(REPRESENTATIONS)}",
+            "6. **Scope & provenance:**",
+            '   - Set `sourceRef` to `{"family": "<family>", "file": "<relPath>", "page": <int>, "item": "<item id>"}`.',
+            "   - NEVER extract from `openstax` (`scope`-only) or `NO-AUTOMATION` families.",
+            "   - Respect each page's `itemAllowance` cap; skip duplicate/trivial items on the same page.",
+            '   - If an item goes beyond this unit\'s scope, keep the card with `"laterUnit": "<REAL_CODE>"` from '
+            '`id_map.json` (or `"UNMAPPED:<label>"` if no unit exists yet).',
+            '   - If an item genuinely combines >= 2 units, set `"units": ["<UNIT_A>", "<UNIT_B>"]` using real codes '
+            "from `id_map.json`.",
+            f"   - Use unique IDs scoped to this batch, e.g. `CORE-{unit_code}-B{batch_num:02d}-01`, ...",
+            "7. **Zero-leak output:** NEVER print source problem excerpts, worked solutions, or answers in stdout or logs.",
+            "8. **Programmatic validation:** Validate every card with "
+            "`math_engine.source_cores.validate_core_card(card, source_item_text=page_text)` before writing.",
+        ]
+        schema_heading = "## Core Card Schema (`math_engine/source_cores/schema.json`)"
+        step1 = (
+            f"1. Read each assigned page's cached text JSON (or visually inspect the PDF page if needed) and draft "
+            f"source-free JSONL cards into `{out_batch}` (create an empty file if a batch yields 0 usable cards)."
+        )
+        step3 = (
+            "3. If `--commit` reports any validation errors (copied digits, wording overlap, length > 200, unknown "
+            "`laterUnit`), fix the flagged card(s) in the batch JSONL and re-run the commit command until it exits 0."
+        )
+
     sections = [
         f"# Source Core-Card Extraction Job — {unit_code} (Batch {batch_num}/{total_batches})",
         "",
         "You are an extraction worker for LearningOS (run via `tools/agents/run-worker.sh` with `DONE_FILE`).",
-        "Read ONLY the assigned pages listed below, abstract source-free mathematical core cards, validate every card",
+        intro,
         "with `math_engine.source_cores.validate_core_card`, append validated cards to the unit JSONL file, update",
         "the extraction ledger, and write `DONE_FILE`. Do NOT edit tracked repository files, do NOT commit/push,",
         "do NOT open a PR, do NOT touch `progress/`, and do NOT call Notion.",
@@ -182,53 +276,27 @@ def build_worker_prompt(
         f"- Unit core cards JSONL (appended by commit step): `{target_cores}`",
         f"- Extraction ledger (updated by commit step): `{target_ledger}`",
         f"- DONE_FILE (written by commit step when finished): `{out_done}`",
-        f"- Schema file: `{SCHEMA_PATH}`",
+        f"- Schema file: `{schema_path}`",
         "",
         f"## Assigned Pages (Batch {batch_num})",
         *page_lines,
         "",
-        "## Strict No-Copy, Zero-Leak & Validation Rules",
-        "1. **Abstract mathematical cores ONLY:** extract `skill`, `reasoningMove`, `difficultyDriver`, `level` (1-5), "
-        "`traps` (`[{tag, description}]`), `format` (`{kind, optionCount?, distractorPatterns?}`), `representation`, "
-        "and optional `notes`.",
-        "2. **ZERO source wording:** NEVER copy, translate, or paraphrase source sentences or phrases (even short "
-        "6-word overlaps are rejected by `validate_core_card`).",
-        "3. **ZERO source numbers:** NEVER reuse any numeric literal from the source item text anywhere in content "
-        "fields (`skill`, `difficultyDriver`, `traps`, `format.distractorPatterns`, `notes`).",
-        f"4. **Length limit:** EVERY string field (top-level and nested) MUST be <= {MAX_FIELD_LENGTH} characters.",
-        "5. **Allowed enums:**",
-        f"   - `reasoningMove`: {list(REASONING_MOVES)}",
-        f"   - `format.kind`: {list(FORMAT_KINDS)}",
-        f"   - `representation`: {list(REPRESENTATIONS)}",
-        "6. **Scope & provenance:**",
-        '   - Set `sourceRef` to `{"family": "<family>", "file": "<relPath>", "page": <int>, "item": "<item id>"}`.',
-        "   - NEVER extract from `openstax` (`scope`-only).",
-        "   - Respect each page's `itemAllowance` cap; skip duplicate/trivial items on the same page.",
-        '   - If an item goes beyond this unit\'s scope, keep the card with `"laterUnit": "<REAL_CODE>"` from '
-        '`id_map.json` (or `"UNMAPPED:<label>"` if no unit exists yet).',
-        '   - If an item genuinely combines >= 2 units, set `"units": ["<UNIT_A>", "<UNIT_B>"]` using real codes '
-        "from `id_map.json`.",
-        "   - Use unique IDs scoped to this batch, e.g. `CORE-{unit}-B{batch:02d}-01`, `CORE-{unit}-B{batch:02d}-02`, ...",
-        "7. **Zero-leak output:** NEVER print source problem excerpts, worked solutions, or answers in stdout or logs.",
-        "8. **Programmatic validation:** Validate every card with "
-        "`math_engine.source_cores.validate_core_card(card, source_item_text=page_text)` before writing.",
+        *rules_section,
         "",
-        "## Core Card Schema (`math_engine/source_cores/schema.json`)",
+        schema_heading,
         "```json",
         schema_json,
         "```",
         "",
         "## Execution Steps",
-        f"1. Read each assigned page's cached text JSON (or visually inspect the PDF page if needed) and draft "
-        f"source-free JSONL cards into `{out_batch}` (create an empty file if a batch yields 0 usable cards).",
+        step1,
         "2. Run the commit helper to validate every card with `validate_core_card` (against the cached page text), "
         f"append valid cards to `{target_cores}`, update `{target_ledger}` for all {len(pages)} page(s) in this "
         f"batch (including 0-card pages), and write `{out_done}`:",
         "```bash",
         commit_cmd,
         "```",
-        "3. If `--commit` reports any validation errors (copied digits, wording overlap, length > 200, unknown "
-        "`laterUnit`), fix the flagged card(s) in the batch JSONL and re-run the commit command until it exits 0.",
+        step3,
         "4. After `--commit` exits 0 and `DONE_FILE` is non-empty, reply only `done` (do NOT print card text or "
         "source excerpts). The coordinator will run novelty/saturation next:",
         "```bash",
@@ -273,13 +341,23 @@ def _match_page_text_for_card(
     ref = card.get("sourceRef") or {}
     ref_file = normalize_rel_path(str(ref.get("file") or ""))
     ref_page = ref.get("page")
-    if not ref_file or not isinstance(ref_page, int):
+    if not ref_file:
         return None
-    if (ref_file, ref_page) in page_texts:
-        return page_texts[(ref_file, ref_page)]
-    for (rel, pnum), text in page_texts.items():
-        if pnum == ref_page and (rel.endswith("/" + ref_file) or os.path.basename(rel) == ref_file):
-            return text
+    if isinstance(ref_page, int):
+        if (ref_file, ref_page) in page_texts:
+            return page_texts[(ref_file, ref_page)]
+        for (rel, pnum), text in page_texts.items():
+            if pnum == ref_page and (rel.endswith("/" + ref_file) or os.path.basename(rel) == ref_file):
+                return text
+        return None
+    # String page refs (e.g. "L10-L45" in PRG cards): match cached chunks for the same file
+    matching_chunks = [
+        text
+        for (rel, _pnum), text in sorted(page_texts.items())
+        if rel == ref_file or rel.endswith("/" + ref_file) or os.path.basename(rel) == ref_file
+    ]
+    if matching_chunks:
+        return "\n".join(matching_chunks)
     return None
 
 
@@ -293,6 +371,7 @@ def commit_batch_cards(
     run_id: str | None = None,
     done_file: str | None = None,
     valid_unit_codes: Iterable[str] | None = None,
+    registry_path: str | None = None,
 ) -> dict[str, Any]:
     """Validate batch cards, append them to ``sources/_cores/<UNIT>.jsonl``, update ``_ledger.json``,
     and optionally write ``done_file``.
@@ -323,6 +402,7 @@ def commit_batch_cards(
                 card,
                 source_item_text=src_text,
                 valid_unit_codes=valid_unit_codes,
+                registry_path=registry_path,
             )
             if errs:
                 cid = card.get("id", f"line {line_no}") if isinstance(card, dict) else f"line {line_no}"
@@ -351,6 +431,7 @@ def commit_batch_cards(
             sources_dir=sdir,
             source_item_text=src_text,
             valid_unit_codes=valid_unit_codes,
+            registry_path=registry_path,
         )
         existing_ids.add(cid)
         appended_ids.append(cid)
@@ -361,19 +442,20 @@ def commit_batch_cards(
         ref = card.get("sourceRef") or {}
         ref_file = normalize_rel_path(str(ref.get("file") or ""))
         ref_page = ref.get("page")
-        if not ref_file or not isinstance(ref_page, int):
+        if not ref_file:
             continue
         matched_key: tuple[str, int] | None = None
         for bp in batch_pages:
             bp_rel = normalize_rel_path(str(bp.get("relPath") or ""))
             bp_page = int(bp.get("page") or 0)
-            if bp_page == ref_page and (
-                bp_rel == ref_file or bp_rel.endswith("/" + ref_file) or os.path.basename(bp_rel) == ref_file
-            ):
+            file_matches = bp_rel == ref_file or bp_rel.endswith("/" + ref_file) or os.path.basename(bp_rel) == ref_file
+            if file_matches and (bp_page == ref_page or not isinstance(ref_page, int)):
                 matched_key = (bp_rel, bp_page)
                 break
-        key = matched_key or (ref_file, ref_page)
-        cards_by_page.setdefault(key, []).append(str(card["id"]))
+        if matched_key is not None:
+            cards_by_page.setdefault(matched_key, []).append(str(card["id"]))
+        elif isinstance(ref_page, int):
+            cards_by_page.setdefault((ref_file, ref_page), []).append(str(card["id"]))
 
     ledger_records: list[dict[str, Any]] = []
     for bp in batch_pages:
@@ -424,7 +506,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="python -m scripts.extract_cards_job",
         description="Render a worker extraction prompt for one batch of plan_<UNIT>.json, or commit validated cards.",
     )
-    parser.add_argument("unit", help="Target unit code (e.g. MTH-T02-C01-U02).")
+    parser.add_argument("unit", help="Target unit code (e.g. MTH-T02-C01-U02 or PRG-T01-C01-U02).")
     parser.add_argument("--batch", type=int, required=True, help="1-indexed batch number from plan_<UNIT>.json.")
     parser.add_argument(
         "--plan",

@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Locate and rank candidate source pages for a unit across local PDFs (and PDFs inside zip archives).
+"""Locate and rank candidate source pages/files for a unit across local PDFs (Math/PHY)
+and local code/markdown repositories under ``sources/prg/<family>/`` (PRG).
 
-Uses ``pypdf`` (imported lazily) with an extracted-text cache under ``sources/_index/`` and
-writes a per-unit manifest ``sources/_index/located_<UNIT>.json`` for the originality gate.
+Uses ``pypdf`` (imported lazily, PDFs only) with an extracted-text cache under ``sources/_index/``
+and writes a per-unit manifest ``sources/_index/located_<UNIT>.json`` for the originality gate.
 
 With ``--plan``, writes a bounded, diversity-balanced, ledger-aware extraction plan to
 ``sources/_index/plan_<UNIT>.json`` so extraction cost stays bounded regardless of how many
 source files exist under ``sources/``.
 
 Scope-only families (OpenStax, per ``docs/sources.md`` and ``rules/07`` §4) are reported strictly
-as ``scope`` (TOC / learning objectives) and never selected as mining targets. Pages with no
-extractable text are listed as ``image page — read visually``.
+as ``scope`` (TOC / learning objectives) and never selected as mining targets.
+``NO-AUTOMATION`` families are never indexed, cached, or selected automatically.
 
 Usage:
     python -m scripts.source_find MTH-T02-C01-U01
-    python -m scripts.source_find MTH-T02-C01-U02 --plan
+    python -m scripts.source_find PRG-T01-C01-U02 --plan
     python -m scripts.source_find MTH-T02-C01-U02 --plan --budget-pages 30 --budget-items 40 --refresh
-    python -m scripts.source_find MTH-T02-C01-U01 --terms "complex,conjugate" --families mathsgenie,thai-exams
+    python -m scripts.source_find PRG-T01-C01-U02 --terms "closure,lexical" --families prg/javascript-questions
 """
 
 from __future__ import annotations
@@ -36,14 +37,18 @@ from math_engine.source_cores import (
     DEFAULT_FAMILY_PRIORITY,
     REPO_ROOT,
     SOURCE_FAMILIES,
+    family_license,
     family_mode,
     family_priority,
     family_root,
     get_unit_terms,
     index_dir,
+    is_prg_unit,
     is_thai_exam_family,
+    load_registry_families,
     resolve_sources_dir,
 )
+from math_engine.source_cores import DOCS_SOURCES_PATH as DOCS_SOURCES_PATH
 from math_engine.source_cores.ledger import (
     compute_file_hash,
     compute_relpath_hash,
@@ -52,13 +57,56 @@ from math_engine.source_cores.ledger import (
     normalize_rel_path,
 )
 
-DOCS_SOURCES_PATH = os.path.join(REPO_ROOT, "docs", "sources.md")
 DOCS_BACKLOG_PATH = os.path.join(REPO_ROOT, "docs", "source_backlog.md")
 
 DEFAULT_BUDGET_PAGES = 30
 DEFAULT_BUDGET_ITEMS = 40
 DEFAULT_BATCH_SIZE = 10
 THAI_EXAM_BOOST = 25.0
+
+CODE_SOURCE_EXTENSIONS: tuple[str, ...] = (
+    ".js",
+    ".mjs",
+    ".cjs",
+    ".jsx",
+    ".ts",
+    ".mts",
+    ".cts",
+    ".tsx",
+    ".py",
+    ".md",
+    ".markdown",
+    ".json",
+)
+SKIP_CODE_DIRS: frozenset[str] = frozenset(
+    {
+        "node_modules",
+        "dist",
+        "build",
+        "coverage",
+        "__pycache__",
+        ".venv",
+        "vendor",
+        ".next",
+        ".cache",
+        "target",
+        ".turbo",
+    }
+)
+SKIP_CODE_FILENAMES: frozenset[str] = frozenset(
+    {
+        "package-lock.json",
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "npm-shrinkwrap.json",
+        "composer.lock",
+        "poetry.lock",
+        "cargo.lock",
+    }
+)
+MAX_CODE_FILE_BYTES = 512 * 1024
+MAX_CHUNK_CHARS = 6000
+MAX_CHUNK_LINES = 180
 
 _SCOPE_HINT_KEYWORDS = ("table of contents", "contents", "learning objectives", "by the end of this section")
 _TABLE_FAMILY_RE = re.compile(r"^\|\s*`([^`]+)`")
@@ -67,9 +115,13 @@ _BACKLOG_SOURCES_PATH_RE = re.compile(r"sources/([A-Za-z0-9_./-]+)")
 _ITEM_MARKER_RE = re.compile(
     r"^\s*(?:(?:Q|Question|Problem|Ex(?:ample)?)\s*\.?\s*)?\d{1,3}\s*[\.\):](?:\s|$)"
     r"|^\s*ข้อ\s*\d{1,3}\b"
-    r"|^\s*\(\d{1,2}\)\s+",
+    r"|^\s*\(\d{1,2}\)\s+"
+    r"|^\s*#{2,6}\s+\d+[\.\):]"
+    r"|^\s*(?:it|test|xit|xtest|describe)\s*\("
+    r"|^\s*def\s+test_",
     re.IGNORECASE | re.MULTILINE,
 )
+_MD_HEADING_RE = re.compile(r"^#{1,6}\s+")
 
 
 def _clean_family_prefix(raw_token: str) -> str:
@@ -86,66 +138,29 @@ def _clean_family_prefix(raw_token: str) -> str:
 
 
 def load_registered_source_families(registry_path: str | None = None) -> set[str]:
-    """Parse top-level registered folder names (lowercased) from ``docs/sources.md``."""
-    target = registry_path or DOCS_SOURCES_PATH
-    if not os.path.isfile(target):
-        return set()
+    """Parse registered family keys (lowercased) from ``docs/sources.md``.
+
+    Returns top-level math folders plus ``prg`` (when any PRG family is registered) and
+    individual ``prg/<family>`` entries.
+    """
+    reg = load_registry_families(registry_path=registry_path)
     registered: set[str] = set()
-    with open(target, "r", encoding="utf-8") as fh:
-        for line in fh:
-            stripped = line.strip()
-            m = _TABLE_FAMILY_RE.match(stripped)
-            if not m:
-                continue
-            token = m.group(1).replace("\\", "/").strip("/")
-            if not token:
-                continue
-            top = token.split("/", 1)[0].lower()
-            if top:
-                registered.add(top)
+    for key in reg:
+        registered.add(key)
+        top = key.split("/", 1)[0]
+        if top:
+            registered.add(top)
     return registered
 
 
 def load_registry_priorities(registry_path: str | None = None) -> dict[str, int]:
     """Parse per-family / per-subpath ``Priority`` values from ``docs/sources.md``."""
-    target = registry_path or DOCS_SOURCES_PATH
-    if not os.path.isfile(target):
-        return {}
+    reg = load_registry_families(registry_path=registry_path)
     priorities: dict[str, int] = {}
-    priority_col: int | None = None
-    with open(target, "r", encoding="utf-8") as fh:
-        for line in fh:
-            stripped = line.strip()
-            if not stripped.startswith("|"):
-                priority_col = None
-                continue
-            cells = [c.strip() for c in stripped.strip("|").split("|")]
-            if not cells:
-                continue
-            if all(re.fullmatch(r":?-{2,}:?", c.replace(" ", "")) for c in cells if c):
-                continue
-            lower_cells = [c.lower() for c in cells]
-            if any("priority" == c or c.startswith("priority ") for c in lower_cells):
-                for idx, val in enumerate(lower_cells):
-                    if val == "priority" or val.startswith("priority "):
-                        priority_col = idx
-                        break
-                continue
-            if priority_col is None or priority_col >= len(cells):
-                continue
-            m = _TABLE_FAMILY_RE.match(stripped)
-            if not m:
-                continue
-            raw_prio = cells[priority_col].strip("` ").strip()
-            if not re.fullmatch(r"\d+", raw_prio):
-                continue
-            prio_val = int(raw_prio)
-            prefix = _clean_family_prefix(m.group(1))
-            if not prefix:
-                continue
-            priorities[prefix] = max(priorities.get(prefix, -1), prio_val)
-            top = prefix.split("/", 1)[0]
-            priorities[top] = max(priorities.get(top, -1), prio_val)
+    for key, meta in reg.items():
+        prio = meta.get("priority")
+        if isinstance(prio, int):
+            priorities[key] = prio
     return priorities
 
 
@@ -210,20 +225,25 @@ def load_backlog_ranks(backlog_path: str | None = None, unit_code: str | None = 
             rank = int(m.group(1))
             title = m.group(2)
             rest = m.group(3)
-            # Explicit local path hints like `sources/thai-exams/tcas68-a-level/`
+            # Explicit local path hints like `sources/thai-exams/tcas68-a-level/` or `sources/prg/exercism-typescript`
             for pm in _BACKLOG_SOURCES_PATH_RE.finditer(rest):
                 rel = pm.group(1).strip("/").rstrip(".,;:)")
                 if not rel:
                     continue
                 _record(rel, rank)
-                _record(rel.split("/", 1)[0], rank)
+                parts = rel.split("/")
+                if parts[0].lower() == "prg" and len(parts) >= 2:
+                    _record(f"prg/{parts[1]}", rank)
+                    _record(parts[1], rank)
+                else:
+                    _record(parts[0], rank)
             for slug in _slug_variants(title):
                 _record(slug, rank)
     return ranks
 
 
 def estimate_page_items(text: str) -> int:
-    """Estimate how many distinct problem items appear on a page (clamped to 1..15)."""
+    """Estimate how many distinct problem items appear on a page/chunk (clamped to 1..15)."""
     matches = _ITEM_MARKER_RE.findall(text or "")
     if not matches:
         return 1
@@ -231,7 +251,7 @@ def estimate_page_items(text: str) -> int:
 
 
 def find_unregistered_source_folders(sources_dir: str, registry_path: str | None = None) -> list[str]:
-    """Return sorted top-level directories under ``sources_dir`` not listed in ``docs/sources.md``.
+    """Return sorted directories under ``sources_dir`` (and ``sources_dir/prg/``) not listed in ``docs/sources.md``.
 
     Ignores hidden entries (starting with ``.``) and internal folders (starting with ``_``).
     """
@@ -245,7 +265,18 @@ def find_unregistered_source_folders(sources_dir: str, registry_path: str | None
         full = os.path.join(sources_dir, entry)
         if not os.path.isdir(full):
             continue
-        if entry.lower() not in registered:
+        low = entry.lower()
+        if low == "prg":
+            for sub in sorted(os.listdir(full)):
+                if sub.startswith("_") or sub.startswith("."):
+                    continue
+                sub_full = os.path.join(full, sub)
+                if not os.path.isdir(sub_full):
+                    continue
+                if f"prg/{sub.lower()}" not in registered:
+                    unregistered.append(f"prg/{sub}")
+            continue
+        if low not in registered:
             unregistered.append(entry)
     return unregistered
 
@@ -279,9 +310,83 @@ def extract_pdf_pages(source: str | bytes) -> list[dict[str, Any]]:
     return pages
 
 
-def _cache_filename(rel_path: str) -> str:
+def _infer_file_language(rel_path: str) -> str:
+    ext = os.path.splitext(rel_path)[1].lower()
+    if ext in (".ts", ".mts", ".cts", ".tsx"):
+        return "typescript"
+    if ext in (".js", ".mjs", ".cjs", ".jsx"):
+        return "javascript"
+    if ext == ".py":
+        return "python"
+    if ext in (".md", ".markdown"):
+        return "markdown"
+    if ext == ".json":
+        return "json"
+    if ext == ".sql":
+        return "sql"
+    return "text"
+
+
+def _infer_file_kind(rel_path: str) -> str:
+    ext = os.path.splitext(rel_path)[1].lower()
+    if ext in (".md", ".markdown"):
+        return "markdown"
+    if ext == ".json":
+        return "json"
+    return "code"
+
+
+def split_code_or_markdown_pages(text: str, ext: str) -> list[dict[str, Any]]:
+    """Split a code, JSON, or Markdown file into numbered chunks (``page: 1..N``) for indexing and budgeting."""
+    lines = text.splitlines()
+    if not lines:
+        return [{"page": 1, "text": "", "isImagePage": True, "lineStart": 1, "lineEnd": 1}]
+    if len(text) <= MAX_CHUNK_CHARS and len(lines) <= MAX_CHUNK_LINES:
+        return [{"page": 1, "text": text, "isImagePage": False, "lineStart": 1, "lineEnd": len(lines)}]
+
+    is_md = ext.lower() in (".md", ".markdown")
+    chunks: list[dict[str, Any]] = []
+    buf: list[str] = []
+    buf_chars = 0
+    start_line = 1
+
+    def _flush(end_line: int) -> None:
+        nonlocal buf, buf_chars
+        if not buf:
+            return
+        chunk_text = "\n".join(buf)
+        chunks.append(
+            {
+                "page": len(chunks) + 1,
+                "text": chunk_text,
+                "isImagePage": not chunk_text.strip(),
+                "lineStart": start_line,
+                "lineEnd": end_line,
+            }
+        )
+        buf = []
+        buf_chars = 0
+
+    for idx, line in enumerate(lines, 1):
+        at_boundary = (is_md and bool(_MD_HEADING_RE.match(line))) or (not is_md and not line.strip())
+        would_exceed = (buf_chars + len(line) + 1 > MAX_CHUNK_CHARS) or (len(buf) >= MAX_CHUNK_LINES)
+        if buf and (
+            would_exceed or (at_boundary and (buf_chars >= MAX_CHUNK_CHARS // 2 or len(buf) >= MAX_CHUNK_LINES // 2))
+        ):
+            _flush(idx - 1)
+            start_line = idx
+        buf.append(line)
+        buf_chars += len(line) + 1
+
+    if buf:
+        _flush(len(lines))
+
+    return chunks
+
+
+def _cache_filename(rel_path: str, prefix: str = "pdf") -> str:
     digest = hashlib.sha256(rel_path.encode("utf-8")).hexdigest()[:16]
-    return f"pdf_{digest}.json"
+    return f"{prefix}_{digest}.json"
 
 
 def _load_or_extract_pdf(
@@ -291,9 +396,10 @@ def _load_or_extract_pdf(
     *,
     zip_member: str | None = None,
     use_cache: bool = True,
+    registry_path: str | None = None,
 ) -> tuple[str, dict[str, Any]]:
     stat = os.stat(abs_path)
-    cache_name = _cache_filename(rel_path)
+    cache_name = _cache_filename(rel_path, prefix="pdf")
     cache_path = os.path.join(idx_dir, cache_name)
 
     if use_cache and os.path.isfile(cache_path):
@@ -322,7 +428,8 @@ def _load_or_extract_pdf(
     doc = {
         "relPath": rel_path,
         "family": family_root(rel_path),
-        "mode": family_mode(rel_path),
+        "mode": family_mode(rel_path, registry_path=registry_path),
+        "kind": "pdf",
         "mtime": stat.st_mtime,
         "size": stat.st_size,
         "fileHash": file_hash,
@@ -334,36 +441,120 @@ def _load_or_extract_pdf(
     return cache_name, doc
 
 
-def _discover_source_pdfs(sources_dir: str, families: list[str] | None = None) -> list[tuple[str, str, str | None]]:
-    """Return sorted list of ``(rel_path, abs_path, zip_member_or_none)`` under ``sources_dir``."""
+def _load_or_extract_code(
+    rel_path: str,
+    abs_path: str,
+    idx_dir: str,
+    *,
+    use_cache: bool = True,
+    registry_path: str | None = None,
+) -> tuple[str, dict[str, Any]]:
+    stat = os.stat(abs_path)
+    cache_name = _cache_filename(rel_path, prefix="code")
+    cache_path = os.path.join(idx_dir, cache_name)
+
+    if use_cache and os.path.isfile(cache_path):
+        try:
+            with open(cache_path, "r", encoding="utf-8") as fh:
+                cached = json.load(fh)
+            if (
+                cached.get("relPath") == rel_path
+                and cached.get("mtime") == stat.st_mtime
+                and cached.get("size") == stat.st_size
+                and isinstance(cached.get("pages"), list)
+            ):
+                return cache_name, cached
+        except (OSError, ValueError):
+            pass
+
+    with open(abs_path, "rb") as fh:
+        raw_bytes = fh.read()
+    file_hash = hashlib.sha256(raw_bytes).hexdigest()
+    text = raw_bytes.decode("utf-8", errors="replace")
+    ext = os.path.splitext(rel_path)[1].lower()
+    pages = split_code_or_markdown_pages(text, ext)
+
+    doc: dict[str, Any] = {
+        "relPath": rel_path,
+        "family": family_root(rel_path),
+        "mode": family_mode(rel_path, registry_path=registry_path),
+        "kind": _infer_file_kind(rel_path),
+        "language": _infer_file_language(rel_path),
+        "mtime": stat.st_mtime,
+        "size": stat.st_size,
+        "fileHash": file_hash,
+        "pages": pages,
+    }
+    lic = family_license(rel_path, registry_path=registry_path)
+    if lic:
+        doc["license"] = lic
+    os.makedirs(idx_dir, exist_ok=True)
+    with open(cache_path, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, ensure_ascii=False)
+    return cache_name, doc
+
+
+def _family_matches_filter(rel: str, fam_filters: list[str]) -> bool:
+    if not fam_filters:
+        return True
+    low = rel.replace("\\", "/").lower()
+    root = family_root(rel)
+    short = root.split("/", 1)[1] if root.startswith("prg/") else root
+    return any(
+        root == f or short == f or low.startswith(f + "/") or low == f or (f.startswith("prg/") and root == f)
+        for f in fam_filters
+    )
+
+
+def _discover_source_pdfs(
+    sources_dir: str,
+    families: list[str] | None = None,
+    *,
+    registry_path: str | None = None,
+) -> tuple[list[tuple[str, str, str | None]], list[str]]:
+    """Return ``(pdfs, skipped_no_automation)`` under ``sources_dir``, skipping ``no-automation`` families."""
     fam_filters = [f.replace("\\", "/").strip("/").lower() for f in (families or []) if f.strip()]
-
-    def _family_allowed(rel: str) -> bool:
-        if not fam_filters:
-            return True
-        low = rel.lower()
-        root = family_root(rel)
-        return any(root == f or low.startswith(f + "/") or low == f for f in fam_filters)
-
     found: list[tuple[str, str, str | None]] = []
+    skipped_no_auto: set[str] = set()
+
     for dirpath, dirnames, filenames in os.walk(sources_dir):
         rel_dir = os.path.relpath(dirpath, sources_dir).replace("\\", "/")
         if rel_dir == ".":
-            dirnames[:] = sorted(d for d in dirnames if not d.startswith("_") and not d.startswith("."))
+            kept: list[str] = []
+            for d in sorted(dirnames):
+                if d.startswith("_") or d.startswith(".") or d.lower() == "prg":
+                    continue
+                if family_mode(d, registry_path=registry_path) == "no-automation":
+                    skipped_no_auto.add(d.lower())
+                    continue
+                kept.append(d)
+            dirnames[:] = kept
         else:
-            dirnames[:] = sorted(d for d in dirnames if not d.startswith("."))
+            kept = []
+            for d in sorted(dirnames):
+                if d.startswith("."):
+                    continue
+                sub_rel = f"{rel_dir}/{d}"
+                if family_mode(sub_rel, registry_path=registry_path) == "no-automation":
+                    skipped_no_auto.add(family_root(sub_rel))
+                    continue
+                kept.append(d)
+            dirnames[:] = kept
 
         for fname in sorted(filenames):
             if fname.startswith("."):
                 continue
             abs_file = os.path.join(dirpath, fname)
             rel_file = fname if rel_dir == "." else f"{rel_dir}/{fname}"
+            if family_mode(rel_file, registry_path=registry_path) == "no-automation":
+                skipped_no_auto.add(family_root(rel_file))
+                continue
             low = fname.lower()
             if low.endswith(".pdf"):
-                if _family_allowed(rel_file):
+                if _family_matches_filter(rel_file, fam_filters):
                     found.append((rel_file, abs_file, None))
             elif low.endswith(".zip"):
-                if not _family_allowed(rel_file):
+                if not _family_matches_filter(rel_file, fam_filters):
                     continue
                 try:
                     with zipfile.ZipFile(abs_file, "r") as zf:
@@ -373,7 +564,66 @@ def _discover_source_pdfs(sources_dir: str, families: list[str] | None = None) -
                             found.append((f"{rel_file}::{member}", abs_file, member))
                 except (OSError, zipfile.BadZipFile):
                     continue
-    return found
+    return found, sorted(skipped_no_auto)
+
+
+def _discover_source_code_files(
+    sources_dir: str,
+    families: list[str] | None = None,
+    *,
+    registry_path: str | None = None,
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Return ``(files, skipped_no_automation)`` for code/markdown/json sources under ``sources/prg/<family>/``.
+
+    ``NO-AUTOMATION`` families are pruned immediately and never walked or indexed.
+    """
+    prg_root = os.path.join(sources_dir, "prg")
+    if not os.path.isdir(prg_root):
+        return [], []
+
+    fam_filters = [f.replace("\\", "/").strip("/").lower() for f in (families or []) if f.strip()]
+    found: list[tuple[str, str]] = []
+    skipped_no_auto: set[str] = set()
+
+    for dirpath, dirnames, filenames in os.walk(prg_root):
+        rel_dir = os.path.relpath(dirpath, sources_dir).replace("\\", "/")
+        if rel_dir == "prg":
+            kept: list[str] = []
+            for d in sorted(dirnames):
+                if d.startswith("_") or d.startswith("."):
+                    continue
+                fam_key = f"prg/{d.lower()}"
+                if family_mode(fam_key, registry_path=registry_path) == "no-automation":
+                    skipped_no_auto.add(fam_key)
+                    continue
+                kept.append(d)
+            dirnames[:] = kept
+        else:
+            dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d not in SKIP_CODE_DIRS)
+
+        for fname in sorted(filenames):
+            if fname.startswith("."):
+                continue
+            low = fname.lower()
+            if low in SKIP_CODE_FILENAMES or low.endswith((".min.js", ".bundle.js", ".min.css")):
+                continue
+            if not low.endswith(CODE_SOURCE_EXTENSIONS):
+                continue
+            abs_file = os.path.join(dirpath, fname)
+            rel_file = f"{rel_dir}/{fname}"
+            if family_mode(rel_file, registry_path=registry_path) == "no-automation":
+                skipped_no_auto.add(family_root(rel_file))
+                continue
+            if not _family_matches_filter(rel_file, fam_filters):
+                continue
+            try:
+                if os.path.getsize(abs_file) > MAX_CODE_FILE_BYTES:
+                    continue
+            except OSError:
+                continue
+            found.append((rel_file, abs_file))
+
+    return found, sorted(skipped_no_auto)
 
 
 def _count_term_hits(text: str, terms: list[str]) -> dict[str, int]:
@@ -398,7 +648,7 @@ def find_sources(
     use_cache: bool = True,
     registry_path: str | None = None,
 ) -> dict[str, Any]:
-    """Search PDFs under ``sources_dir`` for ``unit_code`` terms and cache extracted text."""
+    """Search PDFs (MTH/PHY) or code/markdown files under ``sources/prg/`` (PRG) and cache extracted text."""
     sdir = resolve_sources_dir(sources_dir=sources_dir)
     if not os.path.isdir(sdir):
         raise FileNotFoundError(
@@ -414,31 +664,54 @@ def find_sources(
 
     unregistered = find_unregistered_source_folders(sdir, registry_path=registry_path)
     idx_dir = index_dir(sources_dir=sdir)
-    pdfs = _discover_source_pdfs(sdir, families=families)
+    prg_mode = is_prg_unit(unit_code)
 
     core_matches: list[dict[str, Any]] = []
     scope_matches: list[dict[str, Any]] = []
     image_only_files: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
 
-    for rel_path, abs_path, zip_member in pdfs:
+    if prg_mode:
+        code_files, skipped_no_auto = _discover_source_code_files(sdir, families=families, registry_path=registry_path)
+        scanned_count = len(code_files)
+        pdfs_scanned = 0
+        work_items: list[tuple[str, str, str | None]] = [(rel, absp, None) for rel, absp in code_files]
+    else:
+        pdfs, skipped_no_auto = _discover_source_pdfs(sdir, families=families, registry_path=registry_path)
+        scanned_count = len(pdfs)
+        pdfs_scanned = len(pdfs)
+        work_items = pdfs
+
+    for rel_path, abs_path, zip_member in work_items:
         try:
-            cache_name, doc = _load_or_extract_pdf(
-                rel_path,
-                abs_path,
-                idx_dir,
-                zip_member=zip_member,
-                use_cache=use_cache,
-            )
+            if prg_mode:
+                cache_name, doc = _load_or_extract_code(
+                    rel_path,
+                    abs_path,
+                    idx_dir,
+                    use_cache=use_cache,
+                    registry_path=registry_path,
+                )
+            else:
+                cache_name, doc = _load_or_extract_pdf(
+                    rel_path,
+                    abs_path,
+                    idx_dir,
+                    zip_member=zip_member,
+                    use_cache=use_cache,
+                    registry_path=registry_path,
+                )
         except RuntimeError:
             raise
-        except Exception as exc:  # noqa: BLE001 - report unreadable PDF without aborting scan
+        except Exception as exc:  # noqa: BLE001 - report unreadable file without aborting scan
             errors.append({"relPath": rel_path, "error": str(exc)})
             continue
 
         pages = doc.get("pages") or []
         fam = doc.get("family") or family_root(rel_path)
-        mode = doc.get("mode") or family_mode(rel_path)
+        mode = family_mode(rel_path, registry_path=registry_path)
+        if mode == "no-automation":
+            continue
 
         matched_pages: list[dict[str, Any]] = []
         image_pages: list[int] = []
@@ -448,7 +721,8 @@ def find_sources(
             pnum = int(p.get("page", 0))
             text = str(p.get("text") or "")
             if p.get("isImagePage") or not text.strip():
-                image_pages.append(pnum)
+                if not prg_mode:
+                    image_pages.append(pnum)
                 continue
             has_any_text = True
             term_counts = _count_term_hits(text, search_terms)
@@ -460,6 +734,9 @@ def find_sources(
                     "charLen": len(text.strip()),
                     "estimatedItems": estimate_page_items(text),
                 }
+                if p.get("lineStart") is not None and p.get("lineEnd") is not None:
+                    entry["lineStart"] = int(p["lineStart"])
+                    entry["lineEnd"] = int(p["lineEnd"])
                 if mode == "scope":
                     low = text.lower()
                     entry["scopeSection"] = (
@@ -468,7 +745,7 @@ def find_sources(
                 matched_pages.append(entry)
 
         if matched_pages:
-            record = {
+            record: dict[str, Any] = {
                 "relPath": rel_path,
                 "family": fam,
                 "mode": mode,
@@ -477,13 +754,19 @@ def find_sources(
                 "pages": matched_pages,
                 "imagePages": image_pages,
             }
+            if doc.get("language"):
+                record["language"] = doc["language"]
+            if doc.get("kind"):
+                record["kind"] = doc["kind"]
+            if doc.get("license"):
+                record["license"] = doc["license"]
             if isinstance(doc.get("fileHash"), str) and doc["fileHash"]:
                 record["fileHash"] = doc["fileHash"]
             if mode == "scope":
                 scope_matches.append(record)
             else:
                 core_matches.append(record)
-        elif not has_any_text and image_pages:
+        elif not prg_mode and not has_any_text and image_pages:
             image_only_files.append(
                 {
                     "relPath": rel_path,
@@ -499,9 +782,11 @@ def find_sources(
 
     manifest = {
         "unitCode": unit_code,
+        "track": "prg" if prg_mode else "math",
         "terms": search_terms,
         "matches": core_matches + scope_matches,
         "imageOnlyFiles": image_only_files,
+        "skippedNoAutomation": skipped_no_auto,
     }
     os.makedirs(idx_dir, exist_ok=True)
     manifest_path = os.path.join(idx_dir, f"located_{unit_code}.json")
@@ -510,11 +795,14 @@ def find_sources(
 
     return {
         "unitCode": unit_code,
+        "track": "prg" if prg_mode else "math",
         "sourcesDir": sdir,
         "manifestPath": manifest_path,
         "terms": search_terms,
-        "pdfsScanned": len(pdfs),
+        "pdfsScanned": pdfs_scanned,
+        "filesScanned": scanned_count,
         "unregisteredSources": unregistered,
+        "skippedNoAutomation": skipped_no_auto,
         "coreMatches": core_matches,
         "scopeMatches": scope_matches,
         "imageOnlyFiles": image_only_files,
@@ -535,6 +823,13 @@ def _longest_prefix_lookup(rel_path: str, family: str, mapping: dict[str, int]) 
     fam_low = family.lower()
     if fam_low in mapping:
         return mapping[fam_low]
+    if fam_low.startswith("prg/"):
+        short = fam_low.split("/", 1)[1]
+        if short in mapping:
+            return mapping[short]
+        compact_short = short.replace("-", "").replace("_", "")
+        if compact_short in mapping:
+            return mapping[compact_short]
     compact = fam_low.replace("-", "").replace("_", "")
     if compact in mapping:
         return mapping[compact]
@@ -548,15 +843,16 @@ def _score_candidate_page(
     *,
     registry_priorities: dict[str, int],
     backlog_ranks: dict[str, int],
+    registry_path: str | None = None,
 ) -> tuple[float, dict[str, Any]]:
-    """Compute ranking score and breakdown for one candidate page."""
+    """Compute ranking score and breakdown for one candidate page/chunk."""
     reg_prio = _longest_prefix_lookup(rel_path, family, registry_priorities)
     backlog_rank = _longest_prefix_lookup(rel_path, family, backlog_ranks)
 
     if reg_prio is not None:
         base_priority = int(reg_prio)
     elif family.lower() in SOURCE_FAMILIES:
-        base_priority = family_priority(rel_path)
+        base_priority = family_priority(rel_path, registry_path=registry_path)
     elif backlog_rank is not None:
         base_priority = max(10, 100 - (backlog_rank - 1) * 2)
     else:
@@ -621,7 +917,7 @@ def build_extraction_plan(
     registry_path: str | None = None,
     backlog_path: str | None = None,
 ) -> dict[str, Any]:
-    """Rank and select a bounded, diverse set of candidate pages and write ``plan_<UNIT>.json``.
+    """Rank and select a bounded, diverse set of candidate pages/chunks and write ``plan_<UNIT>.json``.
 
     Ranking combines:
     (a) family priority from ``docs/sources.md`` + ``SOURCE_FAMILIES`` + ``docs/source_backlog.md``,
@@ -629,8 +925,8 @@ def build_extraction_plan(
     (c) Thai-exam relevance boost (SmartMathPro, thai-exams), and
     (d) round-robin diversity across families so one family cannot fill the budget.
 
-    Scope-only families (OpenStax) are always skipped. Pages already present in
-    ``sources/_cores/_ledger.json`` with an unchanged file hash are excluded unless
+    Scope-only (OpenStax) and ``NO-AUTOMATION`` families are always skipped. Pages already
+    present in ``sources/_cores/_ledger.json`` with an unchanged file hash are excluded unless
     ``refresh=True``.
     """
     if budget_pages < 0:
@@ -649,6 +945,7 @@ def build_extraction_plan(
     ledger = load_ledger(sources_dir=sdir)
 
     skipped_scope_pages = sum(len(m.get("pages") or []) for m in (find_result.get("scopeMatches") or []))
+    skipped_no_auto = set(find_result.get("skippedNoAutomation") or [])
     skipped_ledger_pages = 0
     hash_cache: dict[str, str] = {}
 
@@ -658,13 +955,18 @@ def build_extraction_plan(
     for match in find_result.get("coreMatches") or []:
         rel_path = str(match.get("relPath") or "")
         fam = str(match.get("family") or family_root(rel_path))
-        mode = str(match.get("mode") or family_mode(rel_path))
-        if mode == "scope" or family_mode(rel_path) == "scope":
+        mode = str(match.get("mode") or family_mode(rel_path, registry_path=registry_path))
+        reg_mode = family_mode(rel_path, registry_path=registry_path)
+        if mode == "scope" or reg_mode == "scope":
             skipped_scope_pages += len(match.get("pages") or [])
+            continue
+        if mode == "no-automation" or reg_mode == "no-automation":
+            skipped_no_auto.add(fam)
             continue
 
         file_hash = _resolve_candidate_hash(sdir, idx_dir, match, hash_cache)
         cache_file = str(match.get("cacheFile") or "")
+        lic = match.get("license") or family_license(rel_path, registry_path=registry_path)
 
         for p_entry in match.get("pages") or []:
             pnum = int(p_entry["page"])
@@ -684,10 +986,12 @@ def build_extraction_plan(
                 p_entry,
                 registry_priorities=registry_priorities,
                 backlog_ranks=backlog_ranks,
+                registry_path=registry_path,
             )
             est_items = max(1, int(p_entry.get("estimatedItems") or 1))
-            candidate = {
+            candidate: dict[str, Any] = {
                 "family": fam,
+                "mode": reg_mode,
                 "relPath": rel_path,
                 "page": pnum,
                 "cacheFile": cache_file,
@@ -699,6 +1003,13 @@ def build_extraction_plan(
                 "score": score,
                 "scoreBreakdown": breakdown,
             }
+            if lic:
+                candidate["license"] = lic
+            if match.get("language"):
+                candidate["language"] = match["language"]
+            if p_entry.get("lineStart") is not None and p_entry.get("lineEnd") is not None:
+                candidate["lineStart"] = int(p_entry["lineStart"])
+                candidate["lineEnd"] = int(p_entry["lineEnd"])
             by_family.setdefault(fam, []).append(candidate)
             candidates_by_family[fam] += 1
 
@@ -769,6 +1080,7 @@ def build_extraction_plan(
 
     plan: dict[str, Any] = {
         "unitCode": unit_code,
+        "track": "prg" if is_prg_unit(unit_code) else "math",
         "sourcesDir": sdir,
         "planPath": plan_file,
         "terms": list(find_result.get("terms") or []),
@@ -782,6 +1094,7 @@ def build_extraction_plan(
             "totalCandidates": total_candidates,
             "skippedLedgerPages": skipped_ledger_pages,
             "skippedScopePages": skipped_scope_pages,
+            "skippedNoAutomationFamilies": sorted(skipped_no_auto),
             "selectedPageCount": len(selected),
             "selectedEstimatedItems": cumulative_items,
             "batchCount": len(batches),
@@ -806,11 +1119,18 @@ def _format_page_list(pages: list[int]) -> str:
 
 def format_find_report(result: dict[str, Any]) -> str:
     """Format ``find_sources`` results for CLI output."""
+    is_prg = result.get("track") == "prg" or is_prg_unit(str(result.get("unitCode") or ""))
+    scanned = result.get("filesScanned", result.get("pdfsScanned", 0))
+    unit_label = "code/doc file(s)" if is_prg else "PDF(s)"
     lines = [
-        f"Source find for {result['unitCode']} ({result['pdfsScanned']} PDF(s) scanned)",
+        f"Source find for {result['unitCode']} ({scanned} {unit_label} scanned)",
         f"Terms: {', '.join(result['terms'])}",
         f"Sources dir: {result['sourcesDir']}",
     ]
+
+    skipped_no_auto = result.get("skippedNoAutomation") or []
+    if skipped_no_auto:
+        lines.append(f"Skipped NO-AUTOMATION families (never indexed automatically): {', '.join(skipped_no_auto)}")
 
     unregistered = result.get("unregisteredSources") or []
     if unregistered:
@@ -824,14 +1144,16 @@ def format_find_report(result: dict[str, Any]) -> str:
     lines.append("")
 
     core_matches = result.get("coreMatches") or []
-    lines.append(f"Mining targets (cores): {len(core_matches)} file(s)")
+    lines.append(f"Mining targets (cores/reuse): {len(core_matches)} file(s)")
     if not core_matches:
         lines.append("  (none)")
     for item in core_matches:
-        lines.append(f"  [cores:{item['family']}] {item['relPath']} ({item['totalHits']} hits)")
+        tag = item.get("mode") or "cores"
+        lines.append(f"  [{tag}:{item['family']}] {item['relPath']} ({item['totalHits']} hits)")
         for p in item["pages"]:
             breakdown = ", ".join(f"{t}={n}" for t, n in sorted(p["terms"].items()))
-            lines.append(f"    - p.{p['page']}: {p['hits']} hit(s) ({breakdown})")
+            span = f" (L{p['lineStart']}-L{p['lineEnd']})" if p.get("lineStart") and p.get("lineEnd") else ""
+            lines.append(f"    - p.{p['page']}{span}: {p['hits']} hit(s) ({breakdown})")
         for pnum in item.get("imagePages") or []:
             lines.append(f"    - p.{pnum}: image page — read visually")
 
@@ -861,7 +1183,7 @@ def format_find_report(result: dict[str, Any]) -> str:
     errors = result.get("errors") or []
     if errors:
         lines.append("")
-        lines.append(f"Unreadable PDFs ({len(errors)}):")
+        lines.append(f"Unreadable files ({len(errors)}):")
         for err in errors:
             lines.append(f"  - {err['relPath']}: {err['error']}")
 
@@ -882,6 +1204,10 @@ def format_plan_report(plan: dict[str, Any]) -> str:
         f"Selected: {s['selectedPageCount']} page(s), ~{s['selectedEstimatedItems']} item(s) "
         f"in {s['batchCount']} batch(es)",
     ]
+
+    skipped_no_auto = s.get("skippedNoAutomationFamilies") or []
+    if skipped_no_auto:
+        lines.append(f"Skipped NO-AUTOMATION families: {', '.join(skipped_no_auto)}")
 
     unregistered = plan.get("unregisteredSources") or []
     if unregistered:
@@ -909,8 +1235,9 @@ def format_plan_report(plan: dict[str, Any]) -> str:
                 f"  Batch {batch['batch']}: {batch['pageCount']} page(s), ~{batch['estimatedItems']} item(s) [{fams}]"
             )
             for p in batch["pages"]:
+                mode_tag = f" {p['mode']}" if p.get("mode") else ""
                 lines.append(
-                    f"    #{p['rank']:02d} [{p['family']}] {p['relPath']} p.{p['page']} "
+                    f"    #{p['rank']:02d} [{p['family']}{mode_tag}] {p['relPath']} p.{p['page']} "
                     f"(score={p['score']}, hits={p['hits']}, items<={p['itemAllowance']})"
                 )
 
@@ -932,9 +1259,9 @@ def _split_multi_arg(values: list[str] | None) -> list[str] | None:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python -m scripts.source_find",
-        description="Locate candidate source PDF pages for a unit (with caching and budgeted planning).",
+        description="Locate candidate source PDF pages (MTH/PHY) or code/markdown files (PRG) with caching and budgeted planning.",
     )
-    parser.add_argument("unit", help="Target unit code (e.g. MTH-T02-C01-U01).")
+    parser.add_argument("unit", help="Target unit code (e.g. MTH-T02-C01-U01 or PRG-T01-C01-U02).")
     parser.add_argument(
         "--terms",
         nargs="+",
@@ -945,24 +1272,24 @@ def _build_parser() -> argparse.ArgumentParser:
         "--families",
         nargs="+",
         default=None,
-        help="Filter to specific source families or subpaths (e.g. mathsgenie,thai-exams).",
+        help="Filter to specific source families or subpaths (e.g. mathsgenie,thai-exams or prg/eslint).",
     )
     parser.add_argument(
         "--sources-dir",
         default=None,
         help="Override sources directory (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
     )
-    parser.add_argument("--no-cache", action="store_true", help="Re-extract PDFs instead of reading sources/_index/.")
+    parser.add_argument("--no-cache", action="store_true", help="Re-extract files instead of reading sources/_index/.")
     parser.add_argument(
         "--plan",
         action="store_true",
-        help="Rank and select bounded, diverse candidate pages and write sources/_index/plan_<UNIT>.json.",
+        help="Rank and select bounded, diverse candidate pages/files and write sources/_index/plan_<UNIT>.json.",
     )
     parser.add_argument(
         "--budget-pages",
         type=int,
         default=DEFAULT_BUDGET_PAGES,
-        help=f"Max pages to select when --plan is set (default: {DEFAULT_BUDGET_PAGES}).",
+        help=f"Max pages/chunks to select when --plan is set (default: {DEFAULT_BUDGET_PAGES}).",
     )
     parser.add_argument(
         "--budget-items",
@@ -974,12 +1301,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--batch-size",
         type=int,
         default=DEFAULT_BATCH_SIZE,
-        help=f"Pages per worker batch in plan_<UNIT>.json (default: {DEFAULT_BATCH_SIZE}).",
+        help=f"Pages/chunks per worker batch in plan_<UNIT>.json (default: {DEFAULT_BATCH_SIZE}).",
     )
     parser.add_argument(
         "--refresh",
         action="store_true",
-        help="Include pages already recorded in sources/_cores/_ledger.json when building --plan.",
+        help="Include pages/chunks already recorded in sources/_cores/_ledger.json when building --plan.",
     )
     parser.add_argument("--json", action="store_true", help="Print structured JSON output.")
     return parser
