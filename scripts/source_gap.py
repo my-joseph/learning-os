@@ -55,10 +55,33 @@ from scripts.bridge_scope import eligible_units as load_eligible_units
 
 SATURATION_MIN_NEW_CORES = 2
 MATCH_THRESHOLD = 0.34
+PRG_MATCH_THRESHOLD = 0.28
 RUNNER_UP_THRESHOLD = 0.58
 _TRAP_WEIGHT = 0.48
 _SKILL_WEIGHT = 0.37
 _COMPAT_WEIGHT = 0.15
+
+# Consolidated PRG vault trap tags often unify several finer-grained ad-hoc card trap tags.
+# Maps normalized (lowercase) card trap tag -> tuple of canonical vault trapTag names.
+PRG_TRAP_TAG_ALIASES: dict[str, tuple[str, ...]] = {
+    "category-confusion": ("coercion-context-confusion", "reference-identity-confusion"),
+    "builtin-confusion": ("coercion-context-confusion",),
+    "special-number-equality": ("coercion-context-confusion", "loose-equality-type-coercion"),
+    "equality-semantics": ("loose-equality-type-coercion", "reference-identity-confusion"),
+    "callback-timing": ("async-continuation-order", "collection-result-contract"),
+    "sparse-length": ("collection-cardinality-order",),
+    "preserve-input": ("in-place-array-mutation", "in-place-mutation"),
+    "recovery-path": ("unhandled-rejection-fast-fail", "async-result-propagation"),
+    "aggregate-policy": ("unhandled-rejection-fast-fail", "concurrent-result-alignment"),
+    "chain-return": ("async-result-propagation",),
+    "type-boundary": ("static-runtime-contract-drift", "type-model-too-broad"),
+    "aggregation-state": ("accumulator-seed-update", "in-place-mutation"),
+    "type-precision": ("type-model-too-broad",),
+    "partial-coverage": ("checker-coverage-gap",),
+    "overrestriction": ("checker-coverage-gap",),
+    "predicate-inversion": ("collection-result-contract", "collection-cardinality-order"),
+    "operation-contract": ("collection-result-contract", "mutation-observation-confusion"),
+}
 
 _STOPWORDS: frozenset[str] = frozenset(
     {
@@ -1008,6 +1031,40 @@ def _dice_similarity(left: set[str], right: set[str]) -> float:
     return (2.0 * len(left & right)) / (len(left) + len(right))
 
 
+def _archetype_trap_aliases(arch: dict[str, Any]) -> dict[str, str]:
+    """Return ``alias_lower -> canonical_trapTag`` for any vault-declared cognitiveTraps[].aliases."""
+    alias_map: dict[str, str] = {}
+    for t in arch.get("cognitiveTraps") or []:
+        if not isinstance(t, dict):
+            continue
+        tag = str(t.get("trapTag") or "").strip()
+        if not tag:
+            continue
+        for alias in t.get("aliases") or []:
+            if isinstance(alias, str) and alias.strip():
+                alias_map[alias.strip().lower()] = tag
+    return alias_map
+
+
+def _prg_trap_alias_hits(
+    c_trap_map: dict[str, str],
+    a_trap_map: dict[str, str],
+    vault_aliases: dict[str, str] | None = None,
+) -> list[tuple[str, str]]:
+    """Find ``(card_tag, vault_tag)`` matches via PRG_TRAP_TAG_ALIASES or vault-declared aliases."""
+    hits: list[tuple[str, str]] = []
+    for c_low, c_orig in sorted(c_trap_map.items()):
+        if vault_aliases and c_low in vault_aliases:
+            hits.append((c_orig, vault_aliases[c_low]))
+            continue
+        for canonical in PRG_TRAP_TAG_ALIASES.get(c_low, ()):
+            v_orig = a_trap_map.get(canonical.lower())
+            if v_orig:
+                hits.append((c_orig, v_orig))
+                break
+    return hits
+
+
 def _score_trap_overlap(
     c_traps: list[tuple[str, set[str]]],
     c_qcs: list[tuple[str, set[str]]],
@@ -1015,10 +1072,12 @@ def _score_trap_overlap(
     a_qcs: list[tuple[str, set[str]]],
     *,
     is_prg: bool,
+    vault_aliases: dict[str, str] | None = None,
 ) -> tuple[float, list[str], list[str], list[str]]:
     """Score trap-tag/description (and PRG QC) overlap between a card and an archetype."""
     c_trap_map = {tag.lower(): tag for tag, _ in c_traps if tag}
-    a_trap_set = {tag.lower() for tag, _ in a_traps if tag}
+    a_trap_map = {tag.lower(): tag for tag, _ in a_traps if tag}
+    a_trap_set = set(a_trap_map)
     shared_exact_traps = sorted(c_trap_map[k] for k in (set(c_trap_map) & a_trap_set))
 
     c_qc_map = {qid.lower(): qid for qid, _ in c_qcs if qid} if is_prg else {}
@@ -1030,6 +1089,14 @@ def _score_trap_overlap(
         qc_ratio = len(shared_exact_qcs) / max(len(c_qc_map), 1) if is_prg else 0.0
         base = 0.85 if shared_exact_traps else 0.80
         return (base + 0.15 * max(trap_ratio, qc_ratio), shared_exact_traps, shared_exact_qcs, [])
+
+    if is_prg:
+        alias_hits = _prg_trap_alias_hits(c_trap_map, a_trap_map, vault_aliases=vault_aliases)
+        if alias_hits:
+            alias_ratio = len(alias_hits) / max(len(c_trap_map), 1)
+            matched_vault_tags = sorted({v_tag for _, v_tag in alias_hits})
+            alias_labels = [f"{c_tag}->{v_tag}" for c_tag, v_tag in alias_hits]
+            return (0.78 + 0.12 * alias_ratio, matched_vault_tags, [], alias_labels)
 
     best_fuzzy = 0.0
     fuzzy_labels: list[str] = []
@@ -1179,7 +1246,9 @@ def _format_match_reason(
     compat_note: str,
 ) -> str:
     parts: list[str] = []
-    if shared_exact_traps:
+    if fuzzy_traps and any("->" in item for item in fuzzy_traps):
+        parts.append(f"alias-trap:{','.join(fuzzy_traps[:2])}")
+    elif shared_exact_traps:
         parts.append(f"trap:{','.join(shared_exact_traps)}")
     elif fuzzy_traps:
         parts.append(f"fuzzy-trap:{','.join(fuzzy_traps[:2])}")
@@ -1205,6 +1274,7 @@ def _score_card_with_features(
     is_prg: bool,
     idf: dict[str, float],
     default_idf: float,
+    a_aliases: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     trap_score, shared_traps, shared_qcs, fuzzy_traps = _score_trap_overlap(
         c_traps,
@@ -1212,6 +1282,7 @@ def _score_card_with_features(
         a_traps,
         a_qcs,
         is_prg=is_prg,
+        vault_aliases=a_aliases,
     )
     skill_score, matched_terms = _score_skill_overlap(c_skill, a_skill, idf, default_idf)
     compat_score, compat_note = _compatibility_score(card, arch, unit_code, is_prg=is_prg)
@@ -1268,6 +1339,7 @@ def score_card_against_archetype(
         is_prg=is_prg,
         idf=idf or {},
         default_idf=default_idf,
+        a_aliases=_archetype_trap_aliases(arch) if is_prg else None,
     )
 
 
@@ -1284,6 +1356,7 @@ def _match_cards_to_archetypes(
     arch_skill_cache: list[set[str]] = []
     arch_trap_cache: list[list[tuple[str, set[str]]]] = []
     arch_qc_cache: list[list[tuple[str, set[str]]]] = []
+    arch_alias_cache: list[dict[str, str]] = []
 
     for arch in archetypes:
         sk = _archetype_skill_tokens(arch)
@@ -1292,12 +1365,14 @@ def _match_cards_to_archetypes(
             doc_freq[tok] += 1
         arch_trap_cache.append(_archetype_trap_entries(arch))
         arch_qc_cache.append(_archetype_qc_entries(arch) if is_prg else [])
+        arch_alias_cache.append(_archetype_trap_aliases(arch) if is_prg else {})
 
     default_idf = math.log(num_archs + 1.0) if num_archs >= 3 else 1.0
     idf = {
         tok: (math.log((num_archs + 1.0) / (count + 0.5)) if num_archs >= 3 else 1.0) for tok, count in doc_freq.items()
     }
 
+    match_threshold = PRG_MATCH_THRESHOLD if is_prg else MATCH_THRESHOLD
     matched_cards: list[dict[str, Any]] = []
     unmatched_cards: list[dict[str, Any]] = []
 
@@ -1320,6 +1395,7 @@ def _match_cards_to_archetypes(
                 is_prg=is_prg,
                 idf=idf,
                 default_idf=default_idf,
+                a_aliases=arch_alias_cache[idx],
             )
             for idx, arch in enumerate(archetypes)
         ]
@@ -1334,7 +1410,7 @@ def _match_cards_to_archetypes(
         )
 
         hits: list[dict[str, Any]] = []
-        if candidates and candidates[0]["score"] >= MATCH_THRESHOLD:
+        if candidates and candidates[0]["score"] >= match_threshold:
             hits.append(candidates[0])
             if len(candidates) > 1 and candidates[1]["score"] >= RUNNER_UP_THRESHOLD:
                 hits.append(candidates[1])
@@ -1389,6 +1465,8 @@ def _build_prg_gap_report(
             current_cards.append(card)
 
     all_vault_traps: set[str] = set()
+    all_vault_traps_lower: set[str] = set()
+    all_vault_aliases_lower: set[str] = set()
     all_vault_qcs: set[str] = set()
     all_vault_trap_tokens: list[set[str]] = []
     vault_levels: set[int] = set()
@@ -1397,6 +1475,8 @@ def _build_prg_gap_report(
         traps = _archetype_traps(arch)
         qcs = _archetype_quality_check_ids(arch)
         all_vault_traps.update(traps)
+        all_vault_traps_lower.update(t.lower() for t in traps)
+        all_vault_aliases_lower.update(_archetype_trap_aliases(arch).keys())
         all_vault_qcs.update(qcs)
         for t in arch.get("cognitiveTraps") or []:
             t_blob = _flatten_text(t)
@@ -1405,6 +1485,12 @@ def _build_prg_gap_report(
         if isinstance(arch.get("level"), int):
             vault_levels.add(arch["level"])
 
+    def _trap_covered_by_vault(tag: str) -> bool:
+        low = tag.lower()
+        if tag in all_vault_traps or low in all_vault_traps_lower or low in all_vault_aliases_lower:
+            return True
+        return any(canon.lower() in all_vault_traps_lower for canon in PRG_TRAP_TAG_ALIASES.get(low, ()))
+
     matched_cards, unmatched_cards = _match_cards_to_archetypes(
         unit_code,
         current_cards,
@@ -1412,12 +1498,12 @@ def _build_prg_gap_report(
         is_prg=True,
     )
 
-    # New trap tags not in any vault archetype's cognitiveTraps
+    # New trap tags not in any vault archetype's cognitiveTraps (including consolidated aliases)
     new_traps_map: dict[str, dict[str, Any]] = {}
     for card in current_cards:
         for t in card.get("traps") or []:
             tag = t["tag"]
-            if tag in all_vault_traps:
+            if _trap_covered_by_vault(tag):
                 continue
             entry = new_traps_map.setdefault(tag, {"tag": tag, "descriptions": [], "cardIds": []})
             desc = t.get("description", "")
@@ -1441,7 +1527,8 @@ def _build_prg_gap_report(
                     covered_by_trap = True
                     break
         card_has_new_trap = any(
-            isinstance(t, dict) and t.get("tag") and t["tag"] not in all_vault_traps for t in card.get("traps") or []
+            isinstance(t, dict) and t.get("tag") and not _trap_covered_by_vault(t["tag"])
+            for t in card.get("traps") or []
         )
         if not covered_by_trap or card_has_new_trap:
             norm_key = _norm_skill_str(bp)
