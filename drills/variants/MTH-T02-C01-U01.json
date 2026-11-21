@@ -467,7 +467,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -15,
@@ -494,7 +494,7 @@
               12.0,
               5.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -506,7 +506,7 @@
             ],
             "label": "z_1",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -518,7 +518,7 @@
               8.0,
               9.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -530,7 +530,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -605,7 +605,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -20,
@@ -632,7 +632,7 @@
               15.0,
               -4.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -644,7 +644,7 @@
             ],
             "label": "z_1",
             "position": "bottom-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -656,7 +656,7 @@
               6.0,
               11.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -668,7 +668,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -743,7 +743,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -20,
@@ -770,7 +770,7 @@
               11.0,
               6.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -782,7 +782,7 @@
             ],
             "label": "z_1",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -794,7 +794,7 @@
               14.0,
               9.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -806,7 +806,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -879,7 +879,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -20,
@@ -906,7 +906,7 @@
               6.0,
               11.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -918,7 +918,7 @@
             ],
             "label": "z_1",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -930,7 +930,7 @@
               14.0,
               3.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -942,7 +942,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -1015,7 +1015,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -20,
@@ -1042,7 +1042,7 @@
               12.0,
               4.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -1054,7 +1054,7 @@
             ],
             "label": "z_1",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -1066,7 +1066,7 @@
               5.0,
               15.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -1078,7 +1078,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -1153,7 +1153,7 @@
       "levelLabel": "Level 2 - Standard Exam",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -20,
@@ -1180,7 +1180,7 @@
               3.0,
               7.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -1192,7 +1192,7 @@
             ],
             "label": "z_1",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -1204,7 +1204,7 @@
               8.0,
               16.0
             ],
-            "color": "#0284c7",
+            "color": "#059669",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -1216,7 +1216,7 @@
             ],
             "label": "z_2",
             "position": "top-right",
-            "color": "#0284c7"
+            "color": "#059669"
           }
         ]
       },
@@ -1857,7 +1857,7 @@
       "levelLabel": "Level 3 - Trap & Diagnostic",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -10,
@@ -1884,7 +1884,7 @@
               7.0,
               4.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -1896,7 +1896,7 @@
             ],
             "label": "z",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -2043,7 +2043,7 @@
       "levelLabel": "Level 3 - Trap & Diagnostic",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -10,
@@ -2070,7 +2070,7 @@
               8.0,
               3.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -2082,7 +2082,7 @@
             ],
             "label": "z",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",
@@ -2229,7 +2229,7 @@
       "levelLabel": "Level 3 - Trap & Diagnostic",
       "figure": {
         "kind": "cartesian_graph",
-        "theme": "purple",
+        "theme": "indigo",
         "title": "Complex Plane",
         "xRange": [
           -12,
@@ -2256,7 +2256,7 @@
               9.0,
               2.0
             ],
-            "color": "#7c3aed",
+            "color": "#6366f1",
             "strokeWidth": 2.2,
             "arrow": true
           },
@@ -2268,7 +2268,7 @@
             ],
             "label": "z",
             "position": "top-right",
-            "color": "#7c3aed"
+            "color": "#6366f1"
           },
           {
             "type": "segment",

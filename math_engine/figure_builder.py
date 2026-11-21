@@ -30,12 +30,6 @@ FIGURE_THEMES = {
         "accent": "#4f46e5",
         "text": "#1e293b",
     },
-    "blue": {
-        "stroke": "#0284c7",
-        "fill": "rgba(14, 165, 233, 0.08)",
-        "accent": "#0369a1",
-        "text": "#1e293b",
-    },
     "emerald": {
         "stroke": "#059669",
         "fill": "rgba(16, 185, 129, 0.08)",
@@ -52,12 +46,6 @@ FIGURE_THEMES = {
         "stroke": "#e11d48",
         "fill": "rgba(244, 63, 94, 0.08)",
         "accent": "#be123c",
-        "text": "#1e293b",
-    },
-    "purple": {
-        "stroke": "#7c3aed",
-        "fill": "rgba(139, 92, 246, 0.08)",
-        "accent": "#6d28d9",
         "text": "#1e293b",
     },
 }
@@ -235,7 +223,7 @@ def build_circle_figure(
     radius: float,
     label_radius: Optional[str] = None,
     show_center_dot: bool = True,
-    theme: str = "blue",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Builds a semantic MathFigure for a Circle with radius indicator."""
@@ -291,7 +279,7 @@ def build_cartesian_point_figure(
     x_range: Optional[Tuple[float, float]] = None,
     y_range: Optional[Tuple[float, float]] = None,
     show_projections: bool = True,
-    theme: str = "blue",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Builds a Cartesian graph showing a plotted point (x, y) with dashed projection to axes."""
@@ -502,7 +490,7 @@ def build_trapezoid_figure(
     label_bottom: Optional[str] = None,
     label_side: Optional[str] = None,
     label_height: Optional[str] = None,
-    theme: str = "blue",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Builds a semantic MathFigure for an Isosceles Trapezoid with dashed altitude."""
@@ -704,7 +692,7 @@ def build_silo_figure(
 def build_cylinder_figure(
     radius: float,
     height: float,
-    theme: str = "blue",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Builds a semantic MathFigure for a Submersible Cylinder Housing."""
@@ -840,10 +828,11 @@ def build_cartesian_parallel_lines_figure(
     c2: float,
     x_range: Tuple[float, float] = (-4, 4),
     y_range: Tuple[float, float] = (-6, 12),
-    theme: str = "blue",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Builds a Cartesian graph showing two parallel lines sharing the same slope."""
+    palette = FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])
     return {
         "kind": "cartesian_graph",
         "theme": theme,
@@ -857,13 +846,13 @@ def build_cartesian_parallel_lines_figure(
                 "type": "function",
                 "coefficients": [m, c1],
                 "expression": f"L_1: y = {m:g}x + {c1:g}",
-                "color": "#2563eb",
+                "color": palette["stroke"],
             },
             {
                 "type": "function",
                 "coefficients": [m, c2],
                 "expression": f"L_2: y = {m:g}x - {abs(c2):g}" if c2 < 0 else f"L_2: y = {m:g}x + {c2:g}",
-                "color": "#0284c7",
+                "color": palette["accent"],
                 "strokeDasharray": "4 3",
             },
             {
@@ -1448,14 +1437,14 @@ def build_complex_plane_figure(
     show_conjugate: bool = False,
     show_modulus: bool = False,
     label_modulus: Optional[str] = None,
-    theme: str = "purple",
+    theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Argand diagram: each number as a point and an arrow from 0. `show_conjugate` adds the reflection
     in the real axis; `show_modulus` labels the arrow's length (`label_modulus`, e.g. `|z| = ?`)."""
-    pts = [(re1, im1, label1, FIGURE_THEMES.get(theme, FIGURE_THEMES["purple"])["stroke"])]
+    pts = [(re1, im1, label1, FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])["stroke"])]
     if re2 is not None and im2 is not None:
-        pts.append((re2, im2, label2, "#0284c7"))
+        pts.append((re2, im2, label2, FIGURE_THEMES["emerald"]["stroke"]))
     if show_conjugate:
         pts.append((re1, -im1, f"\\bar{{{label1}}}", "#94a3b8"))
     m = max([abs(v) for x, y, _, _ in pts for v in (x, y)] + [1.0])
