@@ -23,11 +23,34 @@ def _staged_hook(repo: Path, rel: str) -> subprocess.CompletedProcess:
 
 def test_hook_blocks_scratch_and_pilot_files(tmp_path):
     repo = _repo(tmp_path)
-    assert _staged_hook(repo, "scratch/reviews/x-blind.json").returncode == 1
+    res1 = _staged_hook(repo, "scratch/reviews/x-blind.json")
+    assert res1.returncode == 1
+    assert "BLOCKED" in res1.stderr
     repo2 = _repo(tmp_path / "b")
-    assert _staged_hook(repo2, "pilot/labs/L/src/index.ts").returncode == 1
+    res2 = _staged_hook(repo2, "pilot/labs/L/src/index.ts")
+    assert res2.returncode == 1
+    assert "BLOCKED" in res2.stderr
+
+
+def test_hook_blocks_env_and_local_data_dirs(tmp_path):
+    for idx, rel in enumerate(
+        (
+            ".env",
+            ".env.local",
+            "practice-studio/.env.production",
+            "progress/DRL-MTH-T01-C01-U01-01.json",
+            "sources/raw/exam.pdf",
+            "issues/log.jsonl",
+        )
+    ):
+        repo = _repo(tmp_path / f"repo_{idx}")
+        res = _staged_hook(repo, rel)
+        assert res.returncode == 1, f"expected hook to block {rel}"
+        assert "BLOCKED" in res.stderr
+        assert "git restore --staged" in res.stderr
 
 
 def test_hook_allows_normal_files(tmp_path):
     repo = _repo(tmp_path)
     assert _staged_hook(repo, "drills/data/U/D.json").returncode == 0
+    assert _staged_hook(repo, "scripts/env_helper.py").returncode == 0

@@ -29,8 +29,8 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
-# Neon first; Argon and GPT Luna are the quota fallbacks (Hydrogen shares Neon's quota, so it is
-# useless as a fallback). gpt-* models run through the Codex CLI, everything else through agy.
+# Neon first; Argon (own quota pool) and GPT Luna (own Codex pool) are the quota fallbacks. Hydrogen shares Neon's
+# pool, so it is useless as a fallback for Neon. gpt-* models run through the Codex CLI, everything else through agy.
 MODELS=${MODELS:-"gemini-4-neon-high gemini-4-argon-high gpt-6-luna"}
 CODEX_BIN=${CODEX_BIN:-/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex}
 CODEX_EFFORT=${CODEX_EFFORT:-high}

@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from math_engine.ai_drill_ingest import load_scope_archetypes, mark_context_used
 from notion_sync.drill_sync import unit_relation_ids
 
@@ -98,6 +100,7 @@ def test_prg_vaults_all_have_valid_unit_codes():
             )
 
 
+@pytest.mark.prg
 def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
     from code_engine import ai_drill_ingest as cai
 

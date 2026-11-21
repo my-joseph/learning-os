@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import os
 import re
 import sys
 
@@ -57,6 +58,11 @@ from notion_sync.figures import (
 
 LEARNER_SECTION = "My Implementation"
 HEADINGS = ("heading_1", "heading_2", "heading_3")
+
+
+def _is_dry_run(dry_run: bool = False) -> bool:
+    """Return True when dry-run is requested explicitly or via NOTION_DRY_RUN."""
+    return dry_run or os.environ.get("NOTION_DRY_RUN", "").strip().lower() in ("1", "true", "yes")
 
 
 def spec_to_blocks(
@@ -151,6 +157,8 @@ def section_end(blocks: list[dict], heading_contains: str) -> str | None:
 
 def insert_after(parent_id: str, after_id: str | None, blocks: list[dict], token: str, chunk: int = 50) -> None:
     """Insert blocks in order after `after_id` (append at the end when None)."""
+    if _is_dry_run():
+        return
     for i in range(0, len(blocks), chunk):
         payload: dict = {"children": blocks[i : i + chunk]}
         if after_id:
@@ -161,7 +169,7 @@ def insert_after(parent_id: str, after_id: str | None, blocks: list[dict], token
             after_id = results[-1]["id"]
 
 
-def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) -> list[str]:
+def set_properties(code: str, values: dict[str, str], token: str, id_map: dict, dry_run: bool = False) -> list[str]:
     """Set page properties by name: text (rich_text/title), status, select, number, or relation (comma-separated
     id_map codes such as `Resources=R036`; added to the existing links, never replacing them). `Mastery (0-4)`
     is refused (drill sync sets it from evidence). Returns the names that were set."""
@@ -193,6 +201,8 @@ def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) 
             patch[name] = {"relation": [{"id": i} for i in current + added]}
         else:
             raise ValueError(f"property {name!r} is of type {kind}; this tool cannot set it (log a tool-gap)")
+    if _is_dry_run(dry_run):
+        return list(patch)
     notion_request("PATCH", f"pages/{page_id}", token, {"properties": patch})
     return list(patch)
 
@@ -244,7 +254,7 @@ def recaption(code: str, number: int, caption: str, token: str, id_map: dict, dr
     edited this way, never an image in the learner's section; the image itself is kept."""
     rich = caption_rich_text(caption, id_map)
     block = _image_at(code, number, token, id_map)
-    if dry_run:
+    if _is_dry_run(dry_run):
         return f"dry run: would recaption image {number} of {code}"
     notion_request("PATCH", f"blocks/{block['id']}", token, {"image": {"caption": rich}})
     return f"recaptioned image {number} of {code}"
@@ -257,7 +267,7 @@ def refigure(code: str, number: int, item: dict, token: str, id_map: dict, dry_r
     check_plain_math(item.get("caption", ""), "figure caption")
     svg = figure_to_svg(figure_from_spec(item))  # build before touching anything
     block = _image_at(code, number, token, id_map)
-    if dry_run:
+    if _is_dry_run(dry_run):
         return f"dry run: would redraw image {number} of {code}"
     # An update names the new file only; Notion refuses "type" on PATCH.
     payload: dict = {"file_upload": {"id": upload_svg(svg, f"{code}-fig{number}.svg", token)}}
@@ -268,13 +278,18 @@ def refigure(code: str, number: int, item: dict, token: str, id_map: dict, dry_r
     return f"redrew image {number} of {code}"
 
 
-def write_page(code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict) -> str:
+def write_page(
+    code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict, dry_run: bool = False
+) -> str:
     entry = id_map.get(code)
     if not isinstance(entry, dict):
         raise ValueError(f"{code} is not in id_map.json")
-    validate_blocks_clean(spec_to_blocks(spec, id_map), code)  # every figure builds before anything is uploaded
+    dry_blocks = spec_to_blocks(spec, id_map)  # every figure builds before anything is uploaded
+    validate_blocks_clean(dry_blocks, code)
     existing = get_all_blocks(entry["id"], token)
     anchor = check_target(code, mode, after, existing)
+    if _is_dry_run(dry_run):
+        return f"dry run: {len(dry_blocks)} top-level blocks for {code} ({mode}); target ok; nothing sent"
     blocks = spec_to_blocks(spec, id_map, lambda svg, name: upload_svg(svg, name, token), code)
     insert_after(entry["id"], anchor, blocks, token)
     if mode == "new":
@@ -357,7 +372,7 @@ def renumber_headings(code: str, token: str, id_map: dict, dry_run: bool = False
         if new_title != old_title:
             changes.append((b["id"], old_title, new_title, new_rich))
 
-    if dry_run:
+    if _is_dry_run(dry_run):
         if not changes:
             return f"dry run: {code} headings already numbered 1..{len(h2s)}"
         lines = [f"dry run: would renumber {len(changes)} heading(s) on {code}:"]
@@ -532,7 +547,7 @@ def dedupe_section(code: str, heading_needle: str, token: str, id_map: dict, dry
 
     dup_count = len(spans) - 1
     title = heading_text(all_sec_blocks[keep_idx][0])
-    if dry_run:
+    if _is_dry_run(dry_run):
         return (
             f"dry run: would remove {dup_count} duplicate section(s) "
             f"({len(to_delete)} top-level block(s)) matching {title!r} on {code}"
@@ -669,7 +684,7 @@ def move_section_to_end(code: str, heading_needle: str, token: str, id_map: dict
     _check_no_learner_content(section_blocks, children_map)
     cloned = [_clone_block(b, children_map) for b in section_blocks]
 
-    if dry_run:
+    if _is_dry_run(dry_run):
         return f"dry run: would move {len(section_blocks)} top-level block(s) of {title!r} to end of {code}"
 
     insert_after(page_id, None, cloned, token)
@@ -820,14 +835,14 @@ def fix_text(code: str, old: str, new: str, token: str, id_map: dict, dry_run: b
     if btype == "equation":
         assert isinstance(content_or_rich, str)
         updated_expr = content_or_rich.replace(old, new, 1)
-        if dry_run:
+        if _is_dry_run(dry_run):
             return f"dry run: would fix text in {btype} block {block['id']} of {code}: {old!r} -> {new!r}"
         notion_request("PATCH", f"blocks/{block['id']}", token, {"equation": {"expression": updated_expr}})
         return f"fixed text in {btype} block {block['id']} of {code}"
 
     assert isinstance(content_or_rich, list)
     updated_rich = _replace_in_rich_text(content_or_rich, old, new, id_map)
-    if dry_run:
+    if _is_dry_run(dry_run):
         return f"dry run: would fix text in {btype} block {block['id']} of {code}: {old!r} -> {new!r}"
     notion_request("PATCH", f"blocks/{block['id']}", token, {btype: {"rich_text": updated_rich}})
     return f"fixed text in {btype} block {block['id']} of {code}"
@@ -898,6 +913,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {args.code} is not in id_map.json", file=sys.stderr)
         return 2
     values = dict(v.split("=", 1) for v in args.set)
+    dry_run = _is_dry_run(args.dry_run)
     try:
         token = require_token(load_env().get("NOTION_TOKEN"))
         if args.spec:
@@ -905,33 +921,26 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("--spec needs --mode new|add")
             with open(args.spec, encoding="utf-8") as f:
                 spec = json.load(f)
-            if args.dry_run:
-                blocks = spec_to_blocks(spec, id_map)
-                validate_blocks_clean(blocks, args.code)
-                existing = get_all_blocks(id_map[args.code]["id"], token)
-                check_target(args.code, args.mode, args.after, existing)
-                print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); target ok; nothing sent")
-            else:
-                print(write_page(args.code, spec, args.mode, args.after, token, id_map))
+            print(write_page(args.code, spec, args.mode, args.after, token, id_map, dry_run=dry_run))
         if args.snapshot:
             print(snapshot_page(args.code, token, id_map), end="")
         if args.dedupe_section:
-            print(dedupe_section(args.code, args.dedupe_section, token, id_map, args.dry_run))
+            print(dedupe_section(args.code, args.dedupe_section, token, id_map, dry_run))
         if args.move_section_to_end:
-            print(move_section_to_end(args.code, args.move_section_to_end, token, id_map, args.dry_run))
+            print(move_section_to_end(args.code, args.move_section_to_end, token, id_map, dry_run))
         if args.renumber:
-            print(renumber_headings(args.code, token, id_map, args.dry_run))
+            print(renumber_headings(args.code, token, id_map, dry_run))
         for old_txt, new_txt in args.fix_text:
-            print(fix_text(args.code, old_txt, new_txt, token, id_map, args.dry_run))
+            print(fix_text(args.code, old_txt, new_txt, token, id_map, dry_run))
         for item in args.refigure:
             num, _, path = item.partition("=")
             with open(path, encoding="utf-8") as f:
-                print(refigure(args.code, int(num), json.load(f), token, id_map, args.dry_run))
+                print(refigure(args.code, int(num), json.load(f), token, id_map, dry_run))
         for item in args.recaption:
             num, _, cap = item.partition("=")
-            print(recaption(args.code, int(num), cap, token, id_map, args.dry_run))
+            print(recaption(args.code, int(num), cap, token, id_map, dry_run))
         if values:
-            if args.dry_run:
+            if dry_run:
                 print(f"dry run: would set {sorted(values)}")
             else:
                 print(f"set {set_properties(args.code, values, token, id_map)}")

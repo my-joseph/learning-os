@@ -459,19 +459,29 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
 
 
-def sync_drill_to_notion(drill_doc: dict, *, content_only: bool = False) -> dict:
-    """Save locally (unless `content_only=True`), then sync to Notion.
+def sync_drill_to_notion(
+    drill_doc: dict,
+    *,
+    content_only: bool = False,
+    save_local: bool = True,
+) -> dict:
+    """Save locally (unless `content_only=True` or `save_local=False`), then sync to Notion.
 
     - Incomplete drill data -> ok False with the missing fields; nothing is sent to Notion.
     - Notion/network unavailable (incl. missing token) -> ok True, degraded: the file is saved
       locally (when not content-only) and the sync can simply be retried.
     - Any other error is a bug -> ok False (never reported as success).
     """
-    if content_only:
+    if content_only or not save_local:
         path = _drill_content_path(drill_doc)
         validate_and_sanitize_drill_doc(drill_doc)
     else:
         path = save_drill_doc(drill_doc)
+        drill_id = drill_doc.get("drillId")
+        if drill_id:
+            merged = load_progress(drill_id)
+            if merged:
+                apply_progress(drill_doc, merged)
     missing = missing_sync_fields(drill_doc)
     if missing:
         return {
