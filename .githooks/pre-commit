@@ -8,12 +8,32 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+# Secrets never leave the machine: .env and .env.* are gitignored; this also stops `git add -f`.
+secrets=$(printf '%s\n' "$staged" | grep -E '(^|/)\.env(\.|$)' || true)
+if [ -n "$secrets" ]; then
+  echo "BLOCKED: secret/environment files (.env, .env.*) must never be committed:" >&2
+  echo "$secrets" >&2
+  echo "Unstage them: git restore --staged <file>" >&2
+  exit 1
+fi
+
 # Answers never leave the machine: pilot/ (stand-in learner solutions) and scratch/ (blind-solve and
 # reviewer files) hold drill answers. They are gitignored; this also stops `git add -f`.
-leaked=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(pilot|scratch)/' || true)
+leaked=$(printf '%s\n' "$staged" | grep -E '^(pilot|scratch)/' || true)
 if [ -n "$leaked" ]; then
   echo "BLOCKED: these files hold answers and are never committed:" >&2
   echo "$leaked" >&2
+  echo "Unstage them: git restore --staged <file>" >&2
+  exit 1
+fi
+
+# Local-only learner/source/issue state must never be committed even with `git add -f`.
+local_only=$(printf '%s\n' "$staged" | grep -E '^(progress|sources|issues)/' || true)
+if [ -n "$local_only" ]; then
+  echo "BLOCKED: local-only data (progress/, sources/, issues/) must never be committed:" >&2
+  echo "$local_only" >&2
   echo "Unstage them: git restore --staged <file>" >&2
   exit 1
 fi
