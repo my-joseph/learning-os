@@ -42,6 +42,20 @@ export function applyCheckResult(
     return { ...prob.state };
   }
 
+  const cycleStartedAt = prob.state?.cycleStartedAt ?? null;
+  const setupRevealedInCycle = cycleStartedAt
+    ? Boolean(
+        prob.state?.reviewSetupRevealedAt &&
+          isInCycle(prob.state.reviewSetupRevealedAt, cycleStartedAt)
+      )
+    : Boolean(prob.state?.setupRevealedBeforeAnswer);
+  const solutionRevealedInCycle = cycleStartedAt
+    ? Boolean(
+        prob.state?.reviewStepsRevealedAt &&
+          isInCycle(prob.state.reviewStepsRevealedAt, cycleStartedAt)
+      )
+    : Boolean(prob.state?.solutionRevealedBeforeAnswer);
+
   // 4. Skip action
   if (result.verdict === "skipped") {
     currentMistakes.add("concept-gap");
@@ -49,8 +63,8 @@ export function applyCheckResult(
       input: trimmed || "(Skipped)",
       ts,
       verdict: "skipped",
-      ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
-      ...(prob.state?.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
+      ...(setupRevealedInCycle ? { setupRevealed: true } : {}),
+      ...(solutionRevealedInCycle ? { solutionRevealed: true } : {}),
     };
     return {
       ...prob.state,
@@ -65,7 +79,6 @@ export function applyCheckResult(
     };
   }
 
-  const cycleStartedAt = prob.state?.cycleStartedAt ?? null;
   const exampleViewed = Boolean(
     prob.state?.exampleViewedAt &&
       isInCycle(prob.state.exampleViewedAt, cycleStartedAt)
@@ -136,8 +149,8 @@ export function applyCheckResult(
     verdict: result.verdict,
     ...(diagCodes.length > 0 ? { diagnosticCodes: diagCodes } : {}),
     ...(matchedTrapTag ? { matchedTrap: matchedTrapTag } : {}),
-    ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
-    ...(prob.state?.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
+    ...(setupRevealedInCycle ? { setupRevealed: true } : {}),
+    ...(solutionRevealedInCycle ? { solutionRevealed: true } : {}),
     ...(exampleViewed ? { exampleViewed: true } : {}),
   };
 
@@ -232,8 +245,10 @@ export function resetProblemForRetry(
     durationMs: 0,
     cycleStartedAt: nowIso,
   };
+  delete nextState.reviewHintRevealedAt;
   delete nextState.reviewSetupRevealedAt;
   delete nextState.reviewStepsRevealedAt;
+  delete nextState.selfScoreAt;
   return {
     ...rest,
     state: nextState,
@@ -245,7 +260,7 @@ export function resetAnswerForReviewRetry(
   state: ProblemState,
   nowIso: string = new Date().toISOString()
 ): ProblemState {
-  return {
+  const next: ProblemState = {
     ...state,
     userInput: "",
     score: null,
@@ -257,6 +272,11 @@ export function resetAnswerForReviewRetry(
     hintsRevealed: 0,
     cycleStartedAt: nowIso,
   };
+  delete next.reviewHintRevealedAt;
+  delete next.reviewSetupRevealedAt;
+  delete next.reviewStepsRevealedAt;
+  delete next.selfScoreAt;
+  return next;
 }
 
 /**

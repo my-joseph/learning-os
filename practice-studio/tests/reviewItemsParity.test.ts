@@ -16,6 +16,7 @@ import {
   buildScheduleFromProgress,
   estimateReviewMinutes,
   getDueReviewItems,
+  getReviewItemsSchedule,
   interleaveDueItems,
   extractReviewEvents,
   normalizeReviewDate,
@@ -962,6 +963,100 @@ async function runTests() {
       assert.equal(tsAfterReset["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
       assert.equal(pyResetMap["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
       assert.deepEqual(tsAfterReset, pyResetMap, "TS and Python must agree after a same-day reset");
+
+      // Bug #6: Saved review_items.json entry MUST also be pruned in TS (matching Python) when
+      // progress has a newer cycleStartedAt (even though scoreProblem returns null and omits it from `loaded`).
+      fs.writeFileSync(
+        storeFile,
+        JSON.stringify(
+          {
+            "DRL-MTH-T01-C04-U01-01/Q01": {
+              drillId: "DRL-MTH-T01-C04-U01-01",
+              qid: "Q01",
+              unitCode: "MTH-T01-C04-U01",
+              subject: "MTH",
+              commonTrapTag: "c04-divide-not-invert-trap",
+              archetypeKey: "fraction-division",
+              level: 3,
+              lastReviewed: "2026-11-19",
+              dueDate: "2026-11-20",
+              revisitNote: null,
+              lastWrong: false,
+            },
+          },
+          null,
+          2
+        ),
+        "utf-8"
+      );
+      const tsSchedAfterReset = getReviewItemsSchedule({
+        dataDir,
+        progressDir,
+        labsDir,
+        rootDir: root,
+      });
+      const tsDueAfterReset = getDueReviewItems({
+        today: "2026-11-20",
+        dataDir,
+        progressDir,
+        labsDir,
+        rootDir: root,
+      });
+      const pyDueAfterResetProc = spawnSync(
+        python,
+        [
+          "-m",
+          "scripts.review_items",
+          "--due",
+          "--today",
+          "2026-11-20",
+          "--data-root",
+          dataDir,
+          "--progress-dir",
+          progressDir,
+          "--json",
+        ],
+        { cwd: root, encoding: "utf8", env: { ...process.env, TZ: "UTC" } }
+      );
+      assert.equal(pyDueAfterResetProc.status, 0, pyDueAfterResetProc.stderr);
+      const pyDueAfterReset = (JSON.parse(pyDueAfterResetProc.stdout) as { items: ReviewItem[] }).items;
+      assert.equal(
+        tsSchedAfterReset["DRL-MTH-T01-C04-U01-01/Q01"],
+        undefined,
+        "TS getReviewItemsSchedule must prune saved entry after cycle reset"
+      );
+      assert.equal(
+        tsDueAfterReset.items.some((it) => it.drillId === "DRL-MTH-T01-C04-U01-01" && it.qid === "Q01"),
+        false,
+        "TS getDueReviewItems must prune saved entry after cycle reset"
+      );
+      assert.deepEqual(
+        tsDueAfterReset.items,
+        pyDueAfterReset,
+        "TS and Python due items must match when saved review_items.json has a cycle-reset entry"
+      );
+
+      // When /review persisted a cycle-scoped help reveal (reviewHintRevealedAt) right before the learner
+      // submitted their answer, recordReviewItemResult must preserve the saved Level 3 instead of resetting to Level 1.
+      const helpRevealProgress = JSON.parse(fs.readFileSync(resetProgressPath, "utf8")) as Record<string, any>;
+      helpRevealProgress.problems.Q01.reviewHintRevealedAt = "2026-11-19T11:31:00Z";
+      fs.writeFileSync(resetProgressPath, JSON.stringify(helpRevealProgress), "utf8");
+      const recordedAfterHelp = recordReviewItemResult(
+        {
+          drillId: "DRL-MTH-T01-C04-U01-01",
+          qid: "Q01",
+          correct: true,
+          hintsUsed: 1,
+          date: "2026-11-20",
+        },
+        { dataDir, progressDir, labsDir, rootDir: root }
+      );
+      assert.equal(
+        recordedAfterHelp.level,
+        3,
+        "assisted correct after in-cycle /review hint reveal must preserve prior Level 3"
+      );
+      if (fs.existsSync(storeFile)) fs.unlinkSync(storeFile);
     } finally {
       if (resetTestTz === undefined) delete process.env.TZ;
       else process.env.TZ = resetTestTz;

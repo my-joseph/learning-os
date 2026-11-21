@@ -326,6 +326,30 @@ export function writeProgress(doc: DocLike): string {
         if (incoming.solutionRevealedBeforeAnswer === true) {
           st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, revealStamp);
         }
+        if (typeof incoming.hintsRevealed === "number" && incoming.hintsRevealed > 0) {
+          st.reviewHintRevealedAt = maxIsoTimestamp(prev.reviewHintRevealedAt, revealStamp);
+        }
+        const maxIncomingRevSetup = maxIsoTimestamp(
+          st.reviewSetupRevealedAt,
+          incoming.reviewSetupRevealedAt
+        );
+        if (maxIncomingRevSetup) {
+          st.reviewSetupRevealedAt = maxIncomingRevSetup;
+        }
+        const maxIncomingRevSteps = maxIsoTimestamp(
+          st.reviewStepsRevealedAt,
+          incoming.reviewStepsRevealedAt
+        );
+        if (maxIncomingRevSteps) {
+          st.reviewStepsRevealedAt = maxIncomingRevSteps;
+        }
+        const maxIncomingRevHint = maxIsoTimestamp(
+          st.reviewHintRevealedAt,
+          incoming.reviewHintRevealedAt
+        );
+        if (maxIncomingRevHint) {
+          st.reviewHintRevealedAt = maxIncomingRevHint;
+        }
       } else {
         st = { ...incoming };
 
@@ -337,13 +361,27 @@ export function writeProgress(doc: DocLike): string {
           typeof prev?.cycleStartedAt === "string" && prev.cycleStartedAt.trim()
             ? prev.cycleStartedAt.trim()
             : null;
-        if (incomingCycle && (!prevCycle || incomingCycle >= prevCycle)) {
+        const isNewCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
+        const isSameCycle = Boolean(incomingCycle && prevCycle && incomingCycle === prevCycle);
+        if (isNewCycle || isSameCycle) {
           const revealStamp = maxIsoTimestamp(nowIso, incomingCycle) || nowIso;
-          if (incoming.setupRevealedBeforeAnswer === true) {
+          const prevHints = typeof prev?.hintsRevealed === "number" ? prev.hintsRevealed : 0;
+          const incomingHints =
+            typeof incoming.hintsRevealed === "number" ? incoming.hintsRevealed : 0;
+          if (
+            incoming.setupRevealedBeforeAnswer === true &&
+            (isNewCycle || prev?.setupRevealedBeforeAnswer !== true)
+          ) {
             st.reviewSetupRevealedAt = maxIsoTimestamp(st.reviewSetupRevealedAt, revealStamp);
           }
-          if (incoming.solutionRevealedBeforeAnswer === true) {
+          if (
+            incoming.solutionRevealedBeforeAnswer === true &&
+            (isNewCycle || prev?.solutionRevealedBeforeAnswer !== true)
+          ) {
             st.reviewStepsRevealedAt = maxIsoTimestamp(st.reviewStepsRevealedAt, revealStamp);
+          }
+          if (incomingHints > 0 && (isNewCycle || incomingHints > prevHints)) {
+            st.reviewHintRevealedAt = maxIsoTimestamp(st.reviewHintRevealedAt, revealStamp);
           }
         }
 
@@ -365,9 +403,8 @@ export function writeProgress(doc: DocLike): string {
           }
 
           if (prev.lastTestReport && typeof prev.lastTestReport === "object") {
-            const isNewerCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
             if (st.lastTestReport == null) {
-              if (!isNewerCycle) {
+              if (!isNewCycle) {
                 st.lastTestReport = prev.lastTestReport;
               }
             } else if (typeof st.lastTestReport === "object") {
@@ -398,6 +435,10 @@ export function writeProgress(doc: DocLike): string {
           const maxRevSteps = maxIsoTimestamp(prev.reviewStepsRevealedAt, st.reviewStepsRevealedAt);
           if (maxRevSteps) {
             st.reviewStepsRevealedAt = maxRevSteps;
+          }
+          const maxRevHint = maxIsoTimestamp(prev.reviewHintRevealedAt, st.reviewHintRevealedAt);
+          if (maxRevHint) {
+            st.reviewHintRevealedAt = maxRevHint;
           }
         }
       }

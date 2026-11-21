@@ -910,10 +910,6 @@ function firstAttemptTs(state: Record<string, unknown>, fallback: string): strin
   return fallback;
 }
 
-function isAssistedState(state: Record<string, unknown>): boolean {
-  return scoreProblem(state as Partial<ProblemState>).usedHelp;
-}
-
 /** Collect matchedTrap tags from original attempts and server-stored variant attempts (mirrors `scripts.weak_spots._collect_matched_traps`). */
 function collectMatchedTraps(state: Record<string, unknown>): string[] {
   const matched: string[] = [];
@@ -941,18 +937,6 @@ function collectMatchedTraps(state: Record<string, unknown>): string[] {
     }
   }
   return matched;
-}
-
-/** Mirrors `progress_store.item_score` via the single canonical `scoreProblem` rule. */
-function computeMathItemScore(state: Record<string, unknown>): [number, boolean] {
-  const res = scoreProblem(state as Partial<ProblemState>);
-  return [res.score === null ? -1.0 : res.score, res.usedHelp];
-}
-
-/** Mirrors `scripts.weak_spots._prg_item_score` via the single canonical `scoreProblem` rule. */
-function computePrgItemScore(state: Record<string, unknown>): number {
-  const res = scoreProblem(state as Partial<ProblemState>, { isPrg: true });
-  return res.score === null ? -1.0 : res.score;
 }
 
 function extractPrgSignals(state: Record<string, unknown>): string[] {
@@ -1123,6 +1107,7 @@ export function computeMedianDurationMsFromLoaded(
 function loadProgressContext(options?: ReviewStoreOptions): {
   loaded: LoadedProgressItem[];
   drills: Map<string, DrillMeta>;
+  statesByKey: Map<string, Record<string, unknown>>;
 } {
   const rootDir = options?.rootDir ?? getWorkspaceRoot();
   const dataDir = options?.dataDir ?? getDrillsDataDir();
@@ -1131,9 +1116,10 @@ function loadProgressContext(options?: ReviewStoreOptions): {
 
   const { unitOf, unitsOf, archChecks, universalIds } = loadVaultMeta(rootDir);
   const drills = loadAllDrillMeta(dataDir, labsDir, unitOf, unitsOf);
+  const statesByKey = new Map<string, Record<string, unknown>>();
 
   if (!fs.existsSync(progressDir)) {
-    return { loaded: [], drills };
+    return { loaded: [], drills, statesByKey };
   }
 
   const files = fs
@@ -1176,12 +1162,14 @@ function loadProgressContext(options?: ReviewStoreOptions): {
     drill.problems.forEach((probMeta, qid) => {
       const state = progProblems[qid];
       if (!state || typeof state !== "object") return;
+      statesByKey.set(reviewItemKey(drillId, qid), state);
       const revisitNote = cleanRevisitNote(state.revisitNote);
 
       if (drill.subject === "PRG") {
-        const score = computePrgItemScore(state);
-        if (score < 0) return;
-        const assisted = isAssistedState(state);
+        const prgResult = scoreProblem(state as Partial<ProblemState>, { isPrg: true });
+        if (prgResult.score === null) return;
+        const score = prgResult.score;
+        const assisted = prgResult.usedHelp;
         const reviews = Array.isArray(state.reviews)
           ? (state.reviews as Array<Record<string, unknown>>)
           : [];
@@ -1203,7 +1191,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           archetypeKey: probMeta.archetypeKey,
           ts: firstAttemptTs(state, fallbackTs),
           score,
-          skipped: Boolean(state.skipped),
+          skipped: prgResult.outcome === "skipped",
           assisted,
           passed:
             (reviews.length > 0 && reviews[reviews.length - 1]?.verdict === "pass") ||
@@ -1216,8 +1204,10 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           state,
         });
       } else {
-        const [score, assisted] = computeMathItemScore(state);
-        if (score < 0) return;
+        const mathResult = scoreProblem(state as Partial<ProblemState>);
+        if (mathResult.score === null) return;
+        const score = mathResult.score;
+        const assisted = mathResult.usedHelp;
         const matched = collectMatchedTraps(state);
         loaded.push({
           drillId,
@@ -1229,7 +1219,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           archetypeKey: probMeta.archetypeKey,
           ts: firstAttemptTs(state, fallbackTs),
           score,
-          skipped: Boolean(state.skipped),
+          skipped: mathResult.outcome === "skipped",
           assisted,
           passed: score === 1.0,
           matched,
@@ -1244,7 +1234,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
   }
 
   loaded.sort((a, b) => cmpStr(a.ts, b.ts));
-  return { loaded, drills };
+  return { loaded, drills, statesByKey };
 }
 
 function buildScheduleFromLoaded(
@@ -1355,17 +1345,33 @@ export function writeReviewItemsStore(
   return filePath;
 }
 
+function hasInCycleReviewHelp(state?: Record<string, unknown> | null): boolean {
+  if (!state || typeof state !== "object") return false;
+  const cycle = typeof state.cycleStartedAt === "string" ? state.cycleStartedAt.trim() : "";
+  if (!cycle) return false;
+  for (const field of ["reviewHintRevealedAt", "reviewSetupRevealedAt", "reviewStepsRevealedAt"] as const) {
+    const ts = state[field];
+    if (typeof ts === "string" && ts.trim() && ts.trim() >= cycle) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function mergeSavedSchedule(
   backfilled: Record<string, ReviewItem>,
   saved: Record<string, ReviewItem>,
   drills?: Map<string, DrillMeta>,
-  loaded: LoadedProgressItem[] = []
+  loaded: LoadedProgressItem[] = [],
+  statesByKey?: Map<string, Record<string, unknown>>
 ): Record<string, ReviewItem> {
   if (Object.keys(saved).length === 0) {
     return backfilled;
   }
   const merged: Record<string, ReviewItem> = { ...backfilled };
-  const stateByKey = new Map(loaded.map((item) => [reviewItemKey(item.drillId, item.qid), item.state]));
+  const stateByKey =
+    statesByKey ??
+    new Map(loaded.map((item) => [reviewItemKey(item.drillId, item.qid), item.state]));
   for (const [key, savedEntry] of Object.entries(saved)) {
     const metadata = drills?.get(savedEntry.drillId);
     if (drills && (!metadata || !metadata.problems.has(savedEntry.qid))) continue;
@@ -1408,10 +1414,10 @@ export function getReviewItemsSchedule(
   options?: ReviewStoreOptions
 ): Record<string, ReviewItem> {
   const progressDir = options?.progressDir ?? getProgressDir();
-  const backfilled = buildScheduleFromProgress({ ...options, progressDir });
+  const { loaded, drills, statesByKey } = loadProgressContext({ ...options, progressDir });
+  const backfilled = buildScheduleFromLoaded(loaded);
   const saved = loadSavedReviewItems(progressDir);
-  const { loaded, drills } = loadProgressContext(options);
-  return mergeSavedSchedule(backfilled, saved, drills, loaded);
+  return mergeSavedSchedule(backfilled, saved, drills, loaded, statesByKey);
 }
 
 export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsResult {
@@ -1420,11 +1426,11 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
   const rootDir = options?.rootDir ?? getWorkspaceRoot();
   const progressDir = options?.progressDir ?? getProgressDir();
 
-  const { loaded, drills } = loadProgressContext({ ...options, rootDir, progressDir });
+  const { loaded, drills, statesByKey } = loadProgressContext({ ...options, rootDir, progressDir });
   const openWeakTraps = computeOpenWeakTrapsFromLoaded(loaded);
   const backfilled = buildScheduleFromLoaded(loaded);
   const saved = loadSavedReviewItems(progressDir);
-  const schedule = mergeSavedSchedule(backfilled, saved, drills, loaded);
+  const schedule = mergeSavedSchedule(backfilled, saved, drills, loaded, statesByKey);
 
   const allItems = Object.values(schedule);
   const allDue = allItems.filter((it) => it.dueDate <= today);
@@ -1547,9 +1553,34 @@ export function recordReviewItemResult(
     throw new Error("Invalid drillId or qid");
   }
   const progressDir = options?.progressDir ?? getProgressDir();
-  const schedule = getReviewItemsSchedule({ ...options, progressDir });
+  const { loaded, drills, statesByKey } = loadProgressContext({ ...options, progressDir });
+  const backfilled = buildScheduleFromLoaded(loaded);
+  const saved = loadSavedReviewItems(progressDir);
+  const schedule = mergeSavedSchedule(backfilled, saved, drills, loaded, statesByKey);
   const key = reviewItemKey(input.drillId, input.qid);
-  const existing = schedule[key];
+  let existing = schedule[key];
+  if (!existing) {
+    const rawState = statesByKey.get(key);
+    const meta = drills.get(input.drillId);
+    if (rawState && hasInCycleReviewHelp(rawState) && meta?.problems.has(input.qid)) {
+      if (saved[key]) {
+        existing = saved[key];
+      } else {
+        const replayed = replayReviewEvents(extractReviewEvents(rawState));
+        if (replayed) {
+          existing = redactReviewItem({
+            drillId: input.drillId,
+            qid: input.qid,
+            ...lookupProblemMetadata(input.drillId, input.qid, { ...options, progressDir }),
+            level: replayed.level,
+            lastReviewed: replayed.lastReviewed,
+            dueDate: replayed.dueDate,
+            lastWrong: replayed.lastWrong,
+          });
+        }
+      }
+    }
+  }
   const currentLevel = existing ? existing.level : MIN_REVIEW_LEVEL;
   const revDate = normalizeReviewDate(input.date, options?.today);
 
