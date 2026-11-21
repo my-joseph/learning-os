@@ -199,7 +199,7 @@
       "archetypeKey": "t02-c01-u02-discriminant-classification",
       "level": 2,
       "name": "Root Classification and Threshold Analysis via the Discriminant",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: nzqa-ncea, mathsgenie",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: nzqa-ncea, mathsgenie, thai-exams",
       "coreConcept": "Evaluate Δ = b^2 - 4ac on standard form ax^2 + bx + c = 0 to determine whether the equation has two distinct real solutions (Δ > 0), one repeated real solution (Δ = 0), or two non-real complex conjugate solutions (Δ < 0), and solve for unknown coefficient thresholds.",
       "mentalModel": "The discriminant sits inside the square root and determines whether the symmetric offset from the vertex -b/(2a) is real positive, zero, or purely imaginary.",
       "governingRelation": "\\Delta = b^2 - 4ac \\;\\begin{cases} > 0 & \\text{two distinct real roots} \\\\ = 0 & \\text{one repeated real root} \\\\ < 0 & \\text{two complex conjugate roots} \\end{cases}",
@@ -233,7 +233,7 @@
       "versatileDomains": [],
       "usedContexts": [],
       "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots.",
-      "levelNote": "L2 for classifying the solution set from the discriminant. L3 when a parameter must be solved from the repeated-root boundary; check the resulting coefficient condition before classifying."
+      "levelNote": "L2 for classifying the solution set from the discriminant. L3 when a parameter must be solved from the repeated-root boundary; check the resulting coefficient condition before classifying. Scope boundary: a task that combines quadratic sign intervals with an absolute-value inequality belongs to MTH-T02-C01-U04. Keep this archetype focused on root classification for equations. Thai five-option items can use strict-boundary and interval-selection errors as distinct distractor targets in that later inequality unit."
     },
     {
       "unitCode": "MTH-T02-C01-U02",

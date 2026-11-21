@@ -226,7 +226,8 @@
         "t02-c01-u01-difference-of-squares-minus-sign-trap",
         "t02-c01-u01-conjugate-real-sign-flip-trap",
         "cx-conjugate-product-cross-terms",
-        "t02-c01-u01-conjugate-modulus-change-trap"
+        "t02-c01-u01-conjugate-modulus-change-trap",
+        "cx-expand-instead-of-factor"
       ],
       "versatileDomains": [
         "power_factor_apparent_power",
@@ -254,7 +255,8 @@
           "title": "Complex Plane"
         }
       ],
-      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, mathematics-vision-project"
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, mathematics-vision-project, thai-exams",
+      "levelNote": "For compact magnitude expressions that conceal a perfect-square identity, identify and factor the square before evaluating the magnitude. Thai exam numeric-response items can require this structural recognition without providing distractor choices."
     },
     {
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
