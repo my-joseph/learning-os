@@ -196,7 +196,10 @@
       "cognitiveTraps": [
         "t02-c01-u01-positive-last-term-trap",
         "t02-c01-u01-cross-term-omission-trap",
-        "t02-c01-u01-i-cubed-in-cubed-binomial-trap"
+        "t02-c01-u01-i-cubed-in-cubed-binomial-trap",
+        "cx-cube-binomial-i",
+        "cx-i-squared-positive",
+        "cx-square-binomial-error"
       ],
       "versatileDomains": [
         "complex_power_s_vi",
@@ -205,10 +208,11 @@
       ],
       "usedContexts": [
         "dsp_fourier_kernel_modulation",
-        "phasor_gain_stage_check"
+        "phasor_gain_stage_check",
+        "complex_binomial_expansion_check"
       ],
       "figureNone": "Complex-number algebra in standard form; the work is symbolic.",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, tyler-wallace-algebra",
       "levelNote": "Cubes or products of three binomials are in scope; trap i-cubed-in-cubed-binomial = i^3 taken as +i inside the binomial-cube expansion (distinct from misreading the remainder cycle)."
     },
     {
@@ -220,7 +224,9 @@
       "governingRelation": "(a + bi)(a - bi) = a^2 + b^2 \\land |z| = \\sqrt{a^2 + b^2}",
       "cognitiveTraps": [
         "t02-c01-u01-difference-of-squares-minus-sign-trap",
-        "t02-c01-u01-conjugate-real-sign-flip-trap"
+        "t02-c01-u01-conjugate-real-sign-flip-trap",
+        "cx-conjugate-product-cross-terms",
+        "t02-c01-u01-conjugate-modulus-change-trap"
       ],
       "versatileDomains": [
         "power_factor_apparent_power",
@@ -229,7 +235,8 @@
       ],
       "usedContexts": [
         "signal_envelope_magnitude",
-        "radar_return_power_estimate"
+        "radar_return_power_estimate",
+        "complex_plane_conjugate_reflection"
       ],
       "figureBuilders": [
         {
@@ -246,7 +253,8 @@
           },
           "title": "Complex Plane"
         }
-      ]
+      ],
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, mathematics-vision-project"
     },
     {
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
@@ -258,7 +266,12 @@
       "cognitiveTraps": [
         "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
         "t02-c01-u01-denominator-conjugate-sign-error-trap",
-        "t02-c01-u01-reciprocal-parts-inverted-trap"
+        "t02-c01-u01-reciprocal-parts-inverted-trap",
+        "cx-conjugate-sign-slip",
+        "cx-reciprocal-not-rationalised",
+        "cx-quotient-split-wrong",
+        "cx-nested-reciprocal-order",
+        "cx-reciprocal-parts-inverted"
       ],
       "versatileDomains": [
         "ac_admittance_inversion",
@@ -268,10 +281,11 @@
       "usedContexts": [
         "ac_admittance_inversion",
         "filter_transfer_ratio_check",
-        "antenna_impedance_ratio_check"
+        "antenna_impedance_ratio_check",
+        "complex_quotient_simplification"
       ],
       "figureNone": "Complex-number algebra in standard form; the work is symbolic.",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, libretexts-math, tyler-wallace-algebra",
       "levelNote": "Reverse form in scope: given 1/z, find z (the reciprocal of a+bi is its conjugate over a^2+b^2); trap reciprocal-parts-inverted = taking 1/a + (1/b)i."
     },
     {
@@ -329,16 +343,23 @@
         "t02-c01-u01-power-of-i-remainder-trap",
         "t02-c01-u01-negative-power-same-as-positive-trap",
         "t02-c01-u01-structured-exponent-residue-trap",
-        "t02-c01-u01-ordered-versus-unordered-count-trap"
+        "t02-c01-u01-ordered-versus-unordered-count-trap",
+        "cx-congruence-count-off-by-one",
+        "cx-factorial-mod-four",
+        "cx-ordered-vs-unordered",
+        "cx-power-cycle-misread",
+        "cx-negative-power-sign"
       ],
       "versatileDomains": [
         "number_theory_residues",
         "signal_phase_rotation"
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "exponent_residue_counting"
+      ],
       "figureNone": "Pure exponent arithmetic on i; a plane figure would not add information at this level.",
       "levelNote": "L2: one structured exponent (negative, or built from a product/factorial/sum) or a short sum. L3 only when the solver must count or choose exponents and reject the residues that fail the stated value (check=edge, listed in blindSolve.edgeRejected) or pick the method (strategy=choose). A single large exponent is L1-L2, never L3.",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, tyler-wallace-algebra"
     },
     {
       "archetypeKey": "t02-c01-u01-conjugate-equation-equate-parts",
@@ -351,13 +372,19 @@
         "t02-c01-u01-conjugate-combined-as-like-term-trap",
         "t02-c01-u01-equate-mismatched-parts-trap",
         "t02-c01-u01-report-z-instead-of-conjugate-trap",
-        "t02-c01-u01-keep-rejected-root-trap"
+        "t02-c01-u01-keep-rejected-root-trap",
+        "cx-conjugate-treated-as-z",
+        "cx-equate-parts-mismatch",
+        "cx-forgot-final-conjugate",
+        "cx-cancel-without-nonzero-check"
       ],
       "versatileDomains": [
         "linear_systems_two_unknowns",
         "signal_in_phase_quadrature"
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "simultaneous_conjugate_constraints"
+      ],
       "figureNone": "Symbolic equation solving; the answer is a single complex number.",
       "levelNote": "L2 for a linear equation in z and its conjugate, including a derived follow-up quantity of the solution (one more step stays L2). L3 only when the z times conjugate term produces two candidates and one is ruled out by a stated condition (check=edge with edgeRejected), or two conditions must be combined (setup=model). Reverse form: give the solution and ask for a coefficient.",
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
@@ -372,13 +399,18 @@
       "cognitiveTraps": [
         "t02-c01-u01-real-condition-wrong-part-trap",
         "t02-c01-u01-pure-imaginary-wrong-part-trap",
-        "t02-c01-u01-missing-nonzero-check-trap"
+        "t02-c01-u01-missing-nonzero-check-trap",
+        "cx-pure-imaginary-definition",
+        "cx-real-condition-wrong-part",
+        "cx-cancel-without-nonzero-check"
       ],
       "versatileDomains": [
         "ac_circuit_resonance",
         "filter_phase_condition"
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "axis_membership_condition"
+      ],
       "figureNone": "The condition is algebraic on the simplified parts; a figure would show the answer.",
       "levelNote": "Earns L3 only with check=edge: the nonzero check (purely imaginary needs Y != 0) rejects at least one candidate parameter, recorded in blindSolve.edgeRejected. Rationalising first is extra steps (L2) unless it forces a method choice. Applying the condition to an already simplified a + bi is L2.",
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
@@ -394,16 +426,21 @@
         "t02-c01-u01-drop-scale-after-base-reduction-trap",
         "t02-c01-u01-assume-period-four-trap",
         "t02-c01-u01-cross-term-omission-trap",
-        "t02-c01-u01-report-reduced-exponent-trap"
+        "t02-c01-u01-report-reduced-exponent-trap",
+        "cx-cycle-length-guess",
+        "cx-cycle-start-index",
+        "cx-quotient-not-simplified"
       ],
       "versatileDomains": [
         "sequence_periodicity",
         "rotation_by_right_angles"
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "base_reduction_before_periodicity"
+      ],
       "figureNone": "Algebraic reduction and periodicity; no figure needed at this level.",
       "levelNote": "Base L2 (reduce, then use the cycle on an obviously reducible base). L3 when the base is not obviously reducible so the solver must choose the reduction (strategy=choose), or a recurrence start index / rejected exponents give check=edge. Allowed bases reduce to +-i, -1 or k*i^m with integer k (conjugate quotients, squares of binomials with equal parts); no sqrt(2)-normalised bases, no modulus or polar form (later unit). Ask for a result 'equal to 1' or 'real', never 'unit'. Derive assume-period-four from a base of period 2 (a quotient reducing to -1) or a recurrence.",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
+      "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, tyler-wallace-algebra"
     }
   ]
 }
