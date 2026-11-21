@@ -28,7 +28,9 @@ import io
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import zipfile
 from collections import Counter
 from typing import Any
@@ -63,6 +65,11 @@ DEFAULT_BUDGET_PAGES = 30
 DEFAULT_BUDGET_ITEMS = 40
 DEFAULT_BATCH_SIZE = 10
 THAI_EXAM_BOOST = 25.0
+OCR_RENDER_DPI = 300
+OCR_WEAK_CONFIDENCE = 50.0
+OCR_WEAK_TOKEN_COUNT = 4
+_THAI_CHAR_RE = re.compile(r"[\u0e00-\u0e7f]")
+_SUSPICIOUS_THAI_GLYPHS = frozenset("'\"&=฿¦§¶¤")
 
 CODE_SOURCE_EXTENSIONS: tuple[str, ...] = (
     ".js",
@@ -334,10 +341,173 @@ def extract_pdf_pages(source: str | bytes) -> list[dict[str, Any]]:
             {
                 "page": idx,
                 "text": text,
+                "pdfText": text,
                 "isImagePage": not text.strip(),
             }
         )
     return pages
+
+
+def classify_text_quality(text: str) -> str:
+    """Classify extracted PDF text as usable, empty, or likely legacy-font garbled."""
+    compact = re.sub(r"\s+", "", text)
+    thai_positions = [match.start() for match in _THAI_CHAR_RE.finditer(compact)]
+    if len(thai_positions) >= 2:
+        suspicious = 0
+        for index, char in enumerate(compact):
+            if char not in _SUSPICIOUS_THAI_GLYPHS:
+                continue
+            if any(abs(index - thai_index) <= 1 for thai_index in thai_positions):
+                suspicious += 1
+        if suspicious >= 2 and suspicious / len(thai_positions) >= 0.015:
+            return "garbled"
+    if len(compact) < 24:
+        return "empty"
+    return "ok"
+
+
+def ocr_cache_key(file_hash: str, page: int) -> str:
+    """Return a stable OCR cache key for a source PDF hash and 1-indexed page."""
+    digest = hashlib.sha256(f"{file_hash}:{page}".encode("utf-8")).hexdigest()
+    return f"{digest}_p{page}"
+
+
+def _ocr_token_count(text: str) -> int:
+    thai_words = len(re.findall(r"[\u0e00-\u0e7f]{2,}", text))
+    math_tokens = len(re.findall(r"(?:\d+(?:\.\d+)?|[=+\-×÷*/^√π])", text))
+    return thai_words + math_tokens
+
+
+def _ocr_math_symbol_count(text: str) -> int:
+    """Count visible operators and single-letter variables in OCR output."""
+    return len(re.findall(r"[=+\-×÷*/^√π]|\b[A-Za-z]\b", text))
+
+
+def _ocr_needs_image(text: str, confidence: float | None) -> bool:
+    """Flag OCR pages with low confidence, little text, or missing math notation."""
+    return (
+        confidence is None
+        or confidence < OCR_WEAK_CONFIDENCE
+        or _ocr_token_count(text) < OCR_WEAK_TOKEN_COUNT
+        or _ocr_math_symbol_count(text) < 2
+    )
+
+
+def _parse_tesseract_tsv(tsv: str) -> tuple[str, float | None]:
+    lines: list[str] = []
+    confidences: list[float] = []
+    for line in tsv.splitlines()[1:]:
+        cols = line.split("\t", 11)
+        if len(cols) < 12 or not cols[11].strip():
+            continue
+        try:
+            confidence = float(cols[10])
+        except ValueError:
+            confidence = -1
+        if confidence >= 0:
+            confidences.append(confidence)
+        lines.append(cols[11].strip())
+    return "\n".join(lines), (sum(confidences) / len(confidences) if confidences else None)
+
+
+def _ocr_page(
+    pdf_path: str,
+    page: int,
+    file_hash: str,
+    idx_dir: str,
+    *,
+    pdf_bytes: bytes | None = None,
+) -> dict[str, Any] | None:
+    """Render and OCR one PDF page, caching both PNG and text under the sources index."""
+    key = ocr_cache_key(file_hash, page)
+    png_path = os.path.join(idx_dir, f"ocr_{key}.png")
+    json_path = os.path.join(idx_dir, f"ocr_{key}.json")
+    if os.path.isfile(png_path) and os.path.isfile(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as fh:
+                cached = json.load(fh)
+            if isinstance(cached, dict) and isinstance(cached.get("text"), str):
+                cached["tokenCount"] = _ocr_token_count(cached["text"])
+                cached["mathSymbolCount"] = _ocr_math_symbol_count(cached["text"])
+                cached["needsImage"] = _ocr_needs_image(cached["text"], cached.get("confidence"))
+                return {**cached, "imageFile": os.path.basename(png_path)}
+        except (OSError, ValueError):
+            pass
+
+    os.makedirs(idx_dir, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="learningos-ocr-") as tmp_dir:
+        input_pdf = pdf_path
+        if pdf_bytes is not None:
+            input_pdf = os.path.join(tmp_dir, "source.pdf")
+            with open(input_pdf, "wb") as fh:
+                fh.write(pdf_bytes)
+        prefix = os.path.join(tmp_dir, "page")
+        try:
+            subprocess.run(
+                [
+                    "pdftoppm",
+                    "-f",
+                    str(page),
+                    "-l",
+                    str(page),
+                    "-r",
+                    str(OCR_RENDER_DPI),
+                    "-png",
+                    "-singlefile",
+                    input_pdf,
+                    prefix,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            rendered = prefix + ".png"
+            if not os.path.isfile(rendered):
+                return None
+            # Keep the rendered image even if OCR is unavailable or fails.
+            with open(rendered, "rb") as src, open(png_path, "wb") as dst:
+                dst.write(src.read())
+            plain = subprocess.run(
+                ["tesseract", png_path, "-", "-l", "tha+eng"],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            tsv = subprocess.run(
+                ["tesseract", png_path, "-", "-l", "tha+eng", "tsv"],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+        except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+            message = getattr(exc, "stderr", None) or str(exc)
+            print(f"WARNING: OCR fallback unavailable for page {page}: {message.strip()}", file=sys.stderr)
+            if os.path.isfile(png_path):
+                return {
+                    "text": "",
+                    "confidence": None,
+                    "tokenCount": 0,
+                    "needsImage": True,
+                    "imageFile": os.path.basename(png_path),
+                    "ocrUnavailable": True,
+                }
+            return None
+
+    _tsv_text, confidence = _parse_tesseract_tsv(tsv)
+    token_count = _ocr_token_count(plain)
+    math_symbol_count = _ocr_math_symbol_count(plain)
+    needs_image = _ocr_needs_image(plain, confidence)
+    result = {
+        "text": plain,
+        "confidence": confidence,
+        "tokenCount": token_count,
+        "mathSymbolCount": math_symbol_count,
+        "needsImage": needs_image,
+        "imageFile": os.path.basename(png_path),
+    }
+    with open(json_path, "w", encoding="utf-8") as fh:
+        json.dump(result, fh, ensure_ascii=False)
+    return result
 
 
 def _infer_file_language(rel_path: str) -> str:
@@ -442,6 +612,14 @@ def _load_or_extract_pdf(
                 and cached.get("size") == stat.st_size
                 and isinstance(cached.get("pages"), list)
             ):
+                if not cached.get("fileHash"):
+                    if zip_member is not None:
+                        with zipfile.ZipFile(abs_path, "r") as archive:
+                            cached["fileHash"] = hashlib.sha256(archive.read(zip_member)).hexdigest()
+                    else:
+                        cached["fileHash"] = compute_file_hash(abs_path)
+                    with open(cache_path, "w", encoding="utf-8") as fh:
+                        json.dump(cached, fh, ensure_ascii=False)
                 return cache_name, cached
         except (OSError, ValueError):
             pass
@@ -677,6 +855,7 @@ def find_sources(
     sources_dir: str | None = None,
     use_cache: bool = True,
     registry_path: str | None = None,
+    ocr: bool = True,
 ) -> dict[str, Any]:
     """Search PDFs (MTH/PHY) or code/markdown files under ``sources/prg/`` (PRG) and cache extracted text."""
     sdir = resolve_sources_dir(sources_dir=sources_dir)
@@ -750,7 +929,28 @@ def find_sources(
         for p in pages:
             pnum = int(p.get("page", 0))
             text = str(p.get("text") or "")
-            if p.get("isImagePage") or not text.strip():
+            quality = classify_text_quality(text) if not prg_mode else ("empty" if not text.strip() else "ok")
+            ocr_result = None
+            if not prg_mode and ocr and quality in {"empty", "garbled"} and mode != "no-automation":
+                pdf_bytes = None
+                if zip_member is not None:
+                    with zipfile.ZipFile(abs_path, "r") as archive:
+                        pdf_bytes = archive.read(zip_member)
+                file_hash = str(doc.get("fileHash") or "")
+                if file_hash:
+                    ocr_result = _ocr_page(abs_path, pnum, file_hash, idx_dir, pdf_bytes=pdf_bytes)
+                    if ocr_result and not ocr_result.get("ocrUnavailable"):
+                        text = str(ocr_result.get("text") or "")
+                        p["text"] = text
+                        p["textSource"] = "ocr"
+                        p["needsImage"] = bool(ocr_result.get("needsImage"))
+                        p["imageFile"] = ocr_result.get("imageFile")
+                        p["ocrConfidence"] = ocr_result.get("confidence")
+                    elif ocr_result:
+                        p["needsImage"] = True
+                        p["imageFile"] = ocr_result.get("imageFile")
+            text_source = str(p.get("textSource") or "pdf")
+            if not text.strip():
                 if not prg_mode:
                     image_pages.append(pnum)
                 continue
@@ -763,7 +963,17 @@ def find_sources(
                     "terms": term_counts,
                     "charLen": len(text.strip()),
                     "estimatedItems": estimate_page_items(text),
+                    "textSource": text_source,
+                    "textQuality": quality,
                 }
+                if text_source == "ocr":
+                    entry["needsImage"] = bool(p.get("needsImage"))
+                    entry["imageFile"] = p.get("imageFile")
+                    entry["ocrConfidence"] = p.get("ocrConfidence")
+                elif quality == "garbled":
+                    entry["needsImage"] = True
+                    if p.get("imageFile"):
+                        entry["imageFile"] = p["imageFile"]
                 if p.get("lineStart") is not None and p.get("lineEnd") is not None:
                     entry["lineStart"] = int(p["lineStart"])
                     entry["lineEnd"] = int(p["lineEnd"])
@@ -837,6 +1047,7 @@ def find_sources(
         "scopeMatches": scope_matches,
         "imageOnlyFiles": image_only_files,
         "errors": errors,
+        "ocrEnabled": ocr,
     }
 
 
@@ -1051,6 +1262,17 @@ def build_extraction_plan(
                 "score": score,
                 "scoreBreakdown": breakdown,
             }
+            for key in ("textSource", "needsImage", "imageFile", "ocrConfidence"):
+                if key in p_entry:
+                    candidate[key] = p_entry[key]
+            if p_entry.get("textSource") == "ocr":
+                ocr_name = str(p_entry.get("imageFile") or "").replace(".png", ".json")
+                ocr_path = os.path.join(idx_dir, ocr_name)
+                try:
+                    with open(ocr_path, "r", encoding="utf-8") as fh:
+                        candidate["ocrText"] = json.load(fh).get("text", "")
+                except (OSError, ValueError):
+                    candidate["ocrText"] = ""
             if lic:
                 candidate["license"] = lic
             if match.get("language"):
@@ -1347,6 +1569,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Override sources directory (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
     )
     parser.add_argument("--no-cache", action="store_true", help="Re-extract files instead of reading sources/_index/.")
+    parser.add_argument("--no-ocr", action="store_true", help="Disable OCR fallback for empty or garbled PDF pages.")
     parser.add_argument(
         "--plan",
         action="store_true",
@@ -1394,6 +1617,7 @@ def main(argv: list[str] | None = None) -> int:
             families=_split_multi_arg(args.families),
             sources_dir=args.sources_dir,
             use_cache=not args.no_cache,
+            ocr=not args.no_ocr,
         )
         if args.plan:
             plan = build_extraction_plan(
