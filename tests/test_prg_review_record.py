@@ -124,8 +124,95 @@ def test_review_run_passing_and_failing_solutions(tmp_path):
     bad_res = review_run.run_review(drill_doc["drillId"], "Q01")
     assert bad_res["tests"]["passed"] == 2
     assert bad_res["tests"]["total"] == 3
-    assert any("rejects string" in name for name in bad_res["tests"]["failed"])
+    assert bad_res["tests"]["failed"] == ["1 hidden check failed"]
+    assert not any("rejects string" in name or "HIDDEN" in name for name in bad_res["tests"]["failed"])
     assert any(item["rule"] == "no-param-reassign" for item in bad_res["lint"])
+
+
+def test_review_run_and_record_mask_hidden_tests_in_drill_and_lab(tmp_path, monkeypatch):
+    _require_node_and_lint()
+    drill_doc = _make_prg_drill(level=1)
+    # Fail 1 visible test and both hidden tests (stub returns -1 always)
+    stub_code = "function clampPort(_port) {\n  return -1;\n}\nmodule.exports = { clampPort };\n"
+    _setup_workspace(tmp_path, drill_doc, stub_code)
+
+    res = review_run.run_review(drill_doc["drillId"], "Q01")
+    assert res["tests"]["passed"] == 0
+    assert res["tests"]["total"] == 3
+    assert res["tests"]["failed"] == ["[Q01-T01] keeps valid port", "2 hidden checks failed"]
+    serialized_res = json.dumps(res)
+    for secret_name in ("keeps zero port", "rejects string", "HIDDEN"):
+        assert secret_name not in serialized_res
+
+    rec = review_record.add_record(drill_doc["drillId"], "Q01", [])
+    assert rec["verdict"] == "revise"
+    assert rec["tests"]["failed"] == ["[Q01-T01] keeps valid port", "2 hidden checks failed"]
+
+    prog_path = Path(os.environ["PROGRESS_DIR"]) / f"{drill_doc['drillId']}.json"
+    prog_text = prog_path.read_text(encoding="utf-8")
+    for secret_name in ("keeps zero port", "rejects string", "HIDDEN"):
+        assert secret_name not in prog_text
+    prog_data = json.loads(prog_text)
+    q_state = prog_data["problems"]["Q01"]
+    assert q_state["lastTestReport"]["visibleResults"] == [
+        {"name": "[Q01-T01] keeps valid port", "passed": False},
+        {"name": "2 hidden checks failed", "passed": False},
+    ]
+    assert q_state["reviews"][0]["tests"]["failed"] == ["[Q01-T01] keeps valid port", "2 hidden checks failed"]
+    assert "failed_tests=3" in review_record.format_history(drill_doc["drillId"], "Q01")
+
+    # Lab path: failing hidden test in labs/_reference/<LAB_ID>/hidden/ must also be masked
+    from tests.test_new_project_lab import _make_fixture_lab
+
+    lab_root_tmp = tmp_path / "lab_fixture"
+    lab_root_tmp.mkdir(parents=True)
+    lab_dir, ref_dir, _ = _make_fixture_lab(lab_root_tmp)
+    labs_root = lab_dir.parent
+    monkeypatch.setenv("LABS_DIR", str(labs_root))
+    # Passes visible M1 test (consumeRetry(3, 1) === 2), fails both hidden M1 tests (overspend & exact zero)
+    (lab_dir / "src" / "budget.ts").write_text(
+        "export function consumeRetry(remaining: number, spend: number): number | null {\n"
+        "  const next = remaining - spend;\n"
+        "  return next === 0 ? null : next;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    lab_res = review_run.run_review("LAB-PRG-T01-C01-99", "M1", labs_root=labs_root)
+    assert lab_res["tests"]["passed"] == 1
+    assert lab_res["tests"]["total"] == 3
+    assert lab_res["tests"]["failed"] == ["2 hidden checks failed"]
+    lab_res_json = json.dumps(lab_res)
+    for secret_name in ("rejects overspend when budget is zero", "allows exact zero remaining", "HIDDEN"):
+        assert secret_name not in lab_res_json
+
+    lab_rec = review_record.add_record("LAB-PRG-T01-C01-99", "M1", [], labs_root=labs_root)
+    assert lab_rec["tests"]["failed"] == ["2 hidden checks failed"]
+    lab_prog_text = (Path(os.environ["PROGRESS_DIR"]) / "LAB-PRG-T01-C01-99.json").read_text(encoding="utf-8")
+    for secret_name in ("rejects overspend when budget is zero", "allows exact zero remaining", "HIDDEN"):
+        assert secret_name not in lab_prog_text
+
+
+def test_review_run_degrades_gracefully_without_lint_tools(tmp_path, monkeypatch):
+    if shutil.which("node") is None:
+        pytest.skip("node binary not installed on PATH")
+    # Create an empty tools/lint directory (no node_modules) inside tmp_path
+    (tmp_path / "tools" / "lint").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("LEARNINGOS_ROOT", str(tmp_path))
+
+    drill_doc = _make_prg_drill(level=1)
+    drill_id = drill_doc["drillId"]
+    data_dir = tmp_path / "drills" / "data" / "PRG-T00-C03"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (data_dir / f"{drill_id}.json").write_text(json.dumps(drill_doc, indent=2), encoding="utf-8")
+    materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
+
+    res = review_run.run_review(drill_id, "Q01")
+    assert res["tests"]["passed"] == 1
+    assert res["tests"]["total"] == 3
+    assert res["tests"]["failed"] == ["[Q01-T01] keeps valid port", "1 hidden check failed"]
+    assert res["lint"] == []
+    assert res["typecheck"] == []
+    assert any(c["id"] == "U-names" for c in res["checks"])
 
 
 def test_u_one_job_severity_depends_on_level():

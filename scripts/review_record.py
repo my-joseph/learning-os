@@ -18,7 +18,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from code_engine.review_run import _find_lab_config, find_drill_doc, find_problem, run_review_with_source
+from code_engine.review_run import (
+    _find_lab_config,
+    find_drill_doc,
+    find_problem,
+    run_review_with_source,
+    sanitize_tests_summary,
+)
 from progress_store import apply_progress, load_progress, save_progress, score_problem
 from scripts.issues import add_issue
 
@@ -126,7 +132,7 @@ def add_record(
     reviews = state.setdefault("reviews", [])
 
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-    tests_res = review_res["tests"]
+    tests_res = sanitize_tests_summary(review_res["tests"])
     tests_total = int(tests_res.get("total", 0) or 0)
     tests_passed = int(tests_res.get("passed", 0) or 0)
     tests_failed = list(tests_res.get("failed") or [])
@@ -260,7 +266,12 @@ def format_history(drill_id: str, qid: str | None = None) -> str:
         lines.append(f"{drill_id} {pid} ({len(reviews)} attempt(s)):")
         for r in reviews:
             tests = r.get("tests") or {}
-            failed_n = len(tests.get("failed") or [])
+            total_n = tests.get("total")
+            passed_n = tests.get("passed")
+            if isinstance(total_n, int) and isinstance(passed_n, int):
+                failed_n = max(0, total_n - passed_n)
+            else:
+                failed_n = len(tests.get("failed") or [])
             lint_rules = [item.get("rule", "?") for item in (r.get("lint") or [])]
             must_ids = [
                 f["check"] + (" [disputed]" if f.get("disputed") else "")

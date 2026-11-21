@@ -94,6 +94,40 @@ const USER_HOME_PATH_RE =
 const TMP_ABS_PATH_RE =
   /(?:file:\/\/)?\/(?:private\/var|var\/folders|tmp)\/(?:[^\s:"'()<>`]*\/)?([^\s/:"'()<>`]+)/g;
 
+const HIDDEN_TEST_NAME_RE =
+  /\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b/i;
+
+const HIDDEN_TAG_LINE_RE =
+  /^.*(?:\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b).*$/gim;
+
+export function isHiddenTestFailureName(name?: string | null): boolean {
+  return typeof name === "string" && HIDDEN_TEST_NAME_RE.test(name);
+}
+
+/**
+ * Mask any internal hidden-test failure names so learner-facing payloads and UI
+ * only reveal how many hidden checks failed, never their names or trap details.
+ */
+export function maskHiddenTestFailures(failed: ReadonlyArray<string>): string[] {
+  const visible: string[] = [];
+  let hiddenCount = 0;
+  for (const entry of failed) {
+    if (isHiddenTestFailureName(entry)) {
+      hiddenCount += 1;
+    } else if (typeof entry === "string" && entry.trim()) {
+      visible.push(entry);
+    }
+  }
+  if (hiddenCount > 0) {
+    visible.push(
+      hiddenCount === 1
+        ? "1 hidden check failed"
+        : `${hiddenCount} hidden checks failed`
+    );
+  }
+  return visible;
+}
+
 /**
  * Strip absolute machine paths from code check errors and return a concise setup hint
  * when `tools/lint` dependencies are missing.
@@ -105,6 +139,7 @@ export function sanitizeCodeCheckError(raw?: string | null): string {
     return "Code check tools aren't set up yet. Run `npm ci` in `tools/lint/`.";
   }
   return msg
+    .replace(HIDDEN_TAG_LINE_RE, "hidden check failed")
     .replace(REPO_REL_PATH_RE, "$1")
     .replace(WORKTREE_ROOT_RE, "")
     .replace(USER_HOME_PATH_RE, "$1")
@@ -192,7 +227,7 @@ export function formatReviewRunFailures(
   const lines: string[] = [];
 
   if (Array.isArray(reviewRun.tests?.failed)) {
-    for (const failedName of reviewRun.tests.failed) {
+    for (const failedName of maskHiddenTestFailures(reviewRun.tests.failed)) {
       lines.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${failedName}`));
     }
   }
@@ -298,12 +333,25 @@ export function deriveCodeStatus(
     failures = formatReviewRunFailures(latestReview, defaultFile);
   } else if (state?.lastTestReport && !state.lastTestReport.allPassed) {
     const fileFallback = defaultFile || "solution.js";
-    failures = (state.lastTestReport.visibleResults || [])
-      .filter((r) => !r.passed)
-      .map((r) => {
+    const failingResults = (state.lastTestReport.visibleResults || []).filter(
+      (r) => !r.passed
+    );
+    let hiddenFailedCount = 0;
+    for (const r of failingResults) {
+      if (isHiddenTestFailureName(r.name) || isHiddenTestFailureName(r.error)) {
+        hiddenFailedCount += 1;
+      } else {
         const detail = r.error ? ` ${r.error.split("\n")[0].trim()}` : "";
-        return sanitizeCodeCheckError(`${fileFallback}:0 test ${r.name}${detail}`);
-      });
+        failures.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${r.name}${detail}`));
+      }
+    }
+    if (hiddenFailedCount > 0) {
+      const label =
+        hiddenFailedCount === 1
+          ? "1 hidden check failed"
+          : `${hiddenFailedCount} hidden checks failed`;
+      failures.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${label}`));
+    }
   }
 
   return {

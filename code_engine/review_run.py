@@ -22,8 +22,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries  # noqa: E402
+from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries  # noqa: E402
 from code_engine.quality_checks import (  # noqa: E402
+    _resolve_vault_dir,
     applicable_rubric,
     effective_severity,
     load_archetype,
@@ -37,11 +38,69 @@ from progress_store import workspace_root as default_workspace_root  # noqa: E40
 
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
+_HIDDEN_CASE_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b", re.IGNORECASE)
+
+
+def is_hidden_test_name(name: str) -> bool:
+    """Return True if a test name carries an internal hidden-test marker."""
+    return isinstance(name, str) and bool(_HIDDEN_CASE_RE.search(name))
+
+
+def mask_hidden_test_failures(failed: list[str]) -> list[str]:
+    """Mask any hidden-labelled failure names into a single count summary."""
+    visible_failed: list[str] = []
+    hidden_count = 0
+    for name in failed:
+        if is_hidden_test_name(name):
+            hidden_count += 1
+        elif isinstance(name, str) and name.strip():
+            visible_failed.append(name)
+    if hidden_count > 0:
+        label = "hidden check failed" if hidden_count == 1 else "hidden checks failed"
+        visible_failed.append(f"{hidden_count} {label}")
+    return visible_failed
+
+
+def _summarize_test_cases(cases: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize test cases while filtering and masking failing hidden test details."""
+    passed = sum(1 for c in cases if c.get("passed"))
+    total = len(cases)
+    visible_failed: list[str] = []
+    hidden_failed_count = 0
+    for c in cases:
+        if c.get("passed"):
+            continue
+        name = str(c.get("name") or "Test failed")
+        if c.get("is_hidden") or is_hidden_test_name(name):
+            hidden_failed_count += 1
+        else:
+            visible_failed.append(name)
+    if hidden_failed_count > 0:
+        label = "hidden check failed" if hidden_failed_count == 1 else "hidden checks failed"
+        visible_failed.append(f"{hidden_failed_count} {label}")
+    return {"passed": passed, "total": total, "failed": visible_failed}
+
+
+def sanitize_tests_summary(tests: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of a `tests` summary dict with any hidden test names masked."""
+    failed_raw = [str(x) for x in (tests.get("failed") or [])]
+    return {
+        "passed": int(tests.get("passed", 0) or 0),
+        "total": int(tests.get("total", 0) or 0),
+        "failed": mask_hidden_test_failures(failed_raw),
+    }
 
 
 def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[str, Any], Path]:
     """Locate and load the drill JSON document for `drill_id`."""
-    root = Path(data_root) if data_root is not None else Path(os.environ.get("DRILLS_DATA_DIR", "drills/data"))
+    if data_root is not None:
+        root = Path(data_root)
+    elif os.environ.get("DRILLS_DATA_DIR"):
+        root = Path(os.environ["DRILLS_DATA_DIR"])
+    elif os.environ.get("LEARNINGOS_ROOT"):
+        root = Path(os.environ["LEARNINGOS_ROOT"]) / "drills" / "data"
+    else:
+        root = Path("drills/data")
     matches = sorted(root.glob(f"*/{drill_id}.json"))
     if not matches:
         matches = sorted(root.glob(f"**/{drill_id}.json"))
@@ -52,6 +111,40 @@ def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[s
     if not doc.get("drillId"):
         doc["drillId"] = path.stem
     return doc, path
+
+
+def _active_tools_lint_dir() -> Path:
+    """Resolve `tools/lint` under `LEARNINGOS_ROOT` when present, falling back to `TOOLS_LINT_DIR`."""
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    if env_root:
+        candidate = Path(env_root).resolve() / "tools" / "lint"
+        if candidate.exists() or candidate.is_symlink():
+            return candidate
+    return TOOLS_LINT_DIR
+
+
+def _resolve_eslint_bin() -> Path | None:
+    """Return the active ESLint binary path, or `None` when `tools/lint` dependencies are not installed."""
+    lint_dir = _active_tools_lint_dir()
+    try:
+        same_as_default = lint_dir.resolve() == TOOLS_LINT_DIR.resolve()
+    except OSError:
+        same_as_default = False
+    if not same_as_default:
+        base_js = lint_dir / "base.js"
+        eslint_bin = lint_dir / "node_modules" / ".bin" / "eslint"
+        return eslint_bin if (base_js.exists() and eslint_bin.exists()) else None
+    try:
+        _, eslint_bin = get_lint_binaries()
+        return eslint_bin
+    except LintToolsMissingError:
+        return None
+
+
+def _resolve_tsc_bin() -> Path | None:
+    """Return the active TypeScript compiler (`tsc`) binary path, or `None` when not installed."""
+    tsc_bin = _active_tools_lint_dir() / "node_modules" / ".bin" / "tsc"
+    return tsc_bin if tsc_bin.exists() else None
 
 
 def find_problem(drill_doc: dict[str, Any], qid: str) -> dict[str, Any]:
@@ -80,7 +173,9 @@ def find_problem_source(ws_dir: Path, prob: dict[str, Any], preset_ext: str) -> 
 
 def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
     """Run ESLint with the workspace config on `src_file` and return [{rule, line, message}]."""
-    _, eslint_bin = get_lint_binaries()
+    eslint_bin = _resolve_eslint_bin()
+    if eslint_bin is None:
+        return []
     proc = subprocess.run(
         [str(eslint_bin), "--format", "json", src_file.name],
         cwd=str(ws_dir),
@@ -112,9 +207,9 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
     """Run `tsc --noEmit` for TypeScript presets and return [{line, message}] for `src_file`."""
     if environment not in TS_PRESETS and src_file.suffix not in (".ts", ".tsx"):
         return []
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
-    if not tsc_bin.exists():
-        raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
+    tsc_bin = _resolve_tsc_bin()
+    if tsc_bin is None:
+        return []
 
     proc = subprocess.run(
         [str(tsc_bin), "--noEmit", "--pretty", "false"],
@@ -146,7 +241,8 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
 
 
 def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
-    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root())
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root(env_root))
     lab_dir = lroot / lab_id
     cfg_path = lab_dir / "lab.config.json"
     if not cfg_path.exists():
@@ -155,7 +251,7 @@ def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[s
 
 
 def _load_qc_by_id(vault_dir: Path | None = None) -> dict[str, dict[str, Any]]:
-    vdir = Path(vault_dir) if vault_dir is not None else Path("code_engine/reasoning_vault")
+    vdir = _resolve_vault_dir(vault_dir)
     out: dict[str, dict[str, Any]] = {}
     if not vdir.exists():
         return out
@@ -237,7 +333,9 @@ def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hi
 
 
 def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
-    _, eslint_bin = get_lint_binaries()
+    eslint_bin = _resolve_eslint_bin()
+    if eslint_bin is None:
+        return []
     cfg_path = lab_dir / "eslint.config.js"
     cmd = [str(eslint_bin), "--format", "json"]
     if cfg_path.exists():
@@ -265,13 +363,14 @@ def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
 def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]:
     if not (lab_dir / "tsconfig.json").exists() and not any(f.suffix in (".ts", ".tsx") for f in src_files):
         return []
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
-    if not tsc_bin.exists():
-        raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
+    tsc_bin = _resolve_tsc_bin()
+    if tsc_bin is None:
+        return []
     modules_link = lab_dir / "node_modules"
     created_link = False
-    if not modules_link.exists() and not modules_link.is_symlink():
-        modules_link.symlink_to(TOOLS_LINT_DIR / "node_modules", target_is_directory=True)
+    shared_modules = _active_tools_lint_dir() / "node_modules"
+    if shared_modules.is_dir() and not modules_link.exists() and not modules_link.is_symlink():
+        modules_link.symlink_to(shared_modules, target_is_directory=True)
         created_link = True
     try:
         proc = subprocess.run(
@@ -342,9 +441,7 @@ def _run_lab_review_with_source(
         hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)] or all_hidden
         cases.extend(_run_lab_tests(hid_files, ref_hidden, src_dir, force_hidden=True))
 
-    passed = sum(1 for c in cases if c.get("passed"))
-    total = len(cases)
-    failed = [c["name"] for c in cases if not c.get("passed")]
+    tests_summary = _summarize_test_cases(cases)
     lint = _lint_lab_src(lab_dir, src_dir)
     typecheck = _typecheck_lab(lab_dir, src_files)
 
@@ -366,7 +463,7 @@ def _run_lab_review_with_source(
         "archetypeKey": None,
         "level": level,
         "codeHash": code_hash,
-        "tests": {"passed": passed, "total": total, "failed": failed},
+        "tests": tests_summary,
         "lint": lint,
         "typecheck": typecheck,
         "checks": checks,
@@ -397,7 +494,8 @@ def run_review_with_source(
     prob = find_problem(drill_doc, qid)
     pid = str(prob["id"])
 
-    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root())
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root(env_root))
     ws_dir = ws_root / drill_id
     if not ws_dir.is_dir():
         raise FileNotFoundError(f"Workspace directory not found: {ws_dir}")
@@ -409,9 +507,7 @@ def run_review_with_source(
     code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
 
     cases = run_tests_junit(ws_dir, drill_doc, problem_id=pid)
-    passed = sum(1 for c in cases if c.get("passed"))
-    total = len(cases)
-    failed = [c["name"] for c in cases if not c.get("passed")]
+    tests_summary = _summarize_test_cases(cases)
 
     lint = lint_workspace_file(ws_dir, src_file)
     typecheck = typecheck_workspace_file(ws_dir, src_file, env_key)
@@ -431,7 +527,7 @@ def run_review_with_source(
         "archetypeKey": archetype_key,
         "level": level,
         "codeHash": code_hash,
-        "tests": {"passed": passed, "total": total, "failed": failed},
+        "tests": tests_summary,
         "lint": lint,
         "typecheck": typecheck,
         "checks": checks,
@@ -508,7 +604,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("qid", help="Problem ID, e.g. Q01")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Print JSON output")
     args = parser.parse_args(argv)
-    os.chdir(_REPO_ROOT)
+    target_root = Path(os.environ["LEARNINGOS_ROOT"]).resolve() if os.environ.get("LEARNINGOS_ROOT") else _REPO_ROOT
+    os.chdir(target_root)
 
     try:
         res = run_review(args.drill_id, args.qid)
