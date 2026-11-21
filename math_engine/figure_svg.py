@@ -16,11 +16,9 @@ from math_engine.safe_expr import compile_expr, evaluate
 
 THEMES = {
     "indigo": ("#6366f1", "rgba(99,102,241,0.10)"),
-    "blue": ("#0284c7", "rgba(14,165,233,0.10)"),
     "emerald": ("#059669", "rgba(16,185,129,0.10)"),
     "amber": ("#d97706", "rgba(245,158,11,0.10)"),
     "rose": ("#e11d48", "rgba(244,63,94,0.10)"),
-    "purple": ("#7c3aed", "rgba(139,92,246,0.10)"),
 }
 INK, MUTED, GRID = "#1e293b", "#64748b", "#e2e8f0"
 FONT = "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
