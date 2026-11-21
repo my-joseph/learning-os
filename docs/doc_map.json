@@ -132,6 +132,11 @@
     ".claude/skills/drill-quality/SKILL.md",
     "CLAUDE.md"
   ],
+  "scripts/drill_review.py": [
+    ".claude/skills/review-drill/SKILL.md",
+    "rules/07_problem_generation.md",
+    "CLAUDE.md"
+  ],
   "scripts/bridge_scope.py": [
     "rules/07_problem_generation.md",
     "CLAUDE.md"

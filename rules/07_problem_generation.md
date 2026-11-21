@@ -25,6 +25,7 @@
 
 ## 3. Progression
 - `[code]` Starting level advice and progression signals come from `python -m scripts.weak_spots [SCOPE]` / `scripts/weak_spots.py`: the last 5 items, score thresholds, reverse coverage, and PRG `debugging` / `refactoring` variety with `QC-*` and lint signals. These are recommendations for the next drill, not automatic curriculum changes.
+- `[code]` Post-drill coaching (`python -m scripts.drill_review <DRILL_ID> [--json]`, `.claude/skills/review-drill/SKILL.md`): read-only, zero-leak diagnostic joining `progress_store.score_problem` / `cycle_evidence`, `_review_schedule.json`, `weak_spots`, `vault_report`, and `math_engine.variant_bank`. Computes one deterministic `primary` recommendation plus at most two `alternatives` (each with `action`, `why`, and `params` ready for `new-math-drill`): review due within 2 days → do before new work; skipped items → unit concept recap + lowest level of the archetype; repeated trap across drills → unit trap-contrast recap + trap-focused drill; wrong/assisted items → unattempted Similar retry first, then targeted review drill (or unassisted fluency consolidation after heavy help); all clean at max level ≤ 2 or Mastery-capped → L3–L4 drill on unpractised/high archetypes to satisfy the cap reason; all clean through L4+ uncapped with no open weak spots → advance to next unit.
 - Difficulty comes from reasoning, not arithmetic size.
 
 ## 4. Problems not produced by a tested template (AI Generation & Reasoning Vault)
