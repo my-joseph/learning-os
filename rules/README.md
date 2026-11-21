@@ -22,10 +22,12 @@ To prevent context window bloat and instruction dilution, the Learning System ru
 | **Mathematics & Physics (`MTH`, `PHY`)** | `rules/00_core.md`<br>`rules/03_stem.md` | Vertical LaTeX derivations (`\begin{aligned}`), KaTeX formatting, Parametric SVG Diagrams, native Notion file uploads |
 | **Programming Drills & Labs (`PRG`)** | `rules/00_core.md`<br>`rules/04_code.md`<br>`rules/07_problem_generation.md` | Local IDE workflow, three-layer evaluation (Tests + Lint/Types + Rubric Review), 5 archetypes, 5-tier milestone taxonomy |
 | **Verification, Audit & Delivery** | `rules/00_core.md`<br>`rules/05_qa.md` | 5-dimension QA checklist, scripted Notion API audit (`unlinked = 0`), reporting protocol |
+| **System Health Audit** | `rules/00_core.md`<br>`rules/05_qa.md` | Read-only automated and worker audits, ranked fix planning (`health-check`) |
 | **Quality Gates / Template Contract (legacy; removal on hold)** | `rules/00_core.md`<br>`rules/06_template_contract.md` | L1–L5 levels, trap provenance & operational derivations, verification gates G1–G6, answer-type safety checklist |
 | **Sources and synthesis** | `rules/00_core.md`<br>`rules/07_problem_generation.md`<br>`docs/sources.md` | Source registry, core-card synthesis, attribution, and originality checks |
 | **Variants and bridge drills** | `rules/00_core.md`<br>`rules/01_arch.md`<br>`rules/07_problem_generation.md` | Variant bank, item isolation, bridge eligibility, scope, and authoring |
 | **Drill Composition & Problem Generation** | `rules/00_core.md`<br>`rules/07_problem_generation.md` | Drill composition, weak-spot targeting (`trapMatched` signals), progression rules, AI-written problem verification (V1–V3) |
+| **Drill Quality from Practice Evidence** | `rules/00_core.md`<br>`rules/07_problem_generation.md` | Per-archetype/level learner outcomes, trap and level coverage (`drill-quality`) |
 
 ---
 
