@@ -70,8 +70,22 @@ jobs:
         working-directory: tools/lint
       - run: ruff check .
       - run: ruff format --check .
+      - run: python -m scripts.doc_refs
       - run: python -m pytest -n auto -m "not prg"
       - run: python -m code_engine.quality_checks --check-vaults
+  doc-map:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m scripts.doc_refs --changed "origin/${{ github.base_ref }}"
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
   prg:
     needs: changes
     if: needs.changes.outputs.prg == 'true'
