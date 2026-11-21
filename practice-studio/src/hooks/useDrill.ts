@@ -181,6 +181,10 @@ export function computeHintRevealTransition(
   const target = currentDrill.problems.find((p) => p.id === probId);
   if (!target) return null;
   if (isLockedAfterCorrect(target.state)) return null;
+  const cycleStartedAt = target.state.cycleStartedAt;
+  const nowIso = new Date().toISOString();
+  const revealTs =
+    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
   return {
     ...currentDrill,
     problems: currentDrill.problems.map((p) =>
@@ -190,6 +194,7 @@ export function computeHintRevealTransition(
             state: {
               ...p.state,
               hintsRevealed: (p.state.hintsRevealed || 0) + 1,
+              ...(cycleStartedAt ? { reviewHintRevealedAt: revealTs } : {}),
             },
           }
         : p
@@ -379,6 +384,14 @@ export function computeSkipProblemTransition(
   );
   const hintsCount =
     hintsRevealed + (p.state?.hintsRevealed || 0) + (opts.countHint ? 1 : 0);
+  const cycleStartedAt = p.state?.cycleStartedAt;
+  const nowIso = new Date(now).toISOString();
+  const hintRevealTs =
+    opts.countHint && cycleStartedAt
+      ? nowIso < cycleStartedAt
+        ? cycleStartedAt
+        : nowIso
+      : null;
 
   const updatedDoc: DrillDocument = {
     ...currentDrill,
@@ -386,10 +399,13 @@ export function computeSkipProblemTransition(
       prob.id === probId
         ? {
             ...prob,
-            state: applySkip(prob, {
-              durationMs,
-              hintsRevealed: hintsCount,
-            }),
+            state: {
+              ...applySkip(prob, {
+                durationMs,
+                hintsRevealed: hintsCount,
+              }),
+              ...(hintRevealTs ? { reviewHintRevealedAt: hintRevealTs } : {}),
+            },
           }
         : prob
     ),

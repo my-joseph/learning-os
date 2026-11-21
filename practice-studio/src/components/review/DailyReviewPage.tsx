@@ -789,11 +789,6 @@ export const DailyReviewPage: React.FC = () => {
               : p
           ),
         };
-        const preparedTarget = prepared.problems.find((p) => p.id === currentItem.qid);
-        const startedAt = preparedTarget?.state?.cycleStartedAt;
-        if (!isLabId(currentItem.drillId) && typeof startedAt === "string" && startedAt) {
-          await startReviewItemCycle(currentItem.drillId, currentItem.qid, startedAt);
-        }
         if (!cancelled) {
           setDrillsByKey((prev) => ({ ...prev, [currentKey]: prepared }));
           if (currentItem.unitCode && prepared.unitTitle) {
@@ -952,20 +947,29 @@ export const DailyReviewPage: React.FC = () => {
   }, [currentKey]);
 
   const handleHintRevealed = useCallback(() => {
-    if (!currentKey || !currentItem) return;
+    if (!currentKey || !currentItem || !currentProblem) return;
+    if (isLockedAfterCorrect(currentProblem.state)) return;
     timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
     incrementHintsUsed();
-    updateCurrentProblem((p) => {
-      if (isLockedAfterCorrect(p.state)) return p;
-      return {
-        ...p,
-        state: {
-          ...p.state,
-          hintsRevealed: (p.state.hintsRevealed || 0) + 1,
-        },
-      };
-    });
-  }, [currentKey, currentItem, incrementHintsUsed, updateCurrentProblem]);
+    updateCurrentProblem(
+      (p) => {
+        if (isLockedAfterCorrect(p.state)) return p;
+        const cycleStartedAt = p.state.cycleStartedAt;
+        const nowIso = new Date().toISOString();
+        const revealTs =
+          cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+        return {
+          ...p,
+          state: {
+            ...p.state,
+            hintsRevealed: (p.state.hintsRevealed || 0) + 1,
+            ...(cycleStartedAt ? { reviewHintRevealedAt: revealTs } : {}),
+          },
+        };
+      },
+      { autoSave: true }
+    );
+  }, [currentKey, currentItem, currentProblem, incrementHintsUsed, updateCurrentProblem]);
 
   const handleExampleViewed = useCallback(
     (viewedAt: string) => {

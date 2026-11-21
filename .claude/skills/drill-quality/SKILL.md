@@ -23,7 +23,7 @@ Run the requested scope through each applicable read-only command:
 4. `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT|CHAPTER>` for MTH/PHY.
 5. `.venv/bin/python scripts/audit_solution_leaks.py <UNIT> --display` for a unit; treat display-only findings as advisory and do not reproduce flagged content.
 
-The quality script reports per archetype and level: items and attempts, first-try clean rate, hint/step/solution reveal use, skips, recorded time, score distribution, matched traps, Similar openings, and untouched drills. It flags levels that are too easy (at least 90% clean across 3+ items) or too hard (at most 30% clean across 3+ items), never-triggered traps, undrilled archetypes, Similar banks never opened, and L1–L4 ladder gaps. Zero-data results are evidence gaps, not poor learner performance.
+The quality script reports per archetype and level (scoped to the current practice cycle `cycleStartedAt` via the shared `progress_store.score_problem` / `cycle_evidence` semantics): items and attempts, first-try clean rate, hint/step/solution reveal use, skips, recorded time, score distribution, matched traps, Similar openings, and untouched drills. It flags levels that are too easy (at least 90% clean across 3+ items) or too hard (at most 30% clean across 3+ items), never-triggered traps, undrilled archetypes, Similar banks never opened, and L1–L4 ladder gaps. Zero-data results are evidence gaps, not poor learner performance.
 
 ## 3. Make concrete recommendations
 

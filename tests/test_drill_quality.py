@@ -152,6 +152,7 @@ def test_counts_only_current_substantive_original_attempts_and_reveals_once(tmp_
                 "Q01": {
                     "cycleStartedAt": "2026-11-20T12:00:00Z",
                     "solutionRevealedBeforeAnswer": True,
+                    "reviewStepsRevealedAt": "2026-11-20T12:02:30Z",
                     "attempts": [
                         {"ts": "2026-11-19T12:00:00Z", "verdict": "incorrect"},
                         {"ts": "2026-11-20T12:01:00Z", "verdict": "correct", "kind": "variant"},
@@ -170,6 +171,85 @@ def test_counts_only_current_substantive_original_attempts_and_reveals_once(tmp_
     assert report["archetypes"]["powers"]["stepsRevealed"] == 0
     assert report["archetypes"]["powers"]["solutionRevealed"] == 1
     assert "powers | L2 | 1 | 0% | 1" in format_report(report)
+
+
+def test_prior_cycle_help_and_skip_do_not_bleed_into_clean_cycle(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-05"
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [
+                {"id": "Q01", "level": 2, "archetypeKey": "powers"},
+                {"id": "Q02", "level": 2, "archetypeKey": "roots"},
+                {"id": "Q03", "level": 2, "archetypeKey": "logs"},
+            ],
+        },
+    )
+    _write(
+        tmp_path / f"progress/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {
+                # Clean Cycle 2 after prior-cycle hints, solution reveal, steps reveal, and skip
+                "Q01": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "hintsRevealed": 2,
+                    "stepsRevealed": True,
+                    "solutionRevealedBeforeAnswer": True,
+                    "skipped": True,
+                    "reviewStepsRevealedAt": "2026-11-19T11:00:00Z",
+                    "attempts": [
+                        {"ts": "2026-11-19T12:00:00Z", "verdict": "skipped"},
+                        {"ts": "2026-11-20T12:05:00Z", "verdict": "correct"},
+                    ],
+                },
+                # Current-cycle hint recorded via reviewHintRevealedAt while Cycle 1 hintsRevealed stays 0
+                "Q02": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "hintsRevealed": 0,
+                    "reviewHintRevealedAt": "2026-11-20T12:02:00Z",
+                    "attempts": [
+                        {"ts": "2026-11-19T12:00:00Z", "verdict": "incorrect"},
+                        {"ts": "2026-11-20T12:05:00Z", "verdict": "correct"},
+                    ],
+                },
+                # Current-cycle skip recorded via attempt while Cycle 1 skipped stays False
+                "Q03": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "skipped": False,
+                    "attempts": [
+                        {"ts": "2026-11-19T12:00:00Z", "verdict": "correct"},
+                        {"ts": "2026-11-20T12:05:00Z", "verdict": "skipped"},
+                    ],
+                },
+            },
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+    powers = report["archetypes"]["powers"]
+    assert powers["attempts"] == 1
+    assert powers["firstTryClean"] == 1
+    assert powers["firstTryCleanRate"] == 1.0
+    assert powers["hintUses"] == 0
+    assert powers["stepsRevealed"] == 0
+    assert powers["solutionRevealed"] == 0
+    assert powers["skips"] == 0
+    assert "powers | L2 | 1 | 100% | 0" in format_report(report)
+
+    roots = report["archetypes"]["roots"]
+    assert roots["attempts"] == 1
+    assert roots["firstTryClean"] == 0
+    assert roots["hintUses"] == 1
+    assert roots["scores"] == {"0.5": 1}
+
+    logs = report["archetypes"]["logs"]
+    assert logs["attempts"] == 1
+    assert logs["skips"] == 1
+    assert logs["scores"] == {"0": 1}
 
 
 def test_preallocated_similar_slots_do_not_count_as_opened(tmp_path, monkeypatch):

@@ -405,6 +405,19 @@ async function runTests() {
     const studioClientSource = fs.readFileSync("src/components/shell/StudioClient.tsx", "utf8");
     assert.match(reviewSource, /sessionStorage\.setItem\(reviewStorageKey/);
     assert.match(reviewSource, /sessionStorage\.getItem\(reviewStorageKey/);
+    // Bug #4: /review must NOT persist cycleStartedAt on mount/load (only on explicit actions / Reset)
+    const loadEffectMatch = reviewSource.match(/\/\/ Load the current item's drill document[\s\S]*?\[currentItem, currentKey/);
+    assert.ok(loadEffectMatch, "Expected drill load effect in DailyReviewPage.tsx");
+    assert.doesNotMatch(
+      loadEffectMatch[0],
+      /startReviewItemCycle/,
+      "/review load effect must not persist cycleStartedAt on mount/navigation"
+    );
+    // Bug #3 + #4: handleHintRevealed must stamp reviewHintRevealedAt and autoSave via reviewMerge
+    const hintHandlerMatch = reviewSource.match(/const handleHintRevealed = useCallback\([\s\S]*?\n\s*\}, \[[^\]]+\]\);/);
+    assert.ok(hintHandlerMatch, "Expected handleHintRevealed in DailyReviewPage.tsx");
+    assert.match(hintHandlerMatch[0], /reviewHintRevealedAt/, "handleHintRevealed must stamp cycle-scoped reviewHintRevealedAt");
+    assert.match(hintHandlerMatch[0], /autoSave:\s*true/, "handleHintRevealed must persist via reviewMerge on first real help reveal");
     assert.match(mathAnswerAreaSource, /learningos:review-math-input-mode/);
     assert.match(studioClientSource, /You missed this in today&apos;s review/);
     assert.match(studioClientSource, /resetAnswerForReviewRetry/);
@@ -841,6 +854,17 @@ async function runTests() {
     assert.equal(loadedQ1.state.score, null);
     assert.equal(loadedQ1.state.lastCheck, null);
     assert.equal(loadedQ1.state.attempts?.length ?? 0, 0);
+
+    // Bug #4: loading GET /api/drill?review=1 must NOT write cycleStartedAt to progress/<drillId>.json
+    const progressAfterLoad = JSON.parse(
+      fs.readFileSync(path.join(progressDir, `${drillId}.json`), "utf-8")
+    ) as { problems: Record<string, { cycleStartedAt?: string; score?: number }> };
+    assert.equal(
+      progressAfterLoad.problems.Q01.cycleStartedAt,
+      undefined,
+      "GET /api/drill?review=1 must not persist cycleStartedAt before a real learner action"
+    );
+    assert.equal(progressAfterLoad.problems.Q01.score, 0);
 
     // 2c. API wiring test: executeReviewItemCheck wires check-answer, save-state (reviewMerge),
     //     reveal, and review-items POST
