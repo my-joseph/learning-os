@@ -303,7 +303,201 @@ assert(afterRevMerge.mistakeNote === "Initial note", "reviewMerge keeps original
 assert(afterRevMerge.revisitNote === "Check formula before substituting", "reviewMerge fills revisitNote");
 assert(Boolean(afterRevMerge.reviewStepsRevealedAt), "reviewMerge records cycle-scoped reviewStepsRevealedAt without mutating original flag");
 
-// 11. Atomic writes leave no leftover .tmp files
+// 10b. reviewMerge records cycle-scoped reviewHintRevealedAt when incoming hintsRevealed > 0
+//      and does NOT leak Cycle 1 hints/setup flags into a clean Cycle 2 score.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { scoreProblem } = require("../src/lib/scoring");
+writeProgress({
+  drillId: "DRL-MTH-REVMERGE-HINT-01",
+  unitCode: "MTH-REV",
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        userInput: "5",
+        score: 0.5,
+        hintsRevealed: 1,
+        setupRevealedBeforeAnswer: true,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        attempts: [{ input: "5", ts: "2026-11-18T10:00:00Z", verdict: "correct", setupRevealed: true }],
+      },
+    },
+    {
+      id: "Q02",
+      state: {
+        userInput: "4",
+        score: 0,
+        hintsRevealed: 0,
+        setupRevealedBeforeAnswer: false,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        attempts: [{ input: "4", ts: "2026-11-18T10:00:00Z", verdict: "incorrect" }],
+      },
+    },
+  ],
+  sessionSummary: { score: 0.5 },
+});
+
+// Cycle 2 on /review: Q01 solved cleanly with ZERO help; Q02 opens a hint then answers correctly.
+writeProgress({
+  drillId: "DRL-MTH-REVMERGE-HINT-01",
+  unitCode: "MTH-REV",
+  reviewMerge: true,
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        userInput: "5",
+        score: 1,
+        hintsRevealed: 0,
+        setupRevealedBeforeAnswer: false,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        attempts: [{ input: "5", ts: "2026-11-20T12:05:00Z", verdict: "correct" }],
+        cycleStartedAt: "2026-11-20T12:00:00Z",
+      },
+    },
+    {
+      id: "Q02",
+      state: {
+        userInput: "5",
+        score: 0.5,
+        hintsRevealed: 1,
+        setupRevealedBeforeAnswer: false,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        attempts: [{ input: "5", ts: "2026-11-20T12:06:00Z", verdict: "correct" }],
+        cycleStartedAt: "2026-11-20T12:00:00Z",
+      },
+    },
+  ],
+});
+
+const mergedHintProg = readProgress("DRL-MTH-REVMERGE-HINT-01")?.problems as Record<string, Record<string, unknown>>;
+assert(mergedHintProg.Q01.hintsRevealed === 1, "reviewMerge preserves Cycle 1 hintsRevealed on Q01");
+assert(!mergedHintProg.Q01.reviewHintRevealedAt, "clean Cycle 2 must not stamp reviewHintRevealedAt");
+assert(scoreProblem(mergedHintProg.Q01).score === 1, "clean Cycle 2 on Q01 must score 1.0 despite Cycle 1 hint/setup");
+assert(scoreProblem(mergedHintProg.Q01).usedHelp === false, "clean Cycle 2 on Q01 must have usedHelp=false");
+
+assert(mergedHintProg.Q02.hintsRevealed === 0, "reviewMerge preserves Cycle 1 hintsRevealed=0 on Q02");
+assert(
+  typeof mergedHintProg.Q02.reviewHintRevealedAt === "string" &&
+    mergedHintProg.Q02.reviewHintRevealedAt >= "2026-11-20T12:00:00Z",
+  "reviewMerge must stamp cycle-scoped reviewHintRevealedAt when /review opened a hint",
+);
+assert(scoreProblem(mergedHintProg.Q02).score === 0.5, "hinted Cycle 2 on Q02 must score 0.5");
+assert(scoreProblem(mergedHintProg.Q02).usedHelp === true, "hinted Cycle 2 on Q02 must have usedHelp=true");
+
+// Normal autosave on drill page after clean Cycle 2 (e.g. editing mistakeNote) must NOT falsely stamp review*RevealedAt
+writeProgress({
+  drillId: "DRL-MTH-REVMERGE-HINT-01",
+  unitCode: "MTH-REV",
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        ...mergedHintProg.Q01,
+        mistakeNote: "Reviewed cleanly",
+      },
+    },
+  ],
+  sessionSummary: { score: 1.5 },
+});
+const afterNoteAutosave = readProgress("DRL-MTH-REVMERGE-HINT-01")?.problems?.Q01 as Record<string, unknown>;
+assert(!afterNoteAutosave.reviewSetupRevealedAt, "normal autosave must not stamp reviewSetupRevealedAt from stale Cycle 1 flag");
+assert(!afterNoteAutosave.reviewHintRevealedAt, "normal autosave must not stamp reviewHintRevealedAt from stale Cycle 1 hintsRevealed");
+assert(scoreProblem(afterNoteAutosave).score === 1, "Q01 must stay 1.0 after drill-page note autosave");
+
+// 11. Stale save preserves disk lastTestReport and avoids duplicating disputed reviews,
+//     while a newer cycleStartedAt retry reset is allowed to clear lastTestReport.
+const prgReportDoc = prgDoc();
+prgReportDoc.drillId = "DRL-PRG-REPORT-01";
+prgReportDoc.problems[0].state = {
+  userInput: "",
+  score: 1,
+  lastTestReport: {
+    allPassed: true,
+    score: 1,
+    passedCount: 2,
+    totalCount: 2,
+    visibleResults: [],
+    hiddenPassed: 0,
+    hiddenTotal: 0,
+    executionTimeMs: 10,
+    ts: "2026-11-20T12:00:00Z",
+  },
+  reviews: [
+    {
+      ...sampleReview[0],
+      at: "2026-11-20T12:00:00Z",
+      attempt: 1,
+      verdict: "pass",
+      findings: [
+        {
+          check: "QC-1",
+          severity: "must",
+          line: 1,
+          note: "Guard null",
+          disputed: { reason: "Already guarded", issueId: "ISS-9" },
+        },
+      ],
+    },
+  ],
+};
+writeProgress({ ...prgReportDoc, sessionSummary: { score: 1 } });
+
+const staleReportSave = prgDoc();
+staleReportSave.drillId = "DRL-PRG-REPORT-01";
+staleReportSave.problems[0].state = {
+  userInput: "",
+  score: 0,
+  lastTestReport: null,
+  reviews: [
+    {
+      ...sampleReview[0],
+      at: "2026-11-20T12:00:00Z",
+      attempt: 1,
+      verdict: "revise",
+      findings: [{ check: "QC-1", severity: "must", line: 1, note: "Guard null" }],
+    },
+  ],
+};
+writeProgress({ ...staleReportSave, sessionSummary: { score: 0 } });
+const afterStaleReport = readProgress("DRL-PRG-REPORT-01")?.problems?.Q01 as {
+  lastTestReport?: { allPassed?: boolean } | null;
+  reviews?: Array<{ verdict?: string }>;
+};
+assert(
+  afterStaleReport.lastTestReport?.allPassed === true,
+  "stale save with lastTestReport:null must keep disk lastTestReport",
+);
+assert(
+  afterStaleReport.reviews?.length === 1 && afterStaleReport.reviews[0].verdict === "pass",
+  "stale pre-dispute review must not duplicate or downgrade server disputed review",
+);
+
+const resetCycleSave = prgDoc();
+resetCycleSave.drillId = "DRL-PRG-REPORT-01";
+resetCycleSave.problems[0].state = {
+  userInput: "",
+  score: null,
+  lastTestReport: null,
+  cycleStartedAt: "2026-11-21T08:00:00Z",
+};
+writeProgress({ ...resetCycleSave });
+const afterResetCycle = readProgress("DRL-PRG-REPORT-01");
+const afterResetState = afterResetCycle?.problems?.Q01 as { lastTestReport?: unknown };
+assert(
+  afterResetState.lastTestReport === null,
+  "retry reset advancing cycleStartedAt is allowed to clear lastTestReport",
+);
+assert(
+  (afterResetCycle?.sessionSummary as { score?: number })?.score === 0,
+  "omitting sessionSummary preserves existing sessionSummary",
+);
+
+// 12. Atomic writes leave no leftover .tmp files
 const leftoverTmp = fs.readdirSync(tmp).filter((f) => f.endsWith(".tmp"));
 assert(leftoverTmp.length === 0, "atomic progress writes must not leave .tmp files behind");
 

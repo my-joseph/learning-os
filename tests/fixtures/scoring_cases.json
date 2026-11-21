@@ -443,6 +443,171 @@
         "attempts": []
       },
       "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false }
+    },
+    {
+      "id": "variant-in-cycle-hint-caps-at-half",
+      "kind": "variant",
+      "cycleStartedAt": "2026-11-20T12:00:00Z",
+      "record": {
+        "role": "try",
+        "servedAt": "2026-11-20T12:01:00Z",
+        "hintsRevealed": 1,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T12:02:00Z", "verdict": "correct", "kind": "variant" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true }
+    },
+    {
+      "id": "cycle-prior-hint-ignored-in-new-cycle-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "hintsRevealed": 1,
+        "score": 0.5,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-19T10:00:00Z", "verdict": "correct" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-setup-and-steps-ignored-in-new-cycle-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "setupRevealedBeforeAnswer": true,
+        "solutionRevealedBeforeAnswer": true,
+        "score": 0.5,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-19T10:00:00Z", "verdict": "correct", "setupRevealed": true, "solutionRevealed": true },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-skip-and-zero-score-ignored-in-new-cycle-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "skipped": true,
+        "score": 0,
+        "attempts": [
+          { "input": "(Skipped)", "ts": "2026-11-19T10:00:00Z", "verdict": "skipped" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-review-hint-in-cycle-caps-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "hintsRevealed": 0,
+        "reviewHintRevealedAt": "2026-11-20T12:01:00Z",
+        "score": 1,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-19T10:00:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-stale-review-hint-from-older-cycle-ignored",
+      "state": {
+        "cycleStartedAt": "2026-11-21T12:00:00Z",
+        "hintsRevealed": 1,
+        "reviewHintRevealedAt": "2026-11-20T12:01:00Z",
+        "reviewSetupRevealedAt": "2026-11-20T12:02:00Z",
+        "reviewStepsRevealedAt": "2026-11-20T12:03:00Z",
+        "score": 0.5,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" },
+          { "input": "5", "ts": "2026-11-21T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-review-setup-in-cycle-caps-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "reviewSetupRevealedAt": "2026-11-20T12:01:00Z",
+        "score": 1,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-19T10:00:00Z", "verdict": "correct" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-review-steps-in-cycle-caps-clean-answer",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "reviewStepsRevealedAt": "2026-11-20T12:01:00Z",
+        "score": 1,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-19T10:00:00Z", "verdict": "correct" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prg-prior-hint-ignored-in-new-cycle-clean-pass",
+      "opts": { "isPrg": true },
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "hintsRevealed": 1,
+        "solutionRevealedBeforeAnswer": true,
+        "score": 0.5,
+        "reviews": [
+          { "at": "2026-11-19T10:05:00Z", "verdict": "revise", "tests": { "passed": 3, "total": 3, "failed": [] } },
+          { "at": "2026-11-20T12:10:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prg-review-hint-in-cycle-caps-pass",
+      "opts": { "isPrg": true },
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "hintsRevealed": 0,
+        "reviewHintRevealedAt": "2026-11-20T12:02:00Z",
+        "reviews": [
+          { "at": "2026-11-19T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } },
+          { "at": "2026-11-20T12:10:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-new-cycle-skip-recorded-in-attempts",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "skipped": false,
+        "score": 1,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-19T10:00:00Z", "verdict": "correct" },
+          { "input": "(Skipped)", "ts": "2026-11-20T12:05:00Z", "verdict": "skipped" }
+        ]
+      },
+      "expected": { "score": 0, "outcome": "skipped", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-self-score-in-cycle-lowers-score",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "selfScoreAt": "2026-11-20T12:06:00Z",
+        "score": 0.5,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-19T10:00:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
     }
   ]
 }

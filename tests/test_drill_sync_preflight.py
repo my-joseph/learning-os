@@ -295,3 +295,116 @@ def test_cli_content_only_creates_no_progress_file_for_pristine_drill(tmp_path, 
     out = json.loads(capsys.readouterr().out)
     assert out["ok"] is True
     assert not (tmp_path / "progress").exists()
+
+
+def test_sync_drill_to_notion_never_loses_variant_id_or_concurrent_review(tmp_path, monkeypatch):
+    """Syncing a redacted client doc directly through drill_sync must never wipe variantId,
+    variantsSeen/Attempted, variant matchedTrap, or concurrent reviews/attempts."""
+    import progress_store
+
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+
+    disk_doc = _doc()
+    disk_doc["problems"][0]["state"] = {
+        "userInput": "7",
+        "score": 0.5,
+        "attempts": [
+            {"input": "13", "ts": "2026-11-20T09:00:00Z", "verdict": "incorrect", "matchedTrap": "i2-plus-1"},
+            {"input": "7", "ts": "2026-11-20T09:02:00Z", "verdict": "correct"},
+            {"input": "7", "ts": "2026-11-20T12:00:00Z", "verdict": "correct"},
+        ],
+        "reviews": [
+            {
+                "at": "2026-11-20T11:00:00Z",
+                "attempt": 1,
+                "verdict": "pass",
+                "explain": "Concurrent disk review",
+                "findings": [],
+            }
+        ],
+        "variants": {
+            "vabc123": {
+                "variantId": "VAR-MTH-T02-C01-U01-powers-01",
+                "role": "try",
+                "attempts": [
+                    {
+                        "input": "11",
+                        "ts": "2026-11-20T09:05:00Z",
+                        "verdict": "incorrect",
+                        "matchedTrap": "i2-plus-1",
+                        "kind": "variant",
+                    }
+                ],
+                "servedAt": "2026-11-20T09:04:00Z",
+            }
+        },
+        "similarSlots": ["vabc123"],
+        "variantsSeen": ["VAR-MTH-T02-C01-U01-powers-01"],
+        "variantsAttempted": ["VAR-MTH-T02-C01-U01-powers-01"],
+        "exampleViewedAt": "2026-11-20T09:03:00Z",
+    }
+    disk_doc["sessionSummary"] = {"practiceStatus": "In Progress", "score": 0.5, "maxScore": 1}
+    progress_store.save_progress(disk_doc)
+
+    # Redacted client doc (as produced by Studio redactProblemStateForClient) synced with dryRun=True
+    redacted_sync = _doc()
+    redacted_sync["dryRun"] = True
+    redacted_sync["sessionSummary"] = {
+        "practiceStatus": "Graded",
+        "score": 0.5,
+        "maxScore": 1,
+        "attemptDate": "2026-11-20",
+    }
+    redacted_sync["problems"][0]["state"] = {
+        "userInput": "7",
+        "score": 0.5,
+        "mistakeNote": "Remember i^2 = -1",
+        "attempts": [
+            {"input": "13", "ts": "2026-11-20T09:00:00Z", "verdict": "incorrect"},
+            {"input": "7", "ts": "2026-11-20T09:02:00Z", "verdict": "correct"},
+        ],
+        "reviews": [],
+        "variants": {
+            "vabc123": {
+                "role": "try",
+                "attempts": [{"input": "11", "ts": "2026-11-20T09:05:00Z", "verdict": "incorrect", "kind": "variant"}],
+                "servedAt": "2026-11-20T09:04:00Z",
+            }
+        },
+        "similarSlots": ["vabc123"],
+    }
+
+    res = drill_sync.sync_drill_to_notion(redacted_sync)
+    assert res["ok"] is True and res["dryRun"] is True
+
+    after = progress_store.load_progress("DRL-MTH-T02-C01-U01-99")
+    assert after is not None
+    q1 = after["problems"]["Q01"]
+    assert q1["variants"]["vabc123"]["variantId"] == "VAR-MTH-T02-C01-U01-powers-01"
+    assert q1["variants"]["vabc123"]["attempts"][0]["matchedTrap"] == "i2-plus-1"
+    assert q1["variantsSeen"] == ["VAR-MTH-T02-C01-U01-powers-01"]
+    assert q1["variantsAttempted"] == ["VAR-MTH-T02-C01-U01-powers-01"]
+    assert q1["exampleViewedAt"] == "2026-11-20T09:03:00Z"
+    assert len(q1["reviews"]) == 1 and q1["reviews"][0]["explain"] == "Concurrent disk review"
+    assert len(q1["attempts"]) == 3
+    assert q1["mistakeNote"] == "Remember i^2 = -1"
+    assert after["sessionSummary"]["practiceStatus"] == "Graded"
+
+
+def test_sync_drill_to_notion_save_local_false_skips_second_save(tmp_path, monkeypatch):
+    """When Studio already merged progress via TS writeProgress, save_local=False skips
+    Python save_drill_doc while still running validation and Notion sync."""
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+
+    def fail_save(*a, **k):
+        raise AssertionError("save_drill_doc must not run when save_local=False")
+
+    monkeypatch.setattr(drill_sync, "save_drill_doc", fail_save)
+    doc = _doc()
+    doc["dryRun"] = True
+    res = drill_sync.sync_drill_to_notion(doc, save_local=False)
+    assert res["ok"] is True and res["dryRun"] is True

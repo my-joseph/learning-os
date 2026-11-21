@@ -251,7 +251,7 @@ def load_items(
                         archetype=arch_key,
                         ts=_first_ts(state, fallback),
                         score=score,
-                        skipped=bool(state.get("skipped")),
+                        skipped=scored["outcome"] == "skipped",
                         assisted=assisted,
                         matched=[],
                         subject="PRG",
@@ -268,9 +268,11 @@ def load_items(
                     )
                 )
             else:
-                score, assisted = _item_score(state)
-                if score < 0:
+                scored = score_problem(state)
+                if scored["score"] is None:
                     continue
+                score = float(scored["score"])
+                assisted = bool(scored["usedHelp"])
                 fallback_unit = unit_of.get(arch_key) or doc.get("unitCode", "")
                 prob_units = problem_unit_codes(
                     prob,
@@ -293,7 +295,7 @@ def load_items(
                         archetype=arch_key,
                         ts=_first_ts(state, fallback),
                         score=score,
-                        skipped=bool(state.get("skipped")),
+                        skipped=scored["outcome"] == "skipped",
                         assisted=assisted,
                         matched=_collect_matched_traps(state),
                         subject="MTH",

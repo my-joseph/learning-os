@@ -812,6 +812,8 @@ TEMPLATES = [
         self.assertEqual(res_bad["verdict"], "invalid input")
 
         # 4. Notion dry-run test: never calls real network, returns dryRun flag
+        from unittest import mock
+
         mock_doc = {
             "drillId": "DRL-MTH-TEST-DRYRUN-01",
             "unitCode": "MTH-CALC-DIFF",
@@ -819,7 +821,8 @@ TEMPLATES = [
             "topicCode": "MTH-CALC",
             "problems": [],
         }
-        dry_res = sync_drill_to_notion(mock_doc)
+        with mock.patch.dict(os.environ, {"NOTION_DRY_RUN": "1"}):
+            dry_res = sync_drill_to_notion(mock_doc)
         try:
             self.assertTrue(dry_res["ok"])
             self.assertTrue(dry_res.get("dryRun"))
