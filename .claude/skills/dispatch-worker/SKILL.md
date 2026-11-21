@@ -1,6 +1,6 @@
 ---
 name: dispatch-worker
-description: Delegate implementation, content, and audit jobs to worker models (Luna/Neon) through tools/agents/run-worker.sh with isolated worktrees, bounded prompts, and tracked completion.
+description: Delegate implementation, content, and audit jobs to worker models (Luna/Hydrogen/Neon) through tools/agents/run-worker.sh with isolated worktrees, bounded prompts, and tracked completion.
 ---
 
 # Dispatch worker
