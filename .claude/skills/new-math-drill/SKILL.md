@@ -29,7 +29,7 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 .venv/bin/python -m scripts.vault_report <UNIT> --log
 ```
 
-`vault_report` shows, from evidence only, which levels each archetype has **earned** in ingested drills and where it **failed** (issue-log `level` records), and flags `FAILING@Ln` and `UNPROVEN`. `--log` puts `FAILING` into the issue log for the next batch.
+`vault_report` shows, from evidence only, which levels each archetype has **earned** in ingested drills and where it **failed** (issue-log `level` records), and flags `FAILING@Ln` and `UNPROVEN`. `--log` puts `FAILING` into the issue log for the next batch; the report counts those `(vault)` records at the archetype's base level.
 
 - **An archetype is a skill, not a level.** Its `level` is the base level (the skill used directly). Build a problem on it at any level from the base upward: L1 direct, L2 reverse or translate, L3 diagnose or a real case to rule out, L4 a model from two or more relations plus a check. The gates (blind solve for L3+) decide whether the level was earned.
 - Choose by evidence: prefer an archetype that has already earned the level you need; trying a new level is fine; avoid an archetype at a level where it is `FAILING` unless its `levelNote` says how to earn it. Read every `levelNote`.
