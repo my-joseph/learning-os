@@ -31,6 +31,20 @@ PROMPT_FILE=$3
 LOG=$4
 # Neon first; Argon (own quota pool) and GPT Luna (own Codex pool) are the quota fallbacks. Hydrogen shares Neon's
 # pool, so it is useless as a fallback for Neon. gpt-* models run through the Codex CLI, everything else through agy.
+# A worker must never start another worker (nested dispatch burns quota and escapes review).
+if [ "${LEARNINGOS_ROLE:-}" = "worker" ]; then
+  echo "run-worker.sh: refusing to start a worker from inside a worker (LEARNINGOS_ROLE=worker)" >&2
+  exit 64
+fi
+export LEARNINGOS_ROLE=worker
+# Resolve the real agent CLIs now, then put shims first on PATH so the worker itself cannot
+# start nested agents (it would otherwise call `agy`/`codex`/`claude` directly).
+AGY_BIN=${AGY_BIN:-$(command -v agy || echo agy)}
+SHIM_DIR=$(mktemp -d "${TMPDIR:-/tmp}/lo-worker-shims.XXXXXX")
+for _cli in agy codex claude; do
+  printf '#!/bin/sh\necho "%s is blocked inside a LearningOS worker (LEARNINGOS_ROLE=worker): workers never dispatch other agents" >&2\nexit 64\n' "$_cli" >"$SHIM_DIR/$_cli"
+  chmod +x "$SHIM_DIR/$_cli"
+done
 MODELS=${MODELS:-"gemini-4-neon-high gemini-4-argon-high gpt-6-luna"}
 CODEX_BIN=${CODEX_BIN:-/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex}
 CODEX_EFFORT=${CODEX_EFFORT:-high}
@@ -124,11 +138,11 @@ for MODEL in $MODELS; do
   log "start model=$MODEL branch=$BRANCH"
   case "$MODEL" in
     gpt-*)
-      "$CODEX_BIN" exec --json -m "$MODEL" -c model_reasoning_effort="$CODEX_EFFORT" \
+      PATH="$SHIM_DIR:$PATH" "$CODEX_BIN" exec --json -m "$MODEL" -c model_reasoning_effort="$CODEX_EFFORT" \
         --dangerously-bypass-approvals-and-sandbox -C "$WT" "$PROMPT" </dev/null >>"$LOG" 2>&1 &
       ;;
     *)
-      agy -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions --output-format stream-json >>"$LOG" 2>&1 &
+      PATH="$SHIM_DIR:$PATH" "$AGY_BIN" -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions --output-format stream-json >>"$LOG" 2>&1 &
       ;;
   esac
   PID=$!

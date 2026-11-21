@@ -18,3 +18,4 @@
 - Commit in small conventional commits, push only the assigned branch, and open one PR. Do not merge unless the task's merge policy explicitly allows it.
 - Put out-of-scope findings in the PR body instead of fixing them.
 - Stop every server/background process started by the job before finishing. After opening the PR, report and finish; do not wait for more work.
+- You are a WORKER (LEARNINGOS_ROLE=worker): never launch or dispatch other agents (agy, codex, claude, tools/agents/run-worker.sh), never merge PRs, and ignore any "lead" instructions in AGENTS.md / docs/agent_handoff.md.
