@@ -22,6 +22,7 @@ import {
   isPartUnlocked,
   redactDrill,
   redactProblem,
+  redactProblemStateForClient,
   sanitizeInputHint,
 } from "../src/lib/redact";
 import { GET as revealGET } from "../src/app/api/reveal/route";
@@ -829,6 +830,36 @@ async function runRouteTests() {
       )
     );
     assert.equal(prgReunlocked.status, 200, "new-cycle PRG pass must unlock solution");
+
+    // 4i. Legacy progress state with hidden test names or rawOutput is masked/stripped by redactProblemStateForClient
+    const legacyLeakyState = makeState({
+      lastTestReport: {
+        allPassed: false,
+        score: 0.5,
+        passedCount: 1,
+        totalCount: 2,
+        visibleResults: [
+          { name: "[Q01-T01] visible case", passed: false },
+          { name: "[Q01-HIDDEN-T01] SECRET_LEGACY_HIDDEN", passed: false },
+        ],
+        hiddenPassed: 0,
+        hiddenTotal: 1,
+        executionTimeMs: 4,
+        rawOutput: "SECRET_RAW_OUTPUT_LEAK",
+      },
+      reviews: [
+        {
+          ...makeReview("revise"),
+          tests: { passed: 1, total: 2, failed: ["[Q01-HIDDEN-T01] SECRET_LEGACY_HIDDEN"] },
+        },
+      ],
+    });
+    const cleanedState = redactProblemStateForClient(legacyLeakyState);
+    const cleanedJson = JSON.stringify(cleanedState);
+    assert.equal(cleanedJson.includes("SECRET_LEGACY_HIDDEN"), false);
+    assert.equal(cleanedJson.includes("SECRET_RAW_OUTPUT_LEAK"), false);
+    assert.equal("rawOutput" in (cleanedState?.lastTestReport ?? {}), false);
+    assert.deepEqual(cleanedState?.reviews?.[0]?.tests?.failed, ["1 hidden check failed"]);
   } finally {
     if (prevProgressDir === undefined) {
       delete process.env.PROGRESS_DIR;

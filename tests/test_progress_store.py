@@ -341,6 +341,7 @@ def test_save_progress_merges_server_owned_fields_and_concurrent_records():
         "variantsAttempted": ["VAR-MTH-X-linear-01"],
         "exampleViewedAt": "2026-11-20T09:03:00Z",
         "cycleStartedAt": "2026-11-20T11:25:00Z",
+        "reviewHintRevealedAt": "2026-11-20T11:25:30Z",
         "reviewSetupRevealedAt": "2026-11-20T11:26:00Z",
         "reviewStepsRevealedAt": "2026-11-20T11:27:00Z",
     }
@@ -408,6 +409,7 @@ def test_save_progress_merges_server_owned_fields_and_concurrent_records():
     assert q1["variantsAttempted"] == ["VAR-MTH-X-linear-01"]
     assert q1["exampleViewedAt"] == "2026-11-20T09:03:00Z"
     assert q1["cycleStartedAt"] == "2026-11-20T11:25:00Z"
+    assert q1["reviewHintRevealedAt"] == "2026-11-20T11:25:30Z"
     assert q1["reviewSetupRevealedAt"] == "2026-11-20T11:26:00Z"
     assert q1["reviewStepsRevealedAt"] == "2026-11-20T11:27:00Z"
     assert len(q1["reviews"]) == 1

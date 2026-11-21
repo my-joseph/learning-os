@@ -12,6 +12,11 @@ import {
   WorkedExampleVariant,
 } from "../types/drill";
 import {
+  isHiddenTestFailureName,
+  maskHiddenTestFailures,
+  sanitizeCodeCheckError,
+} from "./codeStatus";
+import {
   canRevealVerifiedAnswer,
   canShowReferenceSolution,
   isSubstantiveVerdict,
@@ -237,6 +242,50 @@ export function redactProblemStateForClient(
       };
     }
     copy.variants = cleanVariants;
+  }
+  if (copy.lastTestReport && typeof copy.lastTestReport === "object") {
+    const repCopy = { ...copy.lastTestReport };
+    delete repCopy.rawOutput;
+    if (Array.isArray(repCopy.visibleResults)) {
+      const cleanedResults: typeof repCopy.visibleResults = [];
+      let hiddenFailCount = 0;
+      for (const r of repCopy.visibleResults) {
+        if (!r || typeof r !== "object") continue;
+        if (!r.passed && (isHiddenTestFailureName(r.name) || isHiddenTestFailureName(r.error))) {
+          hiddenFailCount += 1;
+        } else {
+          cleanedResults.push({
+            ...r,
+            ...(r.error ? { error: sanitizeCodeCheckError(r.error) } : {}),
+          });
+        }
+      }
+      if (hiddenFailCount > 0) {
+        cleanedResults.push({
+          name:
+            hiddenFailCount === 1
+              ? "1 hidden check failed"
+              : `${hiddenFailCount} hidden checks failed`,
+          passed: false,
+        });
+      }
+      repCopy.visibleResults = cleanedResults;
+    }
+    copy.lastTestReport = repCopy;
+  }
+  if (Array.isArray(copy.reviews)) {
+    copy.reviews = copy.reviews.map((rev) => {
+      if (!rev || typeof rev !== "object" || !rev.tests) return rev;
+      return {
+        ...rev,
+        tests: {
+          ...rev.tests,
+          failed: Array.isArray(rev.tests.failed)
+            ? maskHiddenTestFailures(rev.tests.failed)
+            : [],
+        },
+      };
+    });
   }
   return copy;
 }

@@ -13,7 +13,7 @@ import {
   isSafeId,
   loadProblemFromDisk,
 } from "@/lib/paths";
-import { sanitizeCodeCheckError } from "@/lib/codeStatus";
+import { maskHiddenTestFailures, sanitizeCodeCheckError } from "@/lib/codeStatus";
 
 function formatServerCheckError(raw: string, rootDir: string): string {
   const withoutRoot = rootDir
@@ -53,7 +53,7 @@ async function ensureWorkspaceMaterialized(
   return new Promise((resolve) => {
     const proc = spawn(pythonBin, ["-c", pyCode], {
       cwd: rootDir,
-      env: { ...process.env, PYTHONPATH: pythonPath },
+      env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
     });
     let stderr = "";
     const timer = setTimeout(() => {
@@ -92,7 +92,7 @@ async function ensurePilotLabMaterialized(
   return new Promise((resolve) => {
     const proc = spawn(pythonBin, ["-c", pyCode], {
       cwd: rootDir,
-      env: { ...process.env, PYTHONPATH: pythonPath },
+      env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
     });
     let stderr = "";
     const timer = setTimeout(() => {
@@ -130,11 +130,13 @@ export async function POST(req: NextRequest) {
 
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
+    const repoParent = path.resolve(process.cwd(), "..");
     const pythonPath = [
       rootDir,
       path.resolve(rootDir, ".."),
       path.join(rootDir, "practice-studio"),
       process.cwd(),
+      repoParent,
     ].join(path.delimiter);
 
     if (drillId.startsWith("LAB-")) {
@@ -207,7 +209,7 @@ export async function POST(req: NextRequest) {
         ["-m", "code_engine.review_run", drillId, problemId, "--json"],
         {
           cwd: rootDir,
-          env: { ...process.env, PYTHONPATH: pythonPath },
+          env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
         }
       );
 
@@ -254,9 +256,19 @@ export async function POST(req: NextRequest) {
 
         try {
           const parsed = JSON.parse(stdout.trim());
+          const safeTests =
+            parsed?.tests && typeof parsed.tests === "object"
+              ? {
+                  ...parsed.tests,
+                  failed: Array.isArray(parsed.tests.failed)
+                    ? maskHiddenTestFailures(parsed.tests.failed)
+                    : [],
+                }
+              : parsed?.tests;
           resolve(
             NextResponse.json({
               ...parsed,
+              ...(safeTests !== undefined ? { tests: safeTests } : {}),
               types: parsed.typecheck ?? [],
             })
           );

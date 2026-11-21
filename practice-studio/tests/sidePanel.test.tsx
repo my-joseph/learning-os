@@ -461,6 +461,164 @@ async function runTests() {
     assert.match(shellSource, /overflow-x-hidden/, "mobile drawer panel must prevent horizontal overflow");
     assert.doesNotMatch(shellSource, /calc\(100vw-2\.5rem\)/, "invalid space-less calc() width must not remain on mobile drawer");
 
+    // 5. Bug #7: unitsWithL4Challenge parity with Python weak_spots._has_l4_challenge
+    //    (cycle scoping for PRG & Math, review help timestamps, and variant attempt exclusion)
+    {
+      const l4Tmp = fs.mkdtempSync(path.join(os.tmpdir(), "studio-l4-parity-"));
+      const l4Prog = path.join(l4Tmp, "progress");
+      const l4Data = path.join(l4Tmp, "drills", "data");
+      fs.mkdirSync(l4Prog, { recursive: true });
+      fs.mkdirSync(path.join(l4Data, "PRG-T09-C02-U01"), { recursive: true });
+      fs.mkdirSync(path.join(l4Data, "MTH-T09-C02-U01"), { recursive: true });
+      fs.mkdirSync(path.join(l4Data, "MTH-T09-C02-U02"), { recursive: true });
+      fs.mkdirSync(path.join(l4Data, "MTH-T09-C02-U03"), { recursive: true });
+
+      // Unit 1 (PRG): Cycle 1 revise -> Cycle 2 clean pass -> MUST unlock L4 challenge (capped: false)
+      fs.writeFileSync(
+        path.join(l4Data, "PRG-T09-C02-U01", "DRL-PRG-T09-C02-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-PRG-T09-C02-U01-01",
+          subject: "PRG",
+          unitCode: "PRG-T09-C02-U01",
+          problems: [{ id: "Q01", level: 4, unitCode: "PRG-T09-C02-U01" }],
+        })
+      );
+      fs.writeFileSync(
+        path.join(l4Prog, "DRL-PRG-T09-C02-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-PRG-T09-C02-U01-01",
+          problems: {
+            Q01: {
+              cycleStartedAt: "2026-11-20T12:00:00Z",
+              hintsRevealed: 1,
+              reviews: [
+                { at: "2026-11-18T10:00:00Z", verdict: "revise", tests: { passed: 3, total: 3, failed: [] } },
+                { at: "2026-11-20T12:05:00Z", verdict: "pass", tests: { passed: 3, total: 3, failed: [] } },
+              ],
+            },
+          },
+        })
+      );
+
+      // Unit 2 (MTH): Cycle 1 clean -> Cycle 2 review setup revealed -> MUST stay capped (capped: true)
+      fs.writeFileSync(
+        path.join(l4Data, "MTH-T09-C02-U01", "DRL-MTH-T09-C02-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U01-01",
+          unitCode: "MTH-T09-C02-U01",
+          problems: [{ id: "Q01", level: 4, unitCode: "MTH-T09-C02-U01" }],
+        })
+      );
+      fs.writeFileSync(
+        path.join(l4Prog, "DRL-MTH-T09-C02-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U01-01",
+          problems: {
+            Q01: {
+              cycleStartedAt: "2026-11-20T12:00:00Z",
+              reviewSetupRevealedAt: "2026-11-20T12:01:00Z",
+              score: 1,
+              attempts: [
+                { input: "5", ts: "2026-11-18T10:00:00Z", verdict: "correct" },
+                { input: "5", ts: "2026-11-20T12:05:00Z", verdict: "correct" },
+              ],
+            },
+          },
+        })
+      );
+
+      // Unit 3 (MTH): Variant wrong attempt precedes clean original first-try correct -> MUST unlock L4 (capped: false)
+      fs.writeFileSync(
+        path.join(l4Data, "MTH-T09-C02-U02", "DRL-MTH-T09-C02-U02-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U02-01",
+          unitCode: "MTH-T09-C02-U02",
+          problems: [{ id: "Q01", level: 4, unitCode: "MTH-T09-C02-U02" }],
+        })
+      );
+      fs.writeFileSync(
+        path.join(l4Prog, "DRL-MTH-T09-C02-U02-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U02-01",
+          problems: {
+            Q01: {
+              score: 1,
+              attempts: [
+                { input: "9", ts: "2026-11-18T09:55:00Z", verdict: "incorrect", kind: "variant" },
+                { input: "5", ts: "2026-11-18T10:00:00Z", verdict: "correct" },
+              ],
+            },
+          },
+        })
+      );
+
+      // Unit 4 (MTH): Cycle 1 skipped -> Cycle 2 clean first-try correct -> MUST unlock L4 (capped: false)
+      fs.writeFileSync(
+        path.join(l4Data, "MTH-T09-C02-U03", "DRL-MTH-T09-C02-U03-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U03-01",
+          unitCode: "MTH-T09-C02-U03",
+          problems: [{ id: "Q01", level: 4, unitCode: "MTH-T09-C02-U03" }],
+        })
+      );
+      fs.writeFileSync(
+        path.join(l4Prog, "DRL-MTH-T09-C02-U03-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T09-C02-U03-01",
+          problems: {
+            Q01: {
+              skipped: true,
+              score: 0,
+              cycleStartedAt: "2026-11-20T12:00:00Z",
+              attempts: [
+                { input: "(Skipped)", ts: "2026-11-18T10:00:00Z", verdict: "skipped" },
+                { input: "5", ts: "2026-11-20T12:05:00Z", verdict: "correct" },
+              ],
+            },
+          },
+        })
+      );
+
+      fs.writeFileSync(
+        path.join(l4Prog, "_review_schedule.json"),
+        JSON.stringify({
+          "PRG-T09-C02-U01": { mastery: 2, lastReviewed: "2026-11-18", nextReview: "2026-11-20", title: "PRG L4 Cycle" },
+          "MTH-T09-C02-U01": { mastery: 2, lastReviewed: "2026-11-18", nextReview: "2026-11-20", title: "MTH L4 Setup" },
+          "MTH-T09-C02-U02": { mastery: 2, lastReviewed: "2026-11-18", nextReview: "2026-11-20", title: "MTH L4 Variant" },
+          "MTH-T09-C02-U03": { mastery: 2, lastReviewed: "2026-11-18", nextReview: "2026-11-20", title: "MTH L4 Skip Reset" },
+        })
+      );
+
+      const l4Due = getDueTodayUnits({
+        today: "2026-11-21",
+        progressDir: l4Prog,
+        dataDir: l4Data,
+        rootDir: l4Tmp,
+      });
+      assert.equal(
+        l4Due.unitMastery?.["PRG-T09-C02-U01"]?.masteryCap.capped,
+        false,
+        "PRG L4 clean pass in new cycle must lift L4 mastery cap"
+      );
+      assert.equal(
+        l4Due.unitMastery?.["MTH-T09-C02-U01"]?.masteryCap.capped,
+        true,
+        "MTH L4 with reviewSetupRevealedAt in new cycle must stay capped"
+      );
+      assert.equal(
+        l4Due.unitMastery?.["MTH-T09-C02-U02"]?.masteryCap.capped,
+        false,
+        "MTH L4 must ignore kind:'variant' attempts and lift L4 mastery cap"
+      );
+      assert.equal(
+        l4Due.unitMastery?.["MTH-T09-C02-U03"]?.masteryCap.capped,
+        false,
+        "MTH L4 clean answer in new cycle after prior-cycle skip must lift L4 mastery cap"
+      );
+
+      fs.rmSync(l4Tmp, { recursive: true, force: true });
+    }
+
     fs.rmSync(tmp, { recursive: true, force: true });
     console.log("side panel tests passed");
   } finally {
