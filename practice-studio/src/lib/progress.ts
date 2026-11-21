@@ -125,6 +125,26 @@ function reviewKey(r: unknown): string {
   return `raw:${JSON.stringify(r)}`;
 }
 
+function reviewSlotKey(r: unknown): string | null {
+  if (!r || typeof r !== "object") return null;
+  const rec = r as Record<string, unknown>;
+  const ts =
+    (typeof rec.at === "string" && rec.at) ||
+    (typeof rec.ts === "string" && rec.ts) ||
+    "";
+  const attempt = typeof rec.attempt === "number" ? String(rec.attempt) : "";
+  return ts && attempt ? `ts:${ts}|attempt:${attempt}` : null;
+}
+
+function reviewDisputedCount(r: unknown): number {
+  if (!r || typeof r !== "object") return 0;
+  const findings = (r as Record<string, unknown>).findings;
+  if (!Array.isArray(findings)) return 0;
+  return findings.filter(
+    (f) => f && typeof f === "object" && Boolean((f as Record<string, unknown>).disputed)
+  ).length;
+}
+
 /** Union server-owned `reviews[]` with incoming reviews by id/at/ts; server copies win on key collision so explain/dispute updates are never lost. */
 function mergeReviews(prevRaw: unknown, nextRaw: unknown): unknown[] | undefined {
   const prev = Array.isArray(prevRaw) ? prevRaw : [];
@@ -133,20 +153,30 @@ function mergeReviews(prevRaw: unknown, nextRaw: unknown): unknown[] | undefined
     return Array.isArray(nextRaw) ? [] : Array.isArray(prevRaw) ? [] : undefined;
   }
   const seen = new Set<string>();
+  const prevDisputesBySlot = new Map<string, number>();
   const merged: unknown[] = [];
   for (const item of prev) {
     const key = reviewKey(item);
     if (!seen.has(key)) {
       seen.add(key);
       merged.push(item);
+      const slot = reviewSlotKey(item);
+      if (slot) {
+        const count = reviewDisputedCount(item);
+        prevDisputesBySlot.set(slot, Math.max(prevDisputesBySlot.get(slot) ?? 0, count));
+      }
     }
   }
   for (const item of next) {
     const key = reviewKey(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      merged.push(item);
+    if (seen.has(key)) continue;
+    const slot = reviewSlotKey(item);
+    if (slot && (prevDisputesBySlot.get(slot) ?? 0) > reviewDisputedCount(item)) {
+      // Stale client copy predating a server-side finding dispute for the same (at, attempt).
+      continue;
     }
+    seen.add(key);
+    merged.push(item);
   }
   return merged;
 }
@@ -334,6 +364,27 @@ export function writeProgress(doc: DocLike): string {
             st.testRuns = mergedTestRuns;
           }
 
+          if (prev.lastTestReport && typeof prev.lastTestReport === "object") {
+            const isNewerCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
+            if (st.lastTestReport == null) {
+              if (!isNewerCycle) {
+                st.lastTestReport = prev.lastTestReport;
+              }
+            } else if (typeof st.lastTestReport === "object") {
+              const prevRepTs = (prev.lastTestReport as Record<string, unknown>).ts;
+              const nextRepTs = (st.lastTestReport as Record<string, unknown>).ts;
+              if (
+                typeof prevRepTs === "string" &&
+                prevRepTs &&
+                typeof nextRepTs === "string" &&
+                nextRepTs &&
+                prevRepTs > nextRepTs
+              ) {
+                st.lastTestReport = prev.lastTestReport;
+              }
+            }
+          }
+
           for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
             if (isEmptyValue(st[key]) && !isEmptyValue(prev[key])) {
               st[key] = prev[key];
@@ -410,7 +461,7 @@ export function writeProgress(doc: DocLike): string {
     updatedAt: nowIso,
     sessionSummary:
       (doc.sessionSummary as Record<string, unknown>) ||
-      (doc.reviewMerge ? existing?.sessionSummary : undefined) ||
+      existing?.sessionSummary ||
       {},
     problems,
   };
