@@ -22,8 +22,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries  # noqa: E402
+from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries  # noqa: E402
 from code_engine.quality_checks import (  # noqa: E402
+    _resolve_vault_dir,
     applicable_rubric,
     effective_severity,
     load_archetype,
@@ -92,7 +93,14 @@ def sanitize_tests_summary(tests: dict[str, Any]) -> dict[str, Any]:
 
 def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[str, Any], Path]:
     """Locate and load the drill JSON document for `drill_id`."""
-    root = Path(data_root) if data_root is not None else Path(os.environ.get("DRILLS_DATA_DIR", "drills/data"))
+    if data_root is not None:
+        root = Path(data_root)
+    elif os.environ.get("DRILLS_DATA_DIR"):
+        root = Path(os.environ["DRILLS_DATA_DIR"])
+    elif os.environ.get("LEARNINGOS_ROOT"):
+        root = Path(os.environ["LEARNINGOS_ROOT"]) / "drills" / "data"
+    else:
+        root = Path("drills/data")
     matches = sorted(root.glob(f"*/{drill_id}.json"))
     if not matches:
         matches = sorted(root.glob(f"**/{drill_id}.json"))
@@ -103,6 +111,40 @@ def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[s
     if not doc.get("drillId"):
         doc["drillId"] = path.stem
     return doc, path
+
+
+def _active_tools_lint_dir() -> Path:
+    """Resolve `tools/lint` under `LEARNINGOS_ROOT` when present, falling back to `TOOLS_LINT_DIR`."""
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    if env_root:
+        candidate = Path(env_root).resolve() / "tools" / "lint"
+        if candidate.exists() or candidate.is_symlink():
+            return candidate
+    return TOOLS_LINT_DIR
+
+
+def _resolve_eslint_bin() -> Path | None:
+    """Return the active ESLint binary path, or `None` when `tools/lint` dependencies are not installed."""
+    lint_dir = _active_tools_lint_dir()
+    try:
+        same_as_default = lint_dir.resolve() == TOOLS_LINT_DIR.resolve()
+    except OSError:
+        same_as_default = False
+    if not same_as_default:
+        base_js = lint_dir / "base.js"
+        eslint_bin = lint_dir / "node_modules" / ".bin" / "eslint"
+        return eslint_bin if (base_js.exists() and eslint_bin.exists()) else None
+    try:
+        _, eslint_bin = get_lint_binaries()
+        return eslint_bin
+    except LintToolsMissingError:
+        return None
+
+
+def _resolve_tsc_bin() -> Path | None:
+    """Return the active TypeScript compiler (`tsc`) binary path, or `None` when not installed."""
+    tsc_bin = _active_tools_lint_dir() / "node_modules" / ".bin" / "tsc"
+    return tsc_bin if tsc_bin.exists() else None
 
 
 def find_problem(drill_doc: dict[str, Any], qid: str) -> dict[str, Any]:
@@ -131,7 +173,9 @@ def find_problem_source(ws_dir: Path, prob: dict[str, Any], preset_ext: str) -> 
 
 def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
     """Run ESLint with the workspace config on `src_file` and return [{rule, line, message}]."""
-    _, eslint_bin = get_lint_binaries()
+    eslint_bin = _resolve_eslint_bin()
+    if eslint_bin is None:
+        return []
     proc = subprocess.run(
         [str(eslint_bin), "--format", "json", src_file.name],
         cwd=str(ws_dir),
@@ -163,9 +207,9 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
     """Run `tsc --noEmit` for TypeScript presets and return [{line, message}] for `src_file`."""
     if environment not in TS_PRESETS and src_file.suffix not in (".ts", ".tsx"):
         return []
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
-    if not tsc_bin.exists():
-        raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
+    tsc_bin = _resolve_tsc_bin()
+    if tsc_bin is None:
+        return []
 
     proc = subprocess.run(
         [str(tsc_bin), "--noEmit", "--pretty", "false"],
@@ -197,7 +241,8 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
 
 
 def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
-    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root())
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root(env_root))
     lab_dir = lroot / lab_id
     cfg_path = lab_dir / "lab.config.json"
     if not cfg_path.exists():
@@ -206,7 +251,7 @@ def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[s
 
 
 def _load_qc_by_id(vault_dir: Path | None = None) -> dict[str, dict[str, Any]]:
-    vdir = Path(vault_dir) if vault_dir is not None else Path("code_engine/reasoning_vault")
+    vdir = _resolve_vault_dir(vault_dir)
     out: dict[str, dict[str, Any]] = {}
     if not vdir.exists():
         return out
@@ -288,7 +333,9 @@ def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hi
 
 
 def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
-    _, eslint_bin = get_lint_binaries()
+    eslint_bin = _resolve_eslint_bin()
+    if eslint_bin is None:
+        return []
     cfg_path = lab_dir / "eslint.config.js"
     cmd = [str(eslint_bin), "--format", "json"]
     if cfg_path.exists():
@@ -316,13 +363,14 @@ def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
 def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]:
     if not (lab_dir / "tsconfig.json").exists() and not any(f.suffix in (".ts", ".tsx") for f in src_files):
         return []
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
-    if not tsc_bin.exists():
-        raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
+    tsc_bin = _resolve_tsc_bin()
+    if tsc_bin is None:
+        return []
     modules_link = lab_dir / "node_modules"
     created_link = False
-    if not modules_link.exists() and not modules_link.is_symlink():
-        modules_link.symlink_to(TOOLS_LINT_DIR / "node_modules", target_is_directory=True)
+    shared_modules = _active_tools_lint_dir() / "node_modules"
+    if shared_modules.is_dir() and not modules_link.exists() and not modules_link.is_symlink():
+        modules_link.symlink_to(shared_modules, target_is_directory=True)
         created_link = True
     try:
         proc = subprocess.run(

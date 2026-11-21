@@ -192,6 +192,29 @@ def test_review_run_and_record_mask_hidden_tests_in_drill_and_lab(tmp_path, monk
         assert secret_name not in lab_prog_text
 
 
+def test_review_run_degrades_gracefully_without_lint_tools(tmp_path, monkeypatch):
+    if shutil.which("node") is None:
+        pytest.skip("node binary not installed on PATH")
+    # Create an empty tools/lint directory (no node_modules) inside tmp_path
+    (tmp_path / "tools" / "lint").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("LEARNINGOS_ROOT", str(tmp_path))
+
+    drill_doc = _make_prg_drill(level=1)
+    drill_id = drill_doc["drillId"]
+    data_dir = tmp_path / "drills" / "data" / "PRG-T00-C03"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (data_dir / f"{drill_id}.json").write_text(json.dumps(drill_doc, indent=2), encoding="utf-8")
+    materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
+
+    res = review_run.run_review(drill_id, "Q01")
+    assert res["tests"]["passed"] == 1
+    assert res["tests"]["total"] == 3
+    assert res["tests"]["failed"] == ["[Q01-T01] keeps valid port", "1 hidden check failed"]
+    assert res["lint"] == []
+    assert res["typecheck"] == []
+    assert any(c["id"] == "U-names" for c in res["checks"])
+
+
 def test_u_one_job_severity_depends_on_level():
     rubric_l1 = qc.applicable_rubric("prg-c02-primitive-coercion-guard", 1)
     rubric_l3 = qc.applicable_rubric("prg-c02-primitive-coercion-guard", 3)
