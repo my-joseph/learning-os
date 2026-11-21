@@ -890,3 +890,34 @@ def test_variants_do_not_move_schedule_feed_weak_spots_and_example_marks_assiste
     traps = weak_spots.trap_status(items)
     assert traps["c04-divide-not-invert-trap"]["open"] is True
     assert traps["c04-divide-not-invert-trap"]["matches"] == 2
+
+
+def test_record_review_result_preserves_level_after_in_cycle_review_help_reveal(tmp_path: Path):
+    data_root, progress_dir = _seed_fixture(tmp_path)
+    key = "DRL-MTH-T01-C04-U01-01/Q01"
+    saved = ri.build_schedule_from_progress(data_root=data_root, progress_dir=progress_dir)
+    saved[key]["level"] = 3
+    saved[key]["lastReviewed"] = "2026-11-18"
+    saved[key]["dueDate"] = "2026-11-20"
+    ri.write_review_items(saved, progress_dir=progress_dir)
+
+    progress_file = Path(progress_dir) / "DRL-MTH-T01-C04-U01-01.json"
+    progress = json.loads(progress_file.read_text(encoding="utf-8"))
+    progress["problems"]["Q01"]["cycleStartedAt"] = "2026-11-20T12:00:00Z"
+    progress["problems"]["Q01"]["reviewHintRevealedAt"] = "2026-11-20T12:01:00Z"
+    progress_file.write_text(json.dumps(progress), encoding="utf-8")
+
+    # Schedule read prunes the cycle-reset entry, while recording the answer right after the
+    # in-cycle help reveal preserves Level 3 (assisted -> stays at Level 3).
+    assert key not in ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    updated = ri.record_review_result(
+        "DRL-MTH-T01-C04-U01-01",
+        "Q01",
+        correct=True,
+        hints_used=1,
+        review_date="2026-11-20",
+        data_root=data_root,
+        progress_dir=progress_dir,
+    )
+    assert updated["level"] == 3
+    assert updated["dueDate"] == "2026-11-27"

@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } from "@/lib/paths";
 import { drillHref } from "@/lib/routes";
+import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
+import type { ProblemState } from "@/types/drill";
 export { formatReviewDueDate } from "@/lib/reviewDate";
 
 export interface MasteryCap {
@@ -242,33 +244,10 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
       for (const prob of drill.problems) {
         if (prob.level < 4 || prob.unitCodes.length === 0) continue;
         const st = prog.problems[prob.id];
-        if (!st || typeof st !== "object" || st.skipped) continue;
-        const attempts = Array.isArray(st.attempts) ? (st.attempts as Array<Record<string, unknown>>) : [];
-        const assisted = Boolean(
-          st.setupRevealedBeforeAnswer ||
-            st.solutionRevealedBeforeAnswer ||
-            st.exampleViewedAt ||
-            (typeof st.hintsRevealed === "number" && st.hintsRevealed > 0) ||
-            attempts.some(
-              (a) => a && a.kind !== "variant" && (a.setupRevealed || a.solutionRevealed || a.exampleViewed)
-            )
-        );
-        if (assisted) continue;
-
-        if (drill.isPrg) {
-          const reviews = Array.isArray(st.reviews) ? (st.reviews as Array<Record<string, unknown>>) : [];
-          if (reviews.length > 0 && reviews[0]?.verdict === "pass" && reviews[reviews.length - 1]?.verdict === "pass") {
-            for (const uc of prob.unitCodes) passedUnits.add(uc);
-          }
-        } else {
-          const substantive = attempts.filter(
-            (a) => a && a.verdict !== "invalid input" && a.verdict !== "parse_error"
-          );
-          if (substantive.length > 0 && substantive[0]?.verdict === "correct") {
-            for (const uc of prob.unitCodes) passedUnits.add(uc);
-          } else if (substantive.length === 0 && st.score === 1) {
-            for (const uc of prob.unitCodes) passedUnits.add(uc);
-          }
+        if (!st || typeof st !== "object") continue;
+        const scored = scoreProblem(st as Partial<ProblemState>, { isPrg: drill.isPrg });
+        if (scored.score === 1 && !scored.usedHelp && scored.outcome !== "skipped") {
+          for (const uc of prob.unitCodes) passedUnits.add(uc);
         }
       }
     } catch {

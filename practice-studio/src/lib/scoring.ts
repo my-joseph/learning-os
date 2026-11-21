@@ -137,15 +137,25 @@ function extractCycleData(
     state?.exampleViewedAt && isTimestampInCycle(state.exampleViewedAt, cycleStartedAt)
   );
   const reviewHelpInCycle = Boolean(
-    (state?.reviewSetupRevealedAt &&
-      isTimestampInCycle(state.reviewSetupRevealedAt, cycleStartedAt)) ||
+    (state?.reviewHintRevealedAt &&
+      isTimestampInCycle(state.reviewHintRevealedAt, cycleStartedAt)) ||
+      (state?.reviewSetupRevealedAt &&
+        isTimestampInCycle(state.reviewSetupRevealedAt, cycleStartedAt)) ||
       (state?.reviewStepsRevealedAt &&
         isTimestampInCycle(state.reviewStepsRevealedAt, cycleStartedAt))
   );
+  // Untimestamped top-level help flags belong to the initial pre-cycle state (or a variant
+  // session already cycle-filtered by `scoreVariant`). When a problem cycle (`cycleStartedAt`)
+  // is active, only cycle-scoped timestamps and current-cycle attempt flags apply.
+  const untimestampedHelp =
+    (!cycleStartedAt || isVariant) &&
+    Boolean(
+      (state?.hintsRevealed ?? 0) > 0 ||
+        state?.setupRevealedBeforeAnswer ||
+        state?.solutionRevealedBeforeAnswer
+    );
   const usedHelp = Boolean(
-    (state?.hintsRevealed ?? 0) > 0 ||
-      state?.setupRevealedBeforeAnswer ||
-      state?.solutionRevealedBeforeAnswer ||
+    untimestampedHelp ||
       exampleViewedInCycle ||
       reviewHelpInCycle ||
       cycleAtts.some((a) => Boolean(a.setupRevealed || a.solutionRevealed || a.exampleViewed))
@@ -159,6 +169,10 @@ function extractCycleData(
     cycleTestRuns.length > 0 ||
     reportInfo.hasData;
   const isStalePrevCycle = Boolean(cycleStartedAt && hasPriorHistory && !hasCurrentCycleRecord);
+  const hasCurrentCycleSelfScore = Boolean(
+    !cycleStartedAt ||
+      (state?.selfScoreAt && isTimestampInCycle(state.selfScoreAt, cycleStartedAt))
+  );
 
   return {
     cycleStartedAt,
@@ -172,6 +186,8 @@ function extractCycleData(
     cycleTestRuns,
     reportInfo,
     usedHelp,
+    hasPriorHistory,
+    hasCurrentCycleSelfScore,
     isStalePrevCycle,
   };
 }
@@ -212,9 +228,10 @@ function applyLowerOnlySelfScore(
   firstTry: boolean,
   usedHelp: boolean,
   state: Partial<ProblemState>,
-  opts: ScoreProblemOptions
+  opts: ScoreProblemOptions,
+  hasCurrentCycleSelfScore: boolean
 ): ScoreResult {
-  if (opts.ignoreStateScore || opts.isVariant) {
+  if (opts.ignoreStateScore || opts.isVariant || !hasCurrentCycleSelfScore) {
     return { score: autoScore, outcome: autoOutcome, firstTry, usedHelp };
   }
   const selfScore = clampScoreValue(state.score);
@@ -242,12 +259,15 @@ export function scoreProblem(
 
   const data = extractCycleData(state, opts);
   const {
+    cycleStartedAt,
     isVariant,
     substantiveAtts,
     cycleRevs,
     cycleTestRuns,
     reportInfo,
     usedHelp,
+    hasPriorHistory,
+    hasCurrentCycleSelfScore,
     isStalePrevCycle,
   } = data;
 
@@ -256,7 +276,9 @@ export function scoreProblem(
   }
 
   // Skipped in the current cycle always scores 0 with outcome "skipped".
-  if (state.skipped === true) {
+  // When `cycleStartedAt` is active and prior history exists, untimestamped `state.skipped`
+  // may belong to a prior cycle (preserved by `reviewMerge`); current-cycle skips live in `cycleAtts`.
+  if (state.skipped === true && (!cycleStartedAt || !hasPriorHistory)) {
     return { score: 0, outcome: "skipped", firstTry: false, usedHelp };
   }
 
@@ -307,11 +329,20 @@ export function scoreProblem(
         !usedHelp,
         usedHelp,
         state,
-        opts
+        opts,
+        hasCurrentCycleSelfScore
       );
     }
     if (firstCorrectIdx > 0) {
-      return applyLowerOnlySelfScore(0.5, "assisted", false, usedHelp, state, opts);
+      return applyLowerOnlySelfScore(
+        0.5,
+        "assisted",
+        false,
+        usedHelp,
+        state,
+        opts,
+        hasCurrentCycleSelfScore
+      );
     }
 
     const latestVerdict = substantiveAtts[substantiveAtts.length - 1].verdict;
@@ -319,13 +350,21 @@ export function scoreProblem(
       return { score: 0, outcome: "skipped", firstTry: false, usedHelp };
     }
     if (latestVerdict === "partial" || latestVerdict === "equivalent_not_in_form") {
-      return applyLowerOnlySelfScore(0.5, "assisted", false, usedHelp, state, opts);
+      return applyLowerOnlySelfScore(
+        0.5,
+        "assisted",
+        false,
+        usedHelp,
+        state,
+        opts,
+        hasCurrentCycleSelfScore
+      );
     }
     return { score: 0, outcome: "wrong", firstTry: false, usedHelp };
   }
 
   // Fallback for lightweight state carrying a substantive `lastCheck` without `attempts[]`.
-  if (state.lastCheck && isSubstantiveVerdict(state.lastCheck.verdict)) {
+  if (!cycleStartedAt && state.lastCheck && isSubstantiveVerdict(state.lastCheck.verdict)) {
     const v = state.lastCheck.verdict;
     if (v === "skipped") {
       return { score: 0, outcome: "skipped", firstTry: false, usedHelp };
@@ -339,17 +378,26 @@ export function scoreProblem(
         !usedHelp,
         usedHelp,
         state,
-        opts
+        opts,
+        hasCurrentCycleSelfScore
       );
     }
     if (v === "partial" || v === "equivalent_not_in_form") {
-      return applyLowerOnlySelfScore(0.5, "assisted", false, usedHelp, state, opts);
+      return applyLowerOnlySelfScore(
+        0.5,
+        "assisted",
+        false,
+        usedHelp,
+        state,
+        opts,
+        hasCurrentCycleSelfScore
+      );
     }
     return { score: 0, outcome: "wrong", firstTry: false, usedHelp };
   }
 
   // Unverified item with manual self-score (no auto-check, no PRG evidence, not skipped).
-  if (!isVariant && !opts.ignoreStateScore) {
+  if (!isVariant && !opts.ignoreStateScore && hasCurrentCycleSelfScore) {
     const manual = clampScoreValue(state.score);
     if (manual !== null) {
       if (manual === 1) {
@@ -407,9 +455,10 @@ export function isAwaitingReview(
   state?: Partial<ProblemState> | null,
   opts: ScoreProblemOptions = {}
 ): boolean {
-  if (!state || typeof state !== "object" || state.skipped === true) return false;
+  if (!state || typeof state !== "object") return false;
   const data = extractCycleData(state, opts);
   if (data.isStalePrevCycle) return false;
+  if (state.skipped === true && (!data.cycleStartedAt || !data.hasPriorHistory)) return false;
   if (data.cycleRevs.length > 0) return false;
   const hasTestEvidence = data.reportInfo.hasData || data.cycleTestRuns.length > 0;
   if (!hasTestEvidence) return false;
@@ -430,7 +479,7 @@ export function isLockedAfterCorrect(
   if (data.substantiveAtts.some((a) => a.verdict === "correct")) {
     return true;
   }
-  if (data.allOrigAttempts.length === 0 && state.lastCheck?.verdict === "correct") {
+  if (!data.cycleStartedAt && data.allOrigAttempts.length === 0 && state.lastCheck?.verdict === "correct") {
     return true;
   }
   return false;
@@ -448,7 +497,6 @@ export function maxAllowedSelfScore(
   opts: ScoreProblemOptions = {}
 ): 1 | 0.5 | 0 | null {
   if (!state || typeof state !== "object") return 1;
-  if (state.skipped === true) return 0;
   const auto = scoreProblem(state, { ...opts, ignoreStateScore: true });
   if (auto.outcome === "skipped") return 0;
   if (auto.score !== null) return auto.score;
@@ -467,15 +515,20 @@ export function applySelfScore(
   requestedScore: number | null,
   opts: ScoreProblemOptions = {}
 ): ProblemState {
-  if (state.skipped === true) {
-    return state;
-  }
   const auto = scoreProblem(state, { ...opts, ignoreStateScore: true });
   if (auto.outcome === "skipped") {
     return state;
   }
+  const cycleStartedAt =
+    opts.cycleStartedAt !== undefined
+      ? opts.cycleStartedAt ?? null
+      : state.cycleStartedAt ?? null;
   if (requestedScore === null) {
-    return { ...state, score: null };
+    return {
+      ...state,
+      score: null,
+      ...(cycleStartedAt ? { selfScoreAt: null } : {}),
+    };
   }
   const normalized = clampScoreValue(requestedScore);
   if (normalized === null) {
@@ -486,9 +539,12 @@ export function applySelfScore(
     return state;
   }
   const finalScore = normalized > maxAllowed ? maxAllowed : normalized;
+  const nowIso = new Date().toISOString();
+  const stamp = cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
   return {
     ...state,
     score: finalScore,
+    ...(cycleStartedAt ? { selfScoreAt: stamp } : {}),
   };
 }
 
