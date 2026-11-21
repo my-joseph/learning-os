@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
 
-    const progressFilePath = writeProgress(drillDoc);
+    const progressFilePath = writeProgress(drillDoc, { allowSyncStampUpdate: false });
     return NextResponse.json({ ok: true, progressFilePath });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);

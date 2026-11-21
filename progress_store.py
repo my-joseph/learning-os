@@ -519,6 +519,50 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
     return st
 
 
+def _non_empty_str(val: Any) -> str | None:
+    return val.strip() if isinstance(val, str) and val.strip() else None
+
+
+def _merge_session_summary(existing_summary: Any, incoming_summary: Any) -> dict[str, Any]:
+    """Merge `sessionSummary` field-wise while preserving server-owned Notion sync stamps.
+
+    Mirrors TS `mergeSessionSummary` in `practice-studio/src/lib/progress.ts`:
+    - Existing non-empty `syncedToNotionAt`, `notionPageId`, `syncedFingerprint` can never be
+      cleared by an incoming summary lacking them (or passing null/empty).
+    - Only a strictly newer `syncedToNotionAt` (or the first stamp when none existed) replaces them.
+    """
+    prev = dict(existing_summary) if isinstance(existing_summary, dict) else {}
+    nxt = dict(incoming_summary) if isinstance(incoming_summary, dict) else {}
+
+    merged: dict[str, Any] = dict(prev)
+    merged.update(nxt)
+
+    prev_synced_at = _non_empty_str(prev.get("syncedToNotionAt"))
+    next_synced_at = _non_empty_str(nxt.get("syncedToNotionAt"))
+    prev_page_id = _non_empty_str(prev.get("notionPageId"))
+    next_page_id = _non_empty_str(nxt.get("notionPageId"))
+    prev_fp = _non_empty_str(prev.get("syncedFingerprint"))
+    next_fp = _non_empty_str(nxt.get("syncedFingerprint"))
+
+    is_newer_stamp = bool(next_synced_at and (not prev_synced_at or next_synced_at > prev_synced_at))
+
+    if is_newer_stamp:
+        merged["syncedToNotionAt"] = next_synced_at
+        if next_page_id or prev_page_id:
+            merged["notionPageId"] = next_page_id or prev_page_id
+        if next_fp or prev_fp:
+            merged["syncedFingerprint"] = next_fp or prev_fp
+    else:
+        if prev_synced_at:
+            merged["syncedToNotionAt"] = prev_synced_at
+        if prev_page_id or next_page_id:
+            merged["notionPageId"] = prev_page_id or next_page_id
+        if prev_fp or next_fp:
+            merged["syncedFingerprint"] = prev_fp or next_fp
+
+    return merged
+
+
 def _merge_progress_payload(
     existing: dict[str, Any] | None,
     extracted: dict[str, Any],
@@ -539,7 +583,7 @@ def _merge_progress_payload(
         if isinstance(existing, dict) and isinstance(existing.get("sessionSummary"), dict)
         else {}
     )
-    session_summary = incoming_summary if isinstance(incoming_summary, dict) and incoming_summary else existing_summary
+    session_summary = _merge_session_summary(existing_summary, incoming_summary)
 
     return {
         "drillId": extracted.get("drillId"),

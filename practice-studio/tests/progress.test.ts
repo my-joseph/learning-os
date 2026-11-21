@@ -497,7 +497,98 @@ assert(
   "omitting sessionSummary preserves existing sessionSummary",
 );
 
-// 12. Atomic writes leave no leftover .tmp files
+// 12. SessionSummary field-wise merge & sync stamp preservation
+{
+  const syncDoc = {
+    drillId: "DRL-MTH-STAMP-01",
+    unitCode: "MTH-STAMP",
+    problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+    sessionSummary: {
+      practiceStatus: "Graded",
+      score: 1,
+      maxScore: 1,
+      accuracyPct: 100,
+      mistakeCategories: [],
+      divergedStepsSummary: "No diverged steps logged.",
+      attemptDate: "2026-11-21",
+      syncedToNotionAt: "2026-11-21T16:40:00.000Z",
+      notionPageId: "page-stamp-1",
+      syncedFingerprint: "fp-v1",
+    },
+  };
+  writeProgress(syncDoc);
+
+  // Later autosave with a summary lacking sync stamps must preserve all three stamps
+  writeProgress({
+    drillId: "DRL-MTH-STAMP-01",
+    unitCode: "MTH-STAMP",
+    problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [], revisitNote: "Check" } }],
+    sessionSummary: {
+      practiceStatus: "Graded",
+      score: 1,
+      maxScore: 1,
+      accuracyPct: 100,
+      divergedStepsSummary: "Q01 (Note: edited)",
+    },
+  });
+  let stamped = readProgress("DRL-MTH-STAMP-01")?.sessionSummary as Record<string, unknown>;
+  assert(stamped.syncedToNotionAt === "2026-11-21T16:40:00.000Z", "autosave lacking stamps keeps syncedToNotionAt");
+  assert(stamped.notionPageId === "page-stamp-1", "autosave lacking stamps keeps notionPageId");
+  assert(stamped.syncedFingerprint === "fp-v1", "autosave lacking stamps keeps syncedFingerprint");
+  assert(stamped.attemptDate === "2026-11-21", "field-wise merge preserves omitted attemptDate");
+  assert(stamped.divergedStepsSummary === "Q01 (Note: edited)", "incoming summary fields still update");
+
+  // Client attempting to clear stamps with null/empty or downgrade with an older timestamp must NOT clear/downgrade them
+  writeProgress({
+    drillId: "DRL-MTH-STAMP-01",
+    unitCode: "MTH-STAMP",
+    problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+    sessionSummary: {
+      practiceStatus: "Ready",
+      score: 0,
+      syncedToNotionAt: null,
+      notionPageId: "",
+      syncedFingerprint: null,
+    },
+  });
+  stamped = readProgress("DRL-MTH-STAMP-01")?.sessionSummary as Record<string, unknown>;
+  assert(stamped.syncedToNotionAt === "2026-11-21T16:40:00.000Z", "null cannot clear syncedToNotionAt");
+  assert(stamped.notionPageId === "page-stamp-1", "empty string cannot clear notionPageId");
+  assert(stamped.syncedFingerprint === "fp-v1", "null cannot clear syncedFingerprint");
+
+  writeProgress({
+    drillId: "DRL-MTH-STAMP-01",
+    unitCode: "MTH-STAMP",
+    problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+    sessionSummary: {
+      syncedToNotionAt: "2026-11-21T15:00:00.000Z",
+      notionPageId: "page-old",
+      syncedFingerprint: "fp-old",
+    },
+  });
+  stamped = readProgress("DRL-MTH-STAMP-01")?.sessionSummary as Record<string, unknown>;
+  assert(stamped.syncedToNotionAt === "2026-11-21T16:40:00.000Z", "older timestamp cannot downgrade syncedToNotionAt");
+  assert(stamped.notionPageId === "page-stamp-1", "older timestamp cannot downgrade notionPageId");
+  assert(stamped.syncedFingerprint === "fp-v1", "older timestamp cannot downgrade syncedFingerprint");
+
+  // A newer server stamp replaces them
+  writeProgress({
+    drillId: "DRL-MTH-STAMP-01",
+    unitCode: "MTH-STAMP",
+    problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+    sessionSummary: {
+      syncedToNotionAt: "2026-11-21T16:45:00.000Z",
+      notionPageId: "page-stamp-2",
+      syncedFingerprint: "fp-v2",
+    },
+  });
+  stamped = readProgress("DRL-MTH-STAMP-01")?.sessionSummary as Record<string, unknown>;
+  assert(stamped.syncedToNotionAt === "2026-11-21T16:45:00.000Z", "newer stamp replaces syncedToNotionAt");
+  assert(stamped.notionPageId === "page-stamp-2", "newer stamp replaces notionPageId");
+  assert(stamped.syncedFingerprint === "fp-v2", "newer stamp replaces syncedFingerprint");
+}
+
+// 13. Atomic writes leave no leftover .tmp files
 const leftoverTmp = fs.readdirSync(tmp).filter((f) => f.endsWith(".tmp"));
 assert(leftoverTmp.length === 0, "atomic progress writes must not leave .tmp files behind");
 

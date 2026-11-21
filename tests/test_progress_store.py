@@ -497,3 +497,83 @@ def test_save_progress_allows_review_explain_and_dispute_updates_without_duplica
     assert after_stale[0]["verdict"] == "pass"
     assert after_stale[0]["explain"] == "Uses a linear scan with O(1) space."
     assert after_stale[0]["findings"][0]["disputed"]["issueId"] == "ISS-42"
+
+
+def test_save_progress_merges_session_summary_and_preserves_sync_stamps():
+    """Python parity with TS writeProgress: field-wise sessionSummary merge preserves
+    syncedToNotionAt / notionPageId / syncedFingerprint against later autosaves lacking them,
+    explicit None/empty clears, or older timestamps; only a newer stamp replaces them."""
+    synced = _doc()
+    synced["problems"][0]["state"] = {"userInput": "5", "score": 1}
+    synced["sessionSummary"] = {
+        "practiceStatus": "Graded",
+        "score": 1,
+        "maxScore": 2,
+        "accuracyPct": 50,
+        "attemptDate": "2026-11-21",
+        "divergedStepsSummary": "No diverged steps logged.",
+        "syncedToNotionAt": "2026-11-21T16:40:00.000Z",
+        "notionPageId": "page-123",
+        "syncedFingerprint": "fp-v1",
+    }
+    ps.save_progress(synced)
+
+    # 1. Later autosave with summary lacking stamps keeps all three stamps and omitted fields
+    autosave = _doc()
+    autosave["problems"][0]["state"] = {"userInput": "5", "score": 1, "revisitNote": "Check sign"}
+    autosave["sessionSummary"] = {
+        "practiceStatus": "Graded",
+        "score": 1,
+        "divergedStepsSummary": "Q01 (Note: edited)",
+    }
+    ps.save_progress(autosave)
+    after_auto = ps.load_progress("DRL-MTH-X-01")["sessionSummary"]
+    assert after_auto["syncedToNotionAt"] == "2026-11-21T16:40:00.000Z"
+    assert after_auto["notionPageId"] == "page-123"
+    assert after_auto["syncedFingerprint"] == "fp-v1"
+    assert after_auto["attemptDate"] == "2026-11-21"
+    assert after_auto["divergedStepsSummary"] == "Q01 (Note: edited)"
+
+    # 2. Incoming None / empty strings cannot clear stamps
+    clear_attempt = _doc()
+    clear_attempt["problems"][0]["state"] = {"userInput": "5", "score": 1}
+    clear_attempt["sessionSummary"] = {
+        "practiceStatus": "Ready",
+        "score": 0,
+        "syncedToNotionAt": None,
+        "notionPageId": "",
+        "syncedFingerprint": None,
+    }
+    ps.save_progress(clear_attempt)
+    after_clear = ps.load_progress("DRL-MTH-X-01")["sessionSummary"]
+    assert after_clear["syncedToNotionAt"] == "2026-11-21T16:40:00.000Z"
+    assert after_clear["notionPageId"] == "page-123"
+    assert after_clear["syncedFingerprint"] == "fp-v1"
+
+    # 3. Older stamp cannot downgrade newer stamp
+    older = _doc()
+    older["problems"][0]["state"] = {"userInput": "5", "score": 1}
+    older["sessionSummary"] = {
+        "syncedToNotionAt": "2026-11-21T15:00:00.000Z",
+        "notionPageId": "page-old",
+        "syncedFingerprint": "fp-old",
+    }
+    ps.save_progress(older)
+    after_older = ps.load_progress("DRL-MTH-X-01")["sessionSummary"]
+    assert after_older["syncedToNotionAt"] == "2026-11-21T16:40:00.000Z"
+    assert after_older["notionPageId"] == "page-123"
+    assert after_older["syncedFingerprint"] == "fp-v1"
+
+    # 4. Newer server stamp replaces them
+    newer = _doc()
+    newer["problems"][0]["state"] = {"userInput": "5", "score": 1}
+    newer["sessionSummary"] = {
+        "syncedToNotionAt": "2026-11-21T16:45:00.000Z",
+        "notionPageId": "page-456",
+        "syncedFingerprint": "fp-v2",
+    }
+    ps.save_progress(newer)
+    after_newer = ps.load_progress("DRL-MTH-X-01")["sessionSummary"]
+    assert after_newer["syncedToNotionAt"] == "2026-11-21T16:45:00.000Z"
+    assert after_newer["notionPageId"] == "page-456"
+    assert after_newer["syncedFingerprint"] == "fp-v2"
