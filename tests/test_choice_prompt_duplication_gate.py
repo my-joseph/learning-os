@@ -57,16 +57,19 @@ def _math_choice_problem(**overrides) -> dict:
                 {
                     "id": "B",
                     "label": "A roughly linear upward trend",
+                    "trapTag": "t02-c03-u03-reverse-trend-direction-trap",
                     "provenance": "Reverses the overall direction of the association.",
                 },
                 {
                     "id": "C",
                     "label": "A curved trend",
+                    "trapTag": "t02-c03-u03-reverse-trend-direction-trap",
                     "provenance": "Treats steady change as a curved pattern.",
                 },
                 {
                     "id": "D",
                     "label": "No clear trend",
+                    "trapTag": "t02-c03-u03-reverse-trend-direction-trap",
                     "provenance": "Overlooks the consistent direction across the observations.",
                 },
             ],
@@ -216,10 +219,10 @@ def test_math_contract_accepts_clean_choice_and_find_the_flaw() -> None:
         "answerSpec": {
             "type": "choice",
             "options": [
-                {"id": "1", "label": "Line 1"},
+                {"id": "1", "label": "Line 1", "provenance": "Flags a correct regrouping step as the flaw."},
                 {"id": "2", "label": "Line 2"},
-                {"id": "3", "label": "Line 3"},
-                {"id": "4", "label": "Line 4"},
+                {"id": "3", "label": "Line 3", "trapTag": "c04-subtraction-inversion-on-regrouping"},
+                {"id": "4", "label": "Line 4", "trapTag": "c04-subtraction-inversion-on-regrouping"},
             ],
             "correct": "2",
         },
