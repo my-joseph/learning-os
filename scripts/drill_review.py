@@ -280,6 +280,7 @@ def _build_item_report(
         "qid": qid,
         "archetypeKey": arch_key,
         "archetypeName": arch_meta.get("name"),
+        "coreConcept": arch_meta.get("coreConcept"),
         "level": prob.get("level"),
         "form": prob.get("form") or "direct",
         "unitCode": primary_unit,
@@ -500,12 +501,12 @@ def _build_totals(
                 }
             )
 
-    if isinstance(summary.get("practiceStatus"), str) and summary["practiceStatus"].strip():
-        status = summary["practiceStatus"].strip()
-    elif not attempted:
+    if not attempted:
         status = "Not started"
     elif not_tried:
         status = "In progress"
+    elif isinstance(summary.get("practiceStatus"), str) and summary["practiceStatus"].strip():
+        status = summary["practiceStatus"].strip()
     elif max_score > 0 and total_score / max_score >= 0.8:
         status = "Graded"
     else:
@@ -632,8 +633,26 @@ def _build_unit_context(
         else None
     )
 
-    effective_mastery = sched_mastery if isinstance(sched_mastery, int) else ev_mastery
-    effective_cap = sched_cap if sched_cap is not None else ev_cap
+    if unit_items and ev_mastery is not None:
+        if sched_mastery == 4 and ev_mastery == 3:
+            effective_mastery = 4
+            effective_cap = {"capped": False, "reason": ""}
+        else:
+            effective_mastery = ev_mastery
+            sched_reason = (
+                str(sched_cap.get("reason") or "") if isinstance(sched_cap, dict) and sched_cap.get("capped") else ""
+            )
+            if sched_reason == weak_spots.OPEN_WEAK_SPOT_CAP_REASON and open_weak_spots:
+                effective_cap = sched_cap
+            elif sched_reason == weak_spots.ASSISTED_CAP_REASON and any(
+                isinstance(it.get("level"), int) and it["level"] >= 3 and it.get("usedHelp") for it in items
+            ):
+                effective_cap = sched_cap
+            else:
+                effective_cap = ev_cap
+    else:
+        effective_mastery = sched_mastery if isinstance(sched_mastery, int) else ev_mastery
+        effective_cap = sched_cap if sched_cap is not None else ev_cap
 
     earned_all = vault_report._evidence(data_root)
     v_rep = vault_report.unit_report(
@@ -676,6 +695,8 @@ def _build_unit_context(
                     "name": arch_info["name"],
                     "baseLevel": row.get("level"),
                     "vaultEarnedLevels": arch_info["vaultEarnedLevels"],
+                    "vaultFlags": arch_info["vaultFlags"],
+                    "coreConcept": archetypes.get(key, {}).get("coreConcept"),
                 }
             )
 
@@ -809,7 +830,7 @@ def _compute_recommendations(
     note_qids = [n["qid"] for n in totals["notes"]]
 
     # 1. Review due within N days -> prioritise completing due review before starting new work
-    if isinstance(days_until, int) and days_until <= REVIEW_DUE_WITHIN_DAYS:
+    if isinstance(days_until, int) and days_until <= REVIEW_DUE_WITHIN_DAYS and attempted_items:
         rem_archs = [it["archetypeKey"] for it in not_tried_items] or [it["archetypeKey"] for it in items]
         rem_levels = [it["level"] for it in not_tried_items if isinstance(it["level"], int)] or [
             it["level"] for it in items if isinstance(it["level"], int)
@@ -817,7 +838,7 @@ def _compute_recommendations(
         due_phrase = (
             "overdue" if days_until < 0 else ("due today" if days_until == 0 else f"due in {days_until} day(s)")
         )
-        if not_tried_items and attempted_items:
+        if not_tried_items:
             action = (
                 f"Finish the remaining {len(not_tried_items)} item(s) in {drill_id} and complete the {unit_code} "
                 f"spaced review before {next_review}."
@@ -847,20 +868,32 @@ def _compute_recommendations(
             )
         )
 
-    # 2. Skipped items -> concept explanation pointer + lowest level of those archetypes
+    # 2. Skipped items -> concept explanation pointer + stepped-down foundation drill
     if skipped_items:
-        sk_archs = _dedup_preserve([it["archetypeKey"] for it in skipped_items])
-        lowest_levels = []
+        sk_archs = _dedup_preserve([it["archetypeKey"] for it in skipped_items if it.get("archetypeKey")])
+        lowest_levels: list[int] = []
+        foundation_archs: list[str] = []
         for ak in sk_archs:
             base_lv = archetypes_meta.get(ak, {}).get("baseLevel") or archetypes_meta.get(ak, {}).get("level")
             skipped_lv = min(
                 (it["level"] for it in skipped_items if it["archetypeKey"] == ak and isinstance(it["level"], int)),
-                default=1,
+                default=2,
             )
-            if isinstance(base_lv, int):
-                lowest_levels.append(min(base_lv, skipped_lv))
+            step_down_lv = max(1, skipped_lv - 1)
+            if isinstance(base_lv, int) and base_lv <= step_down_lv:
+                lowest_levels.append(base_lv)
+                foundation_archs.append(ak)
             else:
-                lowest_levels.append(max(1, skipped_lv - 1))
+                lowest_levels.append(step_down_lv)
+                prereq_archs = [
+                    r["archetypeKey"]
+                    for r in unit_ctx["levelsEarnedPerArchetype"]
+                    if isinstance(r.get("baseLevel"), int) and r["baseLevel"] <= step_down_lv
+                ]
+                foundation_archs.extend(prereq_archs[-2:] or [ak])
+        foundation_archs = _dedup_preserve(foundation_archs or sk_archs)
+        target_lvs = sorted(set(lowest_levels)) or [1]
+        lv_label = ", ".join(f"L{lv}" for lv in target_lvs)
         sk_qids = [it["qid"] for it in skipped_items]
         sk_levels = sorted({it["level"] for it in skipped_items if isinstance(it["level"], int)})
         candidates.append(
@@ -869,21 +902,43 @@ def _compute_recommendations(
                 kind="new_math_drill",
                 action=(
                     f"Review '{_UNIT_PAGE_SECTIONS['concepts']}' and '{_UNIT_PAGE_SECTIONS['trapContrast']}' on the {unit_code} "
-                    f"unit page for the skipped concept(s), then generate a foundation drill at the lowest level "
-                    f"(L{min(lowest_levels)}) of {', '.join(sk_archs)}."
+                    f"unit page for the skipped concept(s), then generate a foundation drill at {lv_label} "
+                    f"on {', '.join(foundation_archs)}."
                 ),
                 why=(
                     f"Skipped {len(skipped_items)} item(s) ({', '.join(sk_qids)} at L{', L'.join(str(x) for x in sk_levels)}) "
-                    f"with concept-gap; stepping down to the archetype base level rebuilds the missing prerequisite."
+                    f"with concept-gap; stepping down to {lv_label} rebuilds the missing prerequisite before retrying L{max(sk_levels, default=3)}."
                 ),
                 unit=unit_code,
-                archetypes=sk_archs,
-                levels=lowest_levels,
-                count=max(4, min(6, len(sk_archs) * 2)),
+                archetypes=foundation_archs,
+                levels=target_lvs,
+                count=max(4, min(6, len(foundation_archs) * 2)),
                 qids=sk_qids,
                 unit_page_section=_UNIT_PAGE_SECTIONS["concepts"],
             )
         )
+        sim_sk = [s for s in similar_missed if s["outcome"] == "skipped" and s["unattemptedAtLevel"] > 0]
+        if sim_sk:
+            sim_sk_qids = [s["qid"] for s in sim_sk]
+            candidates.append(
+                _make_rec(
+                    rule_id="retry_similar_for_skipped",
+                    kind="practice_similar",
+                    action=(
+                        f"After reviewing the {unit_code} unit page, practice Similar variants on "
+                        f"{', '.join(sim_sk_qids)} in Studio."
+                    ),
+                    why=(
+                        f"{sum(s['unattemptedAtLevel'] for s in sim_sk)} unattempted Similar variant(s) are ready "
+                        f"for skipped item(s) ({', '.join(sim_sk_qids)})."
+                    ),
+                    unit=unit_code,
+                    archetypes=sk_archs,
+                    levels=sk_levels or target_lvs,
+                    count=len(sim_sk_qids),
+                    qids=sim_sk_qids,
+                )
+            )
 
     # 3. Repeated trap across drills -> concept recap pointer + trap-focused drill
     if repeated_traps:
@@ -991,72 +1046,86 @@ def _compute_recommendations(
         note_clause = f" Notes on {', '.join(note_qids)} also point to steps to reinforce." if note_qids else ""
         if sim_avail:
             action = (
-                f"Redo Similar variants on {', '.join(s['qid'] for s in sim_avail)} without opening hints, set-up, or steps, "
+                f"Redo Similar variants on {', '.join(s['qid'] for s in sim_avail)} without opening hints, set-up, steps, or solution, "
                 f"then run an unassisted fluency drill on {', '.join(a_archs)} at L{', L'.join(str(x) for x in sorted(set(a_levels)))}."
             )
             kind = "practice_similar"
         else:
             action = (
                 f"Generate an unassisted fluency drill on {', '.join(a_archs)} at "
-                f"L{', L'.join(str(x) for x in sorted(set(a_levels)))} without hints or step reveals."
+                f"L{', L'.join(str(x) for x in sorted(set(a_levels)))} without hints, steps, or solution."
             )
             kind = "new_math_drill"
         cap_clause = f" Mastery is capped ({cap_reason})." if cap_reason else ""
-        candidates.append(
-            _make_rec(
-                rule_id="consolidate_unassisted_fluency",
-                kind=kind,
-                action=action,
-                why=(
-                    f"{len(assisted_items)}/{totals['attemptedCount']} attempted item(s) scored 0.5 "
-                    f"({help_count} used hints/set-up/steps before answering).{cap_clause}{note_clause}"
-                ),
-                unit=unit_code,
-                archetypes=a_archs,
-                levels=a_levels,
-                count=max(4, min(6, len(a_archs) * 2)),
-                qids=a_qids,
+        unattempted_archs = {it["archetypeKey"] for it in not_tried_items if it.get("archetypeKey")}
+        fresh_a_archs = [ak for ak in a_archs if ak not in unattempted_archs]
+        if sim_avail or fresh_a_archs:
+            candidates.append(
+                _make_rec(
+                    rule_id="consolidate_unassisted_fluency",
+                    kind=kind,
+                    action=action,
+                    why=(
+                        f"{len(assisted_items)}/{totals['attemptedCount']} attempted item(s) scored 0.5 "
+                        f"({help_count} used hints/set-up/steps/solution before answering).{cap_clause}{note_clause}"
+                    ),
+                    unit=unit_code,
+                    archetypes=a_archs,
+                    levels=a_levels,
+                    count=max(4, min(6, len(a_archs) * 2)),
+                    qids=a_qids,
+                )
             )
-        )
-        candidates.append(
-            _make_rec(
-                rule_id="unassisted_new_drill",
-                kind="new_math_drill",
-                action=(
-                    f"Build a fresh {unit_code} drill on {', '.join(a_archs)} at "
-                    f"L{', L'.join(str(x) for x in sorted(set(a_levels)))} and complete it without opening help."
-                ),
-                why=f"Fresh unassisted problems verify independent recall after heavy help on {', '.join(a_qids)}.",
-                unit=unit_code,
-                archetypes=a_archs,
-                levels=a_levels,
-                count=max(4, min(6, len(a_archs) * 2)),
-                qids=a_qids,
+        if fresh_a_archs:
+            candidates.append(
+                _make_rec(
+                    rule_id="unassisted_new_drill",
+                    kind="new_math_drill",
+                    action=(
+                        f"Build a fresh {unit_code} drill on {', '.join(fresh_a_archs)} at "
+                        f"L{', L'.join(str(x) for x in sorted(set(a_levels)))} and complete it without opening help."
+                    ),
+                    why=f"Fresh unassisted problems verify independent recall after heavy help on {', '.join(a_qids)}.",
+                    unit=unit_code,
+                    archetypes=fresh_a_archs,
+                    levels=a_levels,
+                    count=max(4, min(6, len(fresh_a_archs) * 2)),
+                    qids=a_qids,
+                )
             )
-        )
 
     # 5. All attempted items clean (no wrong/skipped/assisted)
     max_attempted_level = max((it["level"] for it in attempted_items if isinstance(it["level"], int)), default=0)
     all_done_clean = (
         totals["problemCount"] > 0 and totals["notTriedCount"] == 0 and totals["cleanCount"] == totals["problemCount"]
     )
-    all_attempted_clean = (
-        bool(attempted_items)
-        and totals["wrongCount"] == 0
-        and totals["skippedCount"] == 0
-        and totals["assistedOrRetryCount"] == 0
-    )
 
     if all_done_clean and max_attempted_level <= 2:
-        focus_archs = [a["archetypeKey"] for a in unpractised]
+        focus_archs = [
+            a["archetypeKey"]
+            for a in sorted(
+                unpractised,
+                key=lambda x: (
+                    "UNPROVEN" in (x.get("vaultFlags") or []),
+                    -(x.get("baseLevel") or 0),
+                    x["archetypeKey"],
+                ),
+            )
+        ]
         if not focus_archs:
             focus_archs = [
                 r["archetypeKey"]
                 for r in sorted(
                     unit_ctx["levelsEarnedPerArchetype"],
-                    key=lambda x: (-(x.get("baseLevel") or 0), x["archetypeKey"]),
+                    key=lambda x: (
+                        "UNPROVEN" in (x.get("vaultFlags") or []),
+                        -(x.get("baseLevel") or 0),
+                        x["archetypeKey"],
+                    ),
                 )
             ]
+        if not focus_archs:
+            focus_archs = _dedup_preserve([it["archetypeKey"] for it in items if it.get("archetypeKey")])
         focus_archs = focus_archs[:4]
         cap_clause = f" ({cap_reason})" if cap_reason else ""
         candidates.append(
@@ -1082,34 +1151,48 @@ def _compute_recommendations(
 
     # 6. Cap reason present -> ensure an explicit action satisfies the cap reason
     if cap_reason:
-        if cap_reason == weak_spots.L4_CHALLENGE_CAP_REASON:
+        if (
+            cap_reason == weak_spots.L4_CHALLENGE_CAP_REASON
+            and totals["practiceStatus"] != "Needs Retry"
+            and not wrong_items
+            and not skipped_items
+            and not not_tried_items
+            and not unit_ctx["evidenceMastery"].get("hasL4Challenge")
+        ):
             high_archs = [
                 r["archetypeKey"]
                 for r in sorted(
                     unit_ctx["levelsEarnedPerArchetype"],
-                    key=lambda x: (-(x.get("baseLevel") or 0), x["practisedItems"], x["archetypeKey"]),
+                    key=lambda x: (
+                        "UNPROVEN" in (x.get("vaultFlags") or []),
+                        -(x.get("baseLevel") or 0),
+                        x["practisedItems"],
+                        x["archetypeKey"],
+                    ),
                 )
             ][:3]
-            candidates.append(
-                _make_rec(
-                    rule_id="mastery_cap_l4_challenge",
-                    kind="new_math_drill",
-                    action=(
-                        f"Attempt an unassisted L4 challenge drill in {unit_code} on {', '.join(high_archs)} "
-                        f"without hints, set-up, or steps."
-                    ),
-                    why=f"Mastery is capped at {mastery}: {cap_reason}.",
-                    unit=unit_code,
-                    archetypes=high_archs,
-                    levels=[4],
-                    count=4,
+            if high_archs:
+                candidates.append(
+                    _make_rec(
+                        rule_id="mastery_cap_l4_challenge",
+                        kind="new_math_drill",
+                        action=(
+                            f"Attempt an unassisted L4 challenge drill in {unit_code} on {', '.join(high_archs)} "
+                            f"without hints, set-up, or steps."
+                        ),
+                        why=f"Mastery is capped at {mastery}: {cap_reason}.",
+                        unit=unit_code,
+                        archetypes=high_archs,
+                        levels=[4],
+                        count=4,
+                    )
                 )
-            )
         elif cap_reason == weak_spots.OPEN_WEAK_SPOT_CAP_REASON and open_weak:
             ow_tags = [w["tag"] for w in open_weak[:2]]
-            ow_archs = _dedup_preserve([trap_owners[t] for t in ow_tags if t in trap_owners]) or [
-                it["archetypeKey"] for it in items[:2]
-            ]
+            ow_archs = _dedup_preserve(
+                [it["archetypeKey"] for it in items if any(tr["tag"] in ow_tags for tr in it["matchedTraps"])]
+                + [trap_owners[t] for t in ow_tags if t in trap_owners]
+            ) or [it["archetypeKey"] for it in items[:2]]
             candidates.append(
                 _make_rec(
                     rule_id="mastery_cap_close_weak_spot",
@@ -1134,7 +1217,7 @@ def _compute_recommendations(
                 _make_rec(
                     rule_id="mastery_cap_unassisted_l3",
                     kind="new_math_drill",
-                    action=f"Solve L3–L4 problems in {unit_code} on {', '.join(l3_archs)} without hints or steps.",
+                    action=f"Solve L3–L4 problems in {unit_code} on {', '.join(l3_archs)} without hints, steps, or solution.",
                     why=f"Mastery is capped at {mastery}: {cap_reason}.",
                     unit=unit_code,
                     archetypes=l3_archs,
@@ -1147,12 +1230,18 @@ def _compute_recommendations(
     if not_tried_items and not any(c["ruleId"] == "review_due_soon" for c in candidates):
         rem_archs = [it["archetypeKey"] for it in not_tried_items]
         rem_levels = [it["level"] for it in not_tried_items if isinstance(it["level"], int)]
+        due_note = ""
+        if not attempted_items and isinstance(days_until, int) and days_until <= REVIEW_DUE_WITHIN_DAYS:
+            due_phrase = (
+                "overdue" if days_until < 0 else ("due today" if days_until == 0 else f"due in {days_until} day(s)")
+            )
+            due_note = f" Unit spaced review is {due_phrase} ({next_review})."
         candidates.append(
             _make_rec(
                 rule_id="finish_current_drill" if attempted_items else "start_current_drill",
                 kind="untouched_drill",
                 action=f"Complete the remaining {len(not_tried_items)} item(s) in {drill_id} ({', '.join(it['qid'] for it in not_tried_items)}).",
-                why=f"{totals['attemptedCount']}/{totals['problemCount']} items attempted so far in {drill_id}.",
+                why=f"{totals['attemptedCount']}/{totals['problemCount']} items attempted so far in {drill_id}.{due_note}",
                 unit=unit_code,
                 archetypes=rem_archs,
                 levels=rem_levels,
@@ -1212,8 +1301,8 @@ def _compute_recommendations(
                 )
             )
 
-    # 9. Learner wrote notes even when clean -> concept recap alternative
-    if all_attempted_clean and note_qids:
+    # 9. Learner wrote notes -> concept recap + targeted reinforcement alternative
+    if note_qids:
         n_archs = _dedup_preserve([n["archetypeKey"] for n in totals["notes"] if n.get("archetypeKey")])
         n_levels = [n["level"] for n in totals["notes"] if isinstance(n.get("level"), int)] or [2]
         candidates.append(
@@ -1221,10 +1310,10 @@ def _compute_recommendations(
                 rule_id="note_guided_recap",
                 kind="concept_recap",
                 action=(
-                    f"Revisit '{_UNIT_PAGE_SECTIONS['concepts']}' on {unit_code} for {', '.join(note_qids)} "
-                    f"to reinforce the concepts flagged in your Mistake Log notes."
+                    f"Revisit '{_UNIT_PAGE_SECTIONS['concepts']}' and '{_UNIT_PAGE_SECTIONS['formulas']}' on {unit_code} "
+                    f"for {', '.join(note_qids)} to reinforce the points recorded in your Mistake Log notes."
                 ),
-                why=f"Learner wrote Mistake Log / revisit notes on {', '.join(note_qids)} despite passing.",
+                why=f"Learner recorded Mistake Log / revisit notes on {', '.join(note_qids)}.",
                 unit=unit_code,
                 archetypes=n_archs,
                 levels=n_levels,
@@ -1234,8 +1323,28 @@ def _compute_recommendations(
             )
         )
 
-    # 10. Untouched drills in the unit as a ready-to-run alternative
-    if untouched_drills:
+    # 9b. Unpractised archetypes in a mastered or skipped-only unit
+    if (
+        (all_done_clean and any(c["ruleId"] == "ready_for_next_unit" for c in candidates))
+        or (skipped_items and not wrong_items and not assisted_items)
+    ) and unpractised:
+        up_archs = [a["archetypeKey"] for a in unpractised[:3]]
+        up_levels = sorted({int(a["baseLevel"]) for a in unpractised[:3] if isinstance(a.get("baseLevel"), int)}) or [2]
+        candidates.append(
+            _make_rec(
+                rule_id="cover_unpractised_archetypes",
+                kind="new_math_drill",
+                action=f"Optional completeness drill in {unit_code} on unpractised archetype(s): {', '.join(up_archs)}.",
+                why=f"{len(unpractised)} archetype(s) in {unit_code} have 0 practised items ({', '.join(up_archs)}).",
+                unit=unit_code,
+                archetypes=up_archs,
+                levels=up_levels,
+                count=4,
+            )
+        )
+
+    # 10. Untouched drills in the unit as a ready-to-run alternative (only after starting current drill)
+    if untouched_drills and attempted_items:
         higher = sorted(
             untouched_drills,
             key=lambda d: (-max((int(k) for k in d["levelMix"]), default=0), d["drillId"]),
@@ -1255,12 +1364,23 @@ def _compute_recommendations(
             )
         )
 
-    # Deduplicate by ruleId while preserving priority order
+    # Deduplicate by ruleId and identical drill-parameter signature while preserving priority order
     deduped: list[dict[str, Any]] = []
     seen_rules: set[str] = set()
+    seen_param_sigs: set[tuple[Any, ...]] = set()
     for rec in candidates:
-        if rec["ruleId"] not in seen_rules:
+        p = rec["params"]
+        param_sig = (
+            p.get("unit") or "",
+            p.get("drillId") or "",
+            tuple(sorted(p.get("archetypes") or [])),
+            tuple(p.get("levels") or []),
+            tuple(sorted(p.get("focusTags") or [])),
+            p.get("unitPageSection") or "",
+        )
+        if rec["ruleId"] not in seen_rules and param_sig not in seen_param_sigs:
             seen_rules.add(rec["ruleId"])
+            seen_param_sigs.add(param_sig)
             deduped.append(rec)
 
     if not deduped:
@@ -1304,18 +1424,31 @@ def build_drill_review(
     resolved_vault = vault_dir or os.path.join(resolved_root, "math_engine", "reasoning_vault")
     resolved_today = _resolve_today(today)
 
+    if drill_id.startswith("LAB-") or drill_id.startswith("DRL-PRG-"):
+        raise ValueError(
+            f"Drill '{drill_id}' is a PRG programming drill/lab; scripts.drill_review supports MATH drills only. "
+            f"Use 'python -m code_engine.review_run {drill_id} <QID>' (review-code skill) instead."
+        )
+
     drill_doc = _find_drill_doc(drill_id, resolved_data)
+    is_prg = drill_doc.get("subject") == "PRG" or str(drill_doc.get("unitCode", "")).startswith("PRG-")
+    if is_prg:
+        raise ValueError(
+            f"Drill '{drill_id}' is a PRG programming drill/lab; scripts.drill_review supports MATH drills only. "
+            f"Use 'python -m code_engine.review_run {drill_id} <QID>' (review-code skill) instead."
+        )
+
+    raw_probs = [p for p in (drill_doc.get("problems") or []) if isinstance(p, dict)]
+    if not raw_probs or not any((p.get("archetypeKey") or p.get("templateKey")) for p in raw_probs):
+        raise ValueError(
+            f"Drill '{drill_id}' has no problem archetypes (archetypeKey/templateKey); cannot build a drill review."
+        )
+
     progress = _load_json_dict(os.path.join(resolved_progress, f"{drill_id}.json"))
     drill_states = (progress or {}).get("problems") if isinstance((progress or {}).get("problems"), dict) else {}
 
     id_map = _load_id_map(resolved_root)
     archetypes, trap_descriptions, trap_owners = _load_mth_vault_metadata(resolved_vault)
-
-    is_prg = (
-        drill_doc.get("subject") == "PRG"
-        or str(drill_doc.get("unitCode", "")).startswith("PRG-")
-        or drill_id.startswith("DRL-PRG-")
-    )
     drill_unit = str(drill_doc.get("unitCode") or "")
 
     items = [
@@ -1498,7 +1631,7 @@ def main(argv: list[str] | None = None) -> int:
             progress_dir=args.progress_dir,
             today=args.today,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

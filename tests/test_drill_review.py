@@ -32,6 +32,7 @@ def _setup_fixture_repo(tmp_path: Path) -> Path:
                     "unitCode": "MTH-T02-C01-U01",
                     "level": 1,
                     "name": "Basic Complex Operations",
+                    "coreConcept": "Apply i^2 = -1 to simplify powers and arithmetic.",
                     "cognitiveTraps": [
                         {
                             "trapTag": "trap-sign-flip",
@@ -419,9 +420,138 @@ def test_skipped_l3_l4_recommends_lowest_level_of_archetype(tmp_path: Path):
     rep = _run_review(root, "DRL-MTH-T02-C01-U01-02")
     primary = rep["recommendation"]["primary"]
     assert primary["ruleId"] == "skipped_items"
-    assert primary["params"]["archetypes"] == ["arch-l3", "arch-l4"]
-    assert primary["params"]["levels"] == [3, 4]
+    # Q02 skipped at L3 (baseLevel 3) and Q03 skipped at L4 (baseLevel 4) step down to L2, L3 prerequisite skills
+    assert primary["params"]["levels"] == [2, 3]
+    assert primary["params"]["archetypes"] == ["arch-l1", "arch-l2", "arch-l3"]
     assert "unitPageSection" in primary["params"]
+
+
+def test_refuses_prg_and_lab_ids_and_archetypeless_drills(tmp_path: Path, capsys):
+    root = _setup_fixture_repo(tmp_path)
+    _write(
+        root / "drills/data/PRG-T01-C01-U01/DRL-PRG-T01-C01-U01-01.json",
+        {
+            "drillId": "DRL-PRG-T01-C01-U01-01",
+            "unitCode": "PRG-T01-C01-U01",
+            "subject": "PRG",
+            "problems": [{"id": "Q01", "archetypeKey": "prg-arch", "level": 1}],
+        },
+    )
+    _write(
+        root / "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-99.json",
+        {
+            "drillId": "DRL-MTH-T02-C01-U01-99",
+            "unitCode": "MTH-T02-C01-U01",
+            "subject": "MATH",
+            "problems": [{"id": "Q01", "level": 2}],
+        },
+    )
+    _write(
+        root / "progress/DRL-MTH-T02-C01-U01-99.json",
+        {
+            "drillId": "DRL-MTH-T02-C01-U01-99",
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": {"Q01": {"skipped": True, "mistakes": ["concept-gap"]}},
+        },
+    )
+
+    for bad_id in ("DRL-PRG-T01-C01-U01-01", "LAB-PRG-T01-C01-01", "DRL-MTH-T02-C01-U01-99"):
+        rc = main(
+            [
+                bad_id,
+                "--data-root",
+                str(root / "drills/data"),
+                "--progress-dir",
+                str(root / "progress"),
+            ]
+        )
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "Error:" in err
+
+
+def test_live_evidence_mastery_overrides_stale_l4_schedule_cap_and_suppresses_l4_challenge_on_needs_retry(
+    tmp_path: Path,
+):
+    root = _setup_fixture_repo(tmp_path)
+    # Learner completed Q03 (L4) clean, skipped Q02 (L3), and wrong on Q01 (L2)
+    _write(
+        root / "progress/DRL-MTH-T02-C01-U01-02.json",
+        {
+            "drillId": "DRL-MTH-T02-C01-U01-02",
+            "unitCode": "MTH-T02-C01-U01",
+            "sessionSummary": {"attemptDate": "2026-11-21", "practiceStatus": "Needs Retry"},
+            "problems": {
+                "Q01": {
+                    "attempts": [
+                        {"ts": "2026-11-21T09:00:00Z", "verdict": "incorrect", "matchedTrap": "trap-conjugate-swap"}
+                    ],
+                    "mistakeNote": "ลืมแยกส่วนจริงกับส่วนจินตภาพของสังยุค",
+                },
+                "Q02": {"skipped": True, "mistakes": ["concept-gap"]},
+                "Q03": {"attempts": [{"ts": "2026-11-21T09:05:00Z", "verdict": "correct"}]},
+            },
+        },
+    )
+    # Stale schedule claims L4 challenge is still needed
+    _write(
+        root / "progress/_review_schedule.json",
+        {
+            "MTH-T02-C01-U01": {
+                "mastery": 2,
+                "lastReviewed": "2026-11-20",
+                "nextReview": "2026-11-25",
+                "masteryCap": {"capped": True, "reason": "needs one L4 challenge without hints"},
+            }
+        },
+    )
+
+    rep = _run_review(root, "DRL-MTH-T02-C01-U01-02")
+    assert rep["unitContext"]["evidenceMastery"]["hasL4Challenge"] is True
+    assert rep["unitContext"]["masteryCap"]["capped"] is False
+    rule_ids = [rep["recommendation"]["primary"]["ruleId"]] + [
+        a["ruleId"] for a in rep["recommendation"]["alternatives"]
+    ]
+    assert "mastery_cap_l4_challenge" not in rule_ids
+
+
+def test_core_concept_exposed_and_unstarted_and_in_progress_drills_handled(tmp_path: Path):
+    root = _setup_fixture_repo(tmp_path)
+    # 1. Unstarted drill (no progress file) even with review due tomorrow -> Not started & start_current_drill
+    _write(
+        root / "progress/_review_schedule.json",
+        {
+            "MTH-T02-C01-U01": {
+                "mastery": 2,
+                "lastReviewed": "2026-11-17",
+                "nextReview": "2026-11-22",
+                "masteryCap": {"capped": True, "reason": "needs one L4 challenge without hints"},
+            }
+        },
+    )
+    rep_empty = _run_review(root, "DRL-MTH-T02-C01-U01-01", today="2026-11-21")
+    assert rep_empty["totals"]["practiceStatus"] == "Not started"
+    assert rep_empty["items"][0]["coreConcept"] == "Apply i^2 = -1 to simplify powers and arithmetic."
+    assert rep_empty["recommendation"]["primary"]["ruleId"] == "start_current_drill"
+    assert rep_empty["recommendation"]["alternatives"] == []
+
+    # 2. In-progress drill with stale sessionSummary.practiceStatus="Needs Retry" -> reports "In progress"
+    _write(
+        root / "progress/DRL-MTH-T02-C01-U01-01.json",
+        {
+            "drillId": "DRL-MTH-T02-C01-U01-01",
+            "unitCode": "MTH-T02-C01-U01",
+            "sessionSummary": {"attemptDate": "2026-11-21", "practiceStatus": "Needs Retry"},
+            "problems": {
+                "Q01": {
+                    "hintsRevealed": 1,
+                    "attempts": [{"ts": "2026-11-21T09:00:00Z", "verdict": "correct"}],
+                }
+            },
+        },
+    )
+    rep_inprog = _run_review(root, "DRL-MTH-T02-C01-U01-01", today="2026-11-21")
+    assert rep_inprog["totals"]["practiceStatus"] == "In progress"
 
 
 def test_repeated_trap_across_two_drills_recommends_recap_and_trap_drill(tmp_path: Path):
