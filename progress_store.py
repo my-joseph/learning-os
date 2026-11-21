@@ -370,14 +370,16 @@ def _extract_cycle_data(
         state.get("exampleViewedAt") and _is_in_cycle(state.get("exampleViewedAt"), eff_cycle)
     )
     review_help_in_cycle = bool(
-        (state.get("reviewSetupRevealedAt") and _is_in_cycle(state.get("reviewSetupRevealedAt"), eff_cycle))
+        (state.get("reviewHintRevealedAt") and _is_in_cycle(state.get("reviewHintRevealedAt"), eff_cycle))
+        or (state.get("reviewSetupRevealedAt") and _is_in_cycle(state.get("reviewSetupRevealedAt"), eff_cycle))
         or (state.get("reviewStepsRevealedAt") and _is_in_cycle(state.get("reviewStepsRevealedAt"), eff_cycle))
     )
     hints_val = _finite_num(state.get("hintsRevealed")) or 0.0
+    untimestamped_help = (not eff_cycle or is_variant) and bool(
+        hints_val > 0 or state.get("setupRevealedBeforeAnswer") or state.get("solutionRevealedBeforeAnswer")
+    )
     used_help = bool(
-        hints_val > 0
-        or state.get("setupRevealedBeforeAnswer")
-        or state.get("solutionRevealedBeforeAnswer")
+        untimestamped_help
         or example_viewed_in_cycle
         or review_help_in_cycle
         or any(a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in cycle_atts)
@@ -386,6 +388,9 @@ def _extract_cycle_data(
     has_prior_history = bool(all_orig_attempts or all_reviews or all_test_runs)
     has_current_cycle_record = bool(cycle_atts or cycle_revs or cycle_test_runs or report_info["hasData"])
     is_stale_prev_cycle = bool(eff_cycle and has_prior_history and not has_current_cycle_record)
+    has_current_cycle_self_score = bool(
+        not eff_cycle or (state.get("selfScoreAt") and _is_in_cycle(state.get("selfScoreAt"), eff_cycle))
+    )
 
     return {
         "cycleStartedAt": eff_cycle,
@@ -396,6 +401,8 @@ def _extract_cycle_data(
         "cycleTestRuns": cycle_test_runs,
         "reportInfo": report_info,
         "usedHelp": used_help,
+        "hasPriorHistory": has_prior_history,
+        "hasCurrentCycleSelfScore": has_current_cycle_self_score,
         "isStalePrevCycle": is_stale_prev_cycle,
     }
 
@@ -433,8 +440,9 @@ def _apply_lower_only_self_score(
     *,
     ignore_state_score: bool,
     is_variant: bool,
+    has_current_cycle_self_score: bool,
 ) -> dict[str, Any]:
-    if ignore_state_score or is_variant:
+    if ignore_state_score or is_variant or not has_current_cycle_self_score:
         return {"score": auto_score, "outcome": auto_outcome, "firstTry": first_try, "usedHelp": used_help}
     self_score = _clamp_score_value(state.get("score"))
     if self_score is not None and self_score < auto_score:
@@ -471,16 +479,19 @@ def score_problem(
         has_cycle_override=has_cycle_override,
         is_variant=is_variant,
     )
+    eff_cycle = data["cycleStartedAt"]
     substantive_atts = data["substantiveAtts"]
     cycle_revs = data["cycleRevs"]
     cycle_test_runs = data["cycleTestRuns"]
     report_info = data["reportInfo"]
     used_help = data["usedHelp"]
+    has_prior_history = data["hasPriorHistory"]
+    has_current_cycle_self_score = data["hasCurrentCycleSelfScore"]
 
     if data["isStalePrevCycle"]:
         return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": used_help}
 
-    if state.get("skipped") is True:
+    if state.get("skipped") is True and (not eff_cycle or not has_prior_history):
         return {"score": 0.0, "outcome": "skipped", "firstTry": False, "usedHelp": used_help}
 
     # PRG workspace / lab path: tests + code reviews.
@@ -520,6 +531,7 @@ def score_problem(
                 state,
                 ignore_state_score=ignore_state_score,
                 is_variant=is_variant,
+                has_current_cycle_self_score=has_current_cycle_self_score,
             )
         if first_correct_idx > 0:
             return _apply_lower_only_self_score(
@@ -530,6 +542,7 @@ def score_problem(
                 state,
                 ignore_state_score=ignore_state_score,
                 is_variant=is_variant,
+                has_current_cycle_self_score=has_current_cycle_self_score,
             )
         latest_verdict = substantive_atts[-1].get("verdict")
         if latest_verdict == "skipped":
@@ -543,12 +556,13 @@ def score_problem(
                 state,
                 ignore_state_score=ignore_state_score,
                 is_variant=is_variant,
+                has_current_cycle_self_score=has_current_cycle_self_score,
             )
         return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
 
     # Fallback for lightweight state carrying a substantive `lastCheck` without `attempts[]`.
     last_check = state.get("lastCheck")
-    if isinstance(last_check, dict) and _is_substantive_verdict(last_check.get("verdict")):
+    if not eff_cycle and isinstance(last_check, dict) and _is_substantive_verdict(last_check.get("verdict")):
         v = last_check.get("verdict")
         if v == "skipped":
             return {"score": 0.0, "outcome": "skipped", "firstTry": False, "usedHelp": used_help}
@@ -563,6 +577,7 @@ def score_problem(
                 state,
                 ignore_state_score=ignore_state_score,
                 is_variant=is_variant,
+                has_current_cycle_self_score=has_current_cycle_self_score,
             )
         if v in ("partial", "equivalent_not_in_form"):
             return _apply_lower_only_self_score(
@@ -573,11 +588,12 @@ def score_problem(
                 state,
                 ignore_state_score=ignore_state_score,
                 is_variant=is_variant,
+                has_current_cycle_self_score=has_current_cycle_self_score,
             )
         return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
 
     # Unverified item with manual self-score.
-    if not is_variant and not ignore_state_score:
+    if not is_variant and not ignore_state_score and has_current_cycle_self_score:
         manual = _clamp_score_value(state.get("score"))
         if manual is not None:
             if manual == 1.0:
@@ -624,7 +640,7 @@ def is_awaiting_review(
     has_cycle_override: bool = False,
 ) -> bool:
     """Return True for a PRG item whose latest test run in the current cycle passed with no review yet."""
-    if not isinstance(state, dict) or state.get("skipped") is True:
+    if not isinstance(state, dict):
         return False
     data = _extract_cycle_data(
         state,
@@ -634,6 +650,8 @@ def is_awaiting_review(
         has_cycle_override=has_cycle_override,
     )
     if data["isStalePrevCycle"] or data["cycleRevs"]:
+        return False
+    if state.get("skipped") is True and (not data["cycleStartedAt"] or not data["hasPriorHistory"]):
         return False
     if not (data["reportInfo"]["hasData"] or data["cycleTestRuns"]):
         return False
@@ -663,7 +681,12 @@ def is_locked_after_correct(
     if any(a.get("verdict") == "correct" for a in data["substantiveAtts"]):
         return True
     last_check = state.get("lastCheck")
-    if len(data["allOrigAttempts"]) == 0 and isinstance(last_check, dict) and last_check.get("verdict") == "correct":
+    if (
+        not data["cycleStartedAt"]
+        and len(data["allOrigAttempts"]) == 0
+        and isinstance(last_check, dict)
+        and last_check.get("verdict") == "correct"
+    ):
         return True
     return False
 
