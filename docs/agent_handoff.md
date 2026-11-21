@@ -27,7 +27,7 @@ Read these in order before acting:
 
 - Use `tools/agents/run-worker.sh`, the `dispatch-worker` skill, and `.claude/skills/dispatch-worker/common.md`.
 - Route simple, high-volume, documentation, and read-only audit work to Luna (`gpt-6-luna`, Codex quota); everyday coding to Hydrogen (`gemini-4-hydrogen-high`); hard cross-cutting work to Neon (`gemini-4-neon-high`); independent review, blind-solve, skill trials, or parallel work to Argon (`gemini-4-argon-high`, separate pool). Hydrogen and Neon share one `agy` quota pool.
-- Before any `agy` launch, inspect its latest log for `authenticated successfully as kanomjeebwork@gmail.com`. If the account differs, do not launch `agy`; ask the learner.
+- The learner switches the `agy` account themselves between jobs and will tell the agent which account is active. Do not change or check-and-block on a specific account; if an `agy` run fails on login or quota, report it and fall back per the routing above.
 - Keep each job to one concern, put file paths and line evidence first, name acceptance criteria and tests, and merge `origin/main` with a merge (never rebase) before clean-environment checks.
 - Run no more than two workers in parallel and allow no more than two revision rounds per job. After that, stop and report.
 
