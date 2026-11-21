@@ -5,7 +5,7 @@ description: Coach the learner in polite Thai after a MATH drill — summarize w
 
 # Review drill
 
-The learner studies alone and needs a calm, honest coach after finishing (or pausing) a math drill — not raw telemetry dumps and not a menu of ten choices. Talk to the learner in polite Thai; keep explanations concrete and encouraging.
+The learner studies alone and needs a calm, short, plain-Thai coach report after finishing (or pausing) a math drill — never raw telemetry dumps, internal IDs, or long technical essays.
 
 Run every command from the repo root with `.venv/bin/python`. This skill is strictly **read-only**: never edit `progress/`, `drills/data/`, or Notion.
 
@@ -15,35 +15,41 @@ Run every command from the repo root with `.venv/bin/python`. This skill is stri
 .venv/bin/python -m scripts.drill_review <DRILL_ID> --json
 ```
 
-`scripts/drill_review.py` honours `PROGRESS_DIR` and `LEARNINGOS_PILOT` via `progress_store.py`. If the drill ID is missing, say so plainly in Thai and stop.
+`scripts/drill_review.py` honours `PROGRESS_DIR` and `LEARNINGOS_PILOT` via `progress_store.py`.
+- If the drill ID is missing or not found, say so plainly in Thai and stop.
+- If the ID is a programming drill or lab (`DRL-PRG-*` or `LAB-*`), refuse clearly in Thai and tell the learner to use `review-code` (`"ตรวจโค้ด <DRILL_ID> <QID>"` or `"ตรวจโค้ด <LAB_ID> M1"`) instead, then stop.
+- If `totals.attemptedCount == 0` (`practiceStatus == "Not started"`), tell the learner in 2–3 polite Thai lines that this drill has not been attempted yet (`0/<problemCount>` ข้อ) and recommend opening it in Practice Studio first instead of writing an empty review.
 
-Check the learner's Notion **My Implementation & Mistake Log** section **only** if an existing read-only tool supports reading it. Today `notion_sync/unit_page.py` `--snapshot` omits `"My Implementation & Mistake Log"` by design (`rules/02_pedagogy.md` §7a), and no existing read-only CLI reads section 6 from Notion — so do not make ad-hoc Notion API calls; rely on `mistakeNote`, `revisitNote`, and `mistakes` from the script output and note this clearly in the report.
+Check the learner's Notion **My Implementation & Mistake Log** section **only** if an existing read-only tool supports reading it. Today `notion_sync/unit_page.py` `--snapshot` omits `"My Implementation & Mistake Log"` by design (`rules/02_pedagogy.md` §7a), and no existing read-only CLI reads section 6 from Notion — so do not make ad-hoc Notion API calls; rely on `mistakeNote`, `revisitNote`, and `mistakes` from the script output.
 
-## 2. Translate findings into plain coaching language
+## 2. Translate findings into short, plain coaching language
 
-- **Zero-leak invariant:** Never reveal prompts, answers, worked steps, `checkpointHint`, or `display` set-up of any item not yet answered correctly (and keep answers/steps out of the summary altogether).
-- **No unexplained internal IDs:** Whenever you refer to an `archetypeKey`, `trapTag`, or `mistakes[]` category, explain what skill or misconception it means in plain Thai words using `archetypeName` and `description` from the JSON output.
-- **Keep recommendations deterministic:** Present `recommendation.primary` as the ONE clear immediate action (**ทำทันที**), and `recommendation.alternatives` (at most 2) as **ทางเลือก**. Cite the evidence (`why`) and concrete `params` (`unit`, `archetypes`, `levels`, `count`, and `focusTags` if present).
+- **Keep it SHORT:** Aim for **≤ 20 lines** total (hard maximum ~30 lines).
+- **Zero-leak & no worked values:** Never reveal prompts, answers, worked steps, `checkpointHint`, or `display` set-up of any item. Do **not** restate the correct answer or a worked value of an item the learner got wrong — explain the misconception generally in one plain sentence and send them to Similar variants.
+- **Zero internal tokens in the learner text:** Do **not** put any internal IDs, keys, tags, backticks, JSON, or parameter blocks in the Thai reply — no `archetypeKey`, no `trapTag`, no drill/unit codes, no rule names like `retry_similar_then_targeted`, and no `Q01` lists beyond plain Thai `"ข้อ 1, 3, 5"`. Translate skills and traps into natural Thai using `archetypeName`, `coreConcept`, and `description` from the JSON output (when `hasVaultDescription` is `false`, explain the mathematical meaning of the tag in plain Thai rather than repeating the English label).
+- **Reconcile schedule vs. live evidence:** Use the live `unitContext.mastery` and `unitContext.masteryCap` (which prefer live `evidenceMastery` over a stale `_review_schedule.json` cap when the learner just completed an unassisted L4 challenge in local practice).
+- **Keep parameters internal until requested:** Hold `recommendation.primary.params` (and `recommendation.alternatives[].params`: `unit`, `archetypes`, `levels`, `count`, `focusTags`) internally; pass them to `.claude/skills/new-math-drill/SKILL.md` only when the learner replies **"สร้างเลย"**.
 
-## 3. Reply structure (Thai)
+## 3. Reply structure (Thai, ≤ 20 lines target, max ~30 lines)
 
-Write a short, concrete report with these five sections:
+Use these concise sections (with **no backticks, no internal IDs/tags/rule names, and no JSON/parameter dumps**):
 
-1. **ภาพรวม** — คะแนนรวม (`totalScore`/`maxScore`, `accuracyPct`%), เวลาที่ใช้, จำนวนข้อที่ทำถูกทันที / ใช้ตัวช่วยหรือทำซ้ำ / ผิด / ข้าม / ยังไม่ได้ทำ, ระดับ `Mastery` ปัจจุบันของบท (พร้อมเหตุผลที่ติด cap ถ้ามี) และวันทบทวนถัดไป (`nextReview`)
-2. **จุดที่ทำได้ดี** — ทักษะ/ระดับที่ทำถูกทันทีโดยไม่พึ่งตัวช่วย (ระบุข้อและทักษะเป็นภาษาคน; ถ้ายังไม่ผ่านข้อไหน ให้ชื่นชมความพยายามหรือจุดที่ทำได้จริงโดยไม่พูดเกินจริง)
-3. **จุดที่พลาดและสาเหตุ** — สรุปข้อที่ผิด ข้าม หรือพึ่งตัวช่วยมาก (hint/set-up/steps) พร้อมอธิบายกับดัก (`matchedTraps`) ด้วยภาษาง่ายๆ ว่าสับสนตรงไหน ถ้ามีกับดักซ้ำข้ามหลาย drill ให้ชี้ชัดและระบุหัวข้อบนหน้า Unit page สำหรับทบทวน; สำหรับข้อที่ข้าม (`skipped`) ให้ชี้แนวคิดพื้นฐานที่ต้องกลับไปปูใหม่โดยไม่เฉลยคำตอบ
-4. **จาก Mistake Log** — สรุปโน้ตที่ผู้เรียนบันทึกไว้ (`mistakeNote` / `revisitNote`) และหมวด `mistakes` (ระบุให้ชัดว่าอ่านจากบันทึกใน Studio เพราะเครื่องมืออ่านหน้า Notion แบบ read-only ในระบบข้าม section 6 ตามกฎ `rules/02_pedagogy.md` §7a)
-5. **ทำอะไรต่อ (ทำทันที / ทางเลือก)** —
-   - **ทำทันที:** 1 แผนหลักจาก `recommendation.primary` (บอกเหตุผล + พารามิเตอร์ `unit`, `archetypes`, `levels`, `count`, `focusTags` แบบชัดเจน)
-   - **ทางเลือก:** ไม่เกิน 2 ทางจาก `recommendation.alternatives` (ถ้ามี)
-   - ปิดท้ายด้วยการถามผู้เรียนสั้นๆ ว่าอยากให้ **"สร้างเลย"** หรือไม่ — ถ้าผู้เรียนตอบ `"สร้างเลย"` ให้ส่งพารามิเตอร์ที่เลือกต่อไปยังสกิล `.claude/skills/new-math-drill/SKILL.md` เพื่อสร้าง drill ชุดถัดไป (หรือถ้าแผนหลักคือการทำ Similar / ข้อที่ค้าง / Daily Review ใน Studio ให้แนะนำให้ทำตามนั้นก่อน และเสนอ `"สร้างเลย"` สำหรับชุดเจาะจุดอ่อน/อัปเลเวลต่อ)
+1. **ภาพรวม** (2–3 lines) — คะแนนรวมและเปอร์เซ็นต์ (ถ้ายังทำไม่ครบชุดให้บอกความแม่นยำของข้อที่ทำแล้วควบคู่กับจำนวนข้อที่ค้าง), เวลาที่ใช้, จำนวนข้อที่ถูกทันที / ใช้ตัวช่วย / ผิด / ข้าม / ยังไม่ได้ทำ, ระดับความเชี่ยวชาญของบทพร้อมเหตุผลที่ติดเพดานแบบภาษาคน (ถ้ามี) และวันทบทวนถัดไป
+2. **ทำได้ดี** (≤ 3 bullets) — สรุปกลุ่มข้อและทักษะที่ทำถูกทันทีโดยไม่พึ่งตัวช่วยเป็นภาษาไทยสั้นๆ (อ้างอิงเป็น `"ข้อ 1, 2"`)
+3. **พลาดเพราะอะไร** (≤ 3 bullets) — แต่ละ bullet เขียนในรูปแบบ **"ชื่อทักษะภาษาไทย (ข้อ ...) — ความเข้าใจผิดหรือสาเหตุที่พึ่งตัวช่วย/ข้าม ใน 1 ประโยคภาษาคนเข้าใจง่าย"** (ห้ามเฉลยคำตอบหรือค่าจากการคำนวณของข้อที่ผิด; ถ้าเป็นกับดักซ้ำข้ามชุดฝึกให้บอกว่าเป็นจุดที่พลาดซ้ำ แนะนำหัวข้อบนหน้าบทเรียนที่ควรอ่านทบทวน และบอกว่าต้องทำชุดฝึกเจาะจุดอ่อนให้ผ่านแบบไม่ใช้ตัวช่วยติดกัน 2 ชุดเพื่อปิดจุดอ่อน; ถ้าเป็นข้อที่ข้ามให้ชี้แนวคิดพื้นฐานที่ต้องกลับไปทบทวน)
+4. **Mistake Log** (1–2 lines; **ตัดหัวข้อนี้ออกทันทีถ้าผู้เรียนไม่ได้เขียนโน้ต**) — สรุปโน้ตที่ผู้เรียนจดไว้ใน Studio สั้นๆ 1–2 บรรทัด (ไม่ต้องมีหัวข้อนี้เลยถ้าไม่มีโน้ต)
+5. **ทำอะไรต่อ** —
+   - แผนหลัก **1 อย่างใน 1 ประโยค** + **เหตุผล 1 ประโยค** (เช่น ให้กลับไปกดทำโจทย์คล้าย Similar ของข้อที่พลาดแบบไม่เปิดคำใบ้ หรือให้อ่านทบทวนหน้าบทเรียนแล้วสร้างชุดฝึกใหม่)
+   - **ทางเลือก:** ไม่เกิน 2 ข้อ ข้อละ 1 บรรทัดสั้นๆ
+   - ปิดท้ายสั้นๆ ว่าหากต้องการให้สร้างชุดฝึกตามแผนหรือทางเลือกไหน ให้ตอบว่า **"สร้างเลย"** (เมื่อผู้เรียนตอบ "สร้างเลย" ค่อยส่งพารามิเตอร์ที่เก็บไว้ภายในไปยังสกิล `new-math-drill`)
 
 ## 4. Never
 
-- Reveal answers, worked steps, or hidden hints of unattempted or missed problems.
+- Reveal answers, worked values, worked steps, or hidden hints of missed or unattempted problems.
+- Include internal IDs (`t02-c01-...`, `DRL-...`, `MTH-...`), `trapTag`s, rule names (`retry_similar_then_targeted`), `Q01` tokens, backticks, JSON, or parameter lists in the learner-facing report.
+- Include an empty Mistake Log section when the learner wrote no notes.
 - Write to `progress/`, `drills/data/`, or Notion.
 - Invent recommendations that contradict `scripts/drill_review.py` `recommendation`.
-- Dump raw internal IDs (`t02-c01-...`) without plain Thai meaning.
 
 ## Final documentation check
 
