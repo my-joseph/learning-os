@@ -303,7 +303,95 @@ assert(afterRevMerge.mistakeNote === "Initial note", "reviewMerge keeps original
 assert(afterRevMerge.revisitNote === "Check formula before substituting", "reviewMerge fills revisitNote");
 assert(Boolean(afterRevMerge.reviewStepsRevealedAt), "reviewMerge records cycle-scoped reviewStepsRevealedAt without mutating original flag");
 
-// 11. Atomic writes leave no leftover .tmp files
+// 11. Stale save preserves disk lastTestReport and avoids duplicating disputed reviews,
+//     while a newer cycleStartedAt retry reset is allowed to clear lastTestReport.
+const prgReportDoc = prgDoc();
+prgReportDoc.drillId = "DRL-PRG-REPORT-01";
+prgReportDoc.problems[0].state = {
+  userInput: "",
+  score: 1,
+  lastTestReport: {
+    allPassed: true,
+    score: 1,
+    passedCount: 2,
+    totalCount: 2,
+    visibleResults: [],
+    hiddenPassed: 0,
+    hiddenTotal: 0,
+    executionTimeMs: 10,
+    ts: "2026-11-20T12:00:00Z",
+  },
+  reviews: [
+    {
+      ...sampleReview[0],
+      at: "2026-11-20T12:00:00Z",
+      attempt: 1,
+      verdict: "pass",
+      findings: [
+        {
+          check: "QC-1",
+          severity: "must",
+          line: 1,
+          note: "Guard null",
+          disputed: { reason: "Already guarded", issueId: "ISS-9" },
+        },
+      ],
+    },
+  ],
+};
+writeProgress({ ...prgReportDoc, sessionSummary: { score: 1 } });
+
+const staleReportSave = prgDoc();
+staleReportSave.drillId = "DRL-PRG-REPORT-01";
+staleReportSave.problems[0].state = {
+  userInput: "",
+  score: 0,
+  lastTestReport: null,
+  reviews: [
+    {
+      ...sampleReview[0],
+      at: "2026-11-20T12:00:00Z",
+      attempt: 1,
+      verdict: "revise",
+      findings: [{ check: "QC-1", severity: "must", line: 1, note: "Guard null" }],
+    },
+  ],
+};
+writeProgress({ ...staleReportSave, sessionSummary: { score: 0 } });
+const afterStaleReport = readProgress("DRL-PRG-REPORT-01")?.problems?.Q01 as {
+  lastTestReport?: { allPassed?: boolean } | null;
+  reviews?: Array<{ verdict?: string }>;
+};
+assert(
+  afterStaleReport.lastTestReport?.allPassed === true,
+  "stale save with lastTestReport:null must keep disk lastTestReport",
+);
+assert(
+  afterStaleReport.reviews?.length === 1 && afterStaleReport.reviews[0].verdict === "pass",
+  "stale pre-dispute review must not duplicate or downgrade server disputed review",
+);
+
+const resetCycleSave = prgDoc();
+resetCycleSave.drillId = "DRL-PRG-REPORT-01";
+resetCycleSave.problems[0].state = {
+  userInput: "",
+  score: null,
+  lastTestReport: null,
+  cycleStartedAt: "2026-11-21T08:00:00Z",
+};
+writeProgress({ ...resetCycleSave });
+const afterResetCycle = readProgress("DRL-PRG-REPORT-01");
+const afterResetState = afterResetCycle?.problems?.Q01 as { lastTestReport?: unknown };
+assert(
+  afterResetState.lastTestReport === null,
+  "retry reset advancing cycleStartedAt is allowed to clear lastTestReport",
+);
+assert(
+  (afterResetCycle?.sessionSummary as { score?: number })?.score === 0,
+  "omitting sessionSummary preserves existing sessionSummary",
+);
+
+// 12. Atomic writes leave no leftover .tmp files
 const leftoverTmp = fs.readdirSync(tmp).filter((f) => f.endsWith(".tmp"));
 assert(leftoverTmp.length === 0, "atomic progress writes must not leave .tmp files behind");
 
