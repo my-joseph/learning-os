@@ -5,48 +5,49 @@ description: Assess one LearningOS area deeply and prepare a learner-approved ph
 
 # Improve one area
 
-Health-check asks what is broken now (broad and shallow). Improve asks how one area should get better (focused and deep). Assess first, propose a phased roadmap, wait for the learner's decision, then execute approved items as small PRs. Speak to the learner in polite Thai; write reports and learning content in English. Keep this skill read-only until roadmap approval.
+Health-check asks what is broken now (broad and shallow). Improve asks how one area should get better (focused and deep). Assess first, propose a phased roadmap, wait for the learner's decision, then execute approved items as small PRs. Speak to the learner in polite Thai; write reports and learning content in English. Keep the skill read-only until roadmap approval.
 
 ## 1. Brief and pin context
 
 - Parse `area` (`engine`, `ux`, `pipeline`, or `content`) and optional focus. If no valid area is named, ask which area; do not start a broad audit.
-- Resolve `MAIN` from `git worktree list`; capture `AUDIT_SHA=$(git -C "$MAIN" rev-parse HEAD)` once. Create `$MAIN/pilot/improve-<area>-<YYYY-MM-DD>/` and put all reports there. This folder belongs to the main checkout even when the skill runs in another worktree.
+- Resolve `MAIN` from `git worktree list --porcelain`. Run `git -C "$MAIN" fetch origin main`, then capture `AUDIT_SHA=$(git -C "$MAIN" rev-parse origin/main)` once. Record that SHA plus `$MAIN` HEAD and the active worktree HEAD when they differ. Create `$MAIN/pilot/improve-<area>-<YYYY-MM-DD>/` and save `context.md`, `assessment.md`, and `roadmap.md` there.
+- Use `"$MAIN/.venv/bin/python"` for Python commands; `.venv` is gitignored and absent in fresh worktrees. Inspect source at `AUDIT_SHA` and compare relevant findings with current `origin/main`.
 - Do not read or modify learner `progress/`. Never write to Notion; use isolated pilot data for any UI work. Never expose drill prompts, answers, steps, or hidden tests before a real attempt.
 
 ## 2. Gather context before proposing (mandatory)
 
-Read context at the pinned `AUDIT_SHA` before making recommendations. Record sources and freshness in `context.md`.
+Record sources, pinned SHA, and freshness in `context.md`.
 
-- Read the latest `$MAIN/pilot/health-*/report.md` (and relevant checks/findings) plus `gh pr list --state open --base main`; mark findings already fixed on main or covered by an open PR.
-- Run `.venv/bin/python -m scripts.issues list`; inspect `docs/backlog.md` and relevant project memory notes and learner decisions. Find memory via the main checkout's Claude project memory directory; read its `MEMORY.md` index and relevant linked notes. If an input is missing, record that limitation.
-- Explicitly check decisions marked ON HOLD, including Similar “+” refactor and template removal, legacy PRG drill/lab retire-and-rebuild, scheduled jobs, and `/api/generate-drill` removal. Do not revive deferred work in a roadmap unless the learner has since approved it.
-- Read `rules/00_core.md` §10 and its refactor invariants: characterize existing behavior first, keep refactor commits separate from features, and keep tests green at every step.
-- Treat learner-pasted/external reports as leads, not current truth. Verify each claim against pinned source and current main before proposing work.
+- Read the latest `$MAIN/pilot/health-*/report.md` and relevant checks/findings; inspect both `gh pr list --state open --base main` and `gh pr list --state merged --base main --limit 20`. Mark findings fixed on main or covered by an open PR, and note overlapping open-PR files.
+- Run `"$MAIN/.venv/bin/python" -m scripts.issues list`; inspect `docs/backlog.md`, relevant project memory notes, and learner decisions. Find memory via the main checkout's Claude project memory directory; read its `MEMORY.md` index and linked notes. Record missing inputs.
+- Explicitly check ON HOLD decisions, including Similar “+” refactor and template removal, legacy PRG drill/lab retire-and-rebuild, scheduled jobs, and `/api/generate-drill` removal. Do not revive deferred work unless the learner has since approved it.
+- Read `rules/00_core.md` §10 and refactor invariants: characterize behavior first, separate refactor commits from features, and keep tests green at each step. Treat learner-pasted/external reports as leads and verify claims against the pinned source and current main.
 
 ## 3. Assess one area
 
-- Read `areas/<area>.md` and delegate a bounded, read-only assessment to worker(s) using `.claude/skills/dispatch-worker/SKILL.md`. Pin every worker to `AUDIT_SHA`; use isolated worktrees, unique reports, and English output. Do not let workers edit product files.
-- Save `assessment.md` in the dated folder. Include current state, strengths worth preserving, evidence with exact `file:line`, and relevant measurements (size, complexity, duplication, coverage, timings, or per-stage cost as applicable). Separate measured facts from hypotheses.
-- Verify every finding yourself or with a second worker. Drop items fixed on main, already in an open PR, or deferred by the learner. Note stale or unverified inputs instead of treating them as facts.
+- Read `areas/<area>.md`. As coordinator, delegate bounded read-only assessments through `.claude/skills/dispatch-worker/SKILL.md`, pinned to `AUDIT_SHA`, using isolated worktrees, unique reports, and English output. If already in an isolated read-only worker or doing a focused single-area verification, inspect directly; do not spawn nested worktrees. Use Argon as an independent verifier when available, separate from the original assessor. Workers must not edit product files.
+- Save `assessment.md` with current state, strengths worth preserving, exact `file:line` evidence, and relevant measurements (size, complexity, duplication, coverage, timings, or per-stage cost). Separate measured facts from hypotheses.
 
-## 4. Propose the roadmap and stop for the learner
+## 4. Verify findings and filter stale or deferred items
 
-- Write `roadmap.md` with phases only where useful: Phase 1 quick wins/debt, Phase 2 structural improvements, Phase 3 new capability. Each item must state goal, evidence, measurable expected benefit, risk, size, model (`Luna`, `Hydrogen`, or `Neon` per dispatch-worker), dependencies, and a test-first plan. For refactors, the plan starts with characterization tests and a before/after measure.
-- List learner decisions and deferred items in a separate section; distinguish choices needed now from approved standing decisions. Do not execute roadmap items before approval.
-- Give the learner a concise Thai summary of evidence, phases, trade-offs, and decisions needed. Stop for the learner to select/approve items. Continue only with the approved scope.
+- Verify every finding and every claim in an external report against the pinned source and current `main`, yourself or with an independent verifier.
+- Exclude items fixed on `main`, covered by an open PR, outside `<area>` (route them to the right area), or marked ON HOLD/deferred. Add a verification-disposition table to `assessment.md` so dropped leads are accounted for and not presented as facts.
 
-## 5. Execute approved items
+## 5. Propose the roadmap and stop for the learner
 
-- Implement each approved item in its own small PR via `dispatch-worker`; one PR per item. For refactors, add characterization tests first, preserve behavior, measure before/after, and keep refactor changes separate from feature changes. Run applicable checks and report failures honestly.
+- Write `roadmap.md` with phases as useful: quick wins/debt, structural improvements, and new or topic-gated capability. Each item states goal, exact evidence, measurable expected benefit, risk, size (`S`/`M`/`L`), model (`Luna`, `Hydrogen`, `Neon`, or `Argon` per dispatch-worker), dependencies (including open PRs touching the files), and a test-first plan. Refactors start with characterization tests and before/after measures.
+- List learner decisions, open-PR exclusions, and standing ON HOLD/deferred items separately; distinguish decisions needed now from standing decisions. Do not execute roadmap items before approval.
+- Give the learner a concise Thai summary of evidence, phases, trade-offs, and decisions needed. **Stop after read-only steps 1–5.** Continue to step 6 only with approved scope.
+
+## 6. Execute approved items and close the cycle
+
+- Implement each approved item in its own small PR via `dispatch-worker`. For refactors, add characterization tests first, preserve behavior, measure before/after, and keep refactor changes separate from feature changes. Run applicable checks and report failures honestly.
 - Never combine refactor and feature work. Do not write to Notion or learner progress. Keep drill content English and enforce zero-leak gates.
-
-## 6. Close the improvement cycle
-
-- Update roadmap item status after each PR. If behavior or commands changed, update `CLAUDE.md` and relevant docs in the same scoped PR. Log follow-up issues with `python -m scripts.issues add` when required by `rules/00_core.md` §11.
-- Review each PR and checks, then stop after the approved work is delivered. Do not merge unless the learner explicitly says “merge”. Stop every server or background process started during UX work.
+- Update roadmap status after each PR. If behavior or commands change, update `CLAUDE.md` and relevant docs in the same scoped PR. Log follow-up issues with `"$MAIN/.venv/bin/python" -m scripts.issues add` when required by `rules/00_core.md` §11.
+- Review each PR and checks, follow `rules/00_core.md` §10, and stop after approved work is delivered. Stop every server or background process started during UX work.
 
 ## Final check
 
-- [ ] Assessment and roadmap use the same `AUDIT_SHA`; evidence was checked against current main.
-- [ ] Fixed, open-PR, and deferred items are excluded or clearly identified; learner approval is recorded before execution.
-- [ ] Each approved item has its own PR and applicable verification; no learner progress, Notion writes, or leaked exercise material was used.
+- [ ] `context.md`, `assessment.md`, and `roadmap.md` exist in the dated folder and cite the same `AUDIT_SHA`.
+- [ ] Fixed, open-PR, out-of-area, and ON HOLD/deferred items are excluded from execution and documented in the verification/deferral table.
+- [ ] Execution stops after step 5 until approval; approved step 6 items each have a small PR and applicable verification, with no learner progress, Notion writes, or leaked exercise material.

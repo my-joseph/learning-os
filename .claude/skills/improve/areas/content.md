@@ -2,6 +2,8 @@
 
 Assess one subject/unit scope at a time. Read `rules/00_core.md`, `rules/02_pedagogy.md`, and the applicable subject rules. Content written to drills, vaults, and docs stays English; do not reveal drill prompts, answers, steps, or hidden tests before a real attempt.
 
+Use the `AUDIT_SHA` pinned by `improve/SKILL.md` for repository evidence and record any difference from current `origin/main`. In a worker worktree, run Python as `"$MAIN/.venv/bin/python"`; the ignored `.venv` and shared `pilot/` data live in the main checkout.
+
 ## Inspect
 
 - Run the `drill-quality` skill for the chosen units. Review `vault_report`, `weak_spots`, and Similar variant coverage; distinguish content/vault quality from learner-specific progress and use pilot data if a workflow needs state.

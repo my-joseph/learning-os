@@ -27,7 +27,7 @@ From the main checkout run `git worktree add ../wt-<name> -b <branch> origin/mai
   | Gemini Hydrogen (everyday coding) | `gemini-4-hydrogen-high` | A feature or UI component across a few files, focused bug hunts, new scripts with tests. |
   | Gemini Neon (hardest work) | `gemini-4-neon-high` | Architecture, multi-file refactors, cross-cutting bugs (scoring/save/sync parity), bugs other models failed on. |
 
-  Fall back downward (Neon -> Hydrogen -> Luna, Argon as an extra agy fallback); narrow the spec when dropping to Luna. Hydrogen, Neon and Argon share one agy quota; Luna has its own.
+  Fall back downward (Neon -> Hydrogen -> Luna, with Argon available in the agy pool); narrow the spec when dropping to Luna. Hydrogen, Neon and Argon share one agy quota; Luna has its own. For improvement assessments, use Argon as an independent verifier when available, separate from the original assessor; if unavailable, select a different available model and record the limitation.
 - Set `MODELS` in fallback order, `MAX_SECS`, and `IDLE_AFTER_PR` as needed. The runner falls back on quota limits; model availability changes, so check memory/learner settings and do not hard-code one account. For continued work on a branch with an existing PR, use a large `IDLE_AFTER_PR` (for example `1500`) so a quiet log does not stop the worker early.
 - Read-only jobs set a unique absolute `DONE_FILE` for each job. Code jobs complete when their PR exists.
 - Run `MODELS=... IDLE_AFTER_PR=... MAX_SECS=... tools/agents/run-worker.sh <wt> <branch> <prompt> <log>` through the Bash tool with `run_in_background: true`. Do not launch it with detached shell syntax such as `( ... &)`; that loses tracked completion.

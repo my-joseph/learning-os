@@ -2,6 +2,8 @@
 
 Assess one Studio journey at a time against `docs/studio_design.md`. Use pilot/mock data only (`LEARNINGOS_PILOT=1`); never show learner progress in screenshots and never write to Notion.
 
+Use the `AUDIT_SHA` pinned by `improve/SKILL.md` for repository evidence and record any difference from current `origin/main`. If using git worktrees, resolve `$MAIN` to the main checkout for shared `pilot/` reports; do not assume those files or `.venv` exist in the worker worktree.
+
 ## Inspect
 
 - Start the Studio locally on `127.0.0.1:3000` with `npm run dev` in `practice-studio/`, then use the browser tool (Puppeteer) to click through relevant key flows: drill, Similar, review, due today, weak spots, and lab. Record which flows were actually exercised.

@@ -2,6 +2,8 @@
 
 Assess source-to-learning-content flow, retries, and manual work for one bounded pipeline focus. Read relevant source-generation and content rules first. Keep the assessment read-only; never write to Notion or learner progress.
 
+Use the `AUDIT_SHA` pinned by `improve/SKILL.md` for repository evidence and record any difference from current `origin/main`. In a worker worktree, resolve `$MAIN` to the main checkout for shared `pilot/` inputs and run Python as `"$MAIN/.venv/bin/python"`; fresh worktrees do not include the ignored `.venv`.
+
 ## Inspect
 
 - Trace source synthesis: `source_find`, `extract_cards_job`, `source_gap`, originality, and OCR; then ingest gates, variant bank, review/sync where relevant.
