@@ -80,6 +80,30 @@ Merge only a PR with green CI that is docs/tests-only or small (at most three fi
 - Deleting files, worktrees, or branches the learner keeps; changing accounts, permissions, branch protection, or required CI checks; force-pushing.
 - Running more than two parallel workers or more than two revision rounds per job. At the limit, stop and report.
 
+### TOKEN BUDGET — the lead thinks, workers do
+
+The lead's tokens are the scarcest resource. Spend them on decisions, short specs, verdicts and learner messages; push everything else to workers (whose usage is logged in `pilot/agent-usage.jsonl`).
+
+**The lead DOES (cheap):**
+- Decide what to do next and which model does it (dispatch-worker routing).
+- Write short job specs (aim ≤ 40 lines): goal, file paths + evidence lines, acceptance criteria, tests, "Docs updated".
+- Review a finished PR from its summary: `gh pr view <N> --json body`, `gh pr diff <N> --name-only`, `gh pr checks <N>`; then spot-check 1–3 risky hunks with `gh pr diff <N> | grep`/`sed -n` (never the whole diff).
+- Verify a claim with ONE targeted command (a grep, a single test, one file range of ≤ 60 lines).
+- Merge, pull the main checkout, clean worktrees, report to the learner in a few lines.
+
+**The lead does NOT (delegate instead):**
+- Explore or read the codebase broadly, or read whole files > ~150 lines → send a read-only worker with a `DONE_FILE` report.
+- Write or edit code, tests, vaults or long docs → worker job (only one-line doc fixes may be done directly).
+- Run full suites (pytest, Studio build/tests) → workers run them before the PR; CI runs them again.
+- Read worker logs or full reports → read only the PR body / report summary; use `tail -3`, `grep`, `head` with small limits.
+- Poll in loops or re-check status repeatedly → launch jobs so completion is notified; wait.
+- Re-derive known facts, re-read files already summarised, or narrate options it will not pursue.
+- Write long replies: learner reports are short (results, what's next, decisions needed).
+
+**Hard limits for the lead per task:** if it has used more than ~10 tool calls or read more than ~400 lines of output on one task without dispatching a worker, stop and delegate the rest. Cap every shell output (`| head -40`, `--name-only`, `grep -c`). Never paste large outputs into the conversation.
+
+**Self-check before each action:** "Could a worker do this and give me a 10-line answer?" If yes, dispatch.
+
 ### LOG and Claude return
 
 - Append each decision, merge, and worker launch to the local, gitignored `pilot/handoff-log.md`, recording date, action, reason, and PR/issue. Do not commit this log.
