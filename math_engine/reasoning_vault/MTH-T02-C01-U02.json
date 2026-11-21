@@ -8,7 +8,7 @@
       "archetypeKey": "t02-c01-u02-factoring-monic-zero-product",
       "level": 1,
       "name": "Solving Monic Quadratic Equations by Factoring and Zero Product Property",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Solving Quadratic Equations by Factoring",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: smartmathpro, mathsgenie, tyler-wallace-algebra",
       "coreConcept": "Rewrite a monic quadratic equation as x^2 + bx + c = 0, factor into (x - r_1)(x - r_2) = 0 (or factor out x when c = 0), and apply the Zero Product Property so each linear factor equals zero.",
       "mentalModel": "A product equals zero if and only if at least one factor equals zero; factoring breaks a degree-2 equation into degree-1 equations.",
       "governingRelation": "x^2 + bx + c = (x - r_1)(x - r_2) = 0 \\implies x = r_1 \\lor x = r_2",
@@ -22,6 +22,36 @@
           "trapTag": "t02-c01-u02-omitted-zero-factor-trap",
           "description": "Dividing both sides of x^2 + bx = 0 by x and losing the root x = 0.",
           "trapFormula": "x^2 + bx = 0 \\implies x = -b \\text{ (dropped } x = 0\\text{)}"
+        },
+        {
+          "trapTag": "t02-c01-u02-factor-sum-product-pair-trap",
+          "description": "Choose a factor pair that satisfies only the sum or only the product condition, so expansion does not recover the original trinomial.",
+          "trapFormula": "mn = c \\;\\text{but}\\; m+n \\ne b"
+        },
+        {
+          "trapTag": "t02-c01-u02-factor-sign-pair-trap",
+          "description": "Select signs that give the required product but the wrong middle-term sign.",
+          "trapFormula": "(x+m)(x+n) \\text{ has the wrong } x\\text{-coefficient}"
+        },
+        {
+          "trapTag": "t02-c01-u02-factor-shared-factor-incomplete-trap",
+          "description": "Extract a shared factor from only some terms, changing the value of the expression.",
+          "trapFormula": "kx^2+kbx+c \\ne k(x^2+bx+c)"
+        },
+        {
+          "trapTag": "t02-c01-u02-difference-of-squares-middle-term-trap",
+          "description": "Insert a middle term when the expression is a difference of two squares.",
+          "trapFormula": "x^2-p^2=x^2-2px+p^2"
+        },
+        {
+          "trapTag": "t02-c01-u02-factor-method-assumed-trap",
+          "description": "Assume integer factorization is available and keep searching instead of switching to a method that works for every quadratic.",
+          "trapFormula": "\\text{integer factors assumed to exist}"
+        },
+        {
+          "trapTag": "t02-c01-u02-repeated-factor-sign-check-trap",
+          "description": "Choose the sign of a repeated linear factor from the constant term without checking the middle coefficient.",
+          "trapFormula": "(x+p)^2=x^2+2px+p^2 \\text{ with a mismatched middle sign}"
         }
       ],
       "versatileDomains": [],
@@ -63,7 +93,7 @@
       "archetypeKey": "t02-c01-u02-factoring-nonmonic-rearrange",
       "level": 2,
       "name": "Rearranging and Factoring Non-Monic Quadratic Equations",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Solving Quadratic Equations by Factoring",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: smartmathpro",
       "coreConcept": "Move all terms to one side so the right-hand side is strictly 0, remove any common numerical factor, and factor ax^2 + bx + c = 0 by AC-splitting/grouping before applying the Zero Product Property.",
       "mentalModel": "The Zero Product Property holds exclusively for 0; setting a product equal to any non-zero constant k gives infinitely many factor pairs.",
       "governingRelation": "ax^2 + bx + c = d \\implies ax^2 + bx + (c - d) = 0",
@@ -77,6 +107,16 @@
           "trapTag": "t02-c01-u02-dropped-leading-coeff-in-factoring-trap",
           "description": "Finding two integers m, n with m*n = a*c and m + n = b and writing (x + m)(x + n) = 0 without dividing back by a or grouping.",
           "trapFormula": "x = -m, -n \\text{ instead of } -m/a, -n/a"
+        },
+        {
+          "trapTag": "t02-c01-u02-ac-pair-treated-as-roots-trap",
+          "description": "Treat the pair used to split the middle term as the roots before completing the grouping.",
+          "trapFormula": "mn=ac,\\;m+n=b \\not\\Rightarrow x=-m,-n"
+        },
+        {
+          "trapTag": "t02-c01-u02-zero-product-before-zero-trap",
+          "description": "Set factors separately to zero before rearranging the equation so the product equals zero.",
+          "trapFormula": "(x-p)(x-q)=k \\not\\Rightarrow x=p \\text{ or } x=q"
         }
       ],
       "versatileDomains": [],
@@ -118,7 +158,7 @@
       "archetypeKey": "t02-c01-u02-quadratic-formula",
       "level": 2,
       "name": "Solving Quadratic Equations Using the Quadratic Formula",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Using the Quadratic Formula",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: tyler-wallace-algebra",
       "coreConcept": "Put the equation into standard form ax^2 + bx + c = 0, read signed coefficients a, b, c carefully, and compute x = (-b ± sqrt(b^2 - 4ac)) / (2a), simplifying radicals and extracting i when the discriminant is negative.",
       "mentalModel": "The quadratic formula packages completing the square once and for all, separating the axis of symmetry (-b/(2a)) from the symmetric offset (±sqrt(Δ)/(2a)).",
       "governingRelation": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
@@ -137,18 +177,29 @@
           "trapTag": "t02-c01-u02-discriminant-plus-4ac-trap",
           "description": "Computing b^2 + 4ac instead of b^2 - 4ac inside the radical.",
           "trapFormula": "\\Delta_{\\text{err}} = b^2 + 4ac"
+        },
+        {
+          "trapTag": "t02-c01-u02-missing-coefficient-not-zero-trap",
+          "description": "Assign a nonzero value to a coefficient whose term is absent instead of substituting zero.",
+          "trapFormula": "ax^2+c=0 \\implies b \\ne 0"
+        },
+        {
+          "trapTag": "t02-c01-u02-formula-not-general-trap",
+          "description": "Treat the general formula as unusable when factoring or completing the square appears more convenient.",
+          "trapFormula": "\\text{quadratic formula marked unavailable}"
         }
       ],
       "versatileDomains": [],
       "usedContexts": [],
-      "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots."
+      "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots.",
+      "levelNote": "L2 for identifying signed coefficients and evaluating the formula, including absent terms as zero. Choosing a method alone remains L2; higher demand requires an additional setup or a meaningful case rejection."
     },
     {
       "unitCode": "MTH-T02-C01-U02",
       "archetypeKey": "t02-c01-u02-discriminant-classification",
       "level": 2,
       "name": "Root Classification and Threshold Analysis via the Discriminant",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — The Discriminant",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: nzqa-ncea, mathsgenie",
       "coreConcept": "Evaluate Δ = b^2 - 4ac on standard form ax^2 + bx + c = 0 to determine whether the equation has two distinct real solutions (Δ > 0), one repeated real solution (Δ = 0), or two non-real complex conjugate solutions (Δ < 0), and solve for unknown coefficient thresholds.",
       "mentalModel": "The discriminant sits inside the square root and determines whether the symmetric offset from the vertex -b/(2a) is real positive, zero, or purely imaginary.",
       "governingRelation": "\\Delta = b^2 - 4ac \\;\\begin{cases} > 0 & \\text{two distinct real roots} \\\\ = 0 & \\text{one repeated real root} \\\\ < 0 & \\text{two complex conjugate roots} \\end{cases}",
@@ -162,18 +213,34 @@
           "trapTag": "t02-c01-u02-discriminant-sign-error-when-c-negative-trap",
           "description": "Dropping the double negative in -4ac when a > 0 and c < 0, subtracting 4a|c| instead of adding it.",
           "trapFormula": "b^2 - 4a|c| \\text{ when } c < 0"
+        },
+        {
+          "trapTag": "t02-c01-u02-equal-roots-nonzero-discriminant-trap",
+          "description": "Use a positive discriminant for coincident roots instead of the zero boundary case.",
+          "trapFormula": "\\Delta>0 \\text{ mistaken for } \\Delta=0"
+        },
+        {
+          "trapTag": "t02-c01-u02-parameter-sign-collection-trap",
+          "description": "Lose a sign while collecting parameter terms in the condition for a repeated root.",
+          "trapFormula": "\\Delta(-k)=0 \\text{ used in place of } \\Delta(k)=0"
+        },
+        {
+          "trapTag": "t02-c01-u02-repeated-root-counted-distinct-trap",
+          "description": "Describe a repeated solution as two distinct values rather than one value with multiplicity two.",
+          "trapFormula": "\\Delta=0 \\implies 2 \\text{ distinct roots}"
         }
       ],
       "versatileDomains": [],
       "usedContexts": [],
-      "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots."
+      "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots.",
+      "levelNote": "L2 for classifying the solution set from the discriminant. L3 when a parameter must be solved from the repeated-root boundary; check the resulting coefficient condition before classifying."
     },
     {
       "unitCode": "MTH-T02-C01-U02",
       "archetypeKey": "t02-c01-u02-quadratic-flaw-diagnosis",
       "level": 3,
       "name": "Diagnosing Algebraic Flaws in Quadratic Equation Derivations",
-      "source": "OpenStax Algebra and Trigonometry 2e §2.5 (beyond-the-book diagnostic extension)",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5; cores: smartmathpro, mathsgenie",
       "coreConcept": "Inspect a line-by-line solution of a quadratic equation and locate the exact line where algebraic equivalence breaks (Zero Product Property on nonzero RHS, unbalanced completing the square, dropped ± branch, or wrong formula denominator). L3 diagnose form: prompt shows 'Line N: $...$' lines and asks which line is the first wrong line (answerSpec choice with verify.flaw).",
       "mentalModel": "Every valid transformation preserves the solution set; the first flawed line alters either the algebraic value or the solution set.",
       "governingRelation": "\\text{Equivalence preserved iff } \\{x : L_k(x)\\} = \\{x : L_{k-1}(x)\\}",
@@ -197,6 +264,16 @@
           "trapTag": "t02-c01-u02-omitted-negative-square-root-trap",
           "description": "Missing the dropped ± sign when taking the square root of both sides.",
           "trapFormula": "x - h = \\sqrt{k}"
+        },
+        {
+          "trapTag": "t02-c01-u02-factor-pair-check-omitted-trap",
+          "description": "Accept a proposed factorization without expanding it to check every coefficient.",
+          "trapFormula": "(x+m)(x+n) \\text{ accepted without expansion}"
+        },
+        {
+          "trapTag": "t02-c01-u02-difference-square-invented-term-trap",
+          "description": "Fail to notice a manufactured middle term in a difference-of-squares factorization.",
+          "trapFormula": "(x-p)(x+p)=x^2-p^2+2px"
         }
       ],
       "versatileDomains": [],
