@@ -11,6 +11,10 @@ Use this skill for Claude's worker delegation. The learner does not need a trigg
 
 - Read the applicable rules and task-specific instructions. Make the spec the concatenation of `.claude/skills/dispatch-worker/common.md` and a job file.
 - Write the job file and `.prompt` with a quoted heredoc (`<<'EOF'`) so backticks and shell substitutions remain literal. Include scope, acceptance criteria, verification, report expectations, and absolute paths for main-checkout-only `sources/` or `pilot/` data.
+- Keep each job to one concern. Split a spec that names multiple subsystems or more than about eight files to change into independent jobs; do not split tightly coupled work that cannot be reviewed or verified separately.
+- Put exact file paths and the relevant evidence with line numbers near the start of the job spec. Give enough existing behavior and code context for the worker to make the change without repeating repository exploration.
+- List concrete acceptance criteria and the exact tests to add or run. For UI or flow work, name the expected screens and states (including loading, empty, error, and success states when applicable) so review does not uncover an unplanned state late.
+- Route each sub-slice to the lightest capable model in the model table below. Keep complex architecture or cross-cutting work on a capable model; narrow the slice when routing it to a lighter model.
 - Keep the worker prompt concrete and bounded. Name shared files and conflicts to avoid.
 
 ## 2. Create an isolated worktree
@@ -19,7 +23,7 @@ From the main checkout run `git worktree add ../wt-<name> -b <branch> origin/mai
 
 ## 3. Start and track the worker
 
-- Pick the model by job difficulty (learner policy, 2026-11-21):
+- Pick the lightest capable model by sub-slice difficulty (learner policy, 2026-11-21):
 
   | Model | `MODELS` value | Use for |
   | :-- | :-- | :-- |

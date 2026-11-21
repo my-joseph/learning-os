@@ -302,6 +302,11 @@ def test_self_review_issues_signals_recurring_proposals_and_since(tmp_path: Path
     assert by_key[("pipeline", "recurring-issue")]["playbook"] == "improve pipeline"
     assert ("studio", "recurring-issue") not in by_key
 
+    all_sig, _ = sr.collect_issue_signals(issues_path=str(log_file), include_resolved=True)
+    resolved_pattern = next(p for p in all_sig["recurringPatterns"] if p["target"] == "studio")
+    assert resolved_pattern["count"] == 2
+    assert resolved_pattern["pending"] == 0
+
 
 def test_self_review_usage_signals_failures_fallbacks_revisions_and_cost(tmp_path: Path) -> None:
     usage_file = tmp_path / "pilot" / "agent-usage.jsonl"
@@ -361,25 +366,45 @@ def test_self_review_usage_signals_failures_fallbacks_revisions_and_cost(tmp_pat
                 "total_tokens": 3_600_000,
                 "output_tokens": 95_000,
             },
-            # Branch 2 also reopened
+            # A runner kill after a PR exists is a stop, not a failed run or revision.
             {
                 "ts": "2026-11-21T12:00:00",
                 "model": "gemini-4-argon-high",
                 "branch": "feat/feature-b",
                 "outcome": "rc=143 idle-after-pr",
-                "status": None,
+                "status": "ERROR",
                 "duration_seconds": None,
                 "total_tokens": 3_200_000,
                 "output_tokens": 60_000,
+            },
+            # A non-quota nonzero rc remains a failure even without a status field.
+            {
+                "ts": "2026-11-21T13:00:00",
+                "model": "gemini-4-neon-high",
+                "branch": "fix/feature-c",
+                "outcome": "rc=2",
+                "duration_seconds": 60,
+                "total_tokens": 10_000,
+                "output_tokens": 1_000,
+            },
+            {
+                "ts": "2026-11-21T13:30:00",
+                "model": "gemini-4-neon-high",
+                "branch": "fix/feature-d",
+                "outcome": "rc=1",
+                "duration_seconds": 60,
+                "total_tokens": 10_000,
+                "output_tokens": 1_000,
             },
         ],
     )
 
     sig, props = sr.collect_usage_signals(usage_path=str(usage_file), since="2026-11-19")
     assert sig["exists"] is True
-    assert sig["runs"] == 6
+    assert sig["runs"] == 8
     assert len(sig["fallbacks"]) == 2
-    assert len(sig["reopenedBranches"]) == 2
+    assert len(sig["reopenedBranches"]) == 1
+    assert sig["reopenedBranches"][0]["branch"] == "feat/feature-a"
     assert sig["byModel"]["gemini-4-neon-high"]["failedRuns"] == 2
     assert sig["byModel"]["gemini-4-argon-high"]["idleAfterPr"] == 1
     assert sig["byModel"]["gemini-4-argon-high"]["failedRuns"] == 0
@@ -387,7 +412,7 @@ def test_self_review_usage_signals_failures_fallbacks_revisions_and_cost(tmp_pat
     cats = {(p["target"], p["category"]) for p in props}
     assert ("model:gemini-4-neon-high", "usage-failure") in cats
     assert ("model:gemini-4-neon-high", "usage-fallback") in cats
-    assert ("job:feat", "usage-rework") in cats
+    assert ("job:feat", "usage-rework") not in cats
     assert ("job:feat", "usage-cost") in cats
 
 

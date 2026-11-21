@@ -1,5 +1,13 @@
 # Shared worker rules
 
+## Job spec quality
+
+- Assign one concern per job. Split a spec that covers multiple subsystems or more than about eight files to change into independently reviewable jobs; keep tightly coupled changes together when they cannot be verified separately.
+- Put exact file paths and evidence with line numbers near the start of every job spec so the worker can act without re-exploring the repository.
+- Every spec lists concrete acceptance criteria and the exact tests to add or run.
+- For UI or flow features, specify expected screens and states, including loading, empty, error, and success states where relevant.
+- Route each sub-slice to the lightest model capable of meeting its acceptance criteria; narrow the scope when choosing a lighter model.
+
 - Work only on the assigned branch; never commit or push on `main`; never use `--no-verify`.
 - Never print or commit `.env`, credentials, or tokens.
 - Never touch learner data in `progress/`; tests must use a temporary `PROGRESS_DIR`.
