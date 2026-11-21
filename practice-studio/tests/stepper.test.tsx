@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Problem, ProblemState, ReviewRecord } from "../src/types/drill";
+import type { DrillDocument, Problem, ProblemState, ReviewRecord } from "../src/types/drill";
 import {
   buildDrillSteps,
   buildLabSteps,
@@ -13,6 +13,8 @@ import {
 } from "../src/lib/stepperModel";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { statusTone } from "../src/lib/statusTone";
+import { buildSessionSummary, summaryFingerprint } from "../src/lib/sessionSummary";
+import { isSyncedUpToDate } from "../src/lib/syncStatus";
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -225,6 +227,7 @@ assert.deepEqual(
 );
 assert.deepEqual(buildReviewStepMeta(), {
   ariaLabel: "Review & sync",
+  synced: false,
 });
 
 const codeSteps = buildDrillSteps([makeProblem("Q01", { level: 3 }, {})], "code");
@@ -337,6 +340,7 @@ assert.deepEqual(
 );
 assert.deepEqual(buildReviewStepMeta(), {
   ariaLabel: "Review & sync",
+  synced: false,
 });
 
 // Verify rendered lab circles match state table (passed -> emerald ✓, testsOnly -> outlined + "M2", regressed -> amber + "M3")
@@ -438,7 +442,7 @@ assert.match(
 const usedHelpSteps = buildDrillSteps([makeProblem("Q01", { level: 1 }, { hintsRevealed: 1 })], "math");
 assert.equal(usedHelpSteps[0].result, "usedHelp");
 assert.equal(usedHelpSteps[0].ariaLabel, "Question 1, Level 1, used help");
-assert.deepEqual(buildReviewStepMeta(), { ariaLabel: "Review & sync" });
+assert.deepEqual(buildReviewStepMeta(), { ariaLabel: "Review & sync", synced: false });
 const usedHelpHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}
@@ -454,6 +458,86 @@ assert.match(
   /aria-label="Question 1, Level 1, used help, current"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q1<\/span>/
 );
 assert.doesNotMatch(usedHelpHtml, /bg-amber|bg-status-assisted/);
+
+// Sync status is shared by Review & Sync and the pagination stepper.
+const syncTestDrill = {
+  schemaVersion: "1",
+  drillId: "DRL-MTH-T01-C01-U01-01",
+  subject: "MATH",
+  unitCode: "MTH-T01-C01-U01",
+  unitTitle: "Linear Equations",
+  chapterCode: "MTH-T01-C01",
+  topicCode: "MTH-T01",
+  unitNotionUrl: null,
+  createdAt: "2026-11-20T00:00:00.000Z",
+  config: { questionCount: 1, difficulty: "L1", difficultyMode: "fixed" },
+  mistakeTags: [],
+  problems: [makeProblem("Q01", { level: 1 }, { score: 1 })],
+  sessionSummary: undefined,
+  localFilePath: "",
+} as unknown as DrillDocument;
+const liveSummary = buildSessionSummary(syncTestDrill, null, { attemptDate: "2026-11-20" });
+assert.equal(isSyncedUpToDate(syncTestDrill, liveSummary), false, "never synced is not green");
+const syncedDrill: DrillDocument = {
+  ...syncTestDrill,
+  sessionSummary: {
+    ...liveSummary,
+    syncedToNotionAt: "2026-11-20T01:00:00.000Z",
+    syncedFingerprint: summaryFingerprint(liveSummary),
+  },
+};
+assert.equal(isSyncedUpToDate(syncedDrill, liveSummary), true, "matching synced summary is green");
+assert.equal(
+  isSyncedUpToDate(syncedDrill, { ...liveSummary, score: 0 }),
+  false,
+  "changed summary returns to outline"
+);
+assert.equal(
+  isSyncedUpToDate(syncedDrill, liveSummary, { phase: "synced", isPilot: true }),
+  false,
+  "pilot sync is never green"
+);
+assert.equal(
+  isSyncedUpToDate(syncedDrill, liveSummary, { phase: "dryRun" }),
+  false,
+  "dry run is never green"
+);
+
+const syncedReviewHtml = renderToStaticMarkup(
+  <QuizPaginationBar
+    currentIndex={0}
+    problems={syncedDrill.problems}
+    currentDrill={syncedDrill}
+    viewMode="quiz"
+    workspace="math"
+    onSelectQuestion={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(syncedReviewHtml, /aria-label="Review &amp; sync — synced"/);
+const syncedReviewStepMarkup = syncedReviewHtml.match(/<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/)?.[0];
+assert.ok(syncedReviewStepMarkup, "Review step markup must exist");
+assert.match(syncedReviewStepMarkup, new RegExp(escapeRe(statusTone.correct.solidCircle)));
+assert.doesNotMatch(syncedReviewStepMarkup, /ring-4 ring-indigo-600\/15/);
+const currentSyncedReviewHtml = renderToStaticMarkup(
+  <QuizPaginationBar
+    currentIndex={0}
+    problems={syncedDrill.problems}
+    currentDrill={syncedDrill}
+    viewMode="review"
+    workspace="math"
+    onSelectQuestion={noop}
+    onToggleViewMode={noop}
+  />
+);
+const currentSyncedReviewStepMarkup = currentSyncedReviewHtml.match(
+  /<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/
+)?.[0];
+assert.ok(currentSyncedReviewStepMarkup, "Current Review step markup must exist");
+assert.match(
+  currentSyncedReviewStepMarkup,
+  new RegExp(`${escapeRe(statusTone.correct.solidCircle)} ring-4 ring-indigo-600/15`)
+);
 
 // Review step is last, has an svg, and has no step number inside its circle
 const lastLiMatch = sixHtml.match(/<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/);

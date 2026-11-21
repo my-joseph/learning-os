@@ -179,7 +179,9 @@ export const Stepper: React.FC<StepperProps> = ({
     });
   }, [currentIndex, isReview, steps.length]);
 
-  const reviewCircleCls = isReview
+  const reviewCircleCls = review.synced
+    ? `${statusTone.correct.solidCircle}${isReview ? ` ${CURRENT_HALO_CLS}` : ""}`
+    : isReview
     ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300 ${CURRENT_HALO_CLS}`
     : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
 

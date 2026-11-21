@@ -5,8 +5,9 @@ import { AnimatePresence, m } from "motion/react";
 import { drawer, fade } from "@/lib/motion";
 import { X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
+import type { SyncState } from "@/hooks/useProgressSync";
 import type { LabListItem } from "@/lib/labModel";
-import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
+import { DrillFilter, PracticeStatusOverride, StatusMessage, ViewMode } from "@/hooks/types";
 import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
@@ -22,6 +23,9 @@ interface StudioShellProps {
   codeHref: string | null;
   viewMode: ViewMode;
   currentDrill: DrillDocument | null;
+  statusOverride?: PracticeStatusOverride;
+  syncState?: SyncState;
+  isSyncing?: boolean;
   isLoadingDrill?: boolean;
   drillNotFound?: boolean;
   currentProblemIndex: number;
@@ -58,6 +62,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   codeHref,
   viewMode,
   currentDrill,
+  statusOverride,
+  syncState,
+  isSyncing,
   isLoadingDrill = false,
   drillNotFound = false,
   currentProblemIndex,
@@ -236,6 +243,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         <QuizPaginationBar
           currentIndex={currentProblemIndex}
           problems={currentDrill.problems}
+          currentDrill={currentDrill}
+          statusOverride={statusOverride}
+          syncState={syncState}
+          isSyncing={isSyncing}
           viewMode={viewMode}
           workspace={workspace}
           isLab={isLabId(currentDrill.drillId)}

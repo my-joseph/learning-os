@@ -2,17 +2,26 @@
 
 import React from "react";
 import type { Problem } from "@/types/drill";
+import type { DrillDocument } from "@/types/drill";
+import type { SyncState } from "@/hooks/useProgressSync";
+import type { PracticeStatusOverride } from "@/hooks/types";
 import type { Workspace } from "@/lib/routes";
 import {
   buildDrillSteps,
   buildLabSteps,
   buildReviewStepMeta,
 } from "@/lib/stepperModel";
+import { buildSyncPreview } from "@/lib/sessionSummary";
+import { isSyncedUpToDate } from "@/lib/syncStatus";
 import { Stepper } from "@/components/Stepper";
 
 export interface QuizPaginationBarProps {
   currentIndex: number;
   problems: Problem[];
+  currentDrill?: DrillDocument | null;
+  statusOverride?: PracticeStatusOverride;
+  syncState?: SyncState;
+  isSyncing?: boolean;
   viewMode: "quiz" | "review";
   workspace?: Workspace;
   isLab?: boolean;
@@ -24,6 +33,10 @@ export interface QuizPaginationBarProps {
 export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   currentIndex,
   problems,
+  currentDrill,
+  statusOverride = null,
+  syncState,
+  isSyncing = false,
   viewMode,
   workspace,
   isLab,
@@ -36,7 +49,16 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   const steps = labMode
     ? buildLabSteps(problems)
     : buildDrillSteps(problems, workspace);
-  const review = buildReviewStepMeta();
+  const synced = Boolean(
+    currentDrill &&
+      isSyncedUpToDate(
+        currentDrill,
+        buildSyncPreview(currentDrill, statusOverride).summary,
+        syncState,
+        isSyncing
+      )
+  );
+  const review = buildReviewStepMeta({ synced });
   const navLabel = labMode
     ? "Lab milestones"
     : workspace === "code"

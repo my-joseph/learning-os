@@ -27,8 +27,8 @@ import {
   buildSyncPreview,
   countSummaryChanges,
   getCoveredUnits,
-  summaryFingerprint,
 } from "@/lib/sessionSummary";
+import { isSyncedUpToDate } from "@/lib/syncStatus";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   SessionSummaryCard,
@@ -235,18 +235,10 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
       ? syncState.at || persistedSyncedAt
       : persistedSyncedAt;
 
-  const currentFingerprint = useMemo(
-    () => summaryFingerprint(preview.summary),
-    [preview.summary]
+  const syncedUpToDate = useMemo(
+    () => isSyncedUpToDate(currentDrill, preview.summary, syncState, isSyncing),
+    [currentDrill, isSyncing, preview.summary, syncState]
   );
-
-  const savedFingerprint = useMemo(() => {
-    if (!effectiveSyncedAt) return null;
-    if (currentDrill.sessionSummary?.syncedFingerprint) {
-      return currentDrill.sessionSummary.syncedFingerprint;
-    }
-    return summaryFingerprint(currentDrill.sessionSummary);
-  }, [currentDrill.sessionSummary, effectiveSyncedAt]);
 
   const effectiveSyncPhase: EffectiveSyncPhase = useMemo(() => {
     if (isSyncing || syncState.phase === "syncing") return "syncing";
@@ -255,13 +247,10 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
     if (syncState.phase === "offline") return "offline";
     if (syncState.phase === "dryRun") return "dryRun";
     if (effectiveSyncedAt) {
-      if (savedFingerprint && currentFingerprint !== savedFingerprint) {
-        return "changed";
-      }
-      return "synced";
+      return syncedUpToDate ? "synced" : "changed";
     }
     return "idle";
-  }, [currentFingerprint, effectiveSyncedAt, isSyncing, savedFingerprint, syncState.phase]);
+  }, [effectiveSyncedAt, isSyncing, syncState.phase, syncedUpToDate]);
 
   const changedCount = useMemo(() => {
     if (effectiveSyncPhase !== "changed") return 0;

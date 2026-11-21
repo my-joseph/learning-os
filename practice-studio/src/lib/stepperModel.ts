@@ -35,6 +35,7 @@ export interface StepItem {
 
 export interface ReviewStepMeta {
   ariaLabel: string;
+  synced: boolean;
 }
 
 const DRILL_RESULT_LABEL: Record<DrillStepResult, string> = {
@@ -151,6 +152,9 @@ export function buildLabSteps(problems: Problem[]): StepItem[] {
 }
 
 /** Build the visible label and accessible name for the trailing Review step. */
-export function buildReviewStepMeta(): ReviewStepMeta {
-  return { ariaLabel: "Review & sync" };
+export function buildReviewStepMeta({ synced = false }: { synced?: boolean } = {}): ReviewStepMeta {
+  return {
+    ariaLabel: synced ? "Review & sync — synced" : "Review & sync",
+    synced,
+  };
 }
