@@ -37,7 +37,6 @@ from scripts import issues
 MATH_VAULT_DIR = os.path.join("math_engine", "reasoning_vault")
 CODE_VAULT_DIR = os.path.join("code_engine", "reasoning_vault")
 VAULT_DIR = MATH_VAULT_DIR
-_AT_LEVEL = re.compile(r"@L(\d)")
 
 
 def _earned_level(prob: dict, is_prg: bool = False) -> int | None:
@@ -68,14 +67,19 @@ def _evidence(data_root: str) -> dict[str, Counter]:
 
 
 def unit_report(
-    scope: str, vault_dir: str | None = None, data_root: str = "drills/data", log: str | None = None
+    scope: str,
+    vault_dir: str | None = None,
+    data_root: str = "drills/data",
+    log: str | None = None,
+    earned: dict[str, Counter] | None = None,
 ) -> dict:
     is_prg = scope.startswith("PRG-")
     resolved_vault = vault_dir if vault_dir is not None else (CODE_VAULT_DIR if is_prg else MATH_VAULT_DIR)
     loader = prg_load_scope_archetypes if is_prg else mth_load_scope_archetypes
     owner_fn = prg_archetype_owner if is_prg else mth_archetype_owner
     archetypes = loader(scope, resolved_vault)
-    earned = _evidence(data_root)
+    if earned is None:
+        earned = _evidence(data_root)
     failed: dict[str, Counter] = defaultdict(Counter)
     for rec in issues.issues(log):
         if rec.get("kind") != "level":
@@ -83,9 +87,9 @@ def unit_report(
         where = rec.get("where", "")
         for a in archetypes:
             key = a["archetypeKey"]
-            if re.search(rf"/{re.escape(key)}(@L\d)?$", where):
-                m = _AT_LEVEL.search(where)
-                failed[key][int(m.group(1)) if m else a.get("level")] += 1
+            m = re.search(rf"/{re.escape(key)}(?:@L(\d))?(?:\s*\(vault\))?$", where)
+            if m:
+                failed[key][int(m.group(1)) if m.group(1) else a.get("level")] += 1
 
     rows = []
     for a in archetypes:
@@ -156,8 +160,9 @@ def main(argv: list[str] | None = None) -> int:
             [os.path.basename(p)[:-5] for p in glob.glob(os.path.join(MATH_VAULT_DIR, "MTH-*.json"))]
             + [os.path.basename(p)[:-5] for p in glob.glob(os.path.join(CODE_VAULT_DIR, "PRG-*.json"))]
         )
+    earned = _evidence(args.data_root)
     for scope in scopes:
-        rep = unit_report(scope, args.vault_dir, args.data_root)
+        rep = unit_report(scope, args.vault_dir, args.data_root, earned=earned)
         print(format_report(rep))
         if args.log:
             ids = log_gaps(rep)

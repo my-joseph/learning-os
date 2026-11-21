@@ -13,7 +13,7 @@ Take the brief from the request; ask only if the unit is missing or no vault exi
 - **Scope**: a unit (`PRG-T01-C01-U01`) or a chapter (`PRG-T01-C01`). A **unit drill** uses only that unit's archetypes, never another unit's. A **chapter drill** mixes the archetypes of all its units. Use the scope code as the draft's `unitCode`.
 - **Context to inspect first**:
   1. Read the unit's Notion page via `id_map.json` (`from notion_sync.client import load_env, require_token, get_all_blocks; token = require_token(load_env().get("NOTION_TOKEN")); blocks = get_all_blocks(page_id, token)`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
-  2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels.
+  2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels; `(vault)` records are counted at the archetype's base level.
   3. Run `.venv/bin/python -m scripts.weak_spots <UNIT>` to see open weak spots (`matchedTrap >= 2`, ESLint rules, `QC-*` findings, and the `NEXT` line). Target open weak spots when present.
 - **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4/L5), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
 - **Environment preset**: `node-vanilla` (JS) or `typescript-strict` / `backend-sqlite` / `react-dom` (TS) per the curriculum row.

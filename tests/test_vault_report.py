@@ -78,6 +78,35 @@ def test_log_gaps_logs_failing_once(env):
     assert "FAILING@L4" in vr.format_report(rep)
 
 
+def test_log_gaps_records_match_followup_report(env):
+    rep = vr.unit_report("MTH-X", *env)
+    assert len(vr.log_gaps(rep)) == 2
+
+    rows = _rows(vr.unit_report("MTH-X", *env))
+    assert rows["x-weak"]["failed"] == {4: 2}
+    assert rows["x-model"]["failed"] == {2: 1, 3: 1}
+
+
+def test_vault_suffix_preserves_explicit_failure_level(env):
+    issues.add_issue("level", "batch", "gate", "MTH-X-U02/x-weak@L4 (vault)", "level failure", action="dropped")
+    rows = _rows(vr.unit_report("MTH-X", *env))
+    assert rows["x-weak"]["failed"] == {4: 2}
+
+
+def test_full_report_loads_evidence_once(monkeypatch):
+    original_evidence = vr._evidence
+    calls = 0
+
+    def count_evidence(data_root):
+        nonlocal calls
+        calls += 1
+        return original_evidence(data_root)
+
+    monkeypatch.setattr(vr, "_evidence", count_evidence)
+    assert vr.main([]) == 0
+    assert calls == 1
+
+
 def test_report_runs_on_every_real_vault():
     assert vr.main([]) == 0
 
