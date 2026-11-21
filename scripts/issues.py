@@ -5,7 +5,10 @@ Rules: `rules/00_core.md` §11. The log is local-only (`issues/log.jsonl` in the
 and append-only, so several agents and worktrees can write to it at once.
 
     python -m scripts.issues add --kind ambiguity --severity batch --source reviewer \\
-        --where DRL-MTH-T01-C07-03/Q05 --what "MB could be 1000 or 1024 kB" --action auto-fixed
+        --where DRL-MTH-T01-C07-03/Q05 --what "MB could be 1000 or 1024 kB" --action auto-fixed \\
+        [--target skill:new-math-drill]
+    python -m scripts.issues propose --target skill:new-math-drill \\
+        --evidence "DRL-MTH-T01-C07-03/Q05" --proposal "Add unit-convention check to reviewer" [--impact med]
     python -m scripts.issues summary           # pending records grouped by kind, urgent first
     python -m scripts.issues list [--all]      # pending (or every) record
     python -m scripts.issues resolve <id> [<id> ...] --note "PR #31"
@@ -16,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import secrets
 import sys
 from collections import Counter
@@ -35,11 +39,30 @@ KINDS = (
     "tool-gap",  # the engine cannot express or check something (see docs/backlog.md)
     "rule-gap",  # rules or skill are unclear, contradict each other, or are missing a case
     "bug",  # a script or the Studio misbehaved
+    "proposal",  # concrete improvement proposal for a skill or system area
     "other",
 )
 SEVERITIES = ("urgent", "batch")
 SOURCES = ("author", "reviewer", "gate", "learner", "pilot", "other")
 ACTIONS = ("open", "auto-fixed", "dropped")
+IMPACTS = ("low", "med", "high")
+TARGET_AREAS = ("engine", "pipeline", "studio", "content", "ci", "docs")
+TARGET_PREFIXES = ("skill", "model", "job", "gate")
+_PREFIXED_TARGET_RE = re.compile(r"^(skill|model|job|gate):[A-Za-z0-9][A-Za-z0-9_./-]*$")
+
+
+def validate_target(target: str | None) -> str | None:
+    """Validate optional --target (area or skill:/model:/job:/gate:<name>)."""
+    if target is None:
+        return None
+    cleaned = target.strip()
+    if not cleaned:
+        raise ValueError("target must not be empty")
+    if cleaned in TARGET_AREAS or _PREFIXED_TARGET_RE.fullmatch(cleaned):
+        return cleaned
+    allowed = ", ".join(TARGET_AREAS)
+    prefixes = ", ".join(f"{p}:<name>" for p in TARGET_PREFIXES)
+    raise ValueError(f"target must be one of [{allowed}] or {prefixes}, got {target!r}")
 
 
 def main_checkout_root(cwd: str = ".") -> str:
@@ -94,7 +117,18 @@ def issues(path: str | None = None) -> list[dict]:
 
 
 def add_issue(
-    kind: str, severity: str, source: str, where: str, what: str, action: str = "open", path: str | None = None
+    kind: str,
+    severity: str,
+    source: str,
+    where: str,
+    what: str,
+    action: str = "open",
+    path: str | None = None,
+    *,
+    target: str | None = None,
+    evidence: str | None = None,
+    proposal: str | None = None,
+    impact: str | None = None,
 ) -> tuple[str, bool]:
     """Append an issue. Returns (id, created). An identical pending issue is not added twice."""
     for field, value, allowed in (
@@ -105,28 +139,75 @@ def add_issue(
     ):
         if value not in allowed:
             raise ValueError(f"{field} must be one of {list(allowed)}, got {value!r}")
+    if impact is not None and impact not in IMPACTS:
+        raise ValueError(f"impact must be one of {list(IMPACTS)}, got {impact!r}")
+    norm_target = validate_target(target)
     if pilot_mode():
         source = "pilot"
-    if not where.strip() or not what.strip():
+    where_s = where.strip()
+    what_s = what.strip()
+    if not where_s or not what_s:
         raise ValueError("where and what must not be empty")
     for r in issues(path):
-        if not r["resolved"] and (r["kind"], r["where"], r["what"]) == (kind, where.strip(), what.strip()):
+        if not r["resolved"] and (r["kind"], r["where"], r["what"], r.get("target")) == (
+            kind,
+            where_s,
+            what_s,
+            norm_target,
+        ):
             return r["id"], False
     issue_id = secrets.token_hex(3)
-    _append(
-        {
-            "id": issue_id,
-            "date": _now(),
-            "kind": kind,
-            "severity": severity,
-            "source": source,
-            "where": where.strip(),
-            "what": what.strip(),
-            "action": action,
-        },
-        path,
-    )
+    record: dict[str, str] = {
+        "id": issue_id,
+        "date": _now(),
+        "kind": kind,
+        "severity": severity,
+        "source": source,
+        "where": where_s,
+        "what": what_s,
+        "action": action,
+    }
+    if norm_target is not None:
+        record["target"] = norm_target
+    if evidence is not None and evidence.strip():
+        record["evidence"] = evidence.strip()
+    if proposal is not None and proposal.strip():
+        record["proposal"] = proposal.strip()
+    if impact is not None:
+        record["impact"] = impact
+    _append(record, path)
     return issue_id, True
+
+
+def propose_issue(
+    target: str,
+    evidence: str,
+    proposal: str,
+    impact: str = "med",
+    source: str = "author",
+    path: str | None = None,
+) -> tuple[str, bool]:
+    """Record a concrete improvement proposal (`kind='proposal'`) for a skill or system area."""
+    norm_target = validate_target(target)
+    if norm_target is None:
+        raise ValueError("target is required for a proposal")
+    ev = evidence.strip()
+    prop = proposal.strip()
+    if not ev or not prop:
+        raise ValueError("evidence and proposal must not be empty")
+    return add_issue(
+        kind="proposal",
+        severity="batch",
+        source=source,
+        where=ev,
+        what=prop,
+        action="open",
+        path=path,
+        target=norm_target,
+        evidence=ev,
+        proposal=prop,
+        impact=impact,
+    )
 
 
 def resolve_issue(issue_id: str, note: str, path: str | None = None) -> None:
@@ -140,8 +221,14 @@ def resolve_issue(issue_id: str, note: str, path: str | None = None) -> None:
 
 def _line(r: dict) -> str:
     flag = "URGENT " if r["severity"] == "urgent" else ""
+    meta_parts: list[str] = []
+    if r.get("target"):
+        meta_parts.append(str(r["target"]))
+    if r.get("impact"):
+        meta_parts.append(f"impact={r['impact']}")
+    meta = f" [{' '.join(meta_parts)}]" if meta_parts else ""
     tail = f"  -> {r['resolved']}" if r["resolved"] else ""
-    return f"[{r['id']}] {flag}{r['kind']} ({r['action']}, {r['source']}) {r['where']}: {r['what']}{tail}"
+    return f"[{r['id']}] {flag}{r['kind']}{meta} ({r['action']}, {r['source']}) {r['where']}: {r['what']}{tail}"
 
 
 def _sort_key(r: dict) -> tuple:
@@ -175,9 +262,25 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--where", required=True, help="drill/problem, file or command, e.g. DRL-MTH-T01-C07-03/Q05")
     a.add_argument("--what", required=True, help="one sentence: what went wrong")
     a.add_argument("--action", default="open", choices=ACTIONS, help="what was already done about it")
+    a.add_argument(
+        "--target",
+        default=None,
+        help="optional target: skill:<name>, model:<name>, job:<type>, gate:<name>, or area (engine|pipeline|studio|content|ci|docs)",
+    )
+    pr = sub.add_parser("propose", help="record a concrete improvement proposal")
+    pr.add_argument(
+        "--target",
+        required=True,
+        help="skill:<name>, model:<name>, job:<type>, gate:<name>, or area (engine|pipeline|studio|content|ci|docs)",
+    )
+    pr.add_argument("--evidence", required=True, help="what happened, file:line, PR number, or run id")
+    pr.add_argument("--proposal", required=True, help="concrete change to make")
+    pr.add_argument("--impact", default="med", choices=IMPACTS, help="expected impact (low|med|high)")
+    pr.add_argument("--source", default="author", choices=SOURCES, help="who raised the proposal")
     sub.add_parser("summary", help="pending issues grouped by kind, urgent first")
     ls = sub.add_parser("list", help="pending issues (or --all)")
     ls.add_argument("--all", action="store_true")
+    ls.add_argument("--target", default=None, help="filter to records matching this target")
     rs = sub.add_parser("resolve", help="mark issues as dealt with")
     rs.add_argument("ids", nargs="+")
     rs.add_argument("--note", required=True, help="how it was dealt with, e.g. 'PR #31' or 'pattern noted, no fix'")
@@ -185,12 +288,34 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.cmd == "add":
-            issue_id, created = add_issue(args.kind, args.severity, args.source, args.where, args.what, args.action)
+            issue_id, created = add_issue(
+                args.kind,
+                args.severity,
+                args.source,
+                args.where,
+                args.what,
+                args.action,
+                target=args.target,
+            )
             print(f"{'Logged' if created else 'Already logged'} issue {issue_id} in {log_path()}")
+        elif args.cmd == "propose":
+            issue_id, created = propose_issue(
+                args.target,
+                args.evidence,
+                args.proposal,
+                impact=args.impact,
+                source=args.source,
+            )
+            print(f"{'Logged' if created else 'Already logged'} proposal {issue_id} in {log_path()}")
         elif args.cmd == "summary":
             print(summary())
         elif args.cmd == "list":
-            rows = [r for r in issues() if args.all or not r["resolved"]]
+            filter_target = validate_target(args.target) if args.target else None
+            rows = [
+                r
+                for r in issues()
+                if (args.all or not r["resolved"]) and (filter_target is None or r.get("target") == filter_target)
+            ]
             print("\n".join(_line(r) for r in sorted(rows, key=_sort_key)) or "No issues.")
         elif args.cmd == "resolve":
             for issue_id in args.ids:
