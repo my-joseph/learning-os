@@ -126,7 +126,7 @@ INITIAL_PR_EXISTS=0
 INITIAL_PR_HEAD=""
 if [ -z "$DONE_FILE" ]; then
   INITIAL_PR=$(gh pr list --head "$BRANCH" --state all --json number,headRefOid 2>/dev/null || echo '[]')
-  INITIAL_PR_EXISTS=$(printf '%s' "$INITIAL_PR" | python3 -c 'import json,sys; data=json.load(sys.stdin); print(1 if data else 0)')
+  INITIAL_PR_EXISTS=$(printf '%s' "$INITIAL_PR" | python3 -c 'import json,sys; data=json.loads(sys.stdin.read() or "[]"); print(1 if data else 0)')
   if [ "$INITIAL_PR_EXISTS" -eq 1 ]; then
     INITIAL_PR_HEAD=$(printf '%s' "$INITIAL_PR" | python3 -c 'import json,sys; print(json.load(sys.stdin)[0].get("headRefOid") or "")')
   fi

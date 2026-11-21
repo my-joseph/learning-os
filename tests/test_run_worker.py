@@ -100,6 +100,9 @@ def invoke(
     )
     env.pop("LEARNINGOS_PILOT", None)
     env.pop("NOTION_DRY_RUN", None)
+    env.pop("LEARNINGOS_ROLE", None)
+    env.pop("AGY_BIN", None)
+    env.pop("CODEX_BIN", None)
     if done_file:
         env["DONE_FILE"] = str(done_file)
     else:
