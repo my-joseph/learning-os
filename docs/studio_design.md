@@ -25,7 +25,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Default theme follows `prefers-color-scheme`; the toggle overrides it. Contrast AA (`>= 4.5:1`) everywhere.
 
 ## Colour tokens
-- **Rule (enforced by `tests/statusTokens.test.tsx`):** never hard-code a status colour (`emerald-*`, `amber-*`, `yellow-*`, `rose-*`); import recipes from `src/lib/statusTone.ts` (`statusTone` for answer/progress status, `warningTone` for non-status warnings). Diagram/figure palettes (`Interactive*`, `MathFigure/*`, `VisualRenderer`, `VSCodeBlock`) are out of scope.
+- **Rule (enforced by `practice-studio/tests/statusTokens.test.tsx`):** never hard-code a status colour (`emerald-*`, `amber-*`, `yellow-*`, `rose-*`); import recipes from `practice-studio/src/lib/statusTone.ts` (`statusTone` for answer/progress status, `warningTone` for non-status warnings). Diagram/figure palettes (`Interactive*`, `MathFigure/*`, `VisualRenderer`, `VSCodeBlock`) are out of scope.
 - Single source of truth: RGB channel custom properties in `practice-studio/src/app/globals.css` (`:root, html.light` and `html.dark, .dark`), exposed in `practice-studio/tailwind.config.ts` with `rgb(var(--x) / <alpha-value>)` so opacity modifiers work. Changing a colour requires editing one variable in `globals.css`.
 
 | CSS token | Tailwind key | Meaning | Light (RGB / hex) | Dark (RGB / hex) |
@@ -54,7 +54,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Spacing and motion
 - 8 px rhythm (`gap-2/4/6/8`), generous padding inside the question card (`p-6`, `p-4` on mobile).
 - Status toasts stack bottom-right (`>=640 px`) / bottom-centre (`<640 px`).
-- Calm ease-out motion via `src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
+- Calm ease-out motion via `practice-studio/src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
 
 ## Workspaces
 - **Math**: similar-question tab strip at the top of the card (always shown when variants exist, with locked muted ghost tabs until the first substantive attempt on the real question in the current cycle) → prompt → figure → answer input with `=` inside the field → feedback → Hint / equation set-up / steps available before answering on both real and similar questions (revealing before an answer marks that item as used help). Self-score buttons only after an attempt on the real question.

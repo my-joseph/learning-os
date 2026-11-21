@@ -29,6 +29,7 @@ Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local depende
 10. Do not run `scripts.source_find <UNIT> --plan`: it writes to `sources/_index/`. Use `scripts.source_find.find_unregistered_source_folders("$MAIN/sources")` for the read-only registry/folder check, and validate existing `sources/_cores/*.jsonl` cards in memory with `math_engine.source_cores.validate_core_card`; report unregistered folders and invalid cards only.
 11. Compare drill/lab IDs and active references against `id_map.json` using read-only inspection. Report missing/orphaned IDs, invalid unit/chapter/reference keys, duplicate Notion page IDs, and active references to `RETIRED-*`. Never edit `id_map.json`.
 12. Read-only git hygiene: check `core.hooksPath`, tracked `.env*`, `progress/`, `pilot/`, `scratch/`, and `sources/` files; list worktrees and merged-branch candidates without removing anything.
+13. Run `.venv/bin/python -m scripts.doc_refs` to verify paths, module commands, CLI flags, npm scripts, and skill references across skills, rules, and docs.
 
 ## 3. Launch read-only worker audits
 
