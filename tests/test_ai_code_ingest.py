@@ -392,6 +392,48 @@ class TestAiCodeIngest(unittest.TestCase):
             for abs_key in ("workspaceDir", "vscodeFolderUrl", "cursorFolderUrl", "vscodeUrl", "cursorUrl"):
                 self.assertNotIn(abs_key, p0)
 
+    def test_validate_rejects_deprecated_and_invalid_answer_spec(self):
+        """Non-coding PRG problems must validate answerSpec against math_engine.answer_spec_registry."""
+        base = {
+            "id": "Q01",
+            "verificationLevel": "partial",
+            "archetype": "code-tracing",
+            "codeType": "predict-output",
+            "archetypeKey": "prg-c01-tdz-hoisting-trace",
+            "context": "startup_log_trace",
+            "level": 1,
+            "codeSnippet": "console.log('ready');\n",
+            "prompt": "Trace the startup snippet and predict its output.",
+            "inputHint": "Enter the printed token",
+            "answerPlain": "ready",
+            "steps": [{"explain": "Logs 'ready' to stdout."}],
+        }
+
+        # 1. Deprecated type 'line_number' rejected
+        prob_dep = dict(base, answerSpec={"type": "line_number", "correctLine": 1})
+        with self.assertRaises(AiContractError) as ctx_dep:
+            validate_ai_code_contract(prob_dep)
+        self.assertIn("Deprecated answerSpec type", str(ctx_dep.exception))
+        self.assertIn("line_number", str(ctx_dep.exception))
+
+        # 2. Missing required fields on 'predict_output' rejected
+        prob_missing_po = dict(base, answerSpec={"type": "predict_output"})
+        with self.assertRaises(AiContractError) as ctx_po:
+            validate_ai_code_contract(prob_missing_po)
+        self.assertIn("Invalid answerSpec", str(ctx_po.exception))
+        self.assertIn("Missing required field", str(ctx_po.exception))
+
+        # 3. Missing required fields on 'text' rejected
+        prob_missing_text = dict(base, answerSpec={"type": "text"})
+        with self.assertRaises(AiContractError) as ctx_txt:
+            validate_ai_code_contract(prob_missing_text)
+        self.assertIn("Invalid answerSpec", str(ctx_txt.exception))
+        self.assertIn("accepted", str(ctx_txt.exception))
+
+        # 4. Valid registered 'predict_output' spec passes
+        prob_ok = dict(base, answerSpec={"type": "predict_output", "tokens": ["ready"]})
+        self.assertTrue(validate_ai_code_contract(prob_ok))
+
 
 if __name__ == "__main__":
     unittest.main()
