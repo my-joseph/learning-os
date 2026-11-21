@@ -46,3 +46,7 @@ Drill or vault changes are not part of this audit. New recommendations may feed 
 ## Final documentation check
 
 - [ ] The Thai report cites scope, evidence counts, recommendations, and missing data without exposing prompts, solutions, or hidden tests.
+
+## Self-review
+
+After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:drill-quality --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:drill-quality`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
