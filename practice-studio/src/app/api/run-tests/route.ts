@@ -84,11 +84,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const repoParent = path.resolve(process.cwd(), "..");
     const pythonPath = [
       rootDir,
       path.resolve(rootDir, ".."),
       path.join(rootDir, "practice-studio"),
       process.cwd(),
+      repoParent,
     ].join(path.delimiter);
 
     const payload = {

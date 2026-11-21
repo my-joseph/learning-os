@@ -421,20 +421,16 @@ async function runReviewRunRouteChecks() {
   const missingDrillRes = await reviewRunPOST(missingDrillReq);
   assert.equal(missingDrillRes.status, 404, "Unknown drill must return 404");
 
-  // End-to-end /api/run-tests (typescript-strict) and /api/review-run (zero-leak) in isolated LEARNINGOS_ROOT
-  const repoRoot = path.resolve(__dirname, "..", "..");
+  // End-to-end /api/run-tests (typescript-strict) and /api/review-run (zero-leak + graceful degradation without tools/lint/node_modules) in hermetic LEARNINGOS_ROOT
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "studio-prg-runner-"));
   const prevRoot = process.env.LEARNINGOS_ROOT;
   const prevDrillsDir = process.env.DRILLS_DATA_DIR;
   const prevProgressDir = process.env.PROGRESS_DIR;
   const prevPilot = process.env.LEARNINGOS_PILOT;
   try {
-    fs.symlinkSync(path.join(repoRoot, ".venv"), path.join(tmpRoot, ".venv"), "dir");
-    fs.symlinkSync(path.join(repoRoot, "code_engine"), path.join(tmpRoot, "code_engine"), "dir");
-    fs.symlinkSync(path.join(repoRoot, "progress_store.py"), path.join(tmpRoot, "progress_store.py"), "file");
     fs.writeFileSync(path.join(tmpRoot, "id_map.json"), "{}", "utf-8");
-    fs.mkdirSync(path.join(tmpRoot, "tools"), { recursive: true });
-    fs.symlinkSync(path.join(repoRoot, "tools", "lint"), path.join(tmpRoot, "tools", "lint"), "dir");
+    // Empty tools/lint directory without node_modules mirrors the CI studio job environment hermetically
+    fs.mkdirSync(path.join(tmpRoot, "tools", "lint"), { recursive: true });
 
     const tsDrillId = "DRL-PRG-TS-FIXTURE-01";
     const unitCode = "PRG-T01-C03-U05";
@@ -575,7 +571,7 @@ async function runReviewRunRouteChecks() {
       JSON.stringify(jsDrillDoc, null, 2),
       "utf-8"
     );
-    // Force materialize via workspace deletion + /api/review-run
+    // Force materialize via workspace deletion + /api/review-run (without tools/lint/node_modules)
     const revRes = await reviewRunPOST(
       new NextRequest("http://127.0.0.1:3000/api/review-run", {
         method: "POST",
@@ -587,8 +583,26 @@ async function runReviewRunRouteChecks() {
     const revBodyText = await revRes.text();
     const revBody = JSON.parse(revBodyText) as ReviewRunResult;
     assert.deepEqual(revBody.tests.failed, ["1 hidden check failed"]);
+    assert.deepEqual(revBody.lint, []);
+    assert.deepEqual(revBody.types, []);
+    assert.equal(Array.isArray(revBody.checks) && revBody.checks.length > 0, true);
     assert.equal(revBodyText.includes("SECRET_JS_HIDDEN_REJECTS_STR"), false);
     assert.equal(revBodyText.includes("HIDDEN"), false);
+
+    // TypeScript drill also degrades Layer 2 (lint + typecheck) cleanly when tools/lint/node_modules is absent
+    fs.rmSync(wsDir, { recursive: true, force: true });
+    const tsRevRes = await reviewRunPOST(
+      new NextRequest("http://127.0.0.1:3000/api/review-run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId: tsDrillId, problemId: "Q01" }),
+      })
+    );
+    assert.equal(tsRevRes.status, 200);
+    const tsRevBody = (await tsRevRes.json()) as ReviewRunResult;
+    assert.equal(tsRevBody.tests.total, 2);
+    assert.deepEqual(tsRevBody.lint, []);
+    assert.deepEqual(tsRevBody.types, []);
   } finally {
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
