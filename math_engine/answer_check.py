@@ -764,10 +764,16 @@ def generic_value_diagnostics(u, e, variables=None):
     diags = []
     try:
         if e != 0 and is_equal(u, -e, variables):
+            complex_context = u.has(sp.I) or e.has(sp.I)
+            sign_guidance = (
+                "Check a sign (for example $i^2 = -1$ or a subtraction)."
+                if complex_context
+                else "Check the sign of your answer."
+            )
             diags.append(
                 {
                     "code": "whole_sign_flip",
-                    "message": "Your answer is the exact negative of the correct value. Check a sign (for example $i^2 = -1$ or a subtraction).",
+                    "message": f"Your answer is the exact negative of the correct value. {sign_guidance}",
                 }
             )
             return diags
@@ -1097,6 +1103,9 @@ def _split_items(raw, variable):
 def check_solution_set(spec, raw):
     variable = spec.get("variable", "x")
     expected = [sp.expand_complex(to_expr(v)) for v in spec["values"]]
+    symmetric_roots = spec.get("symmetricRoots", False) or any(
+        i != j and is_equal(value, -other) for i, value in enumerate(expected) for j, other in enumerate(expected)
+    )
     try:
         users = [sp.expand_complex(parse_math(it)) for it in _split_items(raw, variable)]
     except Exception as ex:
@@ -1117,7 +1126,7 @@ def check_solution_set(spec, raw):
             diags.append(
                 {
                     "code": "whole_sign_flip",
-                    "message": f"${sp.latex(x)}$ is the negative of a true solution. Check the sign in front of $b$ in the quadratic formula.",
+                    "message": f"${sp.latex(x)}$ is the negative of a true solution. Check the sign of this value.",
                 }
             )
         elif any(is_equal(sp.conjugate(x), ev) or is_equal(sp.re(x), sp.re(ev)) for ev in expected):
@@ -1145,9 +1154,10 @@ def check_solution_set(spec, raw):
                 )
     missing = len(expected) - len(matched_e)
     if missing:
-        diags.append(
-            {"code": "missing_solution", "message": f"{missing} solution(s) missing. Remember both signs of $\\pm$."}
+        missing_guidance = (
+            "Remember both signs of $\\pm$." if symmetric_roots else "Check whether another solution is missing."
         )
+        diags.append({"code": "missing_solution", "message": f"{missing} solution(s) missing. {missing_guidance}"})
     if missing == 0 and not extras:
         forms = spec.get("forms", [])
         issues = []

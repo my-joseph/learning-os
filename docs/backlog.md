@@ -18,10 +18,11 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 
 ### Open cosmetic observations
 
-- The `whole_sign_flip` diagnostic mentions `i^2 = -1` in non-complex problems.
-- `solution_set` diagnostics: `missing_solution` always says "Remember both signs of ±" (wrong hint for trig), and a value outside the requested interval (e.g. `13pi/6` for `[0, 2pi)`) is called "does not satisfy the equation" although it does.
+- A `solution_set` value outside the requested interval (e.g. `13pi/6` for `[0, 2pi)`) is called "does not satisfy the equation" even though it does.
 
 ## Resolved
+
+- **Answer diagnostics:** `whole_sign_flip` reserves the `$i^2 = -1$` reminder for complex expressions; `solution_set` sign and missing-root diagnostics use domain-neutral guidance, mentioning both signs only for symmetric roots.
 
 - **T02-C05 (`is_equal` logarithm domain sampling):** `math_engine/answer_check.py`'s `is_equal` skips non-real samples so equivalent log forms (`ln(x^2)` vs `2*ln(x)`, `ln(x)` vs `ln(abs(x))`) compare equal on their shared real domain; `MTH-T02-C05-U01` is active.
 - **Studio Math / Programming workspace split:** live at `/math/[drillId]`, `/code/[drillId]`, and `/code/lab/[labId]`.

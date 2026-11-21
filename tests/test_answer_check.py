@@ -68,6 +68,48 @@ def test_solution_set_decimal_approximation_requests_exact_form():
     assert any(d["code"] == "decimal_not_exact" for d in result["diagnostics"])
 
 
+@pytest.mark.parametrize(
+    ("spec", "answer"),
+    [
+        ({"type": "number", "value": "5"}, "-5"),
+        ({"type": "expression", "value": "2*x"}, "-2*x"),
+        ({"type": "tuple", "values": ["5", "3"]}, "-5,-3"),
+        ({"type": "vector", "components": ["5", "3"]}, "-5,-3"),
+    ],
+)
+def test_real_whole_sign_flip_diagnostic_avoids_complex_identity(spec, answer):
+    result = math_check(spec, answer)
+    assert result["diagnostics"]
+    assert all("i^2 = -1" not in diagnostic["message"] for diagnostic in result["diagnostics"])
+
+
+def test_complex_whole_sign_flip_keeps_complex_identity_reminder():
+    result = math_check({"type": "complex", "value": "3 + 4*I"}, "-3 - 4*I")
+    diagnostic = next(d for d in result["diagnostics"] if d["code"] == "whole_sign_flip")
+    assert "i^2 = -1" in diagnostic["message"]
+
+
+def test_solution_set_sign_flip_diagnostic_is_domain_neutral():
+    result = math_check({"type": "solution_set", "values": ["2", "5"]}, "-2, 5")
+    diagnostic = next(d for d in result["diagnostics"] if d["code"] == "whole_sign_flip")
+    assert "quadratic formula" not in diagnostic["message"]
+    assert "sign" in diagnostic["message"].lower()
+
+
+def test_solution_set_missing_root_mentions_pm_only_for_symmetric_roots():
+    ordinary = math_check({"type": "solution_set", "values": ["2", "5"]}, "2")
+    ordinary_diagnostic = next(d for d in ordinary["diagnostics"] if d["code"] == "missing_solution")
+    assert "±" not in ordinary_diagnostic["message"]
+
+    symmetric = math_check({"type": "solution_set", "values": ["-3", "3"]}, "3")
+    symmetric_diagnostic = next(d for d in symmetric["diagnostics"] if d["code"] == "missing_solution")
+    assert "\\pm" in symmetric_diagnostic["message"]
+
+    declared_symmetric = math_check({"type": "solution_set", "values": ["2", "5"], "symmetricRoots": True}, "2")
+    declared_diagnostic = next(d for d in declared_symmetric["diagnostics"] if d["code"] == "missing_solution")
+    assert "\\pm" in declared_diagnostic["message"]
+
+
 def test_legacy_prg_answer_spec_types_deprecated_consistently():
     from code_engine.answer_check import CHECKERS, DEPRECATED_CHECKERS
     from math_engine.answer_spec_registry import (
