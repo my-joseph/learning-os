@@ -806,6 +806,19 @@ def get_due_items(
     return interleave_due_items(due, limit=limit, open_weak_traps=open_weak_traps)
 
 
+def _has_in_cycle_review_help(state: dict[str, Any] | None) -> bool:
+    if not isinstance(state, dict):
+        return False
+    cycle = str(state.get("cycleStartedAt") or "").strip()
+    if not cycle:
+        return False
+    for field in ("reviewHintRevealedAt", "reviewSetupRevealedAt", "reviewStepsRevealedAt"):
+        ts = state.get(field)
+        if isinstance(ts, str) and ts.strip() and ts.strip() >= cycle:
+            return True
+    return False
+
+
 def record_review_result(
     drill_id: str,
     qid: str,
@@ -828,6 +841,41 @@ def record_review_result(
     )
     key = item_key(drill_id, qid)
     existing = schedule.get(key)
+    if not existing:
+        prog_file = os.path.join(resolved_progress, f"{drill_id}.json")
+        raw_state: dict[str, Any] | None = None
+        try:
+            with open(prog_file, encoding="utf-8") as file:
+                prog_doc = json.load(file)
+            candidate = (prog_doc.get("problems") or {}).get(qid)
+            if isinstance(candidate, dict):
+                raw_state = candidate
+        except (OSError, ValueError, AttributeError):
+            raw_state = None
+        if _has_in_cycle_review_help(raw_state):
+            saved_raw = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+            if key in saved_raw:
+                existing = saved_raw[key]
+            elif raw_state is not None:
+                replayed = replay_events(extract_review_events(raw_state))
+                if replayed:
+                    primary_unit, multi_units = _lookup_problem_units(drill_id, qid, data_root, labs_root)
+                    existing = redact_review_item(
+                        {
+                            "drillId": drill_id,
+                            "qid": qid,
+                            "unitCode": primary_unit,
+                            **({"unitCodes": multi_units} if len(multi_units) >= 2 else {}),
+                            "subject": "PRG" if drill_id.startswith(("DRL-PRG-", "LAB-")) else "MTH",
+                            "commonTrapTag": None,
+                            "archetypeKey": None,
+                            "revisitNote": _clean_revisit_note(raw_state.get("revisitNote")),
+                            "level": replayed["level"],
+                            "lastReviewed": replayed["lastReviewed"],
+                            "dueDate": replayed["dueDate"],
+                            "lastWrong": replayed["lastWrong"],
+                        }
+                    )
     current_level = existing["level"] if existing else MIN_LEVEL
     assisted = (
         (hints_used > 0) if isinstance(hints_used, int) and not isinstance(hints_used, bool) else bool(hints_used)

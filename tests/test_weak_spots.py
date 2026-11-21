@@ -255,3 +255,48 @@ def test_json_math_trap_has_name_and_vault_description(tmp_path, capsys, monkeyp
 def test_every_vault_trap_has_a_description():
     descriptions = ws._load_mth_trap_descriptions()
     assert descriptions and all(d.strip() for d in descriptions.values())
+
+
+def test_l4_challenge_respects_cross_cycle_clean_recovery_and_review_help(tmp_path):
+    # Prior-cycle skip + hint recovered cleanly in new cycle MUST count as unassisted L4 challenge.
+    clean_recovery_state = {
+        "skipped": True,
+        "hintsRevealed": 1,
+        "setupRevealedBeforeAnswer": True,
+        "score": 0,
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "attempts": [
+            {"input": "(Skipped)", "ts": "2026-11-18T10:00:00Z", "verdict": "skipped"},
+            {"input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct"},
+        ],
+    }
+    # New cycle with reviewHintRevealedAt MUST NOT count as unassisted L4 challenge.
+    hinted_new_cycle_state = {
+        "hintsRevealed": 0,
+        "score": 1,
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "reviewHintRevealedAt": "2026-11-20T12:01:00Z",
+        "attempts": [
+            {"input": "5", "ts": "2026-11-18T10:00:00Z", "verdict": "correct"},
+            {"input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct"},
+        ],
+    }
+    roots = _write(
+        tmp_path,
+        {
+            "D1": [
+                ("Q1", 4, "direct", TRAP, clean_recovery_state),
+                ("Q2", 4, "direct", TRAP, hinted_new_cycle_state),
+            ]
+        },
+    )
+    items = ws.load_items(data_root=roots[0], progress_dir=roots[1])
+    by_pid = {it.pid: it for it in items}
+    assert by_pid["Q1"].score == 1.0
+    assert by_pid["Q1"].assisted is False
+    assert by_pid["Q1"].skipped is False
+    assert ws._has_l4_challenge([by_pid["Q1"]]) is True
+
+    assert by_pid["Q2"].score == 0.5
+    assert by_pid["Q2"].assisted is True
+    assert ws._has_l4_challenge([by_pid["Q2"]]) is False

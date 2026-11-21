@@ -15,7 +15,7 @@ import os
 from collections import Counter, defaultdict
 from typing import Any
 
-from progress_store import find_repo_root, progress_root, score_problem
+from progress_store import cycle_evidence, find_repo_root, progress_root, score_problem
 from scripts.weak_spots import _collect_matched_traps, _is_prg
 
 
@@ -81,26 +81,11 @@ def _empty_stats() -> dict[str, Any]:
     }
 
 
-def _item_attempts(state: dict[str, Any]) -> list[dict[str, Any]]:
-    """Return substantive original-item attempts in the current practice cycle."""
-    attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
-    cycle_started_at = state.get("cycleStartedAt")
-    if not isinstance(cycle_started_at, str):
-        cycle_started_at = None
-    return [
-        attempt
-        for attempt in attempts
-        if isinstance(attempt, dict)
-        and attempt.get("kind") != "variant"
-        and attempt.get("verdict") not in ("invalid input", "parse_error")
-        and (not cycle_started_at or (isinstance(attempt.get("ts"), str) and attempt["ts"] >= cycle_started_at))
-    ]
-
-
 def _add_state(stats: dict[str, Any], problem: dict[str, Any], state: dict[str, Any], is_prg: bool) -> None:
     stats["items"] += 1
-    attempts = _item_attempts(state)
-    reviews = [r for r in state.get("reviews", []) if isinstance(r, dict)]
+    evidence = cycle_evidence(state)
+    attempts = evidence["substantiveAttempts"]
+    reviews = evidence["reviews"]
     stats["attempts"] += len(attempts) + (len(reviews) if is_prg else 0)
     scored = score_problem(state, is_prg=is_prg)
     score = scored["score"]
@@ -109,10 +94,10 @@ def _add_state(stats: dict[str, Any], problem: dict[str, Any], state: dict[str, 
         stats["scores"][label] += 1
         if scored["firstTry"] and score == 1:
             stats["firstTryClean"] += 1
-    stats["hintUses"] += int(state.get("hintsRevealed") or 0)
-    stats["stepsRevealed"] += int(bool(state.get("stepsRevealed")))
-    stats["solutionRevealed"] += int(bool(state.get("solutionRevealedBeforeAnswer")))
-    stats["skips"] += int(bool(state.get("skipped")))
+    stats["hintUses"] += evidence["hintUses"]
+    stats["stepsRevealed"] += int(evidence["stepsRevealed"])
+    stats["solutionRevealed"] += int(evidence["solutionRevealed"])
+    stats["skips"] += int(scored["outcome"] == "skipped")
     duration = state.get("durationMs")
     if isinstance(duration, (int, float)) and duration >= 0:
         stats["durationMs"].append(float(duration))
@@ -189,6 +174,11 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
                     "solutionRevealed",
                     "revealed",
                     "reviews",
+                    "reviewHintRevealedAt",
+                    "reviewSetupRevealedAt",
+                    "reviewStepsRevealedAt",
+                    "exampleViewedAt",
+                    "selfScoreAt",
                 )
             )
             if not has_evidence:
