@@ -1044,3 +1044,54 @@ def item_score(state: dict[str, Any], *, is_prg: bool = False) -> tuple[float, b
     res = score_problem(state, is_prg=is_prg)
     sc = res["score"]
     return (-1.0 if sc is None else float(sc)), bool(res["usedHelp"])
+
+
+def cycle_evidence(state: dict[str, Any] | None) -> dict[str, Any]:
+    """Return current-cycle practice evidence aligned with `score_problem` semantics.
+
+    When `cycleStartedAt` is active, untimestamped prior-cycle flags (`hintsRevealed`,
+    `stepsRevealed`, `solutionRevealedBeforeAnswer`) do not bleed into the current cycle;
+    only cycle-scoped timestamps (`reviewHintRevealedAt`, `reviewStepsRevealedAt`) and
+    current-cycle attempt/review records count.
+    """
+    if not isinstance(state, dict):
+        return {
+            "substantiveAttempts": [],
+            "reviews": [],
+            "hintUses": 0,
+            "stepsRevealed": False,
+            "solutionRevealed": False,
+            "usedHelp": False,
+        }
+    data = _extract_cycle_data(state)
+    eff_cycle = data["cycleStartedAt"]
+    cycle_atts = data["cycleAtts"]
+
+    hint_in_cycle = bool(
+        state.get("reviewHintRevealedAt") and _is_in_cycle(state.get("reviewHintRevealedAt"), eff_cycle)
+    )
+    steps_in_cycle = bool(
+        state.get("reviewStepsRevealedAt") and _is_in_cycle(state.get("reviewStepsRevealedAt"), eff_cycle)
+    )
+    attempt_solution_revealed = any(bool(a.get("solutionRevealed")) for a in cycle_atts)
+
+    if eff_cycle:
+        hint_uses = 1 if hint_in_cycle else 0
+        steps_revealed = False
+        solution_revealed = steps_in_cycle or attempt_solution_revealed
+    else:
+        raw_hints = max(0, int(_finite_num(state.get("hintsRevealed")) or 0))
+        hint_uses = raw_hints if raw_hints > 0 else (1 if hint_in_cycle else 0)
+        steps_revealed = bool(state.get("stepsRevealed"))
+        solution_revealed = (
+            bool(state.get("solutionRevealedBeforeAnswer")) or steps_in_cycle or attempt_solution_revealed
+        )
+
+    return {
+        "substantiveAttempts": data["substantiveAtts"],
+        "reviews": data["cycleRevs"],
+        "hintUses": hint_uses,
+        "stepsRevealed": steps_revealed,
+        "solutionRevealed": solution_revealed,
+        "usedHelp": bool(data["usedHelp"]),
+    }
