@@ -801,3 +801,42 @@ def test_snapshot_page_omits_learner_section_and_renders_children(monkeypatch):
     assert "Because invariants hold" in md
     assert "Private learner notes must not leak" not in md
     assert "## 7. Completion Checklist" in md
+
+
+def test_unit_page_honors_notion_dry_run_env(monkeypatch, tmp_path):
+    import json
+
+    monkeypatch.setenv("NOTION_DRY_RUN", "1")
+    writes = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, tok: [] if pid == "empty" else list(PAGE))
+
+    def fake_req(method, endpoint, token, payload=None):
+        if method != "GET":
+            writes.append((method, endpoint, payload))
+        if method == "GET" and endpoint == "pages/full":
+            return {"properties": {"Status": {"type": "status"}}}
+        return {"results": []}
+
+    monkeypatch.setattr(up, "notion_request", fake_req)
+    monkeypatch.setattr(
+        up,
+        "upload_svg",
+        lambda *a, **kw: writes.append(("UPLOAD", a, kw)) or "file-id",
+    )
+
+    ids = {"EMPTY": {"id": "empty"}, "FULL": {"id": "full"}}
+    res_write = up.write_page("EMPTY", [{"type": "p", "text": "Hello"}], "new", None, "tok", ids)
+    assert "dry run" in res_write
+    res_set = up.set_properties("FULL", {"Status": "In progress"}, "tok", ids)
+    assert res_set == ["Status"]
+    res_fix = up.fix_text("FULL", "Example 1", "Example 1A", "tok", ids)
+    assert "dry run" in res_fix
+
+    spec_file = tmp_path / "spec.json"
+    spec_file.write_text(json.dumps([{"type": "p", "text": "Hi"}]), encoding="utf-8")
+    id_map_file = tmp_path / "id_map.json"
+    id_map_file.write_text(json.dumps(ids), encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(up, "load_env", lambda: {"NOTION_TOKEN": "tok"})
+    assert up.main(["--code", "EMPTY", "--spec", str(spec_file), "--mode", "new", "--set", "Status=In progress"]) == 0
+    assert writes == [], f"NOTION_DRY_RUN=1 must prevent writes, got {writes}"
