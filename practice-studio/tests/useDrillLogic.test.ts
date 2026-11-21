@@ -447,6 +447,22 @@ async function main() {
       "Switching drills must flush the previous drill before saving the new drill"
     );
     queue.dispose();
+
+    // Hung /api/save-state settles cleanly as false after timeoutMs instead of hanging flush()
+    let saveAborted = false;
+    const timeoutQueue = createSaveQueue({
+      timeoutMs: 30,
+      fetchFn: (async (_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>(() => {
+          init?.signal?.addEventListener("abort", () => {
+            saveAborted = true;
+          });
+        })) as typeof fetch,
+    });
+    const hungSaveOk = await timeoutQueue.saveNow(docWithInput("hung-save"));
+    assert.equal(hungSaveOk, false, "timed out save must resolve false instead of hanging");
+    assert.equal(saveAborted, true, "timed out save must abort the in-flight fetch");
+    timeoutQueue.dispose();
   }
 
   // 8. PRG Run checks saves BOTH lastTestReport and score in one combined update (C2)

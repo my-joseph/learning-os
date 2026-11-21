@@ -268,8 +268,105 @@ function deriveVariantLists(
   };
 }
 
+export interface WriteProgressOptions {
+  /**
+   * When false (used by client-facing `/api/save-state` and pre-sync writes),
+   * existing sync stamps on disk are always preserved and incoming client stamps
+   * can never clear or forge them. Defaults to true for server/test callers.
+   */
+  allowSyncStampUpdate?: boolean;
+}
+
+function nonEmptyString(v: unknown): string | null {
+  return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
+}
+
+/**
+ * Merge `sessionSummary` field-wise while protecting server-owned Notion sync stamps
+ * (`syncedToNotionAt`, `notionPageId`, `syncedFingerprint`):
+ * - Existing non-empty stamps can NEVER be cleared (`null`, `""`, or omitted).
+ * - When `allowSyncStampUpdate` is false, disk stamps always win and client-supplied
+ *   stamps are ignored.
+ * - When `allowSyncStampUpdate` is true, only a strictly newer `syncedToNotionAt`
+ *   (or the first stamp when none existed) replaces the existing stamps.
+ */
+export function mergeSessionSummary(
+  prevRaw: unknown,
+  nextRaw: unknown,
+  options: { allowSyncStampUpdate?: boolean } = {}
+): Record<string, unknown> {
+  const allowSyncStampUpdate = options.allowSyncStampUpdate ?? true;
+  const prev =
+    prevRaw && typeof prevRaw === "object" && !Array.isArray(prevRaw)
+      ? (prevRaw as Record<string, unknown>)
+      : {};
+  const next =
+    nextRaw && typeof nextRaw === "object" && !Array.isArray(nextRaw)
+      ? (nextRaw as Record<string, unknown>)
+      : {};
+
+  const merged: Record<string, unknown> = { ...prev };
+  for (const [k, v] of Object.entries(next)) {
+    if (v !== undefined) {
+      merged[k] = v;
+    }
+  }
+
+  const prevSyncedAt = nonEmptyString(prev.syncedToNotionAt);
+  const nextSyncedAt = nonEmptyString(next.syncedToNotionAt);
+  const prevPageId = nonEmptyString(prev.notionPageId);
+  const nextPageId = nonEmptyString(next.notionPageId);
+  const prevFp = nonEmptyString(prev.syncedFingerprint);
+  const nextFp = nonEmptyString(next.syncedFingerprint);
+
+  if (!allowSyncStampUpdate) {
+    if (prevSyncedAt) {
+      merged.syncedToNotionAt = prevSyncedAt;
+    } else {
+      delete merged.syncedToNotionAt;
+    }
+    if (prevPageId) {
+      merged.notionPageId = prevPageId;
+    } else {
+      delete merged.notionPageId;
+    }
+    if (prevFp) {
+      merged.syncedFingerprint = prevFp;
+    } else {
+      delete merged.syncedFingerprint;
+    }
+    return merged;
+  }
+
+  const isNewerStamp = Boolean(
+    nextSyncedAt && (!prevSyncedAt || nextSyncedAt > prevSyncedAt)
+  );
+
+  if (isNewerStamp) {
+    merged.syncedToNotionAt = nextSyncedAt;
+    if (nextPageId || prevPageId) {
+      merged.notionPageId = nextPageId || prevPageId;
+    }
+    if (nextFp || prevFp) {
+      merged.syncedFingerprint = nextFp || prevFp;
+    }
+  } else {
+    if (prevSyncedAt) {
+      merged.syncedToNotionAt = prevSyncedAt;
+    }
+    if (prevPageId || nextPageId) {
+      merged.notionPageId = prevPageId || nextPageId;
+    }
+    if (prevFp || nextFp) {
+      merged.syncedFingerprint = prevFp || nextFp;
+    }
+  }
+
+  return merged;
+}
+
 /** Save only the learner-owned part of a document; never touches drill content. */
-export function writeProgress(doc: DocLike): string {
+export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}): string {
   if (!doc.drillId || !isSafeId(doc.drillId)) throw new Error("Invalid drillId");
   const existing = readProgress(doc.drillId);
   const existingProblems = (existing?.problems || {}) as Record<string, Record<string, unknown>>;
@@ -500,15 +597,78 @@ export function writeProgress(doc: DocLike): string {
     drillId: doc.drillId,
     unitCode: doc.unitCode || existing?.unitCode,
     updatedAt: nowIso,
-    sessionSummary:
-      (doc.sessionSummary as Record<string, unknown>) ||
-      existing?.sessionSummary ||
-      {},
+    sessionSummary: mergeSessionSummary(existing?.sessionSummary, doc.sessionSummary, {
+      allowSyncStampUpdate: options.allowSyncStampUpdate ?? true,
+    }),
     problems,
   };
   const file = progressFile(doc.drillId);
   writeJsonAtomic(file, data);
   return file;
+}
+
+/**
+ * Server-authoritative stamp write after a real (non-pilot, non-dry-run, non-degraded)
+ * Notion sync succeeds. Reads the latest progress on disk so concurrent problem edits
+ * made while Python ran are never overwritten, advances `syncedToNotionAt` monotonically,
+ * and persists `syncedToNotionAt`, `notionPageId`, and `syncedFingerprint` atomically.
+ */
+export function stampSyncMetadata(
+  drillId: string,
+  stamp: {
+    syncedToNotionAt?: string;
+    notionPageId?: string | null;
+    syncedFingerprint: string;
+    unitCode?: string;
+  }
+): {
+  progress: ProgressFile;
+  syncedToNotionAt: string;
+  notionPageId: string | null;
+  syncedFingerprint: string;
+} {
+  if (!drillId || !isSafeId(drillId)) throw new Error("Invalid drillId");
+  const existing = readProgress(drillId);
+  const prevSyncedAt = nonEmptyString(existing?.sessionSummary?.syncedToNotionAt);
+  let effectiveSyncedAt = nonEmptyString(stamp.syncedToNotionAt) || new Date().toISOString();
+  if (prevSyncedAt && effectiveSyncedAt <= prevSyncedAt) {
+    const prevMs = Date.parse(prevSyncedAt);
+    effectiveSyncedAt = Number.isFinite(prevMs)
+      ? new Date(prevMs + 1).toISOString()
+      : new Date().toISOString();
+  }
+  const effectivePageId =
+    nonEmptyString(stamp.notionPageId) ??
+    nonEmptyString(existing?.sessionSummary?.notionPageId) ??
+    null;
+  const effectiveFingerprint = stamp.syncedFingerprint || "";
+
+  const nextSummary = mergeSessionSummary(
+    existing?.sessionSummary,
+    {
+      syncedToNotionAt: effectiveSyncedAt,
+      ...(effectivePageId ? { notionPageId: effectivePageId } : {}),
+      ...(effectiveFingerprint ? { syncedFingerprint: effectiveFingerprint } : {}),
+    },
+    { allowSyncStampUpdate: true }
+  );
+
+  const data: ProgressFile = {
+    drillId,
+    unitCode: existing?.unitCode || stamp.unitCode,
+    updatedAt: effectiveSyncedAt,
+    sessionSummary: nextSummary,
+    problems: existing?.problems || {},
+  };
+  const file = progressFile(drillId);
+  writeJsonAtomic(file, data);
+  return {
+    progress: data,
+    syncedToNotionAt: effectiveSyncedAt,
+    notionPageId: effectivePageId,
+    syncedFingerprint:
+      nonEmptyString(nextSummary.syncedFingerprint) || effectiveFingerprint,
+  };
 }
 
 function mutateProblemVariantState(

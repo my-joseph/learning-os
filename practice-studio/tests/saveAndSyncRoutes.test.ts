@@ -8,9 +8,11 @@ import { POST as syncNotionPOST } from "../src/app/api/sync-notion/route";
 import {
   NotionDrillSyncSpawnArgs,
   setNotionDrillSyncSpawnerForTests,
+  setNotionDrillSyncTimeoutForTests,
 } from "../src/lib/notionSyncRunner";
 import { redactProblemStateForClient } from "../src/lib/redact";
-import type { ProblemState } from "../src/types/drill";
+import { summaryFingerprint } from "../src/lib/sessionSummary";
+import type { ProblemState, SessionSummary } from "../src/types/drill";
 
 function makePostReq(url: string, body: unknown): NextRequest {
   return new NextRequest(url, {
@@ -707,9 +709,301 @@ async function main() {
       delete process.env.NOTION_DRY_RUN;
     }
 
+    // -------------------------------------------------------------------------
+    // 4. Server-authoritative sync stamps:
+    //    - Real (non-pilot, non-dry-run, non-degraded) sync writes
+    //      syncedToNotionAt, notionPageId, and syncedFingerprint to disk and
+    //      returns them in the JSON response.
+    //    - Later /api/save-state autosave lacking stamps (or passing null/forged
+    //      stamps) NEVER clears or overrides them.
+    //    - Dry-run, pilot, and degraded syncs NEVER stamp (and preserve prior stamps).
+    //    - A newer real sync advances syncedToNotionAt and updates syncedFingerprint.
+    // -------------------------------------------------------------------------
+    {
+      const stampDrillId = "DRL-MTH-T01-C01-77";
+      const stampDrillDoc = {
+        ...canonicalDrillDoc,
+        drillId: stampDrillId,
+      };
+      fs.writeFileSync(
+        path.join(drillsUnitDir, `${stampDrillId}.json`),
+        JSON.stringify(stampDrillDoc, null, 2),
+        "utf-8"
+      );
+      const stampProgressPath = path.join(tmpRoot, "progress", `${stampDrillId}.json`);
+      const firstSummary: SessionSummary = {
+        practiceStatus: "Graded",
+        score: 1,
+        maxScore: 1,
+        accuracyPct: 100,
+        skippedCount: 0,
+        skippedProblems: [],
+        mistakeCategories: [],
+        divergedStepsSummary: "No diverged steps logged.",
+        attemptDate: "2026-11-21",
+      };
+
+      // 4a. Pilot mode, dryRun, and degraded NEVER stamp a fresh drill.
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0,
+        stdout: JSON.stringify({ ok: true, dryRun: true, drillPageId: "mock-77" }),
+        stderr: "",
+      }));
+      const dryRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          dryRun: true,
+          sessionSummary: firstSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(dryRes.status, 200);
+      const dryBody = (await dryRes.json()) as Record<string, unknown>;
+      assert.equal(dryBody.syncedToNotionAt, undefined, "dryRun response must not include syncedToNotionAt");
+      let diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8")) as {
+        sessionSummary: Record<string, unknown>;
+      };
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, undefined, "dryRun must never stamp disk");
+      assert.equal(diskStamp.sessionSummary.syncedFingerprint, undefined, "dryRun must never stamp fingerprint");
+
+      // Pilot mode (both via pilotSkipped and env LEARNINGOS_PILOT=1) must never stamp
+      process.env.LEARNINGOS_PILOT = "1";
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0,
+        stdout: JSON.stringify({ ok: true, drillPageId: "should-not-stamp" }),
+        stderr: "",
+      }));
+      const pilotSyncRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: firstSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(pilotSyncRes.status, 200);
+      const pilotSyncBody = (await pilotSyncRes.json()) as Record<string, unknown>;
+      assert.equal(pilotSyncBody.syncedToNotionAt, undefined, "pilot sync must never return syncedToNotionAt");
+      const pilotStampPath = path.join(tmpRoot, "pilot", "progress", `${stampDrillId}.json`);
+      const pilotDisk = JSON.parse(fs.readFileSync(pilotStampPath, "utf-8")) as {
+        sessionSummary: Record<string, unknown>;
+      };
+      assert.equal(pilotDisk.sessionSummary.syncedToNotionAt, undefined, "pilot sync must never stamp disk");
+      delete process.env.LEARNINGOS_PILOT;
+
+      // Degraded sync must never stamp
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0,
+        stdout: JSON.stringify({
+          ok: true,
+          degraded: true,
+          drillPageId: null,
+          warning: "Saved locally; Notion unavailable",
+        }),
+        stderr: "",
+      }));
+      const degradedRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: firstSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(degradedRes.status, 200);
+      const degradedBody = (await degradedRes.json()) as Record<string, unknown>;
+      assert.equal(degradedBody.syncedToNotionAt, undefined, "degraded sync must not return syncedToNotionAt");
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, undefined, "degraded sync must never stamp disk");
+
+      // 4b. Real successful sync writes stamps to disk AND returns them
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0,
+        stdout: JSON.stringify({
+          ok: true,
+          drillPageId: "real-notion-page-77",
+          parentPageId: "unit-page-1",
+          unitReviews: {},
+        }),
+        stderr: "",
+      }));
+      const realSuccessRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: firstSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(realSuccessRes.status, 200);
+      const realSuccessBody = (await realSuccessRes.json()) as {
+        ok: boolean;
+        drillPageId: string;
+        syncedToNotionAt: string;
+        notionPageId: string;
+        syncedFingerprint: string;
+      };
+      assert.equal(realSuccessBody.ok, true);
+      assert.ok(realSuccessBody.syncedToNotionAt, "real sync must return syncedToNotionAt");
+      assert.equal(realSuccessBody.notionPageId, "real-notion-page-77");
+      assert.equal(
+        realSuccessBody.syncedFingerprint,
+        summaryFingerprint(firstSummary),
+        "syncedFingerprint must match the synced summary"
+      );
+
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, realSuccessBody.syncedToNotionAt);
+      assert.equal(diskStamp.sessionSummary.notionPageId, "real-notion-page-77");
+      assert.equal(diskStamp.sessionSummary.syncedFingerprint, summaryFingerprint(firstSummary));
+
+      // 4c. Later /api/save-state autosave lacking stamps (or passing null/forged stamps) preserves server stamps
+      const autosaveWithoutStamps = await saveStatePOST(
+        makePostReq("http://127.0.0.1:3000/api/save-state", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: {
+            ...firstSummary,
+            divergedStepsSummary: "Q01 (Note: added after sync)",
+            syncedToNotionAt: null,
+            notionPageId: null,
+            syncedFingerprint: null,
+          },
+          problems: [
+            {
+              id: "Q01",
+              state: { userInput: "5", score: 1, mistakes: [], revisitNote: "Check signs" },
+            },
+          ],
+        })
+      );
+      assert.equal(autosaveWithoutStamps.status, 200);
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(
+        diskStamp.sessionSummary.syncedToNotionAt,
+        realSuccessBody.syncedToNotionAt,
+        "autosave must never clear syncedToNotionAt"
+      );
+      assert.equal(
+        diskStamp.sessionSummary.notionPageId,
+        "real-notion-page-77",
+        "autosave must never clear notionPageId"
+      );
+      assert.equal(
+        diskStamp.sessionSummary.syncedFingerprint,
+        summaryFingerprint(firstSummary),
+        "autosave must never clear syncedFingerprint"
+      );
+      assert.equal(
+        diskStamp.sessionSummary.divergedStepsSummary,
+        "Q01 (Note: added after sync)",
+        "non-stamp summary fields must still update"
+      );
+
+      // Client attempting to forge a newer stamp via /api/save-state must be ignored
+      await saveStatePOST(
+        makePostReq("http://127.0.0.1:3000/api/save-state", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: {
+            ...firstSummary,
+            syncedToNotionAt: "2099-01-01T00:00:00.000Z",
+            notionPageId: "forged-page",
+            syncedFingerprint: "forged-fp",
+          },
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, realSuccessBody.syncedToNotionAt);
+      assert.equal(diskStamp.sessionSummary.notionPageId, "real-notion-page-77");
+      assert.equal(diskStamp.sessionSummary.syncedFingerprint, summaryFingerprint(firstSummary));
+
+      // 4d. A newer real sync advances syncedToNotionAt and updates syncedFingerprint
+      const updatedSummary: SessionSummary = {
+        ...firstSummary,
+        divergedStepsSummary: "Q01 (Step 2: Divide both sides by 2.)",
+      };
+      const secondSuccessRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: updatedSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, divergedStep: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(secondSuccessRes.status, 200);
+      const secondSuccessBody = (await secondSuccessRes.json()) as {
+        syncedToNotionAt: string;
+        syncedFingerprint: string;
+      };
+      assert.ok(
+        secondSuccessBody.syncedToNotionAt > realSuccessBody.syncedToNotionAt,
+        "newer real sync must advance syncedToNotionAt monotonically"
+      );
+      assert.equal(secondSuccessBody.syncedFingerprint, summaryFingerprint(updatedSummary));
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, secondSuccessBody.syncedToNotionAt);
+      assert.equal(diskStamp.sessionSummary.syncedFingerprint, summaryFingerprint(updatedSummary));
+
+      // 4e. Timeout / hang path: a hanging Python process is killed and returns 504 (preserving prior stamps)
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: null,
+        stdout: "",
+        stderr: "Notion sync timed out after 90s.",
+        timedOut: true,
+      }));
+      const timeoutRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: stampDrillId,
+          unitCode,
+          sessionSummary: updatedSummary,
+          problems: [{ id: "Q01", state: { userInput: "5", score: 1, mistakes: [] } }],
+        })
+      );
+      assert.equal(timeoutRes.status, 504, "timed out sync must return HTTP 504");
+      const timeoutBody = (await timeoutRes.json()) as {
+        ok: boolean;
+        timedOut?: boolean;
+        error?: string;
+      };
+      assert.equal(timeoutBody.ok, false);
+      assert.equal(timeoutBody.timedOut, true);
+      assert.match(timeoutBody.error || "", /timed out/i);
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(
+        diskStamp.sessionSummary.syncedToNotionAt,
+        secondSuccessBody.syncedToNotionAt,
+        "timed out sync must preserve existing server stamps"
+      );
+
+      // 4f. Real child_process timeout in defaultDrillSyncSpawner kills a hanging subprocess promptly
+      setNotionDrillSyncSpawnerForTests(null);
+      setNotionDrillSyncTimeoutForTests(150);
+      const sleepBin = path.join(tmpRoot, "hang-python.sh");
+      fs.writeFileSync(sleepBin, "#!/bin/sh\nsleep 10\n", { mode: 0o755 });
+      const { runNotionDrillSync } = await import("../src/lib/notionSyncRunner");
+      const startMs = Date.now();
+      const hangResult = await runNotionDrillSync({
+        mergedDoc: { drillId: stampDrillId },
+        rootDir: tmpRoot,
+        pythonBin: sleepBin,
+        dataDir: path.join(tmpRoot, "drills", "data"),
+        isDryRun: true,
+      });
+      const elapsedMs = Date.now() - startMs;
+      assert.equal(hangResult.timedOut, true, "default spawner must report timedOut=true on hang");
+      assert.equal(hangResult.code, null);
+      assert.match(hangResult.stderr, /timed out/i);
+      assert.ok(elapsedMs < 3_000, `hung subprocess must be killed promptly (took ${elapsedMs}ms)`);
+      setNotionDrillSyncTimeoutForTests(null);
+    }
+
     console.log("save-state and sync-notion route tests passed");
   } finally {
     setNotionDrillSyncSpawnerForTests(null);
+    setNotionDrillSyncTimeoutForTests(null);
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
     if (prevDrillsDir === undefined) delete process.env.DRILLS_DATA_DIR;

@@ -1,8 +1,11 @@
 import type { DrillDocument } from "../types/drill";
 
+export const DEFAULT_SAVE_TIMEOUT_MS = 15_000;
+
 export interface SaveQueueOptions {
   fetchFn?: typeof fetch;
   debounceMs?: number;
+  timeoutMs?: number;
 }
 
 export interface SaveQueue {
@@ -35,6 +38,7 @@ interface Waiter {
 export function createSaveQueue(options: SaveQueueOptions = {}): SaveQueue {
   const fetchFn = options.fetchFn ?? fetch;
   const debounceMs = options.debounceMs ?? 400;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_SAVE_TIMEOUT_MS;
 
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pendingDoc: DrillDocument | null = null;
@@ -63,15 +67,36 @@ export function createSaveQueue(options: SaveQueueOptions = {}): SaveQueue {
   };
 
   const postDoc = async (doc: DrillDocument): Promise<boolean> => {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
     try {
-      const res = await fetchFn("/api/save-state", {
+      const fetchPromise = fetchFn("/api/save-state", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(doc),
+        ...(controller ? { signal: controller.signal } : {}),
       });
+      if (typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutHandle = setTimeout(() => {
+            timeoutHandle = null;
+            controller?.abort();
+            reject(new Error("Save timed out"));
+          }, timeoutMs);
+        });
+        fetchPromise.catch(() => {});
+        const res = await Promise.race([fetchPromise, timeoutPromise]);
+        return res.ok;
+      }
+      const res = await fetchPromise;
       return res.ok;
     } catch {
       return false;
+    } finally {
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
     }
   };
 

@@ -3,6 +3,7 @@ import {
   getDrillsDataDir,
   getPythonBin,
   getWorkspaceRoot,
+  isPilotMode,
   isSafeId,
   loadDrillFromDisk,
 } from "@/lib/paths";
@@ -10,8 +11,10 @@ import {
   mergeDrillForNotionSync,
   runNotionDrillSync,
 } from "@/lib/notionSyncRunner";
-import { readProgress, writeProgress } from "@/lib/progress";
+import { readProgress, stampSyncMetadata, writeProgress } from "@/lib/progress";
 import { isLabId } from "@/lib/routes";
+import { summaryFingerprint } from "@/lib/sessionSummary";
+import type { SessionSummary } from "@/types/drill";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,8 +40,8 @@ export async function POST(req: NextRequest) {
 
     // Merge & persist learner progress once via the canonical TS merge path so redacted
     // client state never overwrites server-owned fields (variantId, variantsSeen/Attempted,
-    // matchedTrap) or concurrent reviews/attempts/testRuns on disk.
-    writeProgress(drillDoc);
+    // matchedTrap), concurrent reviews/attempts/testRuns, or existing sync stamps on disk.
+    writeProgress(drillDoc, { allowSyncStampUpdate: false });
     const mergedProgress = readProgress(drillId);
 
     // Rehydrate canonical server drill content with the merged server-side progress.
@@ -58,13 +61,24 @@ export async function POST(req: NextRequest) {
       process.env.NOTION_DRY_RUN === "1" ||
       process.env.NOTION_DRY_RUN === "true";
 
-    const { code, stdout, stderr } = await runNotionDrillSync({
+    const { code, stdout, stderr, timedOut } = await runNotionDrillSync({
       mergedDoc,
       rootDir,
       pythonBin,
       dataDir,
       isDryRun,
     });
+
+    if (timedOut) {
+      return NextResponse.json(
+        {
+          ok: false,
+          timedOut: true,
+          error: stderr || "Notion sync timed out.",
+        },
+        { status: 504 }
+      );
+    }
 
     if (code !== 0) {
       return NextResponse.json(
@@ -77,10 +91,46 @@ export async function POST(req: NextRequest) {
       const outputLines = stdout
         .split(/\r?\n/)
         .map((line) => line.trim())
-        .filter(Boolean)
+        .filter(Boolean);
       const lastOutputLine = outputLines[outputLines.length - 1];
       if (!lastOutputLine) throw new Error("Sync helper produced no JSON output");
-      const res = JSON.parse(lastOutputLine);
+      const res = JSON.parse(lastOutputLine) as Record<string, unknown>;
+
+      // Server is the source of truth for sync stamps: stamp ONLY on a real
+      // (non-pilot, non-dry-run, non-degraded) successful sync and return them.
+      const isRealSuccess =
+        res &&
+        typeof res === "object" &&
+        res.ok === true &&
+        !isDryRun &&
+        !isPilotMode() &&
+        !res.dryRun &&
+        !res.pilotSkipped &&
+        !res.degraded;
+
+      if (isRealSuccess) {
+        const rawPageId =
+          (typeof res.drillPageId === "string" && res.drillPageId.trim()) ||
+          (typeof res.notionPageId === "string" && res.notionPageId.trim()) ||
+          null;
+        const syncedSummary =
+          mergedDoc.sessionSummary && typeof mergedDoc.sessionSummary === "object"
+            ? (mergedDoc.sessionSummary as Partial<SessionSummary>)
+            : null;
+        const fingerprint = summaryFingerprint(syncedSummary);
+        const stamped = stampSyncMetadata(drillId, {
+          notionPageId: rawPageId,
+          syncedFingerprint: fingerprint,
+          unitCode,
+        });
+        return NextResponse.json({
+          ...res,
+          syncedToNotionAt: stamped.syncedToNotionAt,
+          notionPageId: stamped.notionPageId,
+          syncedFingerprint: stamped.syncedFingerprint,
+        });
+      }
+
       return NextResponse.json(res);
     } catch {
       return NextResponse.json(

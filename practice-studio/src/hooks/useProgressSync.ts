@@ -42,6 +42,9 @@ export interface SyncState {
 
 export const INITIAL_SYNC_STATE: SyncState = { phase: "idle" };
 
+/** Client-side ceiling slightly above the server's 90s subprocess timeout so `/api/sync-notion` can never hang in `syncing`. */
+export const DEFAULT_SYNC_TIMEOUT_MS = 100_000;
+
 interface UseProgressSyncOptions {
   setStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
 }
@@ -76,10 +79,14 @@ export interface SyncResponseLike {
   dryRun?: boolean;
   pilotSkipped?: boolean;
   degraded?: boolean;
+  timedOut?: boolean;
   warning?: string;
   error?: string;
   drillPageId?: string | null;
   parentPageId?: string | null;
+  syncedToNotionAt?: string | null;
+  notionPageId?: string | null;
+  syncedFingerprint?: string | null;
   unitReviews?: Record<string, UnitReviewResult>;
 }
 
@@ -122,29 +129,29 @@ export interface ExecuteNotionSyncResult {
 }
 
 /**
- * Pure async coordinator for syncing a drill to `/api/sync-notion` and stamping
- * `syncedToNotionAt`, `notionPageId`, and `syncedFingerprint` ONLY on a real
- * non-degraded, non-dry-run, non-pilot success.
+ * Pure async coordinator for syncing a drill to `/api/sync-notion` and adopting
+ * server-persisted `syncedToNotionAt`, `notionPageId`, and `syncedFingerprint`
+ * ONLY on a real non-degraded, non-dry-run, non-pilot success.
  */
 export async function executeNotionSync(options: {
   currentDrill: DrillDocument;
   statusOverride: PracticeStatusOverride;
   fetchFn?: typeof fetch;
   getLatestDrill?: () => DrillDocument | null;
-  saveDoc?: (doc: DrillDocument) => Promise<boolean>;
   isOffline?: boolean;
   nowIso?: string;
   attemptDate?: string;
+  timeoutMs?: number;
 }): Promise<ExecuteNotionSyncResult> {
   const {
     currentDrill,
     statusOverride,
     fetchFn = fetch,
     getLatestDrill,
-    saveDoc,
     isOffline = typeof navigator !== "undefined" && navigator.onLine === false,
     nowIso = new Date().toISOString(),
     attemptDate,
+    timeoutMs = DEFAULT_SYNC_TIMEOUT_MS,
   } = options;
 
   // Hard guard: labs are submitted via `labs/common/submit_lab.py` (`npm run submit`), never drill sync.
@@ -185,14 +192,52 @@ export async function executeNotionSync(options: {
   const drillLabel =
     plainTitle(currentDrill.unitTitle) || currentDrill.unitCode || currentDrill.drillId;
 
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  let timedOut = false;
+  let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
   let res: Response;
   try {
-    res = await fetchFn("/api/sync-notion", {
+    const fetchPromise = fetchFn("/api/sync-notion", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(fullDocToSync),
+      ...(controller ? { signal: controller.signal } : {}),
     });
+
+    if (typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          timeoutHandle = null;
+          timedOut = true;
+          controller?.abort();
+          const label =
+            timeoutMs >= 1_000 ? `${Math.round(timeoutMs / 1_000)}s` : `${timeoutMs}ms`;
+          reject(new Error(`Notion sync timed out after ${label}.`));
+        }, timeoutMs);
+      });
+      // Prevent unhandled rejection if fetch rejects after timeout wins the race.
+      fetchPromise.catch(() => {});
+      res = await Promise.race([fetchPromise, timeoutPromise]);
+    } else {
+      res = await fetchPromise;
+    }
   } catch (err: unknown) {
+    if (timedOut) {
+      const errMsg = err instanceof Error ? err.message : "Notion sync timed out.";
+      return {
+        syncState: {
+          phase: "error",
+          message: errMsg,
+        },
+        toast: {
+          text: `${errMsg} Your progress is saved locally — retry when ready.`,
+          type: "fail",
+        },
+        stampedDoc: null,
+        postedPayload: fullDocToSync,
+      };
+    }
     const isNetworkTypeError = err instanceof TypeError;
     const errMsg = err instanceof Error ? err.message : String(err);
     return {
@@ -209,6 +254,11 @@ export async function executeNotionSync(options: {
       stampedDoc: null,
       postedPayload: fullDocToSync,
     };
+  } finally {
+    if (timeoutHandle !== null) {
+      clearTimeout(timeoutHandle);
+      timeoutHandle = null;
+    }
   }
 
   let data: SyncResponseLike;
@@ -254,7 +304,7 @@ export async function executeNotionSync(options: {
     accuracyPct
   );
 
-  // Pilot mode or dry run: NEVER stamp syncedToNotionAt or syncedFingerprint.
+  // Pilot mode or dry run: NEVER adopt or stamp syncedToNotionAt or syncedFingerprint.
   if (data.dryRun || data.pilotSkipped) {
     const isPilot = Boolean(data.pilotSkipped);
     return {
@@ -271,7 +321,7 @@ export async function executeNotionSync(options: {
     };
   }
 
-  // Degraded (saved locally, Notion unreachable): NEVER stamp syncedToNotionAt or syncedFingerprint.
+  // Degraded (saved locally, Notion unreachable): NEVER adopt or stamp syncedToNotionAt or syncedFingerprint.
   if (data.degraded) {
     return {
       syncState: {
@@ -284,17 +334,28 @@ export async function executeNotionSync(options: {
     };
   }
 
-  // Real successful Notion sync: merge stamp metadata into the LATEST drill doc (never overwrite with click-time copy).
+  // Real successful Notion sync: adopt server-persisted stamps into the LATEST in-memory drill doc.
+  const syncedAt =
+    typeof data.syncedToNotionAt === "string" && data.syncedToNotionAt.trim()
+      ? data.syncedToNotionAt.trim()
+      : nowIso;
+
   const drillPageId =
-    typeof data.drillPageId === "string" && data.drillPageId.trim()
-      ? data.drillPageId.trim()
-      : currentDrill.sessionSummary?.notionPageId ?? null;
+    (typeof data.notionPageId === "string" && data.notionPageId.trim()) ||
+    (typeof data.drillPageId === "string" && data.drillPageId.trim()) ||
+    currentDrill.sessionSummary?.notionPageId ||
+    null;
+
+  const syncedFingerprint =
+    typeof data.syncedFingerprint === "string" && data.syncedFingerprint.trim()
+      ? data.syncedFingerprint.trim()
+      : summaryFingerprint(fullDocToSync.sessionSummary);
 
   const stampedSummary: SessionSummary = {
     ...fullDocToSync.sessionSummary,
-    syncedToNotionAt: nowIso,
+    syncedToNotionAt: syncedAt,
     notionPageId: drillPageId,
-    syncedFingerprint: summaryFingerprint(fullDocToSync.sessionSummary),
+    syncedFingerprint,
   };
 
   const unitReviews =
@@ -309,12 +370,13 @@ export async function executeNotionSync(options: {
         sessionSummary: stampedSummary,
       };
 
-  // Learner switched to a different drill while the sync was in flight: ignore result.
+  // Learner switched to a different drill while the sync was in flight: ignore UI update
+  // (the server already persisted the sync stamps on disk).
   if (!latestTarget) {
     return {
       syncState: {
         phase: "synced",
-        at: nowIso,
+        at: syncedAt,
         unitReviews,
         drillPageId,
       },
@@ -326,24 +388,10 @@ export async function executeNotionSync(options: {
     };
   }
 
-  try {
-    if (saveDoc) {
-      await saveDoc(latestTarget);
-    } else {
-      await fetchFn("/api/save-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(latestTarget),
-      });
-    }
-  } catch {
-    // Non-fatal: Notion sync succeeded; local save can be retried on next edit.
-  }
-
   return {
     syncState: {
       phase: "synced",
-      at: nowIso,
+      at: syncedAt,
       unitReviews,
       drillPageId,
     },
@@ -426,6 +474,9 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
           syncGenRef.current !== syncGen ||
           (getLatestDrill && getLatestDrill()?.drillId !== syncedDrillId)
         ) {
+          if (syncGenRef.current === syncGen) {
+            setSyncState(INITIAL_SYNC_STATE);
+          }
           return;
         }
         const docToSync = getLatestDrill?.() ?? currentDrill;
@@ -433,7 +484,6 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
           currentDrill: docToSync,
           statusOverride,
           getLatestDrill,
-          saveDoc: saveNow,
         });
 
         // Ignore the result if the learner switched drills while the sync ran.
@@ -442,6 +492,9 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
           syncGenRef.current !== syncGen ||
           (getLatestDrill && getLatestDrill()?.drillId !== syncedDrillId)
         ) {
+          if (syncGenRef.current === syncGen) {
+            setSyncState(INITIAL_SYNC_STATE);
+          }
           return;
         }
 
@@ -451,12 +504,29 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         }
         if (result.stampedDoc) {
           onDrillUpdated(result.stampedDoc);
-          await onSynced(syncedDrillId);
-        } else if (
+        }
+        if (
+          result.stampedDoc ||
           result.syncState.phase === "degraded" ||
           result.syncState.phase === "dryRun"
         ) {
-          await onSynced(syncedDrillId);
+          try {
+            await onSynced(syncedDrillId);
+          } catch {
+            // Non-fatal: drill list refresh failure must not revert sync state.
+          }
+        }
+      } catch (err: unknown) {
+        if (syncGenRef.current === syncGen) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          setSyncState({
+            phase: "error",
+            message: errMsg || "Notion sync failed.",
+          });
+          setStatus({
+            text: `Notion Sync error: ${errMsg || "Notion sync failed."}`,
+            type: "fail",
+          });
         }
       } finally {
         if (syncGenRef.current === syncGen) {
@@ -465,7 +535,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         }
       }
     },
-    [flushAutoSave, saveNow, setStatus, statusOverride]
+    [flushAutoSave, setStatus, statusOverride]
   );
 
   return {

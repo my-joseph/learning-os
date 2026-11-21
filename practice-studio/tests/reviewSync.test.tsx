@@ -183,38 +183,47 @@ assert.equal(nextDrill?.drillId, "DRL-MTH-T02-C01-U01-03", "next drill excludes 
 assert.equal(nextDrill?.title, "Complex Numbers · Set 3", "next drill names its unit and set");
 assert.notEqual(nextDrill?.href, "/math/DRL-MTH-T02-C01-U01-04", "next drill never links to the current drill");
 
-// Sync state and metadata stamping: only a real successful response stamps.
-const reply = (data: unknown, ok = true) => new Response(JSON.stringify(data), { status: ok ? 200 : 500 });
+// Sync state and metadata adoption: server is the source of truth; client only adopts stamps on real success.
+const reply = (data: unknown, ok = true, status?: number) =>
+  new Response(JSON.stringify(data), { status: status ?? (ok ? 200 : 500) });
 async function verifyStamping() {
   let syncPostBody: string | null = null;
-  let savePostBody: string | null = null;
+  let saveStateCalled = false;
+  const expectedFp = summaryFingerprint(buildSessionSummary(mathDrill, null, { attemptDate: "2026-11-19" }));
   const successful = await executeNotionSync({
-    currentDrill: mathDrill, statusOverride: null, nowIso: "2026-11-19T10:00:00.000Z",
+    currentDrill: mathDrill, statusOverride: null, nowIso: "2026-11-19T09:00:00.000Z",
     attemptDate: "2026-11-19",
     fetchFn: async (input, init) => {
       const url = String(input);
       if (url === "/api/sync-notion") {
         syncPostBody = String(init?.body || "");
-        return reply({ ok: true, drillPageId: "real-page-id", unitReviews: { "MTH-T02-C01-U01": { mastery: 2, lastReviewed: "2026-11-19", nextReview: "2026-11-22" } } });
+        return reply({
+          ok: true,
+          drillPageId: "real-page-id",
+          notionPageId: "real-page-id",
+          syncedToNotionAt: "2026-11-19T10:00:00.000Z",
+          syncedFingerprint: expectedFp,
+          unitReviews: { "MTH-T02-C01-U01": { mastery: 2, lastReviewed: "2026-11-19", nextReview: "2026-11-22" } },
+        });
       }
-      savePostBody = String(init?.body || "");
+      saveStateCalled = true;
       return reply({ ok: true });
     },
   });
   assert.equal(syncPostBody, JSON.stringify(buildSyncPayload(mathDrill, null, { attemptDate: "2026-11-19" })));
-  assert.ok(savePostBody);
-  const savedDoc = JSON.parse(savePostBody || "{}") as DrillDocument;
-  assert.equal(savedDoc.sessionSummary.syncedToNotionAt, "2026-11-19T10:00:00.000Z");
+  assert.equal(saveStateCalled, false, "client must adopt server-persisted stamps without a second /api/save-state POST");
   assert.equal(successful.syncState.phase, "synced");
+  assert.equal(successful.syncState.at, "2026-11-19T10:00:00.000Z");
   assert.equal(successful.stampedDoc?.sessionSummary.syncedToNotionAt, "2026-11-19T10:00:00.000Z");
   assert.equal(successful.stampedDoc?.sessionSummary.notionPageId, "real-page-id");
-  assert.ok(successful.stampedDoc?.sessionSummary.syncedFingerprint);
+  assert.equal(successful.stampedDoc?.sessionSummary.syncedFingerprint, expectedFp);
 
   const scenarios: Array<[string, (url: RequestInfo | URL, init?: RequestInit) => Promise<Response>, boolean, boolean?]> = [
     ["degraded", async () => reply({ ok: true, degraded: true, warning: "missing token" }), false],
     ["dryRun", async () => reply({ ok: true, dryRun: true }), false],
     ["pilotSkipped", async () => reply({ ok: true, pilotSkipped: true }), false, true],
     ["ok:false", async () => reply({ ok: false, error: "failed" }, false), false],
+    ["server 504 timeout", async () => reply({ ok: false, timedOut: true, error: "Notion sync timed out after 90s." }, false, 504), false],
     ["thrown fetch", async () => { throw new Error("network down"); }, false],
   ];
   for (const [label, fetchFn, shouldStamp] of scenarios) {
@@ -222,19 +231,35 @@ async function verifyStamping() {
     assert.equal(Boolean(result.stampedDoc), shouldStamp, `${label} must not stamp sync metadata`);
   }
 
-  // Merge into LATEST drill doc instead of re-saving click-time copy (review_sync C2)
+  // Hang path: a fetch that never settles aborts and enters error phase with Retry enabled
+  let abortSignalAborted = false;
+  const hungResult = await executeNotionSync({
+    currentDrill: mathDrill,
+    statusOverride: null,
+    timeoutMs: 30,
+    fetchFn: async (_input, init) =>
+      new Promise<Response>(() => {
+        init?.signal?.addEventListener("abort", () => {
+          abortSignalAborted = true;
+        });
+      }),
+  });
+  assert.equal(abortSignalAborted, true, "client timeout must abort the in-flight sync fetch");
+  assert.equal(hungResult.syncState.phase, "error", "hung sync must transition to error phase");
+  assert.match(hungResult.syncState.message || "", /timed out/i);
+  assert.equal(hungResult.stampedDoc, null, "timed out sync must not stamp");
+  const timeoutErrorHtml = render(mathDrill, { syncState: hungResult.syncState, isSyncing: false });
+  assert.match(timeoutErrorHtml, /Couldn&#x27;t sync/);
+  assert.match(timeoutErrorHtml, /<button(?![^>]*disabled)[^>]*>(?:(?!<\/button>).)*<span>Retry<\/span><\/button>/, "Retry button must be enabled after timeout");
+
+  // Merge server stamps into LATEST drill doc without rolling back mid-sync edits (review_sync C2)
   let latestDrill: DrillDocument | null = mathDrill;
-  let savedDuringLatestTest: DrillDocument | null = null;
   const mergedResult = await executeNotionSync({
     currentDrill: mathDrill,
     statusOverride: null,
     nowIso: "2026-11-20T01:00:00.000Z",
     attemptDate: "2026-11-20",
     getLatestDrill: () => latestDrill,
-    saveDoc: async (doc) => {
-      savedDuringLatestTest = doc;
-      return true;
-    },
     fetchFn: async (input) => {
       assert.equal(String(input), "/api/sync-notion");
       // Simulate an edit arriving while /api/sync-notion is in flight
@@ -246,7 +271,13 @@ async function verifyStamping() {
             : p
         ),
       };
-      return reply({ ok: true, drillPageId: "page-merged-1" });
+      return reply({
+        ok: true,
+        drillPageId: "page-merged-1",
+        notionPageId: "page-merged-1",
+        syncedToNotionAt: "2026-11-20T01:00:00.000Z",
+        syncedFingerprint: expectedFp,
+      });
     },
   });
   assert.equal(mergedResult.ignored, undefined);
@@ -262,33 +293,28 @@ async function verifyStamping() {
     "mid-sync revisitNote must be preserved after sync completes"
   );
   assert.equal(mergedResult.stampedDoc.sessionSummary.syncedToNotionAt, "2026-11-20T01:00:00.000Z");
-  assert.equal(
-    (savedDuringLatestTest as DrillDocument | null)?.problems[0].state.mistakeNote,
-    "Edited while sync ran",
-    "saveDoc must receive the merged latest doc rather than the click-time copy"
-  );
 
   // Ignore sync result when the learner switches drills mid-sync (review_sync C2)
   const otherDrill: DrillDocument = { ...mathDrill, drillId: "DRL-MTH-OTHER-99" };
   let activeDrillDuringSwitch: DrillDocument | null = mathDrill;
-  let saveCalledAfterSwitch = false;
   const switchedResult = await executeNotionSync({
     currentDrill: mathDrill,
     statusOverride: null,
     nowIso: "2026-11-20T01:05:00.000Z",
     getLatestDrill: () => activeDrillDuringSwitch,
-    saveDoc: async () => {
-      saveCalledAfterSwitch = true;
-      return true;
-    },
     fetchFn: async () => {
       activeDrillDuringSwitch = otherDrill;
-      return reply({ ok: true, drillPageId: "page-switched-1" });
+      return reply({
+        ok: true,
+        drillPageId: "page-switched-1",
+        notionPageId: "page-switched-1",
+        syncedToNotionAt: "2026-11-20T01:05:00.000Z",
+        syncedFingerprint: expectedFp,
+      });
     },
   });
   assert.equal(switchedResult.ignored, true, "sync result must be marked ignored when drill switched");
   assert.equal(switchedResult.stampedDoc, null, "switched drill must not produce a stampedDoc");
-  assert.equal(saveCalledAfterSwitch, false, "switched drill must not save stale click-time doc");
   assert.equal(
     mergeSyncStampIntoLatestDrill(otherDrill, mathDrill.drillId, mergedResult.stampedDoc.sessionSummary),
     null,
