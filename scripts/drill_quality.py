@@ -123,6 +123,9 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
     similar_opened: set[str] = set()
     similar_keys: set[str] = set()
     untouched: list[str] = []
+    untouched_by_arch_level: Counter[tuple[str, int]] = Counter()
+    untouched_drills: list[str] = []
+    matched_progress_files = 0
 
     variants_root = os.environ.get("VARIANTS_DIR", os.path.join(root, "drills", "variants"))
     if os.path.isdir(variants_root):
@@ -141,6 +144,9 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
     arch_levels: dict[str, dict[int, dict[str, Any]]] = defaultdict(lambda: defaultdict(_empty_stats))
     for drill in drills:
         drill_id = str(drill.get("drillId", ""))
+        drill_has_activity = False
+        if drill_id in progress:
+            matched_progress_files += 1
         prog = progress.get(drill_id, {})
         states = prog.get("problems", {}) if isinstance(prog.get("problems"), dict) else {}
         is_prg = _is_prg(drill)
@@ -156,9 +162,25 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
             if not isinstance(state, dict):
                 state = {}
             scored = score_problem(state, is_prg=is_prg)
-            has_evidence = scored["score"] is not None or bool(state.get("attempts") or state.get("reviews"))
+            has_evidence = scored["score"] is not None or any(
+                state.get(field)
+                for field in (
+                    "attempts",
+                    "userInput",
+                    "hintsRevealed",
+                    "stepsRevealed",
+                    "solutionRevealedBeforeAnswer",
+                    "solutionRevealed",
+                    "revealed",
+                    "reviews",
+                )
+            )
             if not has_evidence:
                 untouched.append(f"{drill_id}/{pid}")
+                if isinstance(level, int):
+                    untouched_by_arch_level[(key, level)] += 1
+            else:
+                drill_has_activity = True
             if isinstance(level, int):
                 _add_state(by_level[f"L{level}"], problem, state, is_prg)
             _add_state(by_arch[key], problem, state, is_prg)
@@ -171,6 +193,8 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
                 similar_opened.add(key)
             if isinstance(level, int):
                 _add_state(arch_levels[key][level], problem, state, is_prg)
+        if not drill_has_activity:
+            untouched_drills.append(drill_id)
 
     archetypes = {}
     flags = []
@@ -181,6 +205,7 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
         levels = sorted(declared.get(key, set()))
         archetypes[key] = {
             **item_meta.get(key, {}),
+            "baseLevel": vault.get(key, {}).get("level"),
             "attempts": stats["attempts"],
             "items": stats["items"],
             "firstTryClean": stats["firstTryClean"],
@@ -228,9 +253,17 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
                         "recommendation": "add scaffolding or lower the level",
                     }
                 )
-        for trap in stats["trapTags"]:
-            if stats["matchedTraps"].get(trap, 0) == 0:
-                flags.append({"type": "trap_never_triggered", "archetype": key, "trap": trap})
+        if stats["attempts"] >= 2:
+            untriggered = sorted(trap for trap in stats["trapTags"] if stats["matchedTraps"].get(trap, 0) == 0)
+            if untriggered:
+                flags.append(
+                    {
+                        "type": "trap_never_triggered",
+                        "archetype": key,
+                        "trapCount": len(untriggered),
+                        "traps": untriggered,
+                    }
+                )
         if not stats["items"]:
             flags.append({"type": "archetype_never_drilled", "archetype": key})
         if (
@@ -239,7 +272,7 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
             and item_meta.get(key, {}).get("subject") != "PRG"
         ):
             flags.append({"type": "similar_never_opened", "archetype": key})
-        ladder = {f"L{lv}" for lv in range(1, 5)} - set(levels)
+        ladder = {f"L{lv}" for lv in set(range(1, 5)) - set(levels)}
         if levels and ladder:
             flags.append({"type": "level_ladder_gap", "archetype": key, "missing": sorted(ladder)})
 
@@ -251,11 +284,14 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
         elif total >= 3 and rate is not None and rate <= 0.3:
             flags.append({"type": "level_too_hard", "level": level, "recommendation": "add scaffolding or lower level"})
 
-    untouched_drills = sorted({item.split("/", 1)[0] for item in untouched})
+    for (key, level), count in sorted(untouched_by_arch_level.items()):
+        flags.append({"type": "untouched", "archetype": key, "level": level, "items": count})
+
     return {
         "scope": scope,
         "progressDir": progress_root(root),
         "drills": len(drills),
+        "matchedProgressFiles": matched_progress_files,
         "items": sum(s["items"] for s in by_arch.values()),
         "attempts": sum(s["attempts"] for s in by_arch.values()),
         "archetypes": archetypes,
@@ -277,7 +313,7 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
         },
         "flags": flags,
         "similarNeverOpened": [key for key in sorted(similar_keys) if not archetypes.get(key, {}).get("similarOpened")],
-        "untouchedDrills": untouched_drills,
+        "untouchedDrills": sorted(untouched_drills),
         "untouchedItems": untouched,
         "qcReviewTotals": {
             "pass": sum(s.get("qcPasses", 0) for s in by_arch.values()),
@@ -286,19 +322,93 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
     }
 
 
-def format_report(report: dict[str, Any]) -> str:
+_FLAG_ORDER = {
+    "too_hard": 0,
+    "level_too_hard": 0,
+    "too_easy": 1,
+    "level_too_easy": 1,
+    "trap_never_triggered": 2,
+    "level_ladder_gap": 3,
+    "archetype_never_drilled": 4,
+    "similar_never_opened": 5,
+    "untouched": 6,
+}
+
+
+def _flag_level(flag: dict[str, Any], report: dict[str, Any]) -> str:
+    level = flag.get("level")
+    if isinstance(level, int):
+        return f"L{level}"
+    key = flag.get("archetype")
+    arch = report["archetypes"].get(key, {})
+    levels = arch.get("declaredLevels", [])
+    return f"L{levels[0]}" if levels else f"L{arch['baseLevel']}" if arch.get("baseLevel") else "L?"
+
+
+def _format_flag(flag: dict[str, Any], report: dict[str, Any]) -> str:
+    kind = flag["type"]
+    key = flag.get("archetype", "all archetypes")
+    subject = f"{key}@{_flag_level(flag, report)}"
+    reasons = {
+        "too_hard": "low first-try clean rate; add scaffolding or lower level",
+        "level_too_hard": "low first-try clean rate; add scaffolding",
+        "too_easy": "high first-try clean rate; step up a level",
+        "level_too_easy": "high first-try clean rate; step up",
+        "archetype_never_drilled": "no practice items yet",
+        "similar_never_opened": "Similar variants have not been opened",
+    }
+    if kind == "level_ladder_gap":
+        missing = ", ".join(flag.get("missing", []))
+        return f"{key}@{_flag_level(flag, report)} missing {missing}"
+    if kind == "trap_never_triggered":
+        reasons[kind] = f"{flag['trapCount']} expected trap(s) never triggered"
+    if kind == "untouched":
+        reasons[kind] = f"{flag['items']} item(s) have no practice activity"
+    return f"{subject} — {reasons.get(kind, 'review practice evidence')}"
+
+
+def format_report(report: dict[str, Any], *, show_all: bool = False) -> str:
     """Render a concise human-readable report without learner answer content."""
     lines = [
         f"{report['scope']}: {report['drills']} drills, {report['items']} items, {report['attempts']} recorded attempts"
     ]
+    if report["drills"] and not report.get("matchedProgressFiles"):
+        lines.append(f"no practice data found in {report['progressDir']}")
     for level, row in report["levels"].items():
         rate = "n/a" if row["firstTryCleanRate"] is None else f"{row['firstTryCleanRate']:.0%}"
         lines.append(
             f"  {level}: items={row['items']} attempts={row['attempts']} first-try-clean={rate} hints={row['hintUses']} steps={row['stepsRevealed']} skips={row['skips']} scores={row['scores']}"
         )
+    lines.append("Archetypes: key | levels seen | attempts | clean | reveals")
+    for key, row in sorted(report["archetypes"].items()):
+        levels = ",".join(f"L{lv}" for lv in row["declaredLevels"]) or "—"
+        rate = "n/a" if row["firstTryCleanRate"] is None else f"{row['firstTryCleanRate']:.0%}"
+        reveals = row["stepsRevealed"] + row["solutionRevealed"]
+        lines.append(f"  {key} | {levels} | {row['attempts']} | {rate} | {reveals}")
+    text_flags = [flag for flag in report["flags"] if flag["type"] not in {"level_too_easy", "level_too_hard"}]
     lines.append(
-        f"Flags: {len(report['flags'])}; untouched drills: {len(report['untouchedDrills'])}; QC pass/fail: {report['qcReviewTotals']['pass']}/{report['qcReviewTotals']['fail']}"
+        f"Flags: {len(text_flags)}; untouched drills: {len(report['untouchedDrills'])}; QC pass/fail: {report['qcReviewTotals']['pass']}/{report['qcReviewTotals']['fail']}"
     )
+    flags = sorted(
+        text_flags,
+        key=lambda flag: (
+            _FLAG_ORDER.get(flag["type"], 99),
+            str(flag.get("archetype", "")),
+            _flag_level(flag, report),
+        ),
+    )
+    if flags:
+        lines.append("Flags by kind (most actionable first):")
+        kinds = sorted({flag["type"] for flag in flags}, key=lambda kind: _FLAG_ORDER.get(kind, 99))
+        shown = 0
+        for kind in kinds:
+            lines.append(f"  {kind}:")
+            for flag in (item for item in flags if item["type"] == kind):
+                if not show_all and len(lines) >= 29:
+                    lines.append(f"  … {len(flags) - shown} more; use --all to show all flags")
+                    return "\n".join(lines)
+                lines.append(f"    {_format_flag(flag, report)}")
+                shown += 1
     return "\n".join(lines)
 
 
@@ -306,9 +416,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("scope", help="unit or chapter code, e.g. MTH-T02-C01-U01")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
+    parser.add_argument("--all", action="store_true", help="show all flags in text output")
     args = parser.parse_args(argv)
     report = build_report(args.scope)
-    print(json.dumps(report, indent=2, ensure_ascii=False) if args.json else format_report(report))
+    print(json.dumps(report, indent=2, ensure_ascii=False) if args.json else format_report(report, show_all=args.all))
     return 0
 
 
