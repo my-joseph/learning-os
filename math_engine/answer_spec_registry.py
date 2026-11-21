@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Centralized AnswerSpec Registry defining schemas, engines, and validators for all problem types."""
 
+import re
 from typing import Any, Dict, Optional
 
 ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
@@ -140,3 +141,64 @@ def get_registered_types(engine: Optional[str] = None) -> list[str]:
     if not engine:
         return sorted(ANSWER_SPEC_TYPES.keys())
     return sorted(k for k, v in ANSWER_SPEC_TYPES.items() if v["engine"] in (engine, "shared"))
+
+
+def check_choice_spec(
+    spec: dict[str, Any],
+    raw: str,
+    *,
+    correct_message: str = "Correct.",
+    incorrect_message: str = "Incorrect choice.",
+    wrong_diagnostics: Optional[list[dict[str, str]]] = None,
+) -> dict[str, Any]:
+    """Shared validator for 'choice' answerSpecs across math_engine and code_engine."""
+    raw_text = "" if raw is None else str(raw).strip()
+    u = raw_text.upper()
+    options = spec.get("options")
+    if isinstance(options, list) and options:
+        valid_ids = {
+            str(opt["id"]).strip().upper() for opt in options if isinstance(opt, dict) and opt.get("id") is not None
+        }
+        if valid_ids and u not in valid_ids:
+            return {
+                "verdict": "invalid input",
+                "message": f"Option '{raw_text}' is not one of the available choices.",
+                "components": [],
+                "diagnostics": [],
+            }
+    correct_id = str(spec.get("correct", "")).strip().upper()
+    ok = bool(correct_id) and u == correct_id
+    return {
+        "verdict": "correct" if ok else "incorrect",
+        "message": correct_message if ok else incorrect_message,
+        "components": [{"label": "Choice", "ok": ok}],
+        "diagnostics": [] if ok else list(wrong_diagnostics or []),
+    }
+
+
+def check_text_spec(
+    spec: dict[str, Any],
+    raw: str,
+    *,
+    correct_message: str = "Correct.",
+    incorrect_message: str = "Does not match the accepted answers.",
+) -> dict[str, Any]:
+    """Shared validator for 'text' answerSpecs across math_engine and code_engine."""
+    case_sensitive = bool(spec.get("case_sensitive", False))
+
+    def norm(value: Any) -> str:
+        text = re.sub(r"\s+", " ", ("" if value is None else str(value)).strip())
+        return text if case_sensitive else text.lower()
+
+    raw_accepted = spec.get("accepted")
+    if raw_accepted is None:
+        fallback = spec.get("value")
+        raw_accepted = [fallback] if fallback is not None else []
+    accepted = [norm(item) for item in raw_accepted if item is not None]
+    ok = norm(raw) in accepted
+    return {
+        "verdict": "correct" if ok else "incorrect",
+        "message": correct_message if ok else incorrect_message,
+        "components": [{"label": "Answer", "ok": ok}],
+        "diagnostics": [],
+    }

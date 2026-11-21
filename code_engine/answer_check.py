@@ -16,6 +16,8 @@ import re
 import sys
 import warnings
 
+from math_engine.answer_spec_registry import check_choice_spec, check_text_spec
+
 
 def parse_tokens(raw: str) -> list[str]:
     """
@@ -182,43 +184,22 @@ def check_line_number(spec: dict, raw: str) -> dict:
 
 
 def check_choice(spec: dict, raw: str) -> dict:
-    u = raw.strip().upper()
-    options = spec.get("options")
-    if isinstance(options, list) and options:
-        valid_ids = {
-            str(opt["id"]).strip().upper() for opt in options if isinstance(opt, dict) and opt.get("id") is not None
-        }
-        if valid_ids and u not in valid_ids:
-            return {
-                "verdict": "invalid input",
-                "message": f"Option '{raw.strip()}' is not one of the available choices.",
-                "components": [],
-                "diagnostics": [],
-            }
-    c = str(spec.get("correct", "")).strip().upper()
-    ok = u == c
-    return {
-        "verdict": "correct" if ok else "incorrect",
-        "message": "Correct option selected." if ok else "Incorrect option selected.",
-        "components": [{"label": "Choice", "ok": ok}],
-        "diagnostics": []
-        if ok
-        else [{"code": "wrong_choice", "message": "Selected option is not the intended resolution."}],
-    }
+    return check_choice_spec(
+        spec,
+        raw,
+        correct_message="Correct option selected.",
+        incorrect_message="Incorrect option selected.",
+        wrong_diagnostics=[{"code": "wrong_choice", "message": "Selected option is not the intended resolution."}],
+    )
 
 
 def check_text(spec: dict, raw: str) -> dict:
-    def norm(t):
-        return re.sub(r"\s+", " ", t.strip().lower())
-
-    accepted = [norm(a) for a in spec.get("accepted", [spec.get("value", "")])]
-    ok = norm(raw) in accepted
-    return {
-        "verdict": "correct" if ok else "incorrect",
-        "message": "Correct!" if ok else "Does not match the expected answer.",
-        "components": [{"label": "Answer", "ok": ok}],
-        "diagnostics": [],
-    }
+    return check_text_spec(
+        spec,
+        raw,
+        correct_message="Correct!",
+        incorrect_message="Does not match the expected answer.",
+    )
 
 
 CHECKERS = {

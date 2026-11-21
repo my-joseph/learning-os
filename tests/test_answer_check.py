@@ -142,3 +142,25 @@ def test_legacy_prg_answer_spec_types_deprecated_consistently():
         assert code_check({"type": "line_number", "correctLine": 4}, "Line 4")["verdict"] == "correct"
     with pytest.warns(DeprecationWarning, match="find_bug"):
         assert code_check({"type": "find_bug", "correctLine": 8}, "8")["verdict"] == "correct"
+
+
+@pytest.mark.parametrize("check", [math_check, code_check])
+def test_text_respects_case_sensitive_and_normalizes_whitespace(check):
+    spec_default = {"type": "text", "accepted": ["Server-Only"]}
+    assert check(spec_default, "server-only")["verdict"] == "correct"
+    assert check(spec_default, "  SERVER-ONLY  ")["verdict"] == "correct"
+    assert check(spec_default, "client-only")["verdict"] == "incorrect"
+
+    spec_insensitive = {"type": "text", "accepted": ["Server-Only"], "case_sensitive": False}
+    assert check(spec_insensitive, "server-only")["verdict"] == "correct"
+    assert check(spec_insensitive, "SERVER-ONLY")["verdict"] == "correct"
+
+    spec_sensitive = {"type": "text", "accepted": ["Server-Only"], "case_sensitive": True}
+    assert check(spec_sensitive, "Server-Only")["verdict"] == "correct"
+    assert check(spec_sensitive, "  Server-Only  ")["verdict"] == "correct"
+    assert check(spec_sensitive, "server-only")["verdict"] == "incorrect"
+    assert check(spec_sensitive, "SERVER-ONLY")["verdict"] == "incorrect"
+
+    spec_multi_ws = {"type": "text", "accepted": ["read  committed"], "case_sensitive": True}
+    assert check(spec_multi_ws, "read committed")["verdict"] == "correct"
+    assert check(spec_multi_ws, "Read Committed")["verdict"] == "incorrect"

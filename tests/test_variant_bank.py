@@ -194,6 +194,7 @@ def test_from_templates_deterministic_generation_and_add(tmp_path: Path, monkeyp
         "verify": {"source": "26 / 39", "trapValue": "1/3"},
         "checkpointHint": "Factor out the greatest common divisor shared by numerator and denominator.",
         "references": ["MTH-T01-C04"],
+        "review": {"verdict": "pass", "note": "Verified test variant."},
         "steps": [
             {
                 "latex": "\\frac{26}{39} = \\frac{2 \\cdot 13}{3 \\cdot 13}",
@@ -367,3 +368,72 @@ def test_coverage_report_and_ingest_warning(
     assert rc_ingest_ok == 0
     ok_out = capsys.readouterr().out
     assert "WARNING:" not in ok_out
+
+
+def test_add_variants_enforces_validate_review(tmp_path: Path) -> None:
+    """variant_bank.add_variants must require review: {verdict: 'pass', note} on newly added variants."""
+    variants_dir = tmp_path / "variants"
+    variants_dir.mkdir()
+
+    # Existing template-seeded bank (without 'review') still passes check_variant_bank.
+    seed = _load_seed_bank()
+    assert variant_bank.check_variant_bank(seed) == []
+
+    # Prepare a valid fresh variant (adapted from _sample_variant with distinct numbers and answer).
+    fresh = {
+        "level": 1,
+        "category": "Fraction Simplification",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-simplification-gcf",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": "Reduce $\\frac{26}{39}$ to lowest terms.",
+        "display": "\\frac{26}{39}",
+        "plainText": "26/39",
+        "givens": {"a": 26, "b": 39},
+        "constants": {},
+        "trapGivens": [26, 39],
+        "answerSpec": {"type": "number", "value": "2/3", "tol": 0, "forms": ["reduced_fraction", "exact"]},
+        "answerPlain": "2/3",
+        "answerDisplay": "\\frac{2}{3}",
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-partial-common-factor-reduction",
+        "trapDerivation": "(39 - 26) / 39",
+        "trapValue": "1/3",
+        "verify": {"source": "26 / 39", "trapValue": "1/3"},
+        "checkpointHint": "Factor out the greatest common divisor shared by numerator and denominator.",
+        "references": ["MTH-T01-C04"],
+        "steps": [
+            {
+                "latex": "\\frac{26}{39} = \\frac{2 \\cdot 13}{3 \\cdot 13}",
+                "explain": "Factor out the greatest common divisor.",
+                "eq": ["26 / 39", "(2 * 13) / (3 * 13)"],
+            },
+            {
+                "latex": "\\frac{2 \\cdot 13}{3 \\cdot 13} = \\frac{2}{3}",
+                "explain": "Cancel the common factor.",
+                "val": "2/3",
+            },
+        ],
+    }
+
+    # 1. Missing review -> rejected
+    with pytest.raises(variant_bank.VariantBankError, match="review"):
+        variant_bank.add_variants({"unitCode": "MTH-T01-C04", "variants": [fresh]}, variants_dir=str(variants_dir))
+    assert not (variants_dir / "MTH-T01-C04.json").exists()
+
+    # 2. verdict='fix' -> rejected
+    needs_fix = copy.deepcopy(fresh)
+    needs_fix["review"] = {"verdict": "fix", "note": "Check prompt wording."}
+    with pytest.raises(variant_bank.VariantBankError, match="Reviewer asked for a fix"):
+        variant_bank.add_variants({"unitCode": "MTH-T01-C04", "variants": [needs_fix]}, variants_dir=str(variants_dir))
+    assert not (variants_dir / "MTH-T01-C04.json").exists()
+
+    # 3. verdict='pass' -> accepted
+    passing = copy.deepcopy(fresh)
+    passing["review"] = {"verdict": "pass", "note": "Verified distinct variant."}
+    saved = variant_bank.add_variants(
+        {"unitCode": "MTH-T01-C04", "variants": [passing]}, variants_dir=str(variants_dir)
+    )
+    assert len(saved["variants"]) == 1

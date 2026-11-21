@@ -1414,39 +1414,15 @@ def check_tuple(spec, raw):
 
 
 def check_choice(spec, raw):
-    u = str(raw).strip().upper()
-    options = spec.get("options")
-    if isinstance(options, list) and options:
-        valid_ids = {
-            str(opt["id"]).strip().upper() for opt in options if isinstance(opt, dict) and opt.get("id") is not None
-        }
-        if valid_ids and u not in valid_ids:
-            return {
-                "verdict": "invalid input",
-                "message": f"Option '{str(raw).strip()}' is not one of the available choices.",
-                "components": [],
-                "diagnostics": [],
-            }
-    ok = u == str(spec["correct"]).strip().upper()
-    return {
-        "verdict": "correct" if ok else "incorrect",
-        "message": "Correct." if ok else "Incorrect choice.",
-        "components": [{"label": "Choice", "ok": ok}],
-        "diagnostics": [],
-    }
+    from math_engine.answer_spec_registry import check_choice_spec
+
+    return check_choice_spec(spec, raw)
 
 
 def check_text(spec, raw):
-    def norm(t):
-        return re.sub(r"\s+", " ", t.strip().lower())
+    from math_engine.answer_spec_registry import check_text_spec
 
-    ok = norm(raw) in [norm(a) for a in spec["accepted"]]
-    return {
-        "verdict": "correct" if ok else "incorrect",
-        "message": "Correct." if ok else "Does not match the accepted answers.",
-        "components": [{"label": "Answer", "ok": ok}],
-        "diagnostics": [],
-    }
+    return check_text_spec(spec, raw)
 
 
 def _check_parallel_numeric(user_comps, expected_comps, vars_list=None):
