@@ -1,7 +1,7 @@
 {
   "unitCode": "MTH-T02-C01-U02",
   "topicTitle": "Quadratic Equations",
-  "description": "Reasoning vault for quadratic equations aligned with OpenStax Algebra and Trigonometry 2e §2.5: factoring and the zero product property, square root property (over R and C), completing the square, quadratic formula, discriminant classification, derivation flaw diagnosis, and constrained quadratic modeling.",
+  "description": "Reasoning vault for quadratic equations aligned with OpenStax Algebra and Trigonometry 2e §2.5: factoring and the zero product property, square root property (over R and C), completing the square, quadratic formula, discriminant classification, derivation flaw diagnosis, and constrained quadratic modeling. Thai source review (2026-11-21) produced one quadratic-inequality composition card carried to U04; no new in-scope equation archetype was uncovered.",
   "archetypes": [
     {
       "unitCode": "MTH-T02-C01-U02",
@@ -233,7 +233,7 @@
       "versatileDomains": [],
       "usedContexts": [],
       "figureNone": "Quadratic equations solved algebraically; a parabola graph would show the roots.",
-      "levelNote": "L2 for classifying the solution set from the discriminant. L3 when a parameter must be solved from the repeated-root boundary; check the resulting coefficient condition before classifying. Scope boundary: a task that combines quadratic sign intervals with an absolute-value inequality belongs to MTH-T02-C01-U04. Keep this archetype focused on root classification for equations. Thai five-option items can use strict-boundary and interval-selection errors as distinct distractor targets in that later inequality unit."
+      "levelNote": "L2 for classifying the solution set from the discriminant. L3 when a parameter must be solved from the repeated-root boundary; check the resulting coefficient condition before classifying. Scope boundary: a task that combines quadratic sign intervals with an absolute-value inequality belongs to MTH-T02-C01-U04. Keep this archetype focused on root classification for equations. Thai five-option items can use strict-boundary and interval-selection errors as distinct distractor targets in that later inequality unit. A paper may chain an integer bound from a quadratic sign interval into a second absolute-distance condition; keep that composition in U04 and use boundary inclusion, branch loss, and reversed sign-interval errors as distractor logic."
     },
     {
       "unitCode": "MTH-T02-C01-U02",

@@ -1,7 +1,7 @@
 {
   "unitCode": "MTH-T02-C01-U01",
   "topicTitle": "Complex Numbers",
-  "description": "Comprehensive reasoning vault for complex numbers, imaginary unit powers, square roots of negative numbers, addition, subtraction, multiplication, conjugates, division, modulus, and AC circuit impedance synthesis; synthesis 2026-11-20 added powers-of-i cycles, conjugate equations, real/purely-imaginary conditions and periodic powers (exam-style 4-5 option choice formats with trap distractors).",
+  "description": "Comprehensive reasoning vault for complex numbers, imaginary unit powers, square roots of negative numbers, addition, subtraction, multiplication, conjugates, division, modulus, and AC circuit impedance synthesis; synthesis 2026-11-20 added powers-of-i cycles, conjugate equations, real/purely-imaginary conditions and periodic powers; the Thai past-paper round 2026-11-21 confirmed multi-relation conjugate and axis-condition forms (exam-style choice and numeric-response distractors).",
   "archetypes": [
     {
       "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
@@ -227,7 +227,8 @@
         "t02-c01-u01-conjugate-real-sign-flip-trap",
         "cx-conjugate-product-cross-terms",
         "t02-c01-u01-conjugate-modulus-change-trap",
-        "cx-expand-instead-of-factor"
+        "cx-expand-instead-of-factor",
+        "norm-as-signed-product"
       ],
       "versatileDomains": [
         "power_factor_apparent_power",
@@ -256,7 +257,7 @@
         }
       ],
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro, mathematics-vision-project, thai-exams",
-      "levelNote": "For compact magnitude expressions that conceal a perfect-square identity, identify and factor the square before evaluating the magnitude. Thai exam numeric-response items can require this structural recognition without providing distractor choices."
+      "levelNote": "For compact magnitude expressions that conceal a perfect-square identity, identify and factor the square before evaluating the magnitude. Thai exam numeric-response items can require this structural recognition without providing distractor choices. When a solved value feeds a follow-up magnitude or conjugate product, keep the nonnegative sum-of-squares identity intact."
     },
     {
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
@@ -378,7 +379,10 @@
         "cx-conjugate-treated-as-z",
         "cx-equate-parts-mismatch",
         "cx-forgot-final-conjugate",
-        "cx-cancel-without-nonzero-check"
+        "cx-cancel-without-nonzero-check",
+        "real-imaginary-coefficients-mixed",
+        "derived-expression-not-reduced",
+        "conjugate-treated-as-independent"
       ],
       "versatileDomains": [
         "linear_systems_two_unknowns",
@@ -388,7 +392,7 @@
         "simultaneous_conjugate_constraints"
       ],
       "figureNone": "Symbolic equation solving; the answer is a single complex number.",
-      "levelNote": "L2 for a linear equation in z and its conjugate, including a derived follow-up quantity of the solution (one more step stays L2). L3 only when the z times conjugate term produces two candidates and one is ruled out by a stated condition (check=edge with edgeRejected), or two conditions must be combined (setup=model). Reverse form: give the solution and ask for a coefficient.",
+      "levelNote": "L2 for a linear equation in z and its conjugate, including a derived follow-up quantity of the solution (one more step stays L2). L3 only when the z times conjugate term produces two candidates and one is ruled out by a stated condition (check=edge with edgeRejected), or two conditions must be combined (setup=model). Reverse form: give the solution and ask for a coefficient. Thai PAT 1 items confirm a common L3 extension: solve both component equations, then simplify a requested conjugate-based invariant; choice distractors can omit one component relation or stop before the derived quantity.",
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
     },
     {
@@ -404,7 +408,9 @@
         "t02-c01-u01-missing-nonzero-check-trap",
         "cx-pure-imaginary-definition",
         "cx-real-condition-wrong-part",
-        "cx-cancel-without-nonzero-check"
+        "cx-cancel-without-nonzero-check",
+        "real-condition-wrong-component",
+        "pure-imaginary-wrong-component"
       ],
       "versatileDomains": [
         "ac_circuit_resonance",
@@ -414,7 +420,7 @@
         "axis_membership_condition"
       ],
       "figureNone": "The condition is algebraic on the simplified parts; a figure would show the answer.",
-      "levelNote": "Earns L3 only with check=edge: the nonzero check (purely imaginary needs Y != 0) rejects at least one candidate parameter, recorded in blindSolve.edgeRejected. Rationalising first is extra steps (L2) unless it forces a method choice. Applying the condition to an already simplified a + bi is L2.",
+      "levelNote": "Earns L3 only with check=edge: the nonzero check (purely imaginary needs Y != 0) rejects at least one candidate parameter, recorded in blindSolve.edgeRejected. Rationalising first is extra steps (L2) unless it forces a method choice. Applying the condition to an already simplified a + bi is L2. Thai PAT 1 items also combine real and purely-imaginary conditions on different expressions before asking for a conjugate product; distractors can swap the vanishing components or misuse the norm identity.",
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
     },
     {
