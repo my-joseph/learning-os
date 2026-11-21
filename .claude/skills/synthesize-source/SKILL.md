@@ -23,7 +23,7 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
 ```
 
 - Resolves `LEARNINGOS_SOURCES_DIR` (defaults to `<main checkout>/sources` even from a worktree), writes `sources/_index/located_<UNIT>.json` (for the originality gate), and warns if any folder under `sources/` or `sources/prg/` (excluding `_`-prefixed folders) is not registered in `docs/sources.md` — register its family, licence, allowed use (`reuse` / `cores` / `no-automation` / `scope`), and priority before mining it.
-  - **MTH/PHY units:** scans PDFs (and PDFs in zips), caching extracted page text in `sources/_index/pdf_*.json`.
+  - **MTH/PHY units:** scans PDFs (and PDFs in zips), caching extracted page text in `sources/_index/pdf_*.json`. Empty or legacy-font-garbled pages use the optional OCR fallback (`pdftoppm` + Tesseract `tha+eng`); OCR text/PNG are cached by PDF hash and page in `sources/_index/`. `--no-ocr` disables it. OCR pages are marked `textSource: "ocr"`; weak OCR sets `needsImage: true`.
   - **PRG units:** scans `.js`/`.ts`/`.tsx`/`.jsx`/`.py`/`.md`/`.json` files under `sources/prg/<family>/` (no PDF needed), splitting large files into numbered chunks cached in `sources/_index/code_*.json` using PRG terms from `math_engine/source_cores/unit_terms.json`.
 - Writes a bounded extraction plan `sources/_index/plan_<UNIT>.json` (defaults: **30 pages/chunks / 40 items** per unit run, split into batches of **10**):
   - Ranked by **(a)** family priority (`docs/sources.md` / `SOURCE_FAMILIES` + `docs/source_backlog.md` rank), **(b)** term-hit density, **(c)** Thai-exam relevance boost (math), and **(d)** round-robin diversity across families so one source cannot fill the budget.
@@ -44,6 +44,7 @@ For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
      --done-file sources/_cores/_batches/<UNIT>-batch-<k>.done \
      --out scratch/prompts/<UNIT>-extract-b<k>.txt
    ```
+   OCR pages include their OCR text; OCR pages and pages marked `needsImage` also include the cached PNG path. Inspect that image when text is unclear or formulas are missing. A rendered page remains one page for budgeting.
 2. Launch the worker with `DONE_FILE` so `run-worker.sh` stops cleanly once the batch commits:
    ```bash
    DONE_FILE=sources/_cores/_batches/<UNIT>-batch-<k>.done \

@@ -166,13 +166,31 @@ def build_worker_prompt(
         mode_part = f" | mode={p['mode']}" if p.get("mode") else ""
         lic_part = f" | license={p['license']}" if p.get("license") else ""
         span_part = f" (L{p['lineStart']}-L{p['lineEnd']})" if p.get("lineStart") and p.get("lineEnd") else ""
+        cache_note = (
+            "PDF text; OCR text follows below"
+            if p.get("textSource") == "ocr"
+            else f"read page {pnum} text from `pages[]`"
+        )
         page_lines.append(
             f"- Rank #{p.get('rank', '?')} | family=`{fam}`{mode_part}{lic_part} | file=`{rel}` | "
             f"page={pnum}{span_part} | itemAllowance<={allowance} | hits={hits} ({terms_str})\n"
-            f"  - Cached text JSON: `{cache_abs}` (read page {pnum} text from `pages[]`)\n"
+            f"  - Cached text JSON: `{cache_abs}` ({cache_note})\n"
             f"  - Raw source path: `{abs_src}`\n"
             f"  - File SHA-256: `{fhash}`"
         )
+        if p.get("textSource") == "ocr":
+            ocr_text = str(p.get("ocrText") or "")
+            image_file = str(p.get("imageFile") or "")
+            image_abs = os.path.abspath(os.path.join(idx_dir, image_file)) if image_file else "(not cached)"
+            page_lines.append(f"  - OCR text (use for term matching and source validation):\n```text\n{ocr_text}\n```")
+            page_lines.append(
+                f"  - Cached page image: `{image_abs}`. Open and read this page image (view_image or your image tool) "
+                "when the text is unclear or formulas are missing; extract cores only, never copy wording or numbers."
+            )
+        elif p.get("needsImage"):
+            image_file = str(p.get("imageFile") or "")
+            image_abs = os.path.abspath(os.path.join(idx_dir, image_file)) if image_file else "(not cached)"
+            page_lines.append(f"  - Page image (OCR disabled or unavailable): `{image_abs}`")
         for answer in p.get("answerKeyPages") or []:
             answer_cache = str(answer.get("cacheFile") or "")
             answer_cache_abs = os.path.join(idx_dir, answer_cache) if answer_cache else "(not cached)"
@@ -329,6 +347,9 @@ def _load_batch_page_texts(sdir: str, pages: list[dict[str, Any]]) -> dict[tuple
     for p in pages:
         rel = normalize_rel_path(str(p.get("relPath") or ""))
         pnum = int(p.get("page") or 0)
+        if p.get("textSource") == "ocr":
+            texts[(rel, pnum)] = str(p.get("ocrText") or "")
+            continue
         cache_file = str(p.get("cacheFile") or "")
         if not cache_file:
             continue

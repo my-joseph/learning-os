@@ -2,6 +2,8 @@
 
 Local raw study materials live under `sources/` in the main checkout (gitignored; override with `LEARNINGOS_SOURCES_DIR`, which defaults to `<main checkout>/sources` even from a git worktree).
 
+For Thai exam PDFs, `scripts.source_find` falls back to page-level OCR when extracted text is empty or shows legacy-font corruption, and caches OCR text plus rendered page images under `sources/_index/`; weak OCR pages are flagged for visual review in the worker prompt. Install the optional local tools with `brew install tesseract tesseract-lang` (including the Thai language data); when either binary is unavailable, indexing continues with a warning and no OCR results.
+
 ## Source Families
 
 `Priority` is an integer 0–100 (higher = preferred first during `scripts.source_find --plan`, combined with `docs/source_backlog.md` rank and Thai-exam relevance; `0` = `scope`-only, never selected for extraction).
