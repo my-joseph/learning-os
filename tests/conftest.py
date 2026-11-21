@@ -11,6 +11,13 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
+def _clean_env(monkeypatch):
+    """Scrub ambient pilot/dry-run flags so tests run with hermetic defaults unless set explicitly."""
+    monkeypatch.delenv("LEARNINGOS_PILOT", raising=False)
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _isolated_progress(monkeypatch, tmp_path):
     """Learner progress written by code under test goes to a temp dir, never the repo's progress/."""
     monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
@@ -38,5 +45,5 @@ _PRG_TEST_PREFIXES = (
 
 def pytest_collection_modifyitems(config, items):
     for item in items:
-        if item.path.name.startswith(_PRG_TEST_PREFIXES) or item.name.startswith("test_prg"):
+        if item.path.name.startswith(_PRG_TEST_PREFIXES):
             item.add_marker(pytest.mark.prg)

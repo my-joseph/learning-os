@@ -10,6 +10,7 @@ import {
   mergeDrillForNotionSync,
   runNotionDrillSync,
 } from "@/lib/notionSyncRunner";
+import { readProgress, writeProgress } from "@/lib/progress";
 import { isLabId } from "@/lib/routes";
 
 export async function POST(req: NextRequest) {
@@ -34,12 +35,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Rehydrate canonical server drill content so redacted client docs keep full steps/answers when syncing.
-    const serverDoc = loadDrillFromDisk(drillId);
-    const mergedDoc = mergeDrillForNotionSync(serverDoc, drillDoc);
+    // Merge & persist learner progress once via the canonical TS merge path so redacted
+    // client state never overwrites server-owned fields (variantId, variantsSeen/Attempted,
+    // matchedTrap) or concurrent reviews/attempts/testRuns on disk.
+    writeProgress(drillDoc);
+    const mergedProgress = readProgress(drillId);
 
-    // Progress is saved by notion_sync.drill_sync.save_drill_doc (progress/<DRILL_ID>.json);
-    // the drill content file is never rewritten from the Studio.
+    // Rehydrate canonical server drill content with the merged server-side progress.
+    const serverDoc = loadDrillFromDisk(drillId);
+    const mergedDoc = mergeDrillForNotionSync(serverDoc, drillDoc, mergedProgress);
+
+    // Progress is already saved above via writeProgress (progress/<DRILL_ID>.json);
+    // Python sync runs with save_local=False and never rewrites drill content.
     const dataDir = getDrillsDataDir();
 
     // Call python notion sync helper

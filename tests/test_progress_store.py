@@ -252,3 +252,248 @@ def test_is_locked_after_correct_respects_cycle_and_variant():
     # Lightweight legacy state with lastCheck and no attempts
     assert ps.is_locked_after_correct({"lastCheck": {"verdict": "correct"}}) is True
     assert ps.is_locked_after_correct({"lastCheck": {"verdict": "incorrect"}}) is False
+
+
+def test_save_progress_merges_server_owned_fields_and_concurrent_records():
+    """Saving a redacted/stale client doc must preserve variantId, variant matchedTrap,
+    variantsSeen/Attempted, similarSlots, exampleViewedAt, cycle timestamps, and concurrent
+    reviews/attempts/testRuns/lastTestReport while accepting learner-editable fields."""
+    initial = _doc()
+    initial["problems"][0]["state"] = {
+        "userInput": "5",
+        "score": 0.5,
+        "divergedStep": 0,
+        "mistakes": ["sign-error"],
+        "mistakeNote": "Old note",
+        "revisitNote": "Old revisit",
+        "attempts": [
+            {"input": "-5", "ts": "2026-11-20T09:00:00Z", "verdict": "incorrect", "matchedTrap": "sign-flip"},
+            {"input": "5", "ts": "2026-11-20T09:02:00Z", "verdict": "correct"},
+            {"input": "5", "ts": "2026-11-20T11:30:00Z", "verdict": "correct"},
+        ],
+        "reviews": [
+            {
+                "at": "2026-11-20T11:00:00Z",
+                "attempt": 1,
+                "codeHash": "sha256:disk",
+                "code": "x",
+                "tests": {"passed": 2, "total": 2, "failed": []},
+                "lint": [],
+                "typecheck": [],
+                "findings": [
+                    {
+                        "check": "QC-1",
+                        "severity": "must",
+                        "line": 1,
+                        "note": "Check edge case",
+                        "disputed": {"reason": "Already guarded", "issueId": "ISS-1"},
+                    }
+                ],
+                "verdict": "pass",
+                "explain": "Server-recorded explanation",
+            }
+        ],
+        "testRuns": [{"ts": "2026-11-20T11:00:00Z", "allPassed": True, "passedCount": 2, "totalCount": 2}],
+        "lastTestReport": {
+            "allPassed": True,
+            "score": 1,
+            "passedCount": 2,
+            "totalCount": 2,
+            "visibleResults": [],
+            "hiddenPassed": 1,
+            "hiddenTotal": 1,
+            "executionTimeMs": 12,
+            "ts": "2026-11-20T11:00:00Z",
+        },
+        "variants": {
+            "vabc123": {
+                "variantId": "VAR-MTH-X-linear-01",
+                "role": "try",
+                "attempts": [
+                    {
+                        "input": "-3",
+                        "ts": "2026-11-20T09:05:00Z",
+                        "verdict": "incorrect",
+                        "matchedTrap": "sign-flip",
+                        "kind": "variant",
+                    },
+                    {"input": "3", "ts": "2026-11-20T09:06:00Z", "verdict": "correct", "kind": "variant"},
+                ],
+                "hintsRevealed": 1,
+                "setupRevealed": True,
+                "stepsRevealed": False,
+                "durationMs": 4200,
+                "servedAt": "2026-11-20T09:04:00Z",
+            },
+            "vdef456": {
+                "variantId": "VAR-MTH-X-linear-02",
+                "role": "try",
+                "attempts": [],
+                "hintsRevealed": 0,
+                "setupRevealed": False,
+                "stepsRevealed": False,
+                "durationMs": 0,
+                "servedAt": "",
+            },
+        },
+        "similarSlots": ["vabc123", "vdef456"],
+        "variantsSeen": ["VAR-MTH-X-linear-01"],
+        "variantsAttempted": ["VAR-MTH-X-linear-01"],
+        "exampleViewedAt": "2026-11-20T09:03:00Z",
+        "cycleStartedAt": "2026-11-20T11:25:00Z",
+        "reviewHintRevealedAt": "2026-11-20T11:25:30Z",
+        "reviewSetupRevealedAt": "2026-11-20T11:26:00Z",
+        "reviewStepsRevealedAt": "2026-11-20T11:27:00Z",
+    }
+    initial["problems"][1]["state"] = {"userInput": "4", "score": 1}
+    initial["sessionSummary"] = {"practiceStatus": "In Progress", "score": 1.5}
+    ps.save_progress(initial)
+
+    # Now save a redacted, stale client doc missing variantId, variant matchedTrap,
+    # variantsSeen/Attempted, concurrent review/attempt/testRuns/lastTestReport, and Q02.
+    stale_redacted = {
+        "drillId": "DRL-MTH-X-01",
+        "unitCode": "MTH-X",
+        "sessionSummary": {"practiceStatus": "Graded", "score": 1.5, "attemptDate": "2026-11-20"},
+        "problems": [
+            {
+                "id": "Q01",
+                "prompt": "p1",
+                "state": {
+                    "userInput": "5",
+                    "score": 0.5,
+                    "divergedStep": 0,
+                    "mistakes": ["sign-error", "arithmetic"],
+                    "mistakeNote": "Updated in Review & Sync",
+                    "revisitNote": "Check sign before dividing",
+                    # Stale: only first two attempts (and first missing matchedTrap)
+                    "attempts": [
+                        {"input": "-5", "ts": "2026-11-20T09:00:00Z", "verdict": "incorrect"},
+                        {"input": "5", "ts": "2026-11-20T09:02:00Z", "verdict": "correct"},
+                    ],
+                    # Stale pre-dispute/empty review list
+                    "reviews": [],
+                    "testRuns": [],
+                    "lastTestReport": None,
+                    # Redacted variants without variantId or matchedTrap
+                    "variants": {
+                        "vabc123": {
+                            "role": "try",
+                            "attempts": [
+                                {
+                                    "input": "-3",
+                                    "ts": "2026-11-20T09:05:00Z",
+                                    "verdict": "incorrect",
+                                    "kind": "variant",
+                                },
+                                {"input": "3", "ts": "2026-11-20T09:06:00Z", "verdict": "correct", "kind": "variant"},
+                            ],
+                            "servedAt": "2026-11-20T09:04:00Z",
+                        }
+                    },
+                    "similarSlots": ["vabc123"],
+                },
+            }
+        ],
+    }
+    ps.save_progress(stale_redacted)
+
+    saved = ps.load_progress("DRL-MTH-X-01")
+    assert saved is not None
+    q1 = saved["problems"]["Q01"]
+    assert q1["variants"]["vabc123"]["variantId"] == "VAR-MTH-X-linear-01"
+    assert q1["variants"]["vdef456"]["variantId"] == "VAR-MTH-X-linear-02"
+    assert q1["variants"]["vabc123"]["attempts"][0]["matchedTrap"] == "sign-flip"
+    assert q1["similarSlots"] == ["vabc123", "vdef456"]
+    assert q1["variantsSeen"] == ["VAR-MTH-X-linear-01"]
+    assert q1["variantsAttempted"] == ["VAR-MTH-X-linear-01"]
+    assert q1["exampleViewedAt"] == "2026-11-20T09:03:00Z"
+    assert q1["cycleStartedAt"] == "2026-11-20T11:25:00Z"
+    assert q1["reviewHintRevealedAt"] == "2026-11-20T11:25:30Z"
+    assert q1["reviewSetupRevealedAt"] == "2026-11-20T11:26:00Z"
+    assert q1["reviewStepsRevealedAt"] == "2026-11-20T11:27:00Z"
+    assert len(q1["reviews"]) == 1
+    assert q1["reviews"][0]["explain"] == "Server-recorded explanation"
+    assert q1["reviews"][0]["findings"][0]["disputed"]["issueId"] == "ISS-1"
+    assert len(q1["attempts"]) == 3
+    assert q1["attempts"][0]["matchedTrap"] == "sign-flip"
+    assert len(q1["testRuns"]) == 1
+    assert q1["lastTestReport"]["allPassed"] is True
+    # Untouched Q02 on disk is preserved
+    assert saved["problems"]["Q02"]["userInput"] == "4"
+    # Learner-editable fields and sessionSummary from client are applied
+    assert q1["mistakeNote"] == "Updated in Review & Sync"
+    assert q1["revisitNote"] == "Check sign before dividing"
+    assert q1["mistakes"] == ["sign-error", "arithmetic"]
+    assert saved["sessionSummary"]["practiceStatus"] == "Graded"
+    assert saved["sessionSummary"]["attemptDate"] == "2026-11-20"
+
+
+def test_save_progress_allows_review_explain_and_dispute_updates_without_duplicating():
+    """review_record.set_explain and dispute_finding mutate an existing review record in place
+    and call save_progress; merge logic must persist those updates without duplicating the review,
+    while still blocking a stale client from reverting them."""
+    doc = _doc()
+    base_review = {
+        "at": "2026-11-20T10:00:00Z",
+        "attempt": 1,
+        "codeHash": "sha256:abc",
+        "code": "function f() {}",
+        "tests": {"passed": 2, "total": 2, "failed": []},
+        "lint": [],
+        "typecheck": [],
+        "findings": [{"check": "QC-1", "severity": "must", "line": 1, "note": "Check input"}],
+        "verdict": "revise",
+        "explain": None,
+    }
+    doc["problems"][0]["state"] = {"userInput": "", "score": 0, "reviews": [base_review]}
+    ps.save_progress(doc)
+
+    # 1. dispute_finding adds disputed metadata and flips verdict to pass
+    disputed = _doc()
+    disputed["problems"][0]["state"] = {
+        "userInput": "",
+        "score": 1,
+        "reviews": [
+            {
+                **base_review,
+                "findings": [
+                    {
+                        "check": "QC-1",
+                        "severity": "must",
+                        "line": 1,
+                        "note": "Check input",
+                        "disputed": {"reason": "Handled upstream", "issueId": "ISS-42"},
+                    }
+                ],
+                "verdict": "pass",
+            }
+        ],
+    }
+    ps.save_progress(disputed)
+    after_dispute = ps.load_progress("DRL-MTH-X-01")["problems"]["Q01"]["reviews"]
+    assert len(after_dispute) == 1
+    assert after_dispute[0]["verdict"] == "pass"
+    assert after_dispute[0]["findings"][0]["disputed"]["issueId"] == "ISS-42"
+
+    # 2. set_explain fills explain on that passing review
+    explained = _doc()
+    explained["problems"][0]["state"] = {
+        "userInput": "",
+        "score": 1,
+        "reviews": [{**after_dispute[0], "explain": "Uses a linear scan with O(1) space."}],
+    }
+    ps.save_progress(explained)
+    after_explain = ps.load_progress("DRL-MTH-X-01")["problems"]["Q01"]["reviews"]
+    assert len(after_explain) == 1
+    assert after_explain[0]["explain"] == "Uses a linear scan with O(1) space."
+
+    # 3. Stale browser client sends pre-dispute, unexplained copy -> server copy wins, no duplicate
+    stale = _doc()
+    stale["problems"][0]["state"] = {"userInput": "", "score": 0, "reviews": [base_review]}
+    ps.save_progress(stale)
+    after_stale = ps.load_progress("DRL-MTH-X-01")["problems"]["Q01"]["reviews"]
+    assert len(after_stale) == 1
+    assert after_stale[0]["verdict"] == "pass"
+    assert after_stale[0]["explain"] == "Uses a linear scan with O(1) space."
+    assert after_stale[0]["findings"][0]["disputed"]["issueId"] == "ISS-42"

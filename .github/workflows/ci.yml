@@ -12,6 +12,7 @@ jobs:
     outputs:
       python: ${{ steps.detect.outputs.python }}
       prg: ${{ steps.detect.outputs.prg }}
+      lab: ${{ steps.detect.outputs.lab }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,7 +20,10 @@ jobs:
       - id: detect
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            echo "python=true" >> "$GITHUB_OUTPUT"; echo "prg=true" >> "$GITHUB_OUTPUT"; exit 0
+            echo "python=true" >> "$GITHUB_OUTPUT"
+            echo "prg=true" >> "$GITHUB_OUTPUT"
+            echo "lab=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
@@ -27,11 +31,18 @@ jobs:
           removed=$(git diff --name-only --diff-filter=DR "$base"..."$head")
           echo "Changed files:"; echo "$changed"
           # PRG tests (ESLint/tsc heavy) run only when PRG code/content or shared infra changes.
-          if [ -n "$removed" ] || echo "$changed" | grep -qE '^(code_engine/|labs/|tools/lint/|drills/data/PRG|rules/04|tests/test_(new_code_drill|prg_|new_project|ai_code_ingest|lab_ingest)|tests/conftest\.py|pytest\.ini|requirements|quality_rules\.py|progress_store\.py|notion_sync/|scripts/review_record\.py|\.github/)'; then
+          if [ -n "$removed" ] || echo "$changed" | grep -qE '^(code_engine/|labs/|tools/lint/|drills/data/PRG|rules/04|tests/test_(new_code_drill|prg_|new_project|ai_code_ingest|lab_ingest)|tests/test_unit_scope\.py|tests/conftest\.py|pytest\.ini|requirements|quality_rules\.py|progress_store\.py|notion_sync/|scripts/review_record\.py|\.github/)'; then
             echo "prg=true" >> "$GITHUB_OUTPUT"
           else
             echo "prg=false" >> "$GITHUB_OUTPUT"
             echo "No PRG paths changed: skipping the PRG test job."
+          fi
+          # Lab reference checks run when labs, shared lint/test tooling, or workflow config change.
+          if [ -n "$removed" ] || echo "$changed" | grep -qE '^(labs/|tools/lint/|\.github/)'; then
+            echo "lab=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "lab=false" >> "$GITHUB_OUTPUT"
+            echo "No lab/lint paths changed: skipping the lab job."
           fi
           # docs/studio_design.md is the Studio design guide; pytest never reads it.
           if [ -n "$removed" ] || echo "$changed" | grep -Ev '^(practice-studio/|docs/studio_design\.md$)' | grep -q .; then
@@ -102,10 +113,9 @@ jobs:
       - run: npm run build
       - run: npm run test:telemetry
   lab:
+    needs: changes
+    if: needs.changes.outputs.lab == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: labs/LAB-PRG-T01-C04-02
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -115,4 +125,15 @@ jobs:
           cache-dependency-path: tools/lint/package-lock.json
       - run: npm ci
         working-directory: tools/lint
-      - run: npm run check:reference
+      - name: Run reference checks for all labs
+        run: |
+          rc=0
+          count=0
+          for dir in labs/LAB-*/; do
+            [ -d "$dir" ] || continue
+            count=$((count + 1))
+            echo "=== Checking $dir ==="
+            (cd "$dir" && npm run check:reference) || rc=1
+          done
+          test "$count" -gt 0
+          exit "$rc"

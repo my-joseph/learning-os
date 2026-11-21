@@ -81,9 +81,25 @@ def _empty_stats() -> dict[str, Any]:
     }
 
 
+def _item_attempts(state: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return substantive original-item attempts in the current practice cycle."""
+    attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
+    cycle_started_at = state.get("cycleStartedAt")
+    if not isinstance(cycle_started_at, str):
+        cycle_started_at = None
+    return [
+        attempt
+        for attempt in attempts
+        if isinstance(attempt, dict)
+        and attempt.get("kind") != "variant"
+        and attempt.get("verdict") not in ("invalid input", "parse_error")
+        and (not cycle_started_at or (isinstance(attempt.get("ts"), str) and attempt["ts"] >= cycle_started_at))
+    ]
+
+
 def _add_state(stats: dict[str, Any], problem: dict[str, Any], state: dict[str, Any], is_prg: bool) -> None:
     stats["items"] += 1
-    attempts = [a for a in state.get("attempts", []) if isinstance(a, dict)]
+    attempts = _item_attempts(state)
     reviews = [r for r in state.get("reviews", []) if isinstance(r, dict)]
     stats["attempts"] += len(attempts) + (len(reviews) if is_prg else 0)
     scored = score_problem(state, is_prg=is_prg)
@@ -94,7 +110,7 @@ def _add_state(stats: dict[str, Any], problem: dict[str, Any], state: dict[str, 
         if scored["firstTry"] and score == 1:
             stats["firstTryClean"] += 1
     stats["hintUses"] += int(state.get("hintsRevealed") or 0)
-    stats["stepsRevealed"] += int(bool(state.get("stepsRevealed") or state.get("solutionRevealedBeforeAnswer")))
+    stats["stepsRevealed"] += int(bool(state.get("stepsRevealed")))
     stats["solutionRevealed"] += int(bool(state.get("solutionRevealedBeforeAnswer")))
     stats["skips"] += int(bool(state.get("skipped")))
     duration = state.get("durationMs")
@@ -188,8 +204,11 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
                 "unit": problem.get("unitCode") or drill.get("unitCode"),
                 "subject": "PRG" if is_prg else "MTH",
             }
-            seen = state.get("similarSlots") or []
-            if key in similar_keys and isinstance(seen, list) and seen:
+            slots = state.get("similarSlots")
+            opened = isinstance(slots, list) and any(
+                isinstance(slot, dict) and (bool(slot.get("servedAt")) or bool(slot.get("attempts"))) for slot in slots
+            )
+            if key in similar_keys and opened:
                 similar_opened.add(key)
             if isinstance(level, int):
                 _add_state(arch_levels[key][level], problem, state, is_prg)
@@ -272,7 +291,9 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
             and item_meta.get(key, {}).get("subject") != "PRG"
         ):
             flags.append({"type": "similar_never_opened", "archetype": key})
-        ladder = {f"L{lv}" for lv in set(range(1, 5)) - set(levels)}
+        base_level = vault.get(key, {}).get("level")
+        ladder_start = base_level if isinstance(base_level, int) else 1
+        ladder = {f"L{lv}" for lv in set(range(max(1, ladder_start), 5)) - set(levels)}
         if levels and ladder:
             flags.append({"type": "level_ladder_gap", "archetype": key, "missing": sorted(ladder)})
 

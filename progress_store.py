@@ -19,12 +19,14 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
 
 PROGRESS_FIELDS_DOC = ("sessionSummary",)
 PROGRESS_FIELDS_PROBLEM = ("state",)
+_ISO_DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
 def pilot_mode() -> bool:
@@ -184,6 +186,10 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
             or st.get("durationMs")
             or st.get("variants")
             or st.get("exampleViewedAt")
+            or st.get("reviewHintRevealedAt")
+            or st.get("reviewSetupRevealedAt")
+            or st.get("reviewStepsRevealedAt")
+            or st.get("selfScoreAt")
         ):
             return True
     return False
@@ -210,6 +216,340 @@ def apply_progress(drill_doc: dict[str, Any], progress: dict[str, Any] | None) -
     return drill_doc
 
 
+def _is_empty_value(val: Any) -> bool:
+    return val is None or val == "" or (isinstance(val, list) and len(val) == 0)
+
+
+def _max_iso_timestamp(a: Any, b: Any) -> str | None:
+    sa = a.strip() if isinstance(a, str) and a.strip() else None
+    sb = b.strip() if isinstance(b, str) and b.strip() else None
+    if sa and sb:
+        return sa if sa > sb else sb
+    return sa or sb
+
+
+def _attempt_key(item: dict[str, Any]) -> str:
+    ts = item.get("ts")
+    if isinstance(ts, str) and ts:
+        return f"ts:{ts}"
+    return f"raw:{json.dumps(item, sort_keys=True, separators=(',', ':'))}"
+
+
+def _merge_attempts(prev_raw: Any, next_raw: Any) -> list[dict[str, Any]] | None:
+    prev = [a for a in prev_raw if isinstance(a, dict)] if isinstance(prev_raw, list) else []
+    nxt = [a for a in next_raw if isinstance(a, dict)] if isinstance(next_raw, list) else []
+    if not prev and not nxt:
+        if isinstance(next_raw, list) or isinstance(prev_raw, list):
+            return []
+        return None
+    seen: set[str] = set()
+    merged: list[dict[str, Any]] = []
+    for item in prev:
+        key = _attempt_key(item)
+        if key not in seen:
+            seen.add(key)
+            merged.append(item)
+    added_from_next = False
+    for item in nxt:
+        key = _attempt_key(item)
+        if key not in seen:
+            seen.add(key)
+            merged.append(item)
+            added_from_next = True
+    if (
+        added_from_next
+        and prev
+        and all(isinstance(a.get("ts"), str) and _ISO_DATE_PREFIX_RE.match(a["ts"]) for a in merged)
+    ):
+        merged.sort(key=lambda a: str(a["ts"]))
+    return merged
+
+
+def _review_key(item: Any) -> str:
+    if isinstance(item, dict):
+        rid = item.get("id")
+        if isinstance(rid, str) and rid:
+            return f"id:{rid}"
+        ts = item.get("at") if isinstance(item.get("at"), str) and item.get("at") else ""
+        if not ts:
+            ts = item.get("ts") if isinstance(item.get("ts"), str) and item.get("ts") else ""
+        verdict = item.get("verdict") if isinstance(item.get("verdict"), str) else ""
+        attempt_val = item.get("attempt")
+        attempt = str(attempt_val) if isinstance(attempt_val, int) and not isinstance(attempt_val, bool) else ""
+        if ts:
+            return f"ts:{ts}|attempt:{attempt}|verdict:{verdict}"
+        if attempt:
+            return f"attempt:{attempt}|hash:{item.get('codeHash') or ''}|verdict:{verdict}"
+    return f"raw:{json.dumps(item, sort_keys=True, separators=(',', ':'))}"
+
+
+def _review_slot_key(item: Any) -> str | None:
+    if not isinstance(item, dict):
+        return None
+    ts = item.get("at") if isinstance(item.get("at"), str) and item.get("at") else ""
+    if not ts:
+        ts = item.get("ts") if isinstance(item.get("ts"), str) and item.get("ts") else ""
+    attempt_val = item.get("attempt")
+    attempt = str(attempt_val) if isinstance(attempt_val, int) and not isinstance(attempt_val, bool) else ""
+    return f"ts:{ts}|attempt:{attempt}" if ts and attempt else None
+
+
+def _disputed_count(review: dict[str, Any]) -> int:
+    findings = review.get("findings")
+    if not isinstance(findings, list):
+        return 0
+    return sum(1 for f in findings if isinstance(f, dict) and f.get("disputed"))
+
+
+def _merge_review_record(prev_rec: Any, next_rec: Any) -> Any:
+    """Merge two copies of the same review record monotonically.
+
+    Preserves server `explain`/`disputed` against stale overwrites while still allowing
+    `scripts/review_record.py` (`set_explain`, `dispute_finding`) to add explain or disputes.
+    """
+    if not isinstance(prev_rec, dict) or not isinstance(next_rec, dict):
+        return prev_rec
+    merged = dict(prev_rec)
+    for text_key in ("explain", "explainQuestion"):
+        next_val = next_rec.get(text_key)
+        if isinstance(next_val, str) and next_val.strip():
+            merged[text_key] = next_val
+    if _disputed_count(next_rec) > _disputed_count(prev_rec):
+        merged["findings"] = next_rec.get("findings")
+        if next_rec.get("verdict") is not None:
+            merged["verdict"] = next_rec["verdict"]
+    return merged
+
+
+def _merge_reviews(prev_raw: Any, next_raw: Any) -> list[Any] | None:
+    prev = list(prev_raw) if isinstance(prev_raw, list) else []
+    nxt = list(next_raw) if isinstance(next_raw, list) else []
+    if not prev and not nxt:
+        if isinstance(next_raw, list) or isinstance(prev_raw, list):
+            return []
+        return None
+    index_by_key: dict[str, int] = {}
+    index_by_slot: dict[str, int] = {}
+    merged: list[Any] = []
+    for item in prev:
+        key = _review_key(item)
+        if key not in index_by_key:
+            idx = len(merged)
+            index_by_key[key] = idx
+            slot = _review_slot_key(item)
+            if slot is not None:
+                index_by_slot[slot] = idx
+            merged.append(item)
+    for item in nxt:
+        key = _review_key(item)
+        if key in index_by_key:
+            idx = index_by_key[key]
+            merged[idx] = _merge_review_record(merged[idx], item)
+            continue
+        slot = _review_slot_key(item)
+        if slot is not None and slot in index_by_slot:
+            idx = index_by_slot[slot]
+            prev_item = merged[idx]
+            if isinstance(prev_item, dict) and isinstance(item, dict):
+                prev_disp = _disputed_count(prev_item)
+                next_disp = _disputed_count(item)
+                if prev_disp != next_disp:
+                    merged[idx] = _merge_review_record(prev_item, item)
+                    index_by_key[_review_key(merged[idx])] = idx
+                    continue
+        idx = len(merged)
+        index_by_key[key] = idx
+        if slot is not None:
+            index_by_slot[slot] = idx
+        merged.append(item)
+    return merged
+
+
+def _derive_variant_lists(
+    variants: Any,
+    existing_seen: list[Any],
+    existing_attempted: list[Any],
+) -> tuple[list[str], list[str]]:
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    for x in existing_seen:
+        if isinstance(x, str) and x and x not in seen_set:
+            seen_set.add(x)
+            seen.append(x)
+
+    attempted: list[str] = []
+    attempted_set: set[str] = set()
+    for x in existing_attempted:
+        if isinstance(x, str) and x and x not in attempted_set:
+            attempted_set.add(x)
+            attempted.append(x)
+
+    if isinstance(variants, dict):
+        for rec in variants.values():
+            if not isinstance(rec, dict):
+                continue
+            vid = rec.get("variantId")
+            if not isinstance(vid, str) or not vid:
+                continue
+            atts = rec.get("attempts") if isinstance(rec.get("attempts"), list) else []
+            if bool(rec.get("servedAt")) or len(atts) > 0:
+                if vid not in seen_set:
+                    seen_set.add(vid)
+                    seen.append(vid)
+            if any(isinstance(a, dict) and _is_substantive_verdict(a.get("verdict")) for a in atts):
+                if vid not in attempted_set:
+                    attempted_set.add(vid)
+                    attempted.append(vid)
+
+    return seen, attempted
+
+
+def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) -> dict[str, Any]:
+    """Merge incoming problem state with existing disk state (mirrors TS `writeProgress`).
+
+    Server-owned fields (`variants`, `similarSlots`, `variantsSeen`, `variantsAttempted`,
+    `exampleViewedAt`, `cycleStartedAt`, `reviewHintRevealedAt`, `reviewSetupRevealedAt`,
+    `reviewStepsRevealedAt`) come from disk / monotonic max; append-only arrays
+    (`attempts`, `reviews`, `testRuns`) are unioned so redacted or stale payloads never
+    wipe server progress.
+    """
+    st = dict(incoming)
+    incoming_cycle = (
+        st.get("cycleStartedAt").strip()
+        if isinstance(st.get("cycleStartedAt"), str) and st.get("cycleStartedAt").strip()
+        else None
+    )
+    prev_cycle = (
+        prev.get("cycleStartedAt").strip()
+        if isinstance(prev, dict) and isinstance(prev.get("cycleStartedAt"), str) and prev.get("cycleStartedAt").strip()
+        else None
+    )
+
+    if isinstance(prev, dict):
+        merged_attempts = _merge_attempts(prev.get("attempts"), st.get("attempts"))
+        if merged_attempts is not None:
+            st["attempts"] = merged_attempts
+
+        merged_reviews = _merge_reviews(prev.get("reviews"), st.get("reviews"))
+        if merged_reviews is not None:
+            st["reviews"] = merged_reviews
+
+        merged_test_runs = _merge_attempts(prev.get("testRuns"), st.get("testRuns"))
+        if merged_test_runs is not None:
+            st["testRuns"] = merged_test_runs
+
+        prev_report = prev.get("lastTestReport")
+        if isinstance(prev_report, dict):
+            is_newer_cycle = bool(incoming_cycle and (not prev_cycle or incoming_cycle > prev_cycle))
+            next_report = st.get("lastTestReport")
+            if next_report is None:
+                if not is_newer_cycle:
+                    st["lastTestReport"] = prev_report
+            elif isinstance(next_report, dict):
+                prev_ts = prev_report.get("ts")
+                next_ts = next_report.get("ts")
+                if isinstance(prev_ts, str) and prev_ts and isinstance(next_ts, str) and next_ts and prev_ts > next_ts:
+                    st["lastTestReport"] = prev_report
+
+        for key in ("mistakes", "mistakeNote", "revisitNote"):
+            if _is_empty_value(st.get(key)) and not _is_empty_value(prev.get(key)):
+                st[key] = prev[key]
+
+        max_rev_hint = _max_iso_timestamp(prev.get("reviewHintRevealedAt"), st.get("reviewHintRevealedAt"))
+        if max_rev_hint:
+            st["reviewHintRevealedAt"] = max_rev_hint
+        max_rev_setup = _max_iso_timestamp(prev.get("reviewSetupRevealedAt"), st.get("reviewSetupRevealedAt"))
+        if max_rev_setup:
+            st["reviewSetupRevealedAt"] = max_rev_setup
+        max_rev_steps = _max_iso_timestamp(prev.get("reviewStepsRevealedAt"), st.get("reviewStepsRevealedAt"))
+        if max_rev_steps:
+            st["reviewStepsRevealedAt"] = max_rev_steps
+
+    # Server-authoritative variant session fields
+    if isinstance(prev, dict) and isinstance(prev.get("variants"), dict):
+        st["variants"] = prev["variants"]
+    elif isinstance(st.get("variants"), dict):
+        entries = list(st["variants"].values())
+        if entries and all(
+            not isinstance(e, dict) or not isinstance(e.get("variantId"), str) or not e.get("variantId")
+            for e in entries
+        ):
+            st.pop("variants", None)
+
+    if isinstance(prev, dict) and isinstance(prev.get("similarSlots"), list):
+        st["similarSlots"] = prev["similarSlots"]
+    elif isinstance(st.get("similarSlots"), list) and not isinstance(st.get("variants"), dict):
+        st.pop("similarSlots", None)
+
+    st.pop("activeVariant", None)
+
+    if isinstance(prev, dict) and isinstance(prev.get("exampleViewedAt"), str) and prev["exampleViewedAt"]:
+        st["exampleViewedAt"] = prev["exampleViewedAt"]
+
+    max_cycle = _max_iso_timestamp(
+        prev.get("cycleStartedAt") if isinstance(prev, dict) else None, st.get("cycleStartedAt")
+    )
+    if max_cycle:
+        st["cycleStartedAt"] = max_cycle
+
+    prev_seen = (
+        prev.get("variantsSeen") if isinstance(prev, dict) and isinstance(prev.get("variantsSeen"), list) else []
+    )
+    st_seen = st.get("variantsSeen") if isinstance(st.get("variantsSeen"), list) else []
+    prev_att = (
+        prev.get("variantsAttempted")
+        if isinstance(prev, dict) and isinstance(prev.get("variantsAttempted"), list)
+        else []
+    )
+    st_att = st.get("variantsAttempted") if isinstance(st.get("variantsAttempted"), list) else []
+    derived_seen, derived_att = _derive_variant_lists(
+        st.get("variants"),
+        [*prev_seen, *st_seen],
+        [*prev_att, *st_att],
+    )
+    if derived_seen:
+        st["variantsSeen"] = derived_seen
+    else:
+        st.pop("variantsSeen", None)
+    if derived_att:
+        st["variantsAttempted"] = derived_att
+    else:
+        st.pop("variantsAttempted", None)
+
+    return st
+
+
+def _merge_progress_payload(
+    existing: dict[str, Any] | None,
+    extracted: dict[str, Any],
+) -> dict[str, Any]:
+    existing_problems = (
+        existing.get("problems") if isinstance(existing, dict) and isinstance(existing.get("problems"), dict) else {}
+    )
+    merged_problems: dict[str, Any] = dict(existing_problems)
+    for pid, incoming in (extracted.get("problems") or {}).items():
+        if not isinstance(incoming, dict):
+            continue
+        prev = existing_problems.get(pid)
+        merged_problems[pid] = _merge_problem_state(prev if isinstance(prev, dict) else None, incoming)
+
+    incoming_summary = extracted.get("sessionSummary")
+    existing_summary = (
+        existing.get("sessionSummary")
+        if isinstance(existing, dict) and isinstance(existing.get("sessionSummary"), dict)
+        else {}
+    )
+    session_summary = incoming_summary if isinstance(incoming_summary, dict) and incoming_summary else existing_summary
+
+    return {
+        "drillId": extracted.get("drillId"),
+        "unitCode": extracted.get("unitCode") or (existing.get("unitCode") if isinstance(existing, dict) else None),
+        "updatedAt": extracted.get("updatedAt"),
+        "sessionSummary": session_summary,
+        "problems": merged_problems,
+    }
+
+
 def save_progress(
     drill_doc: dict[str, Any],
     repo_root: str | None = None,
@@ -218,12 +558,15 @@ def save_progress(
 ) -> str:
     """Write the learner-owned part of `drill_doc` to progress/<DRILL_ID>.json. Never touches drill content.
 
-    Refuses to overwrite an existing practised progress file with empty state unless `allow_reset=True`.
+    Merges against existing disk progress (preserving server-owned variant fields and unioning
+    append-only arrays) and refuses to overwrite practised progress with empty state unless
+    `allow_reset=True`.
     """
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
     path = progress_path(drill_id, repo_root)
+    existing: dict[str, Any] | None = None
     if not allow_reset and os.path.exists(path):
         existing = load_progress(drill_id, repo_root)
         if existing and has_practice(existing) and not has_practice(drill_doc):
@@ -231,12 +574,14 @@ def save_progress(
                 f"Refusing to overwrite practised progress for '{drill_id}' with empty state "
                 "(pass allow_reset=True to reset)"
             )
+    extracted = extract_progress(drill_doc)
+    payload = extracted if allow_reset else _merge_progress_payload(existing, extracted)
     parent = os.path.dirname(path) or "."
     os.makedirs(parent, exist_ok=True)
     fd, tmp_path = tempfile.mkstemp(prefix=f".{drill_id}_", suffix=".tmp", dir=parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(extract_progress(drill_doc), f, ensure_ascii=False, indent=2)
+            json.dump(payload, f, ensure_ascii=False, indent=2)
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp_path, path)
