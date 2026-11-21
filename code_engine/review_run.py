@@ -37,6 +37,57 @@ from progress_store import workspace_root as default_workspace_root  # noqa: E40
 
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
+_HIDDEN_CASE_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b", re.IGNORECASE)
+
+
+def is_hidden_test_name(name: str) -> bool:
+    """Return True if a test name carries an internal hidden-test marker."""
+    return isinstance(name, str) and bool(_HIDDEN_CASE_RE.search(name))
+
+
+def mask_hidden_test_failures(failed: list[str]) -> list[str]:
+    """Mask any hidden-labelled failure names into a single count summary."""
+    visible_failed: list[str] = []
+    hidden_count = 0
+    for name in failed:
+        if is_hidden_test_name(name):
+            hidden_count += 1
+        elif isinstance(name, str) and name.strip():
+            visible_failed.append(name)
+    if hidden_count > 0:
+        label = "hidden check failed" if hidden_count == 1 else "hidden checks failed"
+        visible_failed.append(f"{hidden_count} {label}")
+    return visible_failed
+
+
+def _summarize_test_cases(cases: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize test cases while filtering and masking failing hidden test details."""
+    passed = sum(1 for c in cases if c.get("passed"))
+    total = len(cases)
+    visible_failed: list[str] = []
+    hidden_failed_count = 0
+    for c in cases:
+        if c.get("passed"):
+            continue
+        name = str(c.get("name") or "Test failed")
+        if c.get("is_hidden") or is_hidden_test_name(name):
+            hidden_failed_count += 1
+        else:
+            visible_failed.append(name)
+    if hidden_failed_count > 0:
+        label = "hidden check failed" if hidden_failed_count == 1 else "hidden checks failed"
+        visible_failed.append(f"{hidden_failed_count} {label}")
+    return {"passed": passed, "total": total, "failed": visible_failed}
+
+
+def sanitize_tests_summary(tests: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of a `tests` summary dict with any hidden test names masked."""
+    failed_raw = [str(x) for x in (tests.get("failed") or [])]
+    return {
+        "passed": int(tests.get("passed", 0) or 0),
+        "total": int(tests.get("total", 0) or 0),
+        "failed": mask_hidden_test_failures(failed_raw),
+    }
 
 
 def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[str, Any], Path]:
@@ -342,9 +393,7 @@ def _run_lab_review_with_source(
         hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)] or all_hidden
         cases.extend(_run_lab_tests(hid_files, ref_hidden, src_dir, force_hidden=True))
 
-    passed = sum(1 for c in cases if c.get("passed"))
-    total = len(cases)
-    failed = [c["name"] for c in cases if not c.get("passed")]
+    tests_summary = _summarize_test_cases(cases)
     lint = _lint_lab_src(lab_dir, src_dir)
     typecheck = _typecheck_lab(lab_dir, src_files)
 
@@ -366,7 +415,7 @@ def _run_lab_review_with_source(
         "archetypeKey": None,
         "level": level,
         "codeHash": code_hash,
-        "tests": {"passed": passed, "total": total, "failed": failed},
+        "tests": tests_summary,
         "lint": lint,
         "typecheck": typecheck,
         "checks": checks,
@@ -397,7 +446,8 @@ def run_review_with_source(
     prob = find_problem(drill_doc, qid)
     pid = str(prob["id"])
 
-    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root())
+    env_root = os.environ.get("LEARNINGOS_ROOT")
+    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root(env_root))
     ws_dir = ws_root / drill_id
     if not ws_dir.is_dir():
         raise FileNotFoundError(f"Workspace directory not found: {ws_dir}")
@@ -409,9 +459,7 @@ def run_review_with_source(
     code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
 
     cases = run_tests_junit(ws_dir, drill_doc, problem_id=pid)
-    passed = sum(1 for c in cases if c.get("passed"))
-    total = len(cases)
-    failed = [c["name"] for c in cases if not c.get("passed")]
+    tests_summary = _summarize_test_cases(cases)
 
     lint = lint_workspace_file(ws_dir, src_file)
     typecheck = typecheck_workspace_file(ws_dir, src_file, env_key)
@@ -431,7 +479,7 @@ def run_review_with_source(
         "archetypeKey": archetype_key,
         "level": level,
         "codeHash": code_hash,
-        "tests": {"passed": passed, "total": total, "failed": failed},
+        "tests": tests_summary,
         "lint": lint,
         "typecheck": typecheck,
         "checks": checks,
@@ -508,7 +556,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("qid", help="Problem ID, e.g. Q01")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Print JSON output")
     args = parser.parse_args(argv)
-    os.chdir(_REPO_ROOT)
+    target_root = Path(os.environ["LEARNINGOS_ROOT"]).resolve() if os.environ.get("LEARNINGOS_ROOT") else _REPO_ROOT
+    os.chdir(target_root)
 
     try:
         res = run_review(args.drill_id, args.qid)

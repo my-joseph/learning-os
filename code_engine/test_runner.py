@@ -13,6 +13,34 @@ import sys
 import tempfile
 from pathlib import Path
 
+_HIDDEN_TAG_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]", re.IGNORECASE)
+_HIDDEN_FILE_LINE_RE = re.compile(r"^.*hidden\.test\.[jt]sx?.*$", re.IGNORECASE | re.MULTILINE)
+
+
+def _sanitize_runner_output(text: str, hidden_tests: list | None = None) -> str:
+    """Strip hidden test names, hidden test bodies, and hidden file frames from runner output."""
+    if not text:
+        return ""
+    cleaned = str(text)
+    if "// 2. Run Hidden Tests" in cleaned:
+        cleaned = cleaned.split("// 2. Run Hidden Tests", 1)[0]
+    cleaned = _HIDDEN_FILE_LINE_RE.sub("", cleaned)
+    cleaned = _HIDDEN_TAG_RE.sub("[hidden check]", cleaned)
+    for case in hidden_tests or []:
+        if not isinstance(case, dict):
+            continue
+        name = str(case.get("name") or "").strip()
+        if len(name) >= 3:
+            cleaned = cleaned.replace(name, "[hidden check]")
+        body = str(case.get("testCode") or "").strip()
+        if len(body) >= 6:
+            cleaned = cleaned.replace(body, "[hidden test body]")
+        for line in body.splitlines():
+            stripped = line.strip()
+            if len(stripped) >= 6:
+                cleaned = cleaned.replace(stripped, "[hidden test body]")
+    return cleaned.strip()
+
 
 def assemble_harness(
     user_code: str,
@@ -143,11 +171,23 @@ def run_tests(
     temp_path = ""
 
     if is_ts:
+        from code_engine.workspace import extract_exports
+
         tmp_dir_obj = tempfile.TemporaryDirectory(prefix="prg_ts_run_")
         src_path = os.path.join(tmp_dir_obj.name, "solution.ts")
         with open(src_path, "w", encoding="utf-8") as sf:
             sf.write(user_code)
-        ts_import = f"import {{ {entry_point} }} from './solution.ts';" if entry_point else "import './solution.ts';"
+        all_test_code = "\n".join(str(case.get("testCode", "")) for case in (*visible_tests, *hidden_tests))
+        import_names = [
+            name for name in extract_exports(user_code) if re.search(rf"\b{re.escape(name)}\b", all_test_code)
+        ]
+        if entry_point and entry_point not in import_names:
+            import_names.insert(0, entry_point)
+        ts_import = (
+            f"import {{ {', '.join(import_names)} }} from './solution.ts';"
+            if import_names
+            else "import './solution.ts';"
+        )
         script = assemble_harness(user_code, visible_tests, hidden_tests, ts_import_line=ts_import)
         temp_path = os.path.join(tmp_dir_obj.name, "harness.ts")
         with open(temp_path, "w", encoding="utf-8") as hf:
@@ -173,9 +213,11 @@ def run_tests(
         if "__TEST_REPORT_JSON_START__" in stdout:
             parts = stdout.split("__TEST_REPORT_JSON_START__")[1].split("__TEST_REPORT_JSON_END__")
             report = json.loads(parts[0].strip())
-            report["rawOutput"] = stdout
+            pre_marker = stdout.split("__TEST_REPORT_JSON_START__", 1)[0]
+            report["rawOutput"] = _sanitize_runner_output(pre_marker, hidden_tests)
             return report
         else:
+            raw_err = stderr or stdout or "Script exited unexpectedly"
             return {
                 "allPassed": False,
                 "score": 0,
@@ -185,13 +227,13 @@ def run_tests(
                     {
                         "name": "Execution failure",
                         "passed": False,
-                        "error": stderr or stdout or "Script exited unexpectedly",
+                        "error": _sanitize_runner_output(raw_err, hidden_tests),
                     }
                 ],
                 "hiddenPassed": 0,
                 "hiddenTotal": len(hidden_tests),
                 "executionTimeMs": 0,
-                "rawOutput": stdout + "\n" + stderr,
+                "rawOutput": _sanitize_runner_output(stdout + "\n" + stderr, hidden_tests),
             }
     except subprocess.TimeoutExpired:
         return {
@@ -254,7 +296,8 @@ def _run_react_tests(
         with tempfile.TemporaryDirectory(prefix=".react_drill_", dir=tools_dir) as tmp:
             tmp_dir = Path(tmp)
             (tmp_dir / "solution.tsx").write_text(user_code.rstrip() + "\n", encoding="utf-8")
-            test_file = tmp_dir / "solution.test.tsx"
+            visible_test_file = tmp_dir / "visible.test.tsx"
+            hidden_test_file = tmp_dir / "hidden.test.tsx"
             config_file = tmp_dir / "vitest.config.ts"
             report_file = tmp_dir / "vitest-report.json"
 
@@ -268,17 +311,27 @@ def _run_react_tests(
             ]
             if not import_names and entry_point:
                 import_names = [entry_point]
-            test_blocks = []
-            for hidden, cases in ((False, visible_tests), (True, hidden_tests)):
-                for index, case in enumerate(cases, 1):
-                    name = str(case.get("name") or ("Hidden test" if hidden else "Test"))
-                    if hidden:
-                        name = f"[HIDDEN-{index:02d}] {name}"
-                    body = str(case.get("testCode", "")).strip()
-                    test_blocks.append(f"test({json.dumps(name)}, async () => {{\n{body}\n}});\n")
+            visible_blocks = []
+            for case in visible_tests:
+                name = str(case.get("name") or "Test")
+                body = str(case.get("testCode", "")).strip()
+                visible_blocks.append(f"test({json.dumps(name)}, async () => {{\n{body}\n}});\n")
+            visible_code = "\n".join(str(case.get("testCode", "")) for case in visible_tests)
+            visible_header = build_react_test_header(", ".join(import_names), visible_code, "./solution.tsx")
+            visible_test_file.write_text(visible_header + "\n".join(visible_blocks), encoding="utf-8")
 
-            header = build_react_test_header(", ".join(import_names), "\n".join(all_test_code), "./solution.tsx")
-            test_file.write_text(header + "\n".join(test_blocks), encoding="utf-8")
+            test_files = [str(visible_test_file)]
+            if hidden_tests:
+                hidden_blocks = []
+                for index, case in enumerate(hidden_tests, 1):
+                    name = f"[HIDDEN-{index:02d}] {case.get('name') or 'Hidden test'}"
+                    body = str(case.get("testCode", "")).strip()
+                    hidden_blocks.append(f"test({json.dumps(name)}, async () => {{\n{body}\n}});\n")
+                hidden_code = "\n".join(str(case.get("testCode", "")) for case in hidden_tests)
+                hidden_header = build_react_test_header(", ".join(import_names), hidden_code, "./solution.tsx")
+                hidden_test_file.write_text(hidden_header + "\n".join(hidden_blocks), encoding="utf-8")
+                test_files.append(str(hidden_test_file))
+
             config_file.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
                 "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
@@ -288,7 +341,7 @@ def _run_react_tests(
                 [
                     str(vitest),
                     "run",
-                    str(test_file),
+                    *test_files,
                     "--config",
                     str(config_file),
                     "--reporter=json",
@@ -301,7 +354,10 @@ def _run_react_tests(
             )
             if not report_file.is_file():
                 return _react_failure(
-                    proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}",
+                    _sanitize_runner_output(
+                        proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}",
+                        hidden_tests,
+                    ),
                     visible_tests,
                     hidden_tests,
                 )
@@ -310,10 +366,12 @@ def _run_react_tests(
             visible_results = []
             hidden_passed = hidden_total = 0
             for suite in report.get("testResults", []):
+                suite_file = str(suite.get("name") or "")
+                is_hidden_suite = suite_file.endswith("hidden.test.tsx")
                 for result in suite.get("assertionResults", []):
                     name = result.get("fullName") or result.get("title") or "React test"
                     passed = result.get("status") == "passed"
-                    if "[HIDDEN-" in name:
+                    if is_hidden_suite or "[HIDDEN-" in name:
                         hidden_total += 1
                         hidden_passed += int(passed)
                     else:
@@ -338,25 +396,30 @@ def _run_react_tests(
                 "executionTimeMs": int(end - start)
                 if isinstance(start, (int, float)) and isinstance(end, (int, float))
                 else 0,
-                "rawOutput": proc.stdout + proc.stderr,
+                "rawOutput": ""
+                if proc.returncode == 0
+                else _sanitize_runner_output(proc.stdout + proc.stderr, hidden_tests),
             }
     except subprocess.TimeoutExpired:
         return _react_failure(f"Execution exceeded {timeout_sec}s limit", visible_tests, hidden_tests)
     except Exception as exc:
-        return _react_failure(f"React runner error: {exc}", visible_tests, hidden_tests)
+        return _react_failure(
+            _sanitize_runner_output(f"React runner error: {exc}", hidden_tests), visible_tests, hidden_tests
+        )
 
 
 def _react_failure(message: str, visible_tests: list, hidden_tests: list) -> dict:
+    safe_msg = _sanitize_runner_output(message, hidden_tests)
     return {
         "allPassed": False,
         "score": 0,
         "passedCount": 0,
         "totalCount": len(visible_tests) + len(hidden_tests),
-        "visibleResults": [{"name": "React runner failure", "passed": False, "error": message}],
+        "visibleResults": [{"name": "React runner failure", "passed": False, "error": safe_msg}],
         "hiddenPassed": 0,
         "hiddenTotal": len(hidden_tests),
         "executionTimeMs": 0,
-        "rawOutput": message,
+        "rawOutput": safe_msg,
     }
 
 
@@ -365,5 +428,7 @@ if __name__ == "__main__":
     user_code = payload.get("userCode", "")
     vis = payload.get("visibleTests", [])
     hid = payload.get("hiddenTests", [])
-    res = run_tests(user_code, vis, hid)
+    environment = payload.get("environment") or "node-vanilla"
+    entry_point = payload.get("entryPoint") or ""
+    res = run_tests(user_code, vis, hid, environment=environment, entry_point=entry_point)
     print(json.dumps(res))
