@@ -61,9 +61,34 @@ RUNNER RULES: Stop every server or background process you started before you fin
 log() { echo "[run-worker $(date +%H:%M:%S)] $*" >>"$LOG"; }
 
 pr_exists() {
-  # A read-only job is "done" once its report file exists (DONE_FILE), like a PR for code jobs.
-  if [ -n "$DONE_FILE" ] && [ -s "$DONE_FILE" ]; then return 0; fi
   gh pr list --head "$BRANCH" --state all --json number -q '.[0].number' 2>/dev/null | grep -q .
+}
+
+pr_head_oid() {
+  gh pr list --head "$BRANCH" --state all --json number,headRefOid -q '.[0].headRefOid' 2>/dev/null
+}
+
+job_done() {
+  if [ -n "$DONE_FILE" ]; then
+    [ -s "$DONE_FILE" ]
+    return
+  fi
+  if [ "$INITIAL_PR_EXISTS" -eq 0 ]; then
+    pr_exists
+    return
+  fi
+  pr_exists || return 1
+
+  CURRENT_PR_HEAD=$(pr_head_oid)
+  if [ -n "$INITIAL_PR_HEAD" ] && [ -n "$CURRENT_PR_HEAD" ]; then
+    [ "$CURRENT_PR_HEAD" != "$INITIAL_PR_HEAD" ]
+    return
+  fi
+
+  CURRENT_HEAD=$(git rev-parse HEAD 2>/dev/null) || return 1
+  [ "$CURRENT_HEAD" != "$INITIAL_HEAD" ] || return 1
+  [ "$(git rev-parse "origin/$BRANCH" 2>/dev/null)" = "$CURRENT_HEAD" ] || return 1
+  git diff --quiet && git diff --cached --quiet
 }
 
 # Kill the worker and everything it spawned (it runs in its own process group).
@@ -96,6 +121,17 @@ record_usage() { # <model> <start-offset> <outcome>
 : >>"$LOG"
 PROMPT="$(cat "$PROMPT_FILE")$CLEANUP_NOTE"
 
+INITIAL_HEAD=$(git rev-parse HEAD)
+INITIAL_PR_EXISTS=0
+INITIAL_PR_HEAD=""
+if [ -z "$DONE_FILE" ]; then
+  INITIAL_PR=$(gh pr list --head "$BRANCH" --state all --json number,headRefOid 2>/dev/null || echo '[]')
+  INITIAL_PR_EXISTS=$(printf '%s' "$INITIAL_PR" | python3 -c 'import json,sys; data=json.loads(sys.stdin.read() or "[]"); print(1 if data else 0)')
+  if [ "$INITIAL_PR_EXISTS" -eq 1 ]; then
+    INITIAL_PR_HEAD=$(printf '%s' "$INITIAL_PR" | python3 -c 'import json,sys; print(json.load(sys.stdin)[0].get("headRefOid") or "")')
+  fi
+fi
+
 set -m # background jobs get their own process group, so stop_tree reaches children
 for MODEL in $MODELS; do
   START_OFFSET=$(file_size)
@@ -125,7 +161,7 @@ for MODEL in $MODELS; do
     fi
     if [ $((NOW - STARTED)) -ge "$MAX_SECS" ]; then
       REASON="timeout"
-    elif pr_exists && [ $((NOW - LAST_CHANGE)) -ge "$IDLE_AFTER_PR" ]; then
+    elif job_done && [ $((NOW - LAST_CHANGE)) -ge "$IDLE_AFTER_PR" ]; then
       REASON="idle-after-pr"
     fi
     if [ -n "$REASON" ]; then
@@ -139,7 +175,7 @@ for MODEL in $MODELS; do
   stop_worktree_servers
   record_usage "$MODEL" "$START_OFFSET" "rc=$RC${REASON:+ $REASON}"
 
-  if pr_exists; then
+  if job_done; then
     log "done: PR exists (rc=$RC${REASON:+, $REASON})"
     exit 0
   fi
@@ -148,11 +184,15 @@ for MODEL in $MODELS; do
     exit 1
   fi
   if [ "$RC" -eq 0 ]; then
+    if [ "$INITIAL_PR_EXISTS" -eq 1 ]; then
+      log "finished rc=0 without advancing the existing PR"
+      exit 1
+    fi
     log "finished rc=0 without a PR"
     exit 0
   fi
   # Fall back to the next model only for quota / rate-limit failures of THIS run.
-  if tail -c +"$((START_OFFSET + 1))" "$LOG" | grep -qiE 'quota|rate.?limit|resource.?exhausted|too many requests|\b429\b|usage limit|limit (reached|exceeded)'; then
+  if [ "$RC" -eq 3 ] || tail -c +"$((START_OFFSET + 1))" "$LOG" | grep -qiE 'quota|rate.?limit|resource.?exhausted|too many requests|\b429\b|usage limit|limit (reached|exceeded)'; then
     log "model $MODEL hit a limit (rc=$RC); trying the next model"
     continue
   fi
