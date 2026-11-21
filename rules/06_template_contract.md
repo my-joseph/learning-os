@@ -223,6 +223,7 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 เมื่อต้องการเพิ่มชนิดคำตอบใหม่ (เช่น `vector`, `matrix`) ให้ตรวจครบทุกชั้นที่รับหรือเปิดเผย answer spec ดังนี้:
 1. **`math_engine/answer_spec_registry.py`**: ลงทะเบียนชนิดคำตอบใน `ANSWER_SPEC_REGISTRY` กำหนด schema ฟิลด์บังคับ และ parser handler
 2. **`math_engine/answer_check.py`**: เพิ่มฟังก์ชันตรวจสอบเฉพาะ (เช่น `check_vector`), ระบบ normalizer วงเล็บ, diagnostics แบบ deterministic ที่จำกัดเวลา timeout, และ dispatch ใน `check_answer()`
+   - Keep diagnostics domain-aware: whole-sign hints mention `$i^2 = -1$` only for complex expressions; solution-set hints mention both signs only for symmetric roots.
 3. **`math_engine/verify.py`**: เพิ่มการตรวจเฉลยกับ `verify.source` (รองรับทั้ง SymPy analytical และ fallback เชิงตัวเลข)
 4. **`quality_rules.py`**: อัปเดตด่าน G1 (Anti-Leak component extraction), G2, G4, และ G6 ให้รองรับโครงสร้าง spec ใหม่
 5. **`practice-studio/src/types/drill.ts`**: ประกาศ TypeScript interface สำหรับ `AnswerSpec` ให้ตรงกัน
