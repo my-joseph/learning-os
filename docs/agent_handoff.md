@@ -62,6 +62,8 @@ The following snapshot came from the learner-decision digest dated 2026-11-21. T
 
 ## Interim lead rules
 
+These rules apply only to an agent the learner has explicitly named the interim lead. Workers started by `tools/agents/run-worker.sh` (`LEARNINGOS_ROLE=worker`) are never leads and must not dispatch other agents.
+
 ### ALLOWED
 
 - Dispatch workers through `.claude/skills/dispatch-worker/SKILL.md`.
