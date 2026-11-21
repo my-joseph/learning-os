@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import glob
+import hashlib
 import json
 import os
 import re
@@ -200,6 +201,18 @@ def load_located_source_pages(
                 return str(p.get("text") or "")
         return ""
 
+    def _lookup_ocr_page_text(file_hash: str, page_num: int) -> str:
+        if not file_hash:
+            return ""
+        key = hashlib.sha256(f"{file_hash}:{page_num}".encode("utf-8")).hexdigest()
+        ocr_path = os.path.join(idx_dir, f"ocr_{key}_p{page_num}.json")
+        try:
+            with open(ocr_path, "r", encoding="utf-8") as fh:
+                ocr_doc = json.load(fh)
+        except (OSError, ValueError):
+            return ""
+        return str(ocr_doc.get("text") or "") if isinstance(ocr_doc, dict) else ""
+
     # 1. Located manifest from source_find
     located_path = os.path.join(idx_dir, f"located_{unit_code}.json")
     if os.path.isfile(located_path):
@@ -229,7 +242,13 @@ def load_located_source_pages(
             for p_info in match.get("pages") or []:
                 pnum = p_info.get("page") if isinstance(p_info, dict) else p_info
                 if isinstance(pnum, int):
-                    _add_page(rel, pnum, _lookup_page_text(cache_doc, pnum))
+                    text = _lookup_page_text(cache_doc, pnum)
+                    needs_ocr = isinstance(p_info, dict) and (
+                        p_info.get("textSource") == "ocr" or p_info.get("textQuality") in {"empty", "garbled"}
+                    )
+                    if needs_ocr or not text.strip():
+                        text = _lookup_ocr_page_text(str(match.get("fileHash") or ""), pnum) or text
+                    _add_page(rel, pnum, text)
 
     # 2. Core-card referenced pages (if cached)
     try:
