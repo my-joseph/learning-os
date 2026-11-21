@@ -4,7 +4,7 @@ Collects deterministic, no-AI improvement signals from:
 1. Issue log (``issues/log.jsonl``): recurring ``(target, kind)`` patterns (>= 2),
    open ``proposal`` records, and gate-gaps (explicit ``gate-gap`` or reviewer/learner catches).
 2. Agent usage log (``pilot/agent-usage.jsonl``): per-model and per-job-type tokens,
-   duration, failed runs (``rc != 0``), fallbacks, and reopened branches (revisions).
+   duration, failed runs (non-zero/non-quota rc), fallbacks, and reopened branches (revisions).
 3. Git / GitHub PRs: PRs with "Review fixes" sections and follow-up ``fix`` PRs merged
    within 2 days of a related merge.
 4. Drill-quality signals (when local progress exists): archetypes flagged ``too_easy``
@@ -441,7 +441,9 @@ def collect_usage_signals(
         outcome = str(rec.get("outcome") or "")
         rc = _parse_outcome_rc(outcome)
         idle_pr = "idle-after-pr" in outcome
-        failed = (rc is not None and rc != 0 and not idle_pr) or str(rec.get("status") or "").upper() == "ERROR"
+        # run-worker uses rc=3 for a quota-limit fallback and may stop a run
+        # after a PR exists. Neither is a failed implementation attempt.
+        failed = rc is not None and rc not in {0, 3} and not idle_pr
         tokens = int(rec.get("total_tokens") or 0)
         out_tokens = int(rec.get("output_tokens") or 0)
         dur = rec.get("duration_seconds")
@@ -492,9 +494,8 @@ def collect_usage_signals(
             curr = ordered[idx]
             prev_outcome = str(prev.get("outcome") or "")
             prev_rc = _parse_outcome_rc(prev_outcome)
-            prev_failed = (prev_rc is not None and prev_rc != 0 and "idle-after-pr" not in prev_outcome) or str(
-                prev.get("status") or ""
-            ).upper() == "ERROR"
+            prev_failed = prev_rc is not None and prev_rc not in {0, 3} and "idle-after-pr" not in prev_outcome
+            prev_quota_fallback = prev_rc == 3
             prev_model = str(prev.get("model") or "unknown")
             curr_model = str(curr.get("model") or "unknown")
             dt_prev = _parse_iso_dt(prev.get("ts"))
@@ -504,7 +505,11 @@ def collect_usage_signals(
                 and dt_curr is not None
                 and 0 <= (dt_curr - dt_prev).total_seconds() <= _FALLBACK_WINDOW_SECS
             )
-            if prev_failed and prev_model != curr_model and (close_in_time or dt_prev is None or dt_curr is None):
+            if (
+                (prev_failed or prev_quota_fallback)
+                and prev_model != curr_model
+                and (close_in_time or dt_prev is None or dt_curr is None)
+            ):
                 fallback_indices.add(idx)
                 by_model[prev_model]["fallbacksOut"] += 1
                 fallbacks.append(
@@ -517,8 +522,10 @@ def collect_usage_signals(
                     }
                 )
 
-        # Revisions / reopened jobs: extra runs on the same branch beyond immediate quota fallbacks
-        revisions = len(ordered) - 1 - len(fallback_indices)
+        # Revisions / reopened jobs: extra runs beyond quota fallbacks and
+        # runner stops after a PR already exists.
+        post_pr_stops = sum("idle-after-pr" in str(r.get("outcome") or "") for r in ordered)
+        revisions = max(0, len(ordered) - 1 - len(fallback_indices) - post_pr_stops)
         if revisions >= 1:
             info = {
                 "branch": branch,
