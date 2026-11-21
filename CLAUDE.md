@@ -2,6 +2,8 @@
 
 > **Git delivery policy:** See `rules/00_core.md` §10. This is the canonical merge-policy statement; follow any narrower task-specific instruction.
 
+> **Interim lead handoff:** See `docs/agent_handoff.md`; Claude must keep it current when learner decisions change, in the same PR/turn as the decision.
+
 ## Project Overview
 - LearningOS: a Notion-hosted curriculum (Topic → Chapter → Unit) plus local-first generators for practice drills (`MTH`/`PHY` math, `PRG` code) and project labs.
 - Python scripts generate/verify content and write to Notion; a Next.js "Practice Studio" shows drills; code is edited in the user's own local editor (e.g. VS Code).
