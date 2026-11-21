@@ -436,3 +436,93 @@ def test_method_naming_figure_title_warnings_and_clean_corpus():
     for vbpath in sorted(glob.glob("drills/variants/MTH-*.json")):
         variants = json.load(open(vbpath, encoding="utf-8")).get("variants", [])
         assert collect_figure_title_warnings(variants) == [], f"method-naming figure title in {vbpath}"
+
+
+def test_python_ts_figure_theme_contract_parity():
+    import re
+    from pathlib import Path
+
+    from math_engine.figure_svg import THEMES
+
+    ts_src = Path("practice-studio/src/types/figure.ts").read_text(encoding="utf-8")
+    m = re.search(r"export\s+type\s+FigureTheme\s*=\s*([^;]+);", ts_src)
+    assert m is not None, "FigureTheme union not found in practice-studio/src/types/figure.ts"
+    ts_themes = set(re.findall(r'"([^"]+)"', m.group(1)))
+    assert ts_themes == {"indigo", "emerald", "amber", "rose"}
+
+    for renderer_path in (
+        "practice-studio/src/components/MathFigure/GeometryRenderer.tsx",
+        "practice-studio/src/components/MathFigure/CartesianRenderer.tsx",
+    ):
+        r_src = Path(renderer_path).read_text(encoding="utf-8")
+        style_block = re.search(r"const\s+THEME_STYLES[\s\S]*?=\s*\{([\s\S]*?)\n\};", r_src)
+        assert style_block is not None, f"THEME_STYLES not found in {renderer_path}"
+        renderer_keys = set(re.findall(r"^\s*([a-z]+)\s*:\s*\{", style_block.group(1), re.MULTILINE))
+        assert renderer_keys == ts_themes, f"{renderer_path} THEME_STYLES {renderer_keys} != {ts_themes}"
+
+    assert set(fb.FIGURE_THEMES) == ts_themes
+    assert set(THEMES) == ts_themes
+
+    builder_fns = [
+        (name, obj)
+        for name, obj in inspect.getmembers(fb, inspect.isfunction)
+        if name.startswith("build_") and name.endswith("_figure")
+    ]
+    assert len(builder_fns) >= 20
+    for name, fn in builder_fns:
+        sig = inspect.signature(fn)
+        assert "theme" in sig.parameters, f"{name} is missing a 'theme' parameter"
+        default_theme = sig.parameters["theme"].default
+        assert default_theme in ts_themes, f"{name} defaults to disallowed theme {default_theme!r}"
+
+    sample_builds = {
+        "build_rectangle_figure": lambda: fb.build_rectangle_figure(12, 5),
+        "build_open_top_box_sheet_figure": lambda: fb.build_open_top_box_sheet_figure(12, 8, 1),
+        "build_right_triangle_figure": lambda: fb.build_right_triangle_figure(6, 8),
+        "build_circle_figure": lambda: fb.build_circle_figure(3),
+        "build_cartesian_point_figure": lambda: fb.build_cartesian_point_figure((3, 4)),
+        "build_cartesian_line_figure": lambda: fb.build_cartesian_line_figure(2, -3),
+        "build_transversal_figure": lambda: fb.build_transversal_figure(),
+        "build_isosceles_triangle_figure": lambda: fb.build_isosceles_triangle_figure(6),
+        "build_trapezoid_figure": lambda: fb.build_trapezoid_figure(6, 10, 5),
+        "build_annulus_figure": lambda: fb.build_annulus_figure(3, 5),
+        "build_box3d_figure": lambda: fb.build_box3d_figure(3, 4, 5),
+        "build_silo_figure": lambda: fb.build_silo_figure(3, 6, 4),
+        "build_cylinder_figure": lambda: fb.build_cylinder_figure(2, 5),
+        "build_cartesian_slope_triangle_figure": lambda: fb.build_cartesian_slope_triangle_figure((1, 2), (4, 8), 2),
+        "build_cartesian_horizontal_line_figure": lambda: fb.build_cartesian_horizontal_line_figure(3, 1, 5),
+        "build_cartesian_parallel_lines_figure": lambda: fb.build_cartesian_parallel_lines_figure(2, 1, -3),
+        "build_cartesian_rectangle_figure": lambda: fb.build_cartesian_rectangle_figure(1, 5, 2, 6),
+        "build_cone_figure": lambda: fb.build_cone_figure(3, 4),
+        "build_angle_pair_figure": lambda: fb.build_angle_pair_figure(90, 35),
+        "build_triangle_angles_figure": lambda: fb.build_triangle_angles_figure(50, 60),
+        "build_gable_facade_figure": lambda: fb.build_gable_facade_figure(8, 5, 3),
+        "build_function_graph_figure": lambda: fb.build_function_graph_figure("sin(x)", x_min=-6, x_max=6),
+        "build_mapping_diagram_figure": lambda: fb.build_mapping_diagram_figure("1, 2, 3", "a, b", "1->a; 2->b; 3->b"),
+        "build_number_line_figure": lambda: fb.build_number_line_figure("[-1, 4)"),
+        "build_complex_plane_figure": lambda: fb.build_complex_plane_figure(3, -4, "z_1", -2, 1, "z_2"),
+    }
+    assert set(sample_builds) == {name for name, _ in builder_fns}
+
+    removed_hex = {"#0284c7", "#0369a1", "#2563eb", "#7c3aed", "#6d28d9"}
+    for name, build in sample_builds.items():
+        fig = build()
+        assert fig.get("theme") in ts_themes, f"{name} emitted disallowed theme {fig.get('theme')!r}"
+        fig_dump = json.dumps(fig)
+        for hx in removed_hex:
+            assert hx not in fig_dump, f"{name} emitted removed blue/purple hex {hx}"
+    for pattern in ("drills/data/**/*.json", "drills/variants/*.json"):
+        for path in sorted(glob.glob(pattern, recursive=True)):
+            doc = json.load(open(path, encoding="utf-8"))
+            items = doc.get("problems") or doc.get("variants") or []
+            for item in items:
+                fig = item.get("figure")
+                if not isinstance(fig, dict):
+                    continue
+                pid = item.get("id") or item.get("variantId")
+                assert fig.get("theme") in ts_themes, (
+                    f"{path} [{pid}] uses disallowed figure theme {fig.get('theme')!r}"
+                )
+                fig_dump = json.dumps(fig)
+                for hx in removed_hex:
+                    assert hx not in fig_dump, f"{path} [{pid}] still uses removed blue/purple hex {hx}"
