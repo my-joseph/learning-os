@@ -31,7 +31,7 @@ Programming work is evaluated in three layers:
    - **Scope:** Smoke tests, input/output validation, acceptance criteria verification, and regression prevention.
    - **Anti-Trap Invariant:** Scripts must **never** be over-assertive or attempt to rigidly assert internal class names, private members, or AST structures. Scripts verify *what the software does*, not *the exact internal code phrasing*. This prevents AI generators from retreating into trivial toy LeetCode problems.
 2. **Layer 2 — Lint and Types:** ESLint and `tsc` check style, static correctness, and supported TypeScript configurations via `code_engine/lint_check.py` and `tools/lint/`.
-3. **Layer 3 — Rubric Review:** `qualityChecks` evaluates architecture and code craft that tests cannot observe. Use `code_engine/quality_checks.py`, `review_run.py`, and `scripts/review_record.py` for rubric-bound review and recording.
+3. **Layer 3 — Rubric Review:** `qualityChecks` evaluates architecture and code craft that tests cannot observe. Use `code_engine/quality_checks.py`, `code_engine/review_run.py`, and `scripts/review_record.py` for rubric-bound review and recording.
 
 ### 2.1 Review rubric (`qualityChecks`)
 Layer 3 design review criteria live in `code_engine/quality_checks.json` (universal checks) and each archetype's `qualityChecks` in `code_engine/reasoning_vault/*.json` (see `docs/prg_reviewer_spec.md`):
