@@ -43,7 +43,7 @@ Whenever illustrating geometric configurations (triangles, angles, circles, poly
 - **Unified Design System Invariants:**
   - **Typography:** math in KaTeX's own fonts, as in Notion equations and the Studio: numbers, operators and function names upright (`KaTeX_Main`), single-letter variables italic (`KaTeX_Math`), a real minus sign (−). Prose words (titles, notes, "true root") in the sans-serif UI font. `math_engine/figure_svg.py` embeds the two KaTeX fonts (`math_engine/fonts/`, MIT) in every SVG, so Notion shows them on any machine. Write figure titles and labels in sentence case with math in `$...$`.
   - **Background & Card:** Subtle pastel card background (`#f8fafc`, rounded corners `rx="12"`).
-  - **Diagram Color Palette:** Standardized 6-theme semantic palettes (`emerald`, `amber`, `indigo`, `purple`, `blue`, `rose`) apply to diagrams and figures only. Studio answer-status colours come from `practice-studio/src/lib/statusTone.ts`; amber is never an answer status colour.
+  - **Diagram Color Palette:** Standardized 4-theme semantic palettes (`indigo`, `emerald`, `amber`, `rose`) apply to diagrams and figures only. Studio answer-status colours come from `practice-studio/src/lib/statusTone.ts`; amber is never an answer status colour.
   - **Crisp Geometry:** Explicit right-angle markers, proportional side lengths, distinct color-coded vertices, and dedicated formula/trap alert badges.
 
 ### 3.1 Automatic Figure Attachment (Rule 11)
