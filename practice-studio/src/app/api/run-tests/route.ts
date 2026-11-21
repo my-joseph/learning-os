@@ -32,10 +32,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { problem } = loaded;
-    // Server copy wins: load visibleTests, hiddenTests, and workspaceFile from drills/data.
+    const { doc, problem } = loaded;
+    // Server copy wins: load visibleTests, hiddenTests, environment, entryPoint, and workspaceFile from drills/data.
     const visibleTests = Array.isArray(problem.visibleTests) ? problem.visibleTests : [];
     const hiddenTests = Array.isArray(problem.hiddenTests) ? problem.hiddenTests : [];
+    const environment =
+      typeof doc.environment === "string" && doc.environment
+        ? doc.environment
+        : "node-vanilla";
+    const entryPoint =
+      typeof problem.entryPoint === "string" ? problem.entryPoint : "";
     const workspaceFile =
       typeof problem.workspaceFile === "string" && problem.workspaceFile
         ? problem.workspaceFile
@@ -78,17 +84,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const repoParent = path.resolve(process.cwd(), "..");
     const pythonPath = [
       rootDir,
       path.resolve(rootDir, ".."),
       path.join(rootDir, "practice-studio"),
       process.cwd(),
+      repoParent,
     ].join(path.delimiter);
 
     const payload = {
       userCode,
       visibleTests,
       hiddenTests,
+      environment,
+      entryPoint,
     };
 
     return new Promise<NextResponse>((resolve) => {
@@ -128,9 +138,6 @@ export async function POST(req: NextRequest) {
                 hiddenPassed: 0,
                 hiddenTotal: hiddenTests.length,
                 executionTimeMs: 0,
-                rawOutput: sanitizeCodeCheckError(
-                  (stdout + "\n" + stderr).split(`${rootDir}/`).join("")
-                ),
               },
               { status: 500 }
             )
@@ -139,8 +146,10 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-          const report = JSON.parse(stdout.trim());
-          resolve(NextResponse.json({ ...report, userCodeUsed: userCode }));
+          const report = JSON.parse(stdout.trim()) as Record<string, unknown>;
+          const safeReport = { ...report };
+          delete safeReport.rawOutput;
+          resolve(NextResponse.json({ ...safeReport, userCodeUsed: userCode }));
         } catch (e: unknown) {
           const errMsg = e instanceof Error ? e.message : String(e);
           resolve(
@@ -160,7 +169,6 @@ export async function POST(req: NextRequest) {
                 hiddenPassed: 0,
                 hiddenTotal: 0,
                 executionTimeMs: 0,
-                rawOutput: stdout,
               },
               { status: 500 }
             )

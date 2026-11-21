@@ -496,3 +496,92 @@ export function ClickCounter() {
     assert report["tests"] == {"passed": 2, "total": 2, "failed": []}
     assert report["lint"] == []
     assert report["typecheck"] == []
+
+
+def test_test_runner_cli_forwards_environment_and_entrypoint_for_typescript_strict():
+    doc = json.loads(
+        (Path(__file__).resolve().parents[1] / "drills/data/PRG-T01-C03-U05/DRL-PRG-T01-C03-U05-01.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    prob = doc["problems"][0]
+    payload = {
+        "userCode": prob["solutionCode"],
+        "visibleTests": prob["visibleTests"],
+        "hiddenTests": prob["hiddenTests"],
+        "environment": doc["environment"],
+        "entryPoint": prob["entryPoint"],
+    }
+    proc = subprocess.run(
+        [sys.executable, "-m", "code_engine.test_runner"],
+        cwd=Path(__file__).resolve().parents[1],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    report = json.loads(proc.stdout.strip())
+    assert report["allPassed"] is True, report
+    assert report["score"] == 1
+    assert report["passedCount"] == report["totalCount"] == len(prob["visibleTests"]) + len(prob["hiddenTests"])
+
+
+def test_test_runner_raw_output_never_leaks_hidden_tests_on_crash_or_vitest_failure():
+    from code_engine.test_runner import run_tests
+
+    hidden_name = "SECRET_HIDDEN_CASE_ALPHA"
+    hidden_body = "assert.strictEqual(1, 'SECRET_HIDDEN_BODY_OMEGA');"
+
+    # 1. Node crash outside JSON marker (e.g. unclosed comment / syntax error)
+    node_crash = run_tests(
+        "/* unclosed comment",
+        [{"name": "visible smoke", "testCode": "assert.ok(true);"}],
+        [{"name": hidden_name, "testCode": f"*/ {hidden_body}"}],
+        environment="node-vanilla",
+    )
+    assert node_crash["allPassed"] is False
+    node_serialized = json.dumps(node_crash)
+    assert hidden_name not in node_serialized
+    assert "SECRET_HIDDEN_BODY_OMEGA" not in node_serialized
+    assert "HIDDEN" not in node_serialized
+
+    # 2. React-DOM failing hidden test and syntax crash must not leak hidden test names or bodies in rawOutput
+    react_component = "import React from 'react';\nexport function StatusBadge() { return <span>ready</span>; }\n"
+    react_fail = run_tests(
+        react_component,
+        [{"name": "renders ready", "testCode": "render(<StatusBadge />); assert.ok(screen.getByText('ready'));"}],
+        [
+            {
+                "name": "SECRET_REACT_HIDDEN_NAME",
+                "testCode": "render(<StatusBadge />); assert.equal(screen.getByText('ready').textContent, 'SECRET_REACT_HIDDEN_BODY');",
+            }
+        ],
+        environment="react-dom",
+        entry_point="StatusBadge",
+    )
+    assert react_fail["allPassed"] is False
+    assert react_fail["hiddenPassed"] == 0
+    assert react_fail["hiddenTotal"] == 1
+    react_fail_serialized = json.dumps(react_fail)
+    assert "SECRET_REACT_HIDDEN_NAME" not in react_fail_serialized
+    assert "SECRET_REACT_HIDDEN_BODY" not in react_fail_serialized
+    assert "[HIDDEN-" not in react_fail_serialized
+
+    react_syntax_err = run_tests(
+        "export function StatusBadge() { return <span>",
+        [{"name": "renders ready", "testCode": "render(<StatusBadge />);"}],
+        [
+            {
+                "name": "SECRET_REACT_HIDDEN_NAME",
+                "testCode": "assert.equal(1, 'SECRET_REACT_HIDDEN_BODY');",
+            }
+        ],
+        environment="react-dom",
+        entry_point="StatusBadge",
+    )
+    assert react_syntax_err["allPassed"] is False
+    react_err_serialized = json.dumps(react_syntax_err)
+    assert "SECRET_REACT_HIDDEN_NAME" not in react_err_serialized
+    assert "SECRET_REACT_HIDDEN_BODY" not in react_err_serialized
+    assert "[HIDDEN-" not in react_err_serialized

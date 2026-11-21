@@ -60,6 +60,7 @@ import {
   choosePrimaryAction,
   deriveCodeStatus,
   isWorkspaceProblem,
+  maskHiddenTestFailures,
   resolveIdeLinks,
   ReviewRunResult,
   sanitizeCodeCheckError,
@@ -327,13 +328,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
       if (reviewRunData?.tests) {
         const t = reviewRunData.tests;
-        const allPassed = t.total > 0 && t.passed === t.total && t.failed.length === 0;
+        const safeFailed = maskHiddenTestFailures(t.failed || []);
+        const allPassed = t.total > 0 && t.passed === t.total && safeFailed.length === 0;
         const fallbackReport: TestRunReport = {
           allPassed,
           score: t.total > 0 ? t.passed / t.total : 0,
           passedCount: t.passed,
           totalCount: t.total,
-          visibleResults: t.failed.map((name) => ({ name, passed: false })),
+          visibleResults: safeFailed.map((name) => ({ name, passed: false })),
           hiddenPassed: 0,
           hiddenTotal: problem.hiddenTestCount ?? 0,
           executionTimeMs: 0,

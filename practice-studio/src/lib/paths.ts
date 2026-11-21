@@ -51,13 +51,16 @@ export function getLabsDir(): string {
 }
 
 export function getPythonBin(rootDir: string): string {
-  const localVenv = path.join(rootDir, ".venv", "bin", "python");
-  if (fs.existsSync(localVenv)) {
-    return localVenv;
-  }
-  const studioVenv = path.join(rootDir, "practice-studio", ".venv", "bin", "python");
-  if (fs.existsSync(studioVenv)) {
-    return studioVenv;
+  const candidates = [
+    path.join(rootDir, ".venv", "bin", "python"),
+    path.join(rootDir, "practice-studio", ".venv", "bin", "python"),
+    path.resolve(process.cwd(), "..", ".venv", "bin", "python"),
+    path.resolve(process.cwd(), ".venv", "bin", "python"),
+  ];
+  for (const cand of candidates) {
+    if (fs.existsSync(cand)) {
+      return cand;
+    }
   }
   return "python3";
 }
