@@ -1139,3 +1139,375 @@ def test_prg_source_gap_reports_vault_gaps_read_only(tmp_path: Path) -> None:
     assert report["levels"]["cardLevelsMissingInVault"] == [3]
     assert "implement" in report["archetypeKinds"]["allVaultMissingKinds"]
     assert vault_file.read_bytes() == vault_bytes
+
+
+def test_source_gap_structured_matching_distinct_ambiguous_unmatched(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    unit = "MTH-T02-C01-U01"
+    vault_dir = tmp_path / "vault"
+    vault_dir.mkdir()
+    vault_payload = {
+        "unitCode": unit,
+        "archetypes": [
+            {
+                "archetypeKey": "t02-c01-u01-powers-of-i-cycle",
+                "unitCode": unit,
+                "level": 2,
+                "name": "Powers of i Beyond the First Cycle",
+                "coreConcept": "Reduce large powers of the imaginary unit i modulo four in standard form.",
+                "governingRelation": "i^{4k+r} = i^r",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "t02-c01-u01-power-of-i-remainder-trap",
+                        "description": "Maps exponent remainder mod 4 to wrong value of i.",
+                    }
+                ],
+                "figureNone": "Symbolic.",
+            },
+            {
+                "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+                "unitCode": unit,
+                "level": 3,
+                "name": "Dividing Complex Numbers via Denominator Conjugate",
+                "coreConcept": "Divide complex numbers in standard form by multiplying by denominator conjugate.",
+                "governingRelation": "(a+bi)/(c+di) = (a+bi)(c-di)/(c^2+d^2)",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+                        "description": "Subtracts d^2 instead of adding in rationalized denominator.",
+                    }
+                ],
+                "figureNone": "Symbolic.",
+            },
+            {
+                "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+                "unitCode": unit,
+                "level": 3,
+                "name": "Multiplying Complex Numbers via FOIL Expansion",
+                "coreConcept": "Multiply complex binomials in standard form and simplify i^2 = -1.",
+                "governingRelation": "(a+bi)(c+di) = (ac-bd)+(ad+bc)i",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "t02-c01-u01-cross-term-omission-trap",
+                        "description": "Omits cross terms when squaring a complex binomial.",
+                    }
+                ],
+                "figureNone": "Symbolic.",
+            },
+            {
+                "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+                "unitCode": unit,
+                "level": 3,
+                "name": "Complex Conjugates and Modulus Product",
+                "coreConcept": "Compute modulus and conjugate product of a complex number in standard form.",
+                "governingRelation": "z * conj(z) = a^2 + b^2",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "t02-c01-u01-conjugate-modulus-change-trap",
+                        "description": "Assumes conjugate has different modulus than original number.",
+                    }
+                ],
+                "figureNone": "Symbolic.",
+            },
+            {
+                "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+                "unitCode": unit,
+                "level": 1,
+                "name": "Adding Complex Numbers in Standard Form",
+                "coreConcept": "Add complex numbers in standard form by combining real and imaginary parts.",
+                "governingRelation": "(a+bi)+(c+di) = (a+c)+(b+d)i",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+                        "description": "Combines real coefficient directly with imaginary coefficient.",
+                    }
+                ],
+                "figureNone": "Symbolic.",
+            },
+        ],
+    }
+    (vault_dir / f"{unit}.json").write_text(json.dumps(vault_payload), encoding="utf-8")
+
+    cards = [
+        # 1. Clearly belongs to one archetype
+        _sample_card(
+            id="CARD-CLEAR",
+            level=2,
+            reasoningMove="direct",
+            skill="Evaluate large powers of the imaginary unit i by reducing exponents modulo four",
+            difficultyDriver="Large integer exponent reduced mod 4",
+            traps=[
+                {
+                    "tag": "t02-c01-u01-power-of-i-remainder-trap",
+                    "description": "Maps exponent remainder mod 4 to wrong power of i",
+                }
+            ],
+        ),
+        # 2. Ambiguous card spanning two archetypes (plus a 3rd trap to verify <=2 cap)
+        _sample_card(
+            id="CARD-AMBIGUOUS",
+            level=3,
+            reasoningMove="multi-relation",
+            skill="Expand complex binomials and rationalize complex quotients in standard form",
+            difficultyDriver="Combines FOIL expansion, denominator conjugate, and modulus check",
+            traps=[
+                {
+                    "tag": "t02-c01-u01-cross-term-omission-trap",
+                    "description": "Omits cross terms when squaring a complex binomial",
+                },
+                {
+                    "tag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+                    "description": "Subtracts d^2 instead of adding in rationalized denominator",
+                },
+                {
+                    "tag": "t02-c01-u01-conjugate-modulus-change-trap",
+                    "description": "Assumes conjugate changes modulus",
+                },
+            ],
+        ),
+        # 3. Unmatched card despite sharing generic domain words ("complex", "number", "form")
+        _sample_card(
+            id="CARD-UNMATCHED",
+            level=4,
+            reasoningMove="translate",
+            skill="Convert complex numbers into polar trigonometric form using De Moivre angle rotation",
+            difficultyDriver="Quadrant selection for inverse tangent argument",
+            traps=[
+                {
+                    "tag": "t02-c01-u01-de-moivre-argument-wrap-trap",
+                    "description": "Fails to adjust polar angle for second or third quadrant",
+                }
+            ],
+        ),
+    ]
+    source_cores.save_core_cards(unit, cards, sources_dir=str(tmp_path))
+
+    rc = source_gap.main([unit, "--sources-dir", str(tmp_path), "--vault-dir", str(vault_dir), "--json"])
+    assert rc == 0
+    report = json.loads(capsys.readouterr().out)
+
+    by_id = {m["id"]: m for m in report["matchedCards"]}
+    assert set(by_id) == {"CARD-CLEAR", "CARD-AMBIGUOUS"}
+    assert [u["id"] for u in report["unmatchedCards"]] == ["CARD-UNMATCHED"]
+
+    clear_matches = by_id["CARD-CLEAR"]["matches"]
+    assert len(clear_matches) == 1
+    assert clear_matches[0]["archetypeKey"] == "t02-c01-u01-powers-of-i-cycle"
+    assert clear_matches[0]["score"] >= 0.5
+    assert clear_matches[0]["reason"]
+    assert clear_matches[0]["scoreBreakdown"]["trap"] > clear_matches[0]["scoreBreakdown"]["skill"]
+
+    amb_matches = by_id["CARD-AMBIGUOUS"]["matches"]
+    assert len(amb_matches) == 2
+    assert all(m["score"] >= source_gap.RUNNER_UP_THRESHOLD for m in amb_matches)
+    assert all(len(m["matches"]) <= 2 for m in report["matchedCards"])
+
+    # --novelty still works alongside the updated matching
+    batch_file = tmp_path / "batch.jsonl"
+    dup_card = {**cards[0], "id": "CARD-CLEAR-DUP"}
+    batch_file.write_text(json.dumps(dup_card) + "\n", encoding="utf-8")
+    rc_nov = source_gap.main([unit, "--novelty", str(batch_file), "--sources-dir", str(tmp_path), "--json"])
+    assert rc_nov == 0
+    nov = json.loads(capsys.readouterr().out)
+    assert nov["duplicateCardsCount"] == 1
+
+
+def test_source_gap_prg_structured_matching_and_regression(tmp_path: Path) -> None:
+    unit = "PRG-T00-C03"
+    vault_dir = tmp_path / "code-vault"
+    vault_dir.mkdir()
+    vault_payload = {
+        "unitCode": unit,
+        "archetypes": [
+            {
+                "archetypeKey": "prg-c02-primitive-coercion-guard",
+                "unitCode": "PRG-T00-C03-U01",
+                "level": 1,
+                "archetype": "problem-solving",
+                "name": "Defensive Primitive Sanitization and Coercion Guard",
+                "coreConcept": "Handle nullish values safely without overwriting legitimate falsy values.",
+                "governingInvariant": "sanitized = inputVal !== null && inputVal !== undefined ? inputVal : defaultVal",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "falsy-numeric-zero-overwrite",
+                        "description": "Logical OR overwrites legitimate 0 with fallback default.",
+                    }
+                ],
+                "qualityChecks": [
+                    {
+                        "id": "QC-coercion-explicit-nullish-intent",
+                        "check": "Distinguish nullish values from falsy 0 or false.",
+                        "severity": "must",
+                    }
+                ],
+            },
+            {
+                "archetypeKey": "prg-c02-lexical-closure-factory",
+                "unitCode": "PRG-T00-C03-U02",
+                "level": 2,
+                "archetype": "problem-solving",
+                "name": "Encapsulated Lexical Scope and Closure State Factory",
+                "coreConcept": "Retain private state inside closure lexical scope without leaking mutable references.",
+                "governingInvariant": "privateState accessible exclusively through returned accessor functions",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "closure-shared-reference-leak",
+                        "description": "Returning direct reference to private mutable array breaks encapsulation.",
+                    }
+                ],
+                "qualityChecks": [
+                    {
+                        "id": "QC-closure-no-ref-escape",
+                        "check": "No reference to internal mutable state escapes the factory.",
+                        "severity": "must",
+                    }
+                ],
+            },
+            {
+                "archetypeKey": "prg-c02-immutable-array-pipeline",
+                "unitCode": "PRG-T00-C03-U02",
+                "level": 2,
+                "archetype": "problem-solving",
+                "name": "Immutable Collection Transformation Pipeline",
+                "coreConcept": "Transform collections with pure map, filter, and reduce stages without mutating input.",
+                "governingInvariant": "outputCollection = reduce(filter(map(inputCollection)))",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "in-place-array-mutation",
+                        "description": "Sorting or splicing the input array mutates caller data.",
+                    }
+                ],
+                "qualityChecks": [
+                    {
+                        "id": "QC-pipeline-pure-stages",
+                        "check": "Derived collections never mutate caller-owned arrays.",
+                        "severity": "must",
+                    }
+                ],
+            },
+            {
+                "archetypeKey": "prg-c02-async-promise-combinator",
+                "unitCode": "PRG-T00-C03-U03",
+                "level": 3,
+                "archetype": "problem-solving",
+                "name": "Resilient Async Promise Combinator",
+                "coreConcept": "Coordinate concurrent asynchronous promises with failure isolation and result ordering.",
+                "governingInvariant": "all promises settled before resolving combinator",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "unhandled-rejection-fast-fail",
+                        "description": "Promise.all aborts sibling results on one rejection.",
+                    }
+                ],
+                "qualityChecks": [
+                    {
+                        "id": "QC-async-isolated-settlement",
+                        "check": "Isolate per-task rejections when partial failure tolerance is required.",
+                        "severity": "must",
+                    }
+                ],
+            },
+        ],
+    }
+    (vault_dir / f"{unit}.json").write_text(json.dumps(vault_payload), encoding="utf-8")
+
+    cards = [
+        _sample_prg_card(
+            id="PRG-CLEAR",
+            unitCode="PRG-T00-C03-U02",
+            level=2,
+            archetypeKind="implement",
+            skill="Encapsulate private state inside a lexical closure factory with controlled accessors",
+            concept="lexical closure encapsulation",
+            bugPattern="Exposing a direct mutable array reference lets callers bypass the factory API",
+            traps=[
+                {
+                    "tag": "closure-shared-reference-leak",
+                    "description": "Direct reference to internal mutable array allows external mutation",
+                }
+            ],
+            qualityCheckIdeas=[
+                {
+                    "id": "QC-closure-no-ref-escape",
+                    "check": "Prevent internal mutable state references from escaping closure accessors",
+                }
+            ],
+        ),
+        _sample_prg_card(
+            id="PRG-TYPICAL",
+            unitCode=unit,
+            level=2,
+            archetypeKind="implement",
+            skill="Transform array data using pure map and filter functions without mutating input state",
+            concept="pure collection pipelines",
+            bugPattern="Sorting input arrays in place alters caller state",
+            traps=[
+                {
+                    "tag": "in-place-array-mutation",
+                    "description": "Mutating the caller array during sorting or filtering",
+                }
+            ],
+            qualityCheckIdeas=[
+                {
+                    "id": "QC-pipeline-pure-stages",
+                    "check": "Keep transformation stages pure without mutating caller arrays",
+                }
+            ],
+        ),
+        _sample_prg_card(
+            id="PRG-UNMATCHED",
+            unitCode="PRG-T00-C03-U04",
+            level=4,
+            archetypeKind="find-the-bug",
+            skill="Diagnose circular import deadlocks across module dependency graphs",
+            concept="module dependency cycles",
+            bugPattern="Mutual top-level imports read partially initialized exports",
+            traps=[
+                {
+                    "tag": "circular-import-deadlock",
+                    "description": "Reads uninitialized binding during cyclic module evaluation",
+                }
+            ],
+            qualityCheckIdeas=[
+                {
+                    "id": "QC-acyclic-module-graph",
+                    "check": "Verify module dependencies form a directed acyclic graph",
+                }
+            ],
+        ),
+    ]
+    source_cores.save_core_cards(unit, cards, sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path), vault_dir=str(vault_dir))
+    by_id = {m["id"]: m for m in report["matchedCards"]}
+    assert set(by_id) == {"PRG-CLEAR", "PRG-TYPICAL"}
+    assert [u["id"] for u in report["unmatchedCards"]] == ["PRG-UNMATCHED"]
+
+    clear_hit = by_id["PRG-CLEAR"]["matches"]
+    assert len(clear_hit) == 1
+    assert clear_hit[0]["archetypeKey"] == "prg-c02-lexical-closure-factory"
+    assert clear_hit[0]["matchedQualityChecks"] == ["QC-closure-no-ref-escape"]
+    assert clear_hit[0]["score"] >= 0.6
+    assert "trap:closure-shared-reference-leak" in clear_hit[0]["reason"]
+
+    typical_hit = by_id["PRG-TYPICAL"]["matches"]
+    assert len(typical_hit) <= 2
+    assert typical_hit[0]["archetypeKey"] == "prg-c02-immutable-array-pipeline"
+
+    # Unit compatibility: same-unit archetype beats mismatched-unit archetype when content is equal
+    same_unit = source_gap.score_card_against_archetype(
+        cards[0],
+        vault_payload["archetypes"][1],
+        unit_code=unit,
+        is_prg=True,
+    )
+    wrong_unit_arch = {**vault_payload["archetypes"][1], "unitCode": "PRG-T00-C03-U04", "level": 5}
+    diff_unit = source_gap.score_card_against_archetype(
+        cards[0],
+        wrong_unit_arch,
+        unit_code=unit,
+        is_prg=True,
+    )
+    assert same_unit["score"] > diff_unit["score"]
+    assert same_unit["scoreBreakdown"]["compatibility"] > diff_unit["scoreBreakdown"]["compatibility"]
