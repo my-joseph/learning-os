@@ -1,40 +1,25 @@
 {
   "scripts/source_*.py": [
-    ".claude/skills/synthesize-source/SKILL.md",
-    ".claude/skills/start-unit/SKILL.md",
-    "rules/07_problem_generation.md",
     "docs/sources.md",
-    "CLAUDE.md"
+    ".claude/skills/synthesize-source/SKILL.md"
   ],
   "scripts/extract_cards_job.py": [
-    ".claude/skills/synthesize-source/SKILL.md",
-    ".claude/skills/start-unit/SKILL.md",
-    "rules/07_problem_generation.md",
-    "CLAUDE.md"
+    ".claude/skills/synthesize-source/SKILL.md"
   ],
   "math_engine/source_cores/**": [
-    ".claude/skills/synthesize-source/SKILL.md",
-    "rules/07_problem_generation.md",
     "docs/sources.md",
-    "CLAUDE.md"
+    ".claude/skills/synthesize-source/SKILL.md"
   ],
   "math_engine/ai_drill_ingest.py": [
     ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/start-unit/SKILL.md",
-    "rules/07_problem_generation.md",
-    "rules/03_stem.md",
-    "rules/06_template_contract.md"
+    "rules/07_problem_generation.md"
   ],
   "math_engine/variant_bank.py": [
     ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/start-unit/SKILL.md",
-    ".claude/skills/drill-quality/SKILL.md",
     "rules/07_problem_generation.md"
   ],
   "math_engine/figure_*.py": [
     "rules/03_stem.md",
-    ".claude/skills/start-unit/SKILL.md",
-    ".claude/skills/new-math-drill/SKILL.md",
     "CLAUDE.md"
   ],
   "math_engine/safe_expr.py": [
@@ -42,8 +27,7 @@
   ],
   "math_engine/answer_check.py": [
     "rules/06_template_contract.md",
-    "docs/backlog.md",
-    "CLAUDE.md"
+    "docs/backlog.md"
   ],
   "math_engine/answer_spec_registry.py": [
     "rules/06_template_contract.md"
@@ -60,15 +44,11 @@
   ],
   "code_engine/ai_drill_ingest.py": [
     ".claude/skills/new-code-drill/SKILL.md",
-    "rules/04_code.md",
-    "rules/07_problem_generation.md",
-    "docs/prg_reviewer_spec.md"
+    "rules/04_code.md"
   ],
   "code_engine/lab_ingest.py": [
     ".claude/skills/new-project/SKILL.md",
-    "rules/04_code.md",
-    "docs/prg_reviewer_spec.md",
-    "CLAUDE.md"
+    "rules/04_code.md"
   ],
   "code_engine/workspace.py": [
     "rules/06_template_contract.md",
@@ -78,23 +58,16 @@
     ".claude/skills/new-code-drill/SKILL.md"
   ],
   "code_engine/quality_checks*": [
-    ".claude/skills/new-code-drill/SKILL.md",
-    ".claude/skills/new-project/SKILL.md",
-    ".claude/skills/review-code/SKILL.md",
     "rules/04_code.md",
     "docs/prg_reviewer_spec.md"
   ],
   "code_engine/lint_check.py": [
-    ".claude/skills/health-check/SKILL.md",
     "rules/04_code.md",
-    "rules/05_qa.md",
     "CLAUDE.md"
   ],
   "code_engine/review_run.py": [
     ".claude/skills/review-code/SKILL.md",
-    "rules/04_code.md",
-    "docs/prg_reviewer_spec.md",
-    "CLAUDE.md"
+    "docs/prg_reviewer_spec.md"
   ],
   "code_engine/generate.py": [
     "rules/06_template_contract.md",
@@ -106,78 +79,52 @@
   ],
   "labs/common/**": [
     "rules/04_code.md",
-    ".claude/skills/new-project/SKILL.md",
-    "CLAUDE.md"
+    ".claude/skills/new-project/SKILL.md"
   ],
   "tools/lint/**": [
     "rules/04_code.md",
-    "docs/prg_reviewer_spec.md",
     "CLAUDE.md"
   ],
   "notion_sync/unit_page.py": [
     ".claude/skills/start-unit/SKILL.md",
-    "rules/02_pedagogy.md",
-    "rules/05_qa.md",
-    "CLAUDE.md"
+    "rules/02_pedagogy.md"
   ],
   "notion_sync/figures.py": [
     "rules/03_stem.md",
     "CLAUDE.md"
   ],
   "notion_sync/drill_sync.py": [
-    ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/new-code-drill/SKILL.md",
     "rules/01_arch.md",
-    "rules/04_code.md",
     "CLAUDE.md"
   ],
   "notion_sync/lab_sync.py": [
     ".claude/skills/new-project/SKILL.md",
-    "rules/04_code.md",
-    "rules/07_problem_generation.md",
-    "CLAUDE.md"
+    "rules/04_code.md"
   ],
   "notion_sync/client.py": [
-    ".claude/skills/start-unit/SKILL.md",
-    ".claude/skills/new-code-drill/SKILL.md",
-    ".claude/skills/new-project/SKILL.md",
     "CLAUDE.md"
   ],
   "progress_store.py": [
-    "docs/studio_design.md",
     "rules/01_arch.md",
-    "rules/04_code.md",
-    "CLAUDE.md"
+    "docs/studio_design.md"
   ],
   "quality_rules.py": [
     "rules/06_template_contract.md",
-    "rules/07_problem_generation.md",
-    "CLAUDE.md"
+    "rules/07_problem_generation.md"
   ],
   "skills_taxonomy.json": [
     "rules/06_template_contract.md",
     "CLAUDE.md"
   ],
   "scripts/page_audit.py": [
-    ".claude/skills/start-unit/SKILL.md",
-    ".claude/skills/health-check/SKILL.md",
     "rules/02_pedagogy.md",
-    "rules/05_qa.md",
-    "CLAUDE.md"
+    "rules/05_qa.md"
   ],
   "scripts/weak_spots.py": [
-    ".claude/skills/drill-quality/SKILL.md",
-    ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/new-code-drill/SKILL.md",
-    ".claude/skills/new-project/SKILL.md",
     "rules/07_problem_generation.md",
     "CLAUDE.md"
   ],
   "scripts/vault_report.py": [
-    ".claude/skills/drill-quality/SKILL.md",
-    ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/new-code-drill/SKILL.md",
-    ".claude/skills/start-unit/SKILL.md",
     "rules/07_problem_generation.md",
     "CLAUDE.md"
   ],
@@ -186,30 +133,25 @@
     "CLAUDE.md"
   ],
   "scripts/bridge_scope.py": [
-    ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/synthesize-source/SKILL.md",
     "rules/07_problem_generation.md",
     "CLAUDE.md"
   ],
   "scripts/audit_solution_leaks.py": [
-    ".claude/skills/drill-quality/SKILL.md",
-    ".claude/skills/health-check/SKILL.md",
     "rules/07_problem_generation.md",
     "CLAUDE.md"
   ],
   "scripts/issues.py": [
     "rules/00_core.md",
-    ".claude/skills/health-check/SKILL.md",
-    ".claude/skills/new-math-drill/SKILL.md",
-    ".claude/skills/new-code-drill/SKILL.md",
-    ".claude/skills/new-project/SKILL.md",
     "CLAUDE.md"
+  ],
+  "scripts/self_review.py": [
+    "CLAUDE.md",
+    ".claude/skills/health-check/SKILL.md",
+    ".claude/skills/improve/SKILL.md"
   ],
   "scripts/review_record.py": [
     ".claude/skills/review-code/SKILL.md",
-    "rules/04_code.md",
-    "docs/prg_reviewer_spec.md",
-    "CLAUDE.md"
+    "docs/prg_reviewer_spec.md"
   ],
   "scripts/review_items.py": [
     "rules/01_arch.md",
@@ -237,22 +179,18 @@
     "math_engine/templates/README.md"
   ],
   "scripts/doc_refs.py": [
-    ".claude/skills/health-check/SKILL.md",
-    ".claude/skills/dispatch-worker/common.md",
-    ".github/pull_request_template.md",
-    "CLAUDE.md"
+    "CLAUDE.md",
+    ".claude/skills/dispatch-worker/common.md"
   ],
   "practice-studio/src/app/api/**": [
-    "docs/studio_design.md",
-    "rules/07_problem_generation.md"
+    "docs/studio_design.md"
   ],
   "practice-studio/src/lib/**": [
     "docs/studio_design.md",
     "rules/01_arch.md"
   ],
   "practice-studio/src/components/**": [
-    "docs/studio_design.md",
-    "rules/03_stem.md"
+    "docs/studio_design.md"
   ],
   "practice-studio/src/app/**": [
     "docs/studio_design.md"

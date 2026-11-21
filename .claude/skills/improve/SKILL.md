@@ -19,7 +19,7 @@ Health-check asks what is broken now (broad and shallow). Improve asks how one a
 Record sources, pinned SHA, and freshness in `context.md`.
 
 - Read the latest `$MAIN/pilot/health-*/report.md` and relevant checks/findings; inspect both `gh pr list --state open --base main` and `gh pr list --state merged --base main --limit 20`. Mark findings fixed on main or covered by an open PR, and note overlapping open-PR files.
-- Run `"$MAIN/.venv/bin/python" -m scripts.issues list`; inspect `docs/backlog.md`, relevant project memory notes, and learner decisions. Find memory via the main checkout's Claude project memory directory; read its `MEMORY.md` index and linked notes. Record missing inputs.
+- Run `"$MAIN/.venv/bin/python" -m scripts.issues list` and `"$MAIN/.venv/bin/python" -m scripts.self_review --target <area>` (read-only) to include recurring issues, open proposals, and auto-signals for `<area>` in `context.md`; inspect `docs/backlog.md`, relevant project memory notes, and learner decisions. Find memory via the main checkout's Claude project memory directory; read its `MEMORY.md` index and linked notes. Record missing inputs.
 - Explicitly check ON HOLD decisions, including Similar “+” refactor and template removal, legacy PRG drill/lab retire-and-rebuild, scheduled jobs, and `/api/generate-drill` removal. Do not revive deferred work unless the learner has since approved it.
 - Read `rules/00_core.md` §10 and refactor invariants: characterize behavior first, separate refactor commits from features, and keep tests green at each step. Treat learner-pasted/external reports as leads and verify claims against the pinned source and current main.
 
@@ -51,3 +51,7 @@ Record sources, pinned SHA, and freshness in `context.md`.
 - [ ] `context.md`, `assessment.md`, and `roadmap.md` exist in the dated folder and cite the same `AUDIT_SHA`.
 - [ ] Fixed, open-PR, out-of-area, and ON HOLD/deferred items are excluded from execution and documented in the verification/deferral table.
 - [ ] Execution stops after step 5 until approval; approved step 6 items each have a small PR and applicable verification, with no learner progress, Notion writes, or leaked exercise material.
+
+## Self-review
+
+After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:improve --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:improve`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.

@@ -32,15 +32,19 @@ From the main checkout run `git worktree add ../wt-<name> -b <branch> origin/mai
 - Set `MODELS` in fallback order, `MAX_SECS`, and `IDLE_AFTER_PR` as needed. The runner falls back on quota limits; model availability changes, so check memory/learner settings and do not hard-code one account. For continued work on a branch with an existing PR, use a large `IDLE_AFTER_PR` (for example `1500`) so a quiet log does not stop the worker early.
 - Read-only jobs set a unique absolute `DONE_FILE` for each job. Code jobs complete when their PR exists.
 - Run `MODELS=... IDLE_AFTER_PR=... MAX_SECS=... tools/agents/run-worker.sh <wt> <branch> <prompt> <log>` through the Bash tool with `run_in_background: true`. Do not launch it with detached shell syntax such as `( ... &)`; that loses tracked completion.
-- Split independent jobs in parallel, each with a separate worktree. Do not let two workers write the same file or vault at once.
+- Split independent jobs in parallel, each with a separate worktree. Do not let two workers write the same file or vault at once; order dependent jobs sequentially (merge prerequisite PRs before starting follow-up jobs on overlapping files or tests).
 
 ## 4. Review and deliver
 
-- When the worker finishes, report the result to the learner promptly in Thai. Review the complete PR diff and `gh pr checks`; verify scope, tests, zero-leak, and no secrets/progress data.
-- If revisions are needed, continue on the same branch and increase `IDLE_AFTER_PR` as above.
+- When the worker finishes, report the result to the learner promptly in Thai. Review the complete PR diff and `gh pr checks`; verify scope, tests, zero-leak, and no secrets/progress data. Confirm the branch merged latest `origin/main` and reran clean-env CI-equivalent checks before opening/updating the PR, and verify `gh pr checks` shows CI actually started (GitHub silently skips `pull_request` CI while a PR has merge conflicts).
+- If revisions are needed, continue on the same branch and increase `IDLE_AFTER_PR` as above. Whenever a worker PR needed revisions (review fixes, conflict/CI rework, or a re-run), log a proposal with `.venv/bin/python -m scripts.issues propose --target job:<type> --evidence "PR #<N> (<model>): <what needed fixing>" --proposal "<concrete change>"` (or `--target model:<model>` when model routing or capability was the cause).
 - Merge only according to `rules/00_core.md` §10: drill/lab-only PRs may self-merge; other PRs require the learner's explicit "merge". After merge, run `git pull --ff-only` in the main checkout and remove the worktree and branch, unless the learner asked to keep them.
 - Stop all servers/background processes started by the job. Once the PR is open and reported, finish; do not wait for anything after opening it.
 
 ## Final documentation check
 
 - [ ] Each job has a combined prompt, isolated worktree, tracked completion, reviewed diff/checks, and one PR or read-only report.
+
+## Self-review
+
+After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:dispatch-worker --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:dispatch-worker`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.

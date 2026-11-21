@@ -97,3 +97,7 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
 ## Final documentation check
 
 - [ ] If this PR changes system behaviour, the matching rules/*.md, docs/*.md, CLAUDE.md and skills are updated in the same PR.
+
+## Self-review
+
+After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:start-unit --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:start-unit`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.

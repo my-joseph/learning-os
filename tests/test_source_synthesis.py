@@ -1511,3 +1511,109 @@ def test_source_gap_prg_structured_matching_and_regression(tmp_path: Path) -> No
     )
     assert same_unit["score"] > diff_unit["score"]
     assert same_unit["scoreBreakdown"]["compatibility"] > diff_unit["scoreBreakdown"]["compatibility"]
+
+
+def test_source_gap_prg_trap_aliases_and_threshold(tmp_path: Path) -> None:
+    """PRG cards with ad-hoc trap tags alias onto consolidated vault traps without falsely matching unrelated cards."""
+    unit = "PRG-T00-C03"
+    vault_dir = tmp_path / "code-vault"
+    vault_dir.mkdir()
+    vault_payload = {
+        "unitCode": unit,
+        "archetypes": [
+            {
+                "archetypeKey": "prg-c02-immutable-array-pipeline",
+                "unitCode": "PRG-T00-C03-U02",
+                "level": 2,
+                "archetype": "problem-solving",
+                "name": "Immutable Collection Transformation Pipeline",
+                "coreConcept": "Derive new arrays with map, filter, and reduce without mutating caller inputs.",
+                "governingInvariant": "output = reduce(filter(map(input)))",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "in-place-array-mutation",
+                        "description": "Mutating the input array in place alters caller state.",
+                    },
+                    {
+                        "trapTag": "collection-result-contract",
+                        "description": "Callback side effect confused with returned collection result.",
+                        "aliases": ["custom-vault-declared-alias"],
+                    },
+                ],
+                "qualityChecks": [
+                    {"id": "QC-pipeline-pure-stages", "check": "Never mutate caller arrays.", "severity": "must"}
+                ],
+            },
+            {
+                "archetypeKey": "prg-c02-async-promise-combinator",
+                "unitCode": "PRG-T00-C03-U03",
+                "level": 3,
+                "archetype": "problem-solving",
+                "name": "Resilient Async Promise Combinator",
+                "coreConcept": "Coordinate concurrent promises and propagate settlement results.",
+                "governingInvariant": "all promises settled before resolving combinator",
+                "cognitiveTraps": [
+                    {
+                        "trapTag": "async-result-propagation",
+                        "description": "Callback starts async work without returning the promise.",
+                    }
+                ],
+                "qualityChecks": [
+                    {"id": "QC-async-propagation", "check": "Return or await async work.", "severity": "should"}
+                ],
+            },
+        ],
+    }
+    (vault_dir / f"{unit}.json").write_text(json.dumps(vault_payload), encoding="utf-8")
+
+    cards = [
+        _sample_prg_card(
+            id="PRG-ALIAS-BUILT-IN",
+            unitCode=unit,
+            level=2,
+            archetypeKind="implement",
+            skill="Build a collection transformation that preserves input data",
+            concept="non-mutating collection operations",
+            bugPattern="Sorting input directly alters original data",
+            traps=[{"tag": "preserve-input", "description": "Mutates caller collection"}],
+            qualityCheckIdeas=[{"id": "QC-preserve-input", "check": "Keep input unchanged"}],
+        ),
+        _sample_prg_card(
+            id="PRG-ALIAS-VAULT-DECLARED",
+            unitCode=unit,
+            level=2,
+            archetypeKind="implement",
+            skill="Choose callback shapes that match collection outputs",
+            concept="higher-order callback contracts",
+            bugPattern="Side effect callback leaves result empty",
+            traps=[{"tag": "custom-vault-declared-alias", "description": "Callback returns nothing"}],
+            qualityCheckIdeas=[{"id": "QC-callback-shape", "check": "Return value from callback"}],
+        ),
+        _sample_prg_card(
+            id="PRG-GENUINELY-UNMATCHED",
+            unitCode="PRG-T00-C03-U04",
+            level=4,
+            archetypeKind="find-the-bug",
+            skill="Diagnose circular import deadlocks across module dependency graphs",
+            concept="module dependency cycles",
+            bugPattern="Mutual top-level imports read partially initialized exports",
+            traps=[{"tag": "circular-import-deadlock", "description": "Cyclic module evaluation"}],
+            qualityCheckIdeas=[{"id": "QC-acyclic-module-graph", "check": "Verify acyclic imports"}],
+        ),
+    ]
+    source_cores.save_core_cards(unit, cards, sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path), vault_dir=str(vault_dir))
+    by_id = {m["id"]: m for m in report["matchedCards"]}
+    assert set(by_id) == {"PRG-ALIAS-BUILT-IN", "PRG-ALIAS-VAULT-DECLARED"}
+    assert [u["id"] for u in report["unmatchedCards"]] == ["PRG-GENUINELY-UNMATCHED"]
+    assert "alias-trap:preserve-input->in-place-array-mutation" in by_id["PRG-ALIAS-BUILT-IN"]["matches"][0]["reason"]
+    assert (
+        "alias-trap:custom-vault-declared-alias->collection-result-contract"
+        in by_id["PRG-ALIAS-VAULT-DECLARED"]["matches"][0]["reason"]
+    )
+    # Aliased traps are covered by the vault and not reported as new traps
+    new_trap_tags = {t["tag"] for t in report["newTraps"]}
+    assert "preserve-input" not in new_trap_tags
+    assert "custom-vault-declared-alias" not in new_trap_tags
+    assert "circular-import-deadlock" in new_trap_tags
