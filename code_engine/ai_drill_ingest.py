@@ -46,6 +46,7 @@ from code_engine.workspace import (
     materialize_drill_workspace,
     resolve_test_imports,
 )
+from math_engine.answer_spec_registry import validate_answer_spec
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.code_originality import check_code_drill_originality
 from progress_store import strip_progress
@@ -826,6 +827,15 @@ def validate_ai_code_contract(
             f"[{pid}] Choice prompt must not list or duplicate its options ({'; '.join(choice_dups)}). "
             "Keep options only in answerSpec.options (Studio and Notion render them)."
         )
+
+    # 5c. AnswerSpec Registry Gate (required for non-coding problems, validated whenever present)
+    raw_spec = prob.get("answerSpec")
+    if raw_spec is not None and not isinstance(raw_spec, dict):
+        raise AiContractError(f"[{pid}] Invalid answerSpec: answerSpec must be a dictionary")
+    if raw_spec or not _is_coding_problem(prob):
+        ok_spec, spec_err = validate_answer_spec(raw_spec if raw_spec is not None else {})
+        if not ok_spec:
+            raise AiContractError(f"[{pid}] Invalid answerSpec: {spec_err}")
 
     # 6. Starter syntax/compile check
     check_starter_contract(

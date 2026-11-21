@@ -504,13 +504,21 @@ def add_variants(
         combined_variants = []
 
     vault_archs = load_scope_archetypes(resolved_unit, vault_dir=vault_dir)
+    newly_added: List[Dict[str, Any]] = []
     for item in raw_items:
         prepared = _prepare_variant_for_bank(item, resolved_unit, combined_variants, vault_archs)
         combined_variants.append(prepared)
+        newly_added.append(prepared)
 
     candidate_doc = {"unitCode": resolved_unit, "variants": combined_variants}
     strip_progress({"problems": candidate_doc["variants"]})
     errs = check_variant_bank(candidate_doc, data_root=data_root, vault_dir=vault_dir, rules=rules)
+    for prepared in newly_added:
+        if "review" not in prepared:
+            try:
+                validate_review(prepared)
+            except AiContractError as exc:
+                errs.append(str(exc))
     if errs:
         raise VariantBankError("Variant bank gates failed:\n" + "\n".join(f"  - {e}" for e in errs))
 
