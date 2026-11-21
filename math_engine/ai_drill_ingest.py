@@ -13,7 +13,7 @@ import glob
 import json
 import os
 import re
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from math_engine.answer_check import (
     CHECKERS,
@@ -453,28 +453,23 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
         if not same_set:
             raise AiContractError(f"[{pid}] trapDerivation '{td}' does not evaluate to solution set '{tv}'.")
     else:
-        td_expr = to_expr(str(td), variables=vars_list, trusted=True)
-        tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
+        env_map, _, _, all_vars = _build_givens_env(prob)
+        td_norm = _normalize_sympy_candidate(str(td))
+        td_expr = _safe_to_expr(td_norm, variables=all_vars, trusted=True)
+        if td_expr is not None:
+            td_expr = _substitute_env_symbols(td_expr, env_map, vars_list)
+        else:
+            td_expr = to_expr(str(td), variables=vars_list, trusted=True)
+        tv_expr = _safe_to_expr(_normalize_sympy_candidate(str(tv)), variables=vars_list, trusted=True)
+        if tv_expr is None:
+            tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
         if not is_equal(td_expr, tv_expr, variables=vars_list):
             raise AiContractError(
                 f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
             )
 
-    # Check that at least 2 distinct givens appear in trapDerivation
-    td_tokens = re.findall(r"\b\d+(?:\.\d+)?\b", str(td))
-    td_token_vals = [float(t) for t in td_tokens]
-
-    matched_given_keys = set()
-    # A trap may misuse a formula constant (e.g. 2 + r instead of 2r), so constants count too.
-    for g_key, g_val in {**givens_floats, **constant_floats}.items():
-        for t_val in td_token_vals:
-            # Derivation tokens are unsigned, so a negative given matches its magnitude.
-            if abs(t_val - g_val) < 1e-6 or abs(t_val - abs(g_val)) < 1e-6:
-                matched_given_keys.add(g_key)
-                break
-            if abs(t_val - (g_val / 100.0)) < 1e-6:
-                matched_given_keys.add(g_key)
-                break
+    # Check that at least 2 distinct givens appear in trapDerivation (by numeric value or symbolic key)
+    matched_given_keys = _matched_env_keys_in_expr(str(td), prob)
 
     # An omission trap ("found only the principal angle", "kept only the positive root", "missing union part") is a
     # strict subset of the answer set; it has no arithmetic of its own, so the 2-givens rule does not apply.
@@ -484,6 +479,9 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
         raise AiContractError(
             f"[{pid}] trapDerivation '{td}' must contain at least {min_givens} distinct givens from {givens}, found {len(matched_given_keys)}: {matched_given_keys}"
         )
+
+    if enforce_leak_gate:
+        validate_distractor_provenance(prob)
 
     # 5. Check answer simulation and trap matching across answer types
     spec = prob.get("answerSpec", {})
@@ -708,6 +706,642 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         )
 
 
+def _extract_braced_arg(s: str, start_idx: int) -> Optional[Tuple[str, int]]:
+    """Extract content inside `{...}` starting at `start_idx` (where `s[start_idx] == '{'`)."""
+    if start_idx >= len(s) or s[start_idx] != "{":
+        return None
+    depth = 0
+    for idx in range(start_idx, len(s)):
+        if s[idx] == "{":
+            depth += 1
+        elif s[idx] == "}":
+            depth -= 1
+            if depth == 0:
+                return s[start_idx + 1 : idx], idx + 1
+    return None
+
+
+def _normalize_sympy_candidate(raw: str) -> str:
+    """Normalize LaTeX/math notation in a candidate expression or option value for SymPy parsing."""
+    s = str(raw or "").strip()
+    if s.startswith("$") and s.endswith("$") and s.count("$") == 2:
+        s = s[1:-1].strip()
+    s = s.replace("\u2212", "-")
+    for macro, repl in ((r"\times", "*"), (r"\cdot", "*"), (r"\div", "/")):
+        s = s.replace(macro, repl)
+    for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad"):
+        s = s.replace(macro, " ")
+    # Convert \frac{a}{b} and \dfrac{a}{b}
+    for cmd in (r"\dfrac", r"\frac"):
+        while cmd in s:
+            pos = s.find(cmd)
+            rest = pos + len(cmd)
+            while rest < len(s) and s[rest].isspace():
+                rest += 1
+            arg1 = _extract_braced_arg(s, rest)
+            if not arg1:
+                break
+            num_str, next_idx = arg1
+            while next_idx < len(s) and s[next_idx].isspace():
+                next_idx += 1
+            arg2 = _extract_braced_arg(s, next_idx)
+            if not arg2:
+                break
+            den_str, end_idx = arg2
+            s = s[:pos] + f"(({num_str})/({den_str}))" + s[end_idx:]
+    # Convert \sqrt{a}
+    while r"\sqrt" in s:
+        pos = s.find(r"\sqrt")
+        rest = pos + len(r"\sqrt")
+        while rest < len(s) and s[rest].isspace():
+            rest += 1
+        arg1 = _extract_braced_arg(s, rest)
+        if not arg1:
+            break
+        rad_str, end_idx = arg1
+        s = s[:pos] + f"sqrt({rad_str})" + s[end_idx:]
+    # Convert ^{a}
+    while "^{" in s:
+        pos = s.find("^{")
+        arg1 = _extract_braced_arg(s, pos + 1)
+        if not arg1:
+            break
+        exp_str, end_idx = arg1
+        s = s[:pos] + f"**({exp_str})" + s[end_idx:]
+    return s.strip()
+
+
+_ALLOWED_MATH_WORDS = {
+    "or",
+    "and",
+    "mod",
+    "sqrt",
+    "sin",
+    "cos",
+    "tan",
+    "ln",
+    "log",
+    "exp",
+    "abs",
+    "Abs",
+    "re",
+    "im",
+    "conjugate",
+    "floor",
+    "round",
+    "diff",
+    "inf",
+    "oo",
+    "pi",
+}
+
+
+def _looks_like_prose(raw: Any) -> bool:
+    """True when `raw` is an English prose explanation rather than a mathematical expression."""
+    if not isinstance(raw, str) or not raw.strip():
+        return True
+    s = raw.strip()
+    if any(tok in s for tok in (r"\text{", r"\implies", r"\mapsto", "->", "<-", "↦")):
+        return True
+    if s.endswith("."):
+        return True
+    # Strip math delimiters to inspect words
+    plain = s.replace("$", " ")
+    words = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", plain)
+    # Two consecutive multi-letter words (neither a math function/connector) indicate English prose.
+    prev_prose_word = False
+    for m in re.finditer(r"[A-Za-z_]{2,}|\S", plain):
+        tok = m.group(0)
+        if re.fullmatch(r"[A-Za-z_]{2,}", tok) and tok not in _ALLOWED_MATH_WORDS:
+            if prev_prose_word:
+                return True
+            prev_prose_word = True
+        else:
+            prev_prose_word = False
+    # Also reject if there are >= 3 multi-letter non-math words in total without operators
+    prose_words = [w for w in words if len(w) >= 3 and w not in _ALLOWED_MATH_WORDS]
+    if len(prose_words) >= 3 and not re.search(r"[-+*/^=]", plain):
+        return True
+    return False
+
+
+def _build_givens_env(prob: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, float], Dict[str, float], List[str]]:
+    givens = prob.get("givens") if isinstance(prob.get("givens"), dict) else {}
+    constants = prob.get("constants") if isinstance(prob.get("constants"), dict) else {}
+    env = {**constants, **givens}
+    givens_floats: Dict[str, float] = {}
+    for k, v in givens.items():
+        try:
+            givens_floats[k] = float(v)
+        except Exception:
+            pass
+    constant_floats: Dict[str, float] = {}
+    for k, v in constants.items():
+        try:
+            constant_floats[k] = float(v)
+        except Exception:
+            pass
+    spec = prob.get("answerSpec") or {}
+    base_vars = list(spec.get("variables") or prob.get("variables") or ["x"])
+    env_vars = [k for k in env if isinstance(k, str) and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k)]
+    all_vars = list(dict.fromkeys([*base_vars, *env_vars]))
+    return env, givens_floats, constant_floats, all_vars
+
+
+def _safe_to_expr(s: str, variables: Optional[List[str]] = None, trusted: bool = True) -> Optional[Any]:
+    """Call `to_expr` safely, returning None on SafeParseError/Exception and supporting underscore given keys."""
+    if not isinstance(s, str) or not s.strip():
+        return None
+    vars_in = list(variables or ["x"])
+    alias_to_orig: Dict[str, str] = {}
+    clean_vars: List[str] = []
+    expr_str = s
+    for idx, v in enumerate(vars_in):
+        if "_" in v:
+            alias = f"uvar{idx}x"
+            alias_to_orig[alias] = v
+            clean_vars.append(alias)
+            expr_str = re.sub(rf"\b{re.escape(v)}\b", alias, expr_str)
+        else:
+            clean_vars.append(v)
+    try:
+        expr = to_expr(expr_str, variables=clean_vars, trusted=trusted)
+    except Exception:
+        return None
+    if expr is not None and alias_to_orig and hasattr(expr, "free_symbols"):
+        import sympy as sp
+
+        subs = {sp.Symbol(alias): sp.Symbol(orig) for alias, orig in alias_to_orig.items()}
+        expr = expr.subs(subs)
+    return expr
+
+
+def _substitute_env_symbols(expr: Any, env: Dict[str, Any], base_vars: List[str]) -> Any:
+    if expr is None or not hasattr(expr, "free_symbols"):
+        return expr
+    subs_map = {}
+    for sym in list(expr.free_symbols):
+        name = str(sym)
+        if name in env:
+            val_expr = _safe_to_expr(str(env[name]), variables=base_vars, trusted=True)
+            if val_expr is not None:
+                subs_map[sym] = val_expr
+    return expr.subs(subs_map) if subs_map else expr
+
+
+def _matched_env_keys_in_expr(raw_expr: str, prob: Dict[str, Any]) -> Set[str]:
+    """Return all keys in `givens` or `constants` referenced by `raw_expr` (symbolically or by number)."""
+    env, givens_floats, constant_floats, _ = _build_givens_env(prob)
+    matched: Set[str] = set()
+    ident_tokens = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", str(raw_expr)))
+    for k in env:
+        if k in ident_tokens:
+            matched.add(k)
+    num_tokens = [float(t) for t in re.findall(r"\b\d+(?:\.\d+)?\b", str(raw_expr))]
+    for g_key, g_val in {**givens_floats, **constant_floats}.items():
+        for t_val in num_tokens:
+            if abs(t_val - g_val) < 1e-6 or abs(t_val - abs(g_val)) < 1e-6 or abs(t_val - (g_val / 100.0)) < 1e-6:
+                matched.add(g_key)
+                break
+    return matched
+
+
+def _parse_single_math_piece(
+    piece: str,
+    env: Dict[str, Any],
+    base_vars: List[str],
+    all_vars: List[str],
+) -> Optional[Any]:
+    norm = _normalize_sympy_candidate(piece)
+    if not norm or _looks_like_prose(norm):
+        return None
+    # Support single-variable assignment like "k = -3" or "x = 2"
+    if "=" in norm and norm.count("=") == 1:
+        lhs, rhs = [p.strip() for p in norm.split("=", 1)]
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", lhs):
+            rhs_expr = _safe_to_expr(rhs, variables=all_vars, trusted=True)
+            if rhs_expr is not None:
+                return _substitute_env_symbols(rhs_expr, env, base_vars)
+        return None
+    expr = _safe_to_expr(norm, variables=all_vars, trusted=True)
+    if expr is None:
+        return None
+    return _substitute_env_symbols(expr, env, base_vars)
+
+
+def _eval_math_from_givens(
+    raw_expr: str,
+    prob: Dict[str, Any],
+    substitute_env: bool = True,
+) -> Tuple[Optional[Tuple[str, Any]], Set[str], Optional[str]]:
+    """Evaluate `raw_expr` with SymPy from `prob['givens']` and `prob['constants']`."""
+    if not isinstance(raw_expr, str) or not raw_expr.strip():
+        return None, set(), "empty expression"
+    s = raw_expr.strip()
+    env, _, _, all_vars = _build_givens_env(prob)
+    spec = prob.get("answerSpec") or {}
+    base_vars = list(spec.get("variables") or prob.get("variables") or ["x"])
+    active_env = env if substitute_env else {}
+    active_vars = all_vars if substitute_env else base_vars
+    matched = _matched_env_keys_in_expr(s, prob)
+
+    # 1. Interval form
+    norm_s = _normalize_sympy_candidate(s)
+    if spec.get("type") == "interval" or (norm_s and norm_s[0] in "[(" and norm_s[-1] in "])" and "," in norm_s):
+        try:
+            iv = parse_interval(norm_s, variables=spec.get("variables"))
+            return ("interval", iv), matched, None
+        except Exception:
+            if spec.get("type") == "interval":
+                return None, matched, f"invalid interval '{s}'"
+
+    # 2. Multi-value set form (e.g. "$k = -3$ or $k = 2$", "{-3, 2}", "-3, 2")
+    unwrapped = norm_s
+    if unwrapped.startswith(r"\{") and unwrapped.endswith(r"\}"):
+        unwrapped = unwrapped[2:-2].strip()
+    elif unwrapped.startswith("{") and unwrapped.endswith("}"):
+        unwrapped = unwrapped[1:-1].strip()
+    if re.search(r"\bor\b", s) or ("," in unwrapped and not re.search(r"[A-Za-z_]+\s*\([^)]*,", unwrapped)):
+        parts = re.split(r"\s+\bor\b\s+|,", unwrapped if "," in unwrapped and not re.search(r"\bor\b", s) else s)
+        parts = [p.strip() for p in parts if p.strip()]
+        if len(parts) >= 2:
+            parsed_items = []
+            for p_item in parts:
+                expr_item = _parse_single_math_piece(p_item, active_env, base_vars, active_vars)
+                if expr_item is None:
+                    parsed_items = []
+                    break
+                parsed_items.append(expr_item)
+            if parsed_items:
+                return ("set", parsed_items), matched, None
+
+    # 3. Single expression or variable assignment
+    if _looks_like_prose(s):
+        return None, matched, "prose string"
+    single = _parse_single_math_piece(s, active_env, base_vars, active_vars)
+    if single is not None:
+        return ("expr", single), matched, None
+    return None, matched, f"SymPy could not parse '{s}'"
+
+
+def _parse_option_math_value(opt: Dict[str, Any], prob: Dict[str, Any]) -> Optional[Tuple[str, Any]]:
+    """Parse a choice option's mathematical value (from `value`, `latex`, `display`, or `label`)."""
+    if not isinstance(opt, dict):
+        return None
+    raw = opt.get("value")
+    if raw is None:
+        raw = opt.get("latex") or opt.get("display") or opt.get("label")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    s = raw.strip()
+    if re.fullmatch(r"Line\s+\d+", s, re.IGNORECASE):
+        return None
+    # Do not substitute givens into the option's displayed value unless `opt["value"]` is used:
+    # e.g., an option label "$x - 2$" is a polynomial in x, not a given lookup.
+    val, _, _ = _eval_math_from_givens(s, prob, substitute_env=False)
+    return val
+
+
+def _math_values_equal(val_a: Tuple[str, Any], val_b: Tuple[str, Any], vars_list: List[str]) -> bool:
+    kind_a, a = val_a
+    kind_b, b = val_b
+    if kind_a == "interval" and kind_b == "interval":
+        return _intervals_equal(a, b)
+    if kind_a == "expr" and kind_b == "expr":
+        return is_equal(a, b, variables=vars_list)
+    if kind_a == "set" and kind_b == "set":
+        return (
+            len(a) == len(b)
+            and all(any(is_equal(x, y, variables=vars_list) for y in b) for x in a)
+            and all(any(is_equal(y, x, variables=vars_list) for x in a) for y in b)
+        )
+    if kind_a == "set" and kind_b == "expr":
+        return len(a) == 1 and is_equal(a[0], b, variables=vars_list)
+    if kind_a == "expr" and kind_b == "set":
+        return len(b) == 1 and is_equal(a, b[0], variables=vars_list)
+    return False
+
+
+def check_distractor_provenance(
+    prob: Dict[str, Any],
+    archetypes: Optional[List[Dict[str, Any]]] = None,
+) -> Tuple[List[str], List[str]]:
+    """Deterministic distractor & trap provenance gate (06 §3, §4 G4, 07 §4).
+
+    Returns ``(errors, warnings)``:
+    - Evaluates every declared option ``provenance`` / ``trapFormula`` / ``derivation`` (and problem
+      ``trapDerivation`` / ``trapFormula`` / ``trapValue``) with SymPy from ``givens`` and ``constants``,
+      requiring it to equal the option's value (or ``trapValue``) and differ from the correct answer.
+    - Requires every distractor option in a choice problem to name a vault ``trapTag`` of the problem's
+      archetype and declare a non-empty provenance (for find-the-flaw, ``provenance`` or ``trapTag``).
+    - Cross-checks ``trapDerivation`` against ``trapGivens`` and against the vault's ``trapFormula``
+      when the vault defines a SymPy-evaluable formula over the problem's ``givens``.
+    - Reports ``"unverifiable"`` warnings when an option's provenance or label is English prose because
+      the current ``RawChoiceOption`` schema lacks dedicated symbolic ``trapFormula`` / ``value`` fields.
+    """
+    errors: List[str] = []
+    warnings: List[str] = []
+    pid = prob.get("id", "?")
+    spec = prob.get("answerSpec") or {}
+    givens = prob.get("givens") if isinstance(prob.get("givens"), dict) else {}
+    env, _, _, all_vars = _build_givens_env(prob)
+    base_vars = list(spec.get("variables") or prob.get("variables") or ["x"])
+
+    arch_key = prob.get("archetypeKey")
+    arch = next((a for a in (archetypes or []) if a.get("archetypeKey") == arch_key), None)
+    arch_traps: List[str] = []
+    arch_trap_formulas: Dict[str, str] = {}
+    if arch is not None:
+        for t in arch.get("cognitiveTraps") or []:
+            if isinstance(t, dict):
+                t_tag = t.get("trapTag")
+                if t_tag:
+                    arch_traps.append(t_tag)
+                    if isinstance(t.get("trapFormula"), str) and t["trapFormula"].strip():
+                        arch_trap_formulas[t_tag] = t["trapFormula"].strip()
+            elif isinstance(t, str):
+                arch_traps.append(t)
+
+    common_tag = prob.get("commonTrapTag")
+    td = prob.get("trapDerivation")
+    verify_obj = prob.get("verify") if isinstance(prob.get("verify"), dict) else {}
+    tv = verify_obj.get("trapValue") if verify_obj.get("trapValue") is not None else prob.get("trapValue")
+    prob_tf = prob.get("trapFormula") or verify_obj.get("trapFormula")
+    verify_src = verify_obj.get("source")
+    verify_src_val, _, _ = (
+        _eval_math_from_givens(str(verify_src), prob) if verify_src is not None else (None, set(), None)
+    )
+    tv_val, _, _ = _eval_math_from_givens(str(tv), prob) if tv is not None else (None, set(), None)
+    td_val, td_matched_keys, _ = _eval_math_from_givens(str(td), prob) if td is not None else (None, set(), None)
+
+    # 1. Problem-level trapDerivation / trapFormula / trapGivens checks
+    if td is not None and tv is not None:
+        if td_val is None or tv_val is None or not _math_values_equal(td_val, tv_val, base_vars):
+            errors.append(
+                f"[{pid}] trapDerivation '{td}' evaluates to '{td_val[1] if td_val else None}' from givens, "
+                f"which does not equal trapValue '{tv}'."
+            )
+
+        trap_givens = prob.get("trapGivens")
+        if isinstance(trap_givens, list) and trap_givens and not _is_omission_trap(spec, tv):
+            td_num_tokens = [float(t) for t in re.findall(r"\b\d+(?:\.\d+)?\b", str(td))]
+            matched_tg = set()
+            for idx_tg, raw_tg in enumerate(trap_givens):
+                try:
+                    tg_f = float(raw_tg)
+                except Exception:
+                    continue
+                if any(
+                    abs(tg_f - t) < 1e-6 or abs(abs(tg_f) - t) < 1e-6 or abs(tg_f / 100.0 - t) < 1e-6
+                    for t in td_num_tokens
+                ) or any(
+                    k in td_matched_keys and isinstance(env.get(k), (int, float)) and abs(float(env[k]) - tg_f) < 1e-6
+                    for k in env
+                ):
+                    matched_tg.add((idx_tg, tg_f))
+            req_tg_count = min(2, len(trap_givens))
+            if len(matched_tg) < req_tg_count:
+                errors.append(
+                    f"[{pid}] trapDerivation '{td}' is unrelated to trap '{common_tag}': must use at least "
+                    f"{req_tg_count} values from trapGivens {trap_givens} (found {len(matched_tg)})."
+                )
+
+        if isinstance(prob_tf, str) and prob_tf.strip():
+            ptf_val, ptf_keys, ptf_err = _eval_math_from_givens(prob_tf, prob)
+            if ptf_val is None or not ptf_keys:
+                errors.append(
+                    f"[{pid}] trapFormula '{prob_tf}' could not be evaluated from givens {givens}: "
+                    f"{ptf_err or 'no givens referenced'}."
+                )
+            elif tv_val is not None and not _math_values_equal(ptf_val, tv_val, base_vars):
+                errors.append(
+                    f"[{pid}] trapFormula '{prob_tf}' evaluates to '{ptf_val[1]}' from givens, "
+                    f"which does not equal trapValue '{tv}'."
+                )
+
+        vault_tf = arch_trap_formulas.get(common_tag) if common_tag else None
+        if vault_tf and not _looks_like_prose(vault_tf):
+            vtf_norm = _normalize_sympy_candidate(vault_tf)
+            vtf_expr = _safe_to_expr(vtf_norm, variables=all_vars, trusted=True)
+            if vtf_expr is not None and hasattr(vtf_expr, "free_symbols"):
+                free_names = {str(s) for s in vtf_expr.free_symbols}
+                if free_names and free_names <= set(env.keys()):
+                    req_given_keys = free_names & set(givens.keys())
+                    used_req_keys = req_given_keys & td_matched_keys
+                    if req_given_keys and len(used_req_keys) < min(2, len(req_given_keys)):
+                        errors.append(
+                            f"[{pid}] trapDerivation '{td}' is unrelated to trap '{common_tag}': vault trapFormula "
+                            f"'{vault_tf}' operates on givens {sorted(req_given_keys)}, but trapDerivation only uses "
+                            f"{sorted(used_req_keys)}."
+                        )
+                    elif free_names >= set(givens.keys()) and tv_val is not None:
+                        vtf_sub = _substitute_env_symbols(vtf_expr, env, base_vars)
+                        if not _math_values_equal(("expr", vtf_sub), tv_val, base_vars):
+                            errors.append(
+                                f"[{pid}] trapDerivation '{td}' (trapValue '{tv}') is unrelated to trap '{common_tag}': "
+                                f"vault trapFormula '{vault_tf}' evaluates to '{vtf_sub}' at givens {givens}."
+                            )
+
+    # 2. Choice option provenance & trapTag checks
+    if spec.get("type") != "choice":
+        return errors, warnings
+
+    options = [o for o in (spec.get("options") or []) if isinstance(o, dict)]
+    correct_id = str(spec.get("correct") or prob.get("answerPlain") or "").strip()
+
+    if is_find_the_flaw(prob):
+        distractor_tags_found = 0
+        for opt in options:
+            opt_id = str(opt.get("id", "?")).strip()
+            opt_tag = str(opt.get("trapTag") or opt.get("tag") or "").strip()
+            has_prov = any(
+                isinstance(opt.get(k), str) and opt.get(k).strip() for k in ("provenance", "trapFormula", "derivation")
+            )
+            if opt_tag:
+                if opt_id != correct_id:
+                    distractor_tags_found += 1
+                if arch is not None and opt_tag not in arch_traps:
+                    errors.append(
+                        f"[{pid}] Option '{opt_id}' trapTag '{opt_tag}' is not one of archetype '{arch_key}' "
+                        f"cognitiveTraps {arch_traps}."
+                    )
+            if opt_id != correct_id and not opt_tag and not has_prov:
+                errors.append(f"[{pid}] Option '{opt_id}' is a distractor with no provenance or trapTag (06 §2.3).")
+        return errors, warnings
+
+    # Non-flaw choice problem
+    correct_opt = next((o for o in options if str(o.get("id", "")).strip() == correct_id), None)
+    correct_opt_val = _parse_option_math_value(correct_opt, prob) if correct_opt else None
+
+    if tv_val is not None and verify_src_val is not None and _math_values_equal(tv_val, verify_src_val, base_vars):
+        errors.append(
+            f"[{pid}] trapValue '{tv}' (from trapDerivation '{td}') equals the correct answer "
+            f"from verify.source '{verify_src}'."
+        )
+    if tv_val is not None and correct_opt_val is not None and _math_values_equal(tv_val, correct_opt_val, base_vars):
+        errors.append(
+            f"[{pid}] trapValue '{tv}' (from trapDerivation '{td}') equals correct Option '{correct_id}' "
+            f"value '{correct_opt.get('label') if correct_opt else ''}'."
+        )
+
+    common_trap_options: List[Tuple[Dict[str, Any], Optional[Tuple[str, Any]]]] = []
+    for opt in options:
+        opt_id = str(opt.get("id", "?")).strip()
+        opt_tag = str(opt.get("trapTag") or opt.get("tag") or "").strip()
+        raw_tf = opt.get("trapFormula")
+        raw_deriv = opt.get("derivation")
+        raw_prov = opt.get("provenance")
+        opt_val = _parse_option_math_value(opt, prob)
+        opt_label_str = str(opt.get("value") if opt.get("value") is not None else opt.get("label", ""))
+
+        if opt_id == correct_id:
+            if opt_tag:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' is the correct answer ('{correct_id}') but carries distractor "
+                    f"trapTag '{opt_tag}'."
+                )
+        else:
+            if not opt_tag:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' is a distractor without a trapTag (every distractor must name a "
+                    f"single-misconception vault trapTag of archetype '{arch_key}')."
+                )
+            elif arch is not None and opt_tag not in arch_traps:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' trapTag '{opt_tag}' is not one of archetype '{arch_key}' "
+                    f"cognitiveTraps {arch_traps}."
+                )
+            if common_tag and opt_tag == common_tag:
+                common_trap_options.append((opt, opt_val))
+
+            has_prov = any(isinstance(x, str) and x.strip() for x in (raw_prov, raw_tf, raw_deriv))
+            if not has_prov:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' is a distractor with no provenance (must declare provenance, "
+                    f"trapFormula, or derivation)."
+                )
+
+            if (
+                opt_val is not None
+                and correct_opt_val is not None
+                and _math_values_equal(opt_val, correct_opt_val, base_vars)
+            ):
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' value '{opt_label_str}' equals correct Option '{correct_id}' value."
+                )
+
+        # Evaluate declared option formula (trapFormula / derivation / non-prose provenance)
+        explicit_formula = None
+        if isinstance(raw_tf, str) and raw_tf.strip():
+            explicit_formula = raw_tf.strip()
+        elif isinstance(raw_deriv, str) and raw_deriv.strip():
+            explicit_formula = raw_deriv.strip()
+        elif isinstance(raw_prov, str) and raw_prov.strip() and not _looks_like_prose(raw_prov):
+            explicit_formula = raw_prov.strip()
+
+        if explicit_formula is not None:
+            norm_f = _normalize_sympy_candidate(explicit_formula)
+            if re.fullmatch(r"^\s*[-+]?\d*\.?\d+\s*$", norm_f):
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' provenance/derivation '{explicit_formula}' cannot be a bare number; "
+                    f"it must be derived from givens {givens}."
+                )
+                continue
+            eval_val, matched_keys, eval_err = _eval_math_from_givens(explicit_formula, prob)
+            if eval_val is None:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' provenance/derivation '{explicit_formula}' could not be evaluated "
+                    f"with SymPy from givens {givens}: {eval_err or 'invalid expression'}."
+                )
+                continue
+            if not matched_keys:
+                errors.append(
+                    f"[{pid}] Option '{opt_id}' provenance/derivation '{explicit_formula}' does not reference any "
+                    f"problem givens {givens}."
+                )
+                continue
+            if opt_val is None:
+                warnings.append(
+                    f"[{pid}] Option '{opt_id}' value is unverifiable with SymPy: option label '{opt_label_str}' "
+                    f"has no parseable symbolic/numeric value in current RawChoiceOption schema."
+                )
+            else:
+                if not _math_values_equal(eval_val, opt_val, base_vars):
+                    errors.append(
+                        f"[{pid}] Option '{opt_id}' provenance/derivation '{explicit_formula}' evaluates to "
+                        f"'{eval_val[1]}' from givens, which does not equal option value '{opt_label_str}'."
+                    )
+                if opt_id != correct_id:
+                    if (correct_opt_val is not None and _math_values_equal(eval_val, correct_opt_val, base_vars)) or (
+                        correct_opt_val is not None
+                        and verify_src_val is not None
+                        and _math_values_equal(eval_val, verify_src_val, base_vars)
+                    ):
+                        errors.append(
+                            f"[{pid}] Option '{opt_id}' provenance/derivation '{explicit_formula}' evaluates to "
+                            f"'{eval_val[1]}', which equals the correct answer."
+                        )
+        elif opt_id != correct_id and isinstance(raw_prov, str) and raw_prov.strip():
+            # Prose provenance in current RawChoiceOption schema
+            verified_by_common_or_vault = False
+            if common_tag and opt_tag == common_tag and tv_val is not None and opt_val is not None:
+                verified_by_common_or_vault = True
+                if not _math_values_equal(tv_val, opt_val, base_vars):
+                    errors.append(
+                        f"[{pid}] Option '{opt_id}' carries commonTrapTag '{common_tag}' with value '{opt_label_str}', "
+                        f"which does not equal trapValue '{tv}' (from trapDerivation '{td}')."
+                    )
+            opt_vault_tf = arch_trap_formulas.get(opt_tag) if opt_tag else None
+            if opt_vault_tf and not _looks_like_prose(opt_vault_tf):
+                ov_expr = _safe_to_expr(_normalize_sympy_candidate(opt_vault_tf), variables=all_vars, trusted=True)
+                if ov_expr is not None and hasattr(ov_expr, "free_symbols"):
+                    ov_free = {str(s) for s in ov_expr.free_symbols}
+                    if ov_free and ov_free <= set(env.keys()) and ov_free >= set(givens.keys()) and opt_val is not None:
+                        verified_by_common_or_vault = True
+                        ov_sub = _substitute_env_symbols(ov_expr, env, base_vars)
+                        if not _math_values_equal(("expr", ov_sub), opt_val, base_vars):
+                            errors.append(
+                                f"[{pid}] Option '{opt_id}' (trapTag '{opt_tag}') value '{opt_label_str}' does not "
+                                f"equal vault trapFormula '{opt_vault_tf}' evaluated at givens ('{ov_sub}')."
+                            )
+            if not verified_by_common_or_vault:
+                warnings.append(
+                    f"[{pid}] Option '{opt_id}' provenance is unverifiable with SymPy: current RawChoiceOption "
+                    f"schema lacks a dedicated symbolic trapFormula/value field and provenance is prose."
+                )
+
+    if common_tag:
+        distractor_ids = [str(o.get("id", "?")).strip() for o in options if str(o.get("id", "")).strip() != correct_id]
+        if not common_trap_options:
+            errors.append(
+                f"[{pid}] No distractor option (options {distractor_ids}) carries commonTrapTag '{common_tag}'."
+            )
+        else:
+            for c_opt, c_val in common_trap_options:
+                c_id = str(c_opt.get("id", "?")).strip()
+                c_lbl = str(c_opt.get("value") if c_opt.get("value") is not None else c_opt.get("label", ""))
+                if c_val is not None and tv_val is not None and not _math_values_equal(tv_val, c_val, base_vars):
+                    err_msg = (
+                        f"[{pid}] Option '{c_id}' carries commonTrapTag '{common_tag}' with value '{c_lbl}', "
+                        f"which does not equal trapValue '{tv}' (from trapDerivation '{td}')."
+                    )
+                    if err_msg not in errors:
+                        errors.append(err_msg)
+
+    return list(dict.fromkeys(errors)), list(dict.fromkeys(warnings))
+
+
+def validate_distractor_provenance(
+    prob: Dict[str, Any],
+    archetypes: Optional[List[Dict[str, Any]]] = None,
+) -> List[str]:
+    """Run ``check_distractor_provenance`` and raise ``AiContractError`` on any errors; returns warnings."""
+    errors, warnings = check_distractor_provenance(prob, archetypes=archetypes)
+    if errors:
+        raise AiContractError("; ".join(errors))
+    return warnings
+
+
 def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]], unit_code: str) -> None:
     """Gates that need the vault or a blind solve (07 §4), shared by --check and ingest.
 
@@ -731,6 +1365,8 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
             f"[{pid}] commonTrapTag '{tag}' is not one of archetype '{key}' cognitiveTraps {traps}. "
             f"Use a listed tag, or propose adding the trap to the vault first."
         )
+
+    validate_distractor_provenance(prob, archetypes)
 
     if unit_code == BRIDGE_SCOPE:
         bridge_errors = validate_bridge_problem(prob, arch)
@@ -975,7 +1611,9 @@ def check_ai_drill(
             verify_problem(prob, rules=rules or QUALITY_RULES)
         except Exception as exc:  # noqa: BLE001 - every gate failure is reported, not raised
             msg = str(exc)
-            errors.append(msg if pid in msg else f"[{pid}] {msg}")
+            formatted = msg if pid in msg else f"[{pid}] {msg}"
+            if formatted not in errors:
+                errors.append(formatted)
     try:
         check_gate_g3_set(checked, rules=rules or QUALITY_RULES)
     except QualityError as exc:
@@ -983,7 +1621,7 @@ def check_ai_drill(
     if check_originality:
         orig_errors, _ = check_document_originality(drill_doc, unit_code=unit_code, sources_dir=sources_dir)
         errors.extend(orig_errors)
-    return errors
+    return list(dict.fromkeys(errors))
 
 
 def check_ai_drill_warnings(
@@ -991,19 +1629,22 @@ def check_ai_drill_warnings(
     vault_dir: Optional[str] = None,
     eligible_units: Optional[Iterable[str]] = None,
 ) -> List[str]:
-    """Return non-blocking ingest warnings (such as method-naming figure titles) without mutating ``drill_doc``."""
+    """Return non-blocking ingest warnings (such as method-naming figure titles or unverifiable option provenance) without mutating ``drill_doc``."""
     unit_code = drill_doc.get("unitCode")
     problems = drill_doc.get("problems") or []
     if not unit_code or not problems:
         return []
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
     checked: List[Dict[str, Any]] = []
+    prov_warnings: List[str] = []
     for idx, original in enumerate(problems, 1):
         prob = copy.deepcopy(original)
         prob.setdefault("id", f"Q{idx:02d}")
         autofill_problem_figure(prob, vault_archs)
         checked.append(prob)
-    return collect_figure_title_warnings(checked)
+        _, p_warns = check_distractor_provenance(prob, vault_archs)
+        prov_warnings.extend(p_warns)
+    return list(dict.fromkeys([*collect_figure_title_warnings(checked), *prov_warnings]))
 
 
 def ingest_ai_drill(
