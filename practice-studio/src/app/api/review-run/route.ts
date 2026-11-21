@@ -13,7 +13,7 @@ import {
   isSafeId,
   loadProblemFromDisk,
 } from "@/lib/paths";
-import { sanitizeCodeCheckError } from "@/lib/codeStatus";
+import { maskHiddenTestFailures, sanitizeCodeCheckError } from "@/lib/codeStatus";
 
 function formatServerCheckError(raw: string, rootDir: string): string {
   const withoutRoot = rootDir
@@ -254,9 +254,19 @@ export async function POST(req: NextRequest) {
 
         try {
           const parsed = JSON.parse(stdout.trim());
+          const safeTests =
+            parsed?.tests && typeof parsed.tests === "object"
+              ? {
+                  ...parsed.tests,
+                  failed: Array.isArray(parsed.tests.failed)
+                    ? maskHiddenTestFailures(parsed.tests.failed)
+                    : [],
+                }
+              : parsed?.tests;
           resolve(
             NextResponse.json({
               ...parsed,
+              ...(safeTests !== undefined ? { tests: safeTests } : {}),
               types: parsed.typecheck ?? [],
             })
           );
