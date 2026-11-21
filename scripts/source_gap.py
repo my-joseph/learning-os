@@ -6,7 +6,10 @@ Supports both Math/PHY units (against ``math_engine/reasoning_vault/``) and PRG 
 (against ``code_engine/reasoning_vault/`` — ``cognitiveTraps`` and ``qualityChecks``).
 
 Reports:
-1. Core cards matched to existing vault archetypes (by trap tag, QC id, or skill keywords) vs unmatched cards.
+1. Core cards matched to existing vault archetypes using structured scoring (trap tags and
+   descriptions weighted highest, normalized skill/operation fields with stopwords removed and
+   IDF weighting, and unitCode/level compatibility — assigning each matched card to its best
+   archetype plus at most one runner-up above a high threshold) vs unmatched cards.
 2. New trap tags found in cards that do not exist in any vault archetype.
 3. For Math: reasoning moves, levels, exam formats, laterUnit, and bridge candidates.
    For PRG: new bug patterns/smells, new ``QC-*`` qualityCheck ideas, missing archetype kinds
@@ -28,6 +31,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
+import math
 import os
 import re
 import sys
@@ -50,6 +54,11 @@ from math_engine.source_cores import (
 from scripts.bridge_scope import eligible_units as load_eligible_units
 
 SATURATION_MIN_NEW_CORES = 2
+MATCH_THRESHOLD = 0.34
+RUNNER_UP_THRESHOLD = 0.58
+_TRAP_WEIGHT = 0.48
+_SKILL_WEIGHT = 0.37
+_COMPAT_WEIGHT = 0.15
 
 _STOPWORDS: frozenset[str] = frozenset(
     {
@@ -150,9 +159,276 @@ _PRG_ARCHETYPE_KIND_MAP: dict[str, str] = {
 }
 
 
+_MATCH_STOPWORDS: frozenset[str] = _STOPWORDS | frozenset(
+    {
+        "check",
+        "checks",
+        "result",
+        "results",
+        "apply",
+        "use",
+        "used",
+        "make",
+        "making",
+        "without",
+        "when",
+        "where",
+        "which",
+        "while",
+        "across",
+        "before",
+        "after",
+        "between",
+        "both",
+        "each",
+        "every",
+        "only",
+        "other",
+        "another",
+        "same",
+        "different",
+        "one",
+        "two",
+        "three",
+        "four",
+        "several",
+        "multiple",
+        "all",
+        "any",
+        "not",
+        "are",
+        "was",
+        "were",
+        "can",
+        "may",
+        "must",
+        "should",
+        "will",
+        "does",
+        "has",
+        "have",
+        "had",
+        "its",
+        "their",
+        "they",
+        "them",
+        "then",
+        "than",
+        "also",
+        "such",
+        "how",
+        "what",
+        "whether",
+        "instead",
+        "rather",
+        "keep",
+        "kept",
+        "give",
+        "take",
+        "get",
+        "show",
+        "treat",
+        "avoid",
+        "ensure",
+        "remain",
+        "remains",
+        "cause",
+        "causes",
+        "allow",
+        "allows",
+        "require",
+        "requires",
+        "represent",
+        "representing",
+        "express",
+        "expressing",
+        "compare",
+        "comparing",
+        "based",
+        "following",
+        "followed",
+        "way",
+        "case",
+        "cases",
+        "step",
+        "steps",
+        "work",
+        "working",
+        "data",
+        "behavior",
+        "behaviour",
+        "wrong",
+        "error",
+        "mistake",
+        "trap",
+        "bug",
+        "small",
+        "simple",
+        "new",
+        "build",
+        "reason",
+    }
+)
+_LATEX_NOISE_TOKENS: frozenset[str] = frozenset(
+    {"frac", "sqrt", "left", "right", "quad", "qquad", "text", "implies", "land", "lor", "cdot", "times", "pm", "big"}
+)
+_TAG_MATCH_BOILERPLATE: frozenset[str] = frozenset(
+    {
+        "trap",
+        "error",
+        "mistake",
+        "bug",
+        "wrong",
+        "cx",
+        "qc",
+        "confusion",
+        "surprise",
+        "drift",
+        "mismatch",
+        "state",
+        "flow",
+        "order",
+        "check",
+        "rule",
+        "rules",
+        "boundary",
+        "contract",
+        "update",
+        "value",
+        "values",
+        "return",
+        "returns",
+        "missing",
+        "omitted",
+        "forgot",
+        "dropped",
+        "invalid",
+        "bad",
+        "fail",
+        "failure",
+        "type",
+        "behavior",
+        "behaviour",
+    }
+)
+_MATCH_TOKEN_ALIASES: dict[str, str] = {
+    "asynchronous": "async",
+    "async": "async",
+    "rationalise": "rational",
+    "rationalize": "rational",
+    "rationalising": "rational",
+    "rationalizing": "rational",
+    "rationalised": "rational",
+    "rationalized": "rational",
+    "mutating": "mutat",
+    "mutate": "mutat",
+    "mutates": "mutat",
+    "mutation": "mutat",
+    "mutations": "mutat",
+    "immutable": "immut",
+    "preserving": "preserv",
+    "preserve": "preserv",
+    "preserves": "preserv",
+    "preservation": "preserv",
+    "transforming": "transform",
+    "transform": "transform",
+    "transforms": "transform",
+    "transformation": "transform",
+    "transformations": "transform",
+    "aggregating": "aggregat",
+    "aggregate": "aggregat",
+    "aggregates": "aggregat",
+    "aggregation": "aggregat",
+    "accumulating": "accumul",
+    "accumulate": "accumul",
+    "accumulates": "accumul",
+    "accumulator": "accumul",
+    "accumulation": "accumul",
+    "reducing": "reduc",
+    "reduce": "reduc",
+    "reduces": "reduc",
+    "reduction": "reduc",
+    "reducer": "reduc",
+    "filtering": "filter",
+    "filter": "filter",
+    "filters": "filter",
+    "mapping": "map",
+    "map": "map",
+    "maps": "map",
+    "deriving": "deriv",
+    "derive": "deriv",
+    "derives": "deriv",
+    "derived": "deriv",
+    "factoring": "factor",
+    "factor": "factor",
+    "factors": "factor",
+    "factorize": "factor",
+    "factorization": "factor",
+    "conjugate": "conjug",
+    "conjugates": "conjug",
+    "conjugation": "conjug",
+    "handlers": "handler",
+    "handler": "handler",
+    "callbacks": "callback",
+    "callback": "callback",
+    "collections": "collect",
+    "collection": "collect",
+    "arrays": "array",
+    "array": "array",
+    "promises": "promis",
+    "promise": "promis",
+    "settling": "settl",
+    "settled": "settl",
+    "settlement": "settl",
+    "settle": "settl",
+}
+
+
 def _tokens(text: str) -> set[str]:
     words = re.findall(r"[a-z]{3,}", (text or "").lower())
     return {w for w in words if w not in _STOPWORDS}
+
+
+def _normalize_match_token(word: str) -> str:
+    if word in _MATCH_TOKEN_ALIASES:
+        return _MATCH_TOKEN_ALIASES[word]
+    if len(word) >= 6 and word.endswith("ing"):
+        word = word[:-3]
+    elif len(word) >= 5 and word.endswith("ed"):
+        word = word[:-2]
+    elif len(word) >= 5 and word.endswith("ies"):
+        word = word[:-3] + "y"
+    elif len(word) >= 4 and word.endswith("s") and not word.endswith(("ss", "us", "is")):
+        word = word[:-1]
+    return _MATCH_TOKEN_ALIASES.get(word, word)
+
+
+def _match_tokens(text: str) -> set[str]:
+    """Extract normalized, stopword-free tokens for structured card-to-archetype matching."""
+    cleaned = re.sub(r"\\[a-zA-Z]+", " ", text or "")
+    cleaned = re.sub(r"([a-z])([A-Z])", r"\1 \2", cleaned)
+    words = re.findall(r"[a-z]{3,}", cleaned.lower())
+    out: set[str] = set()
+    for w in words:
+        if w in _MATCH_STOPWORDS or w in _LATEX_NOISE_TOKENS:
+            continue
+        norm = _normalize_match_token(w)
+        if norm not in _MATCH_STOPWORDS and len(norm) >= 3:
+            out.add(norm)
+    return out
+
+
+def _match_tag_tokens(tag: str) -> set[str]:
+    """Extract normalized non-boilerplate tokens from a trap tag or QC identifier."""
+    parts = [p for p in re.split(r"[-_\s]+", (tag or "").lower()) if p]
+    out: set[str] = set()
+    for p in parts:
+        if len(p) < 2 or _UNIT_SLUG_TOKEN_RE.match(p) or p in _TAG_MATCH_BOILERPLATE:
+            continue
+        norm = _normalize_match_token(p)
+        if norm not in _TAG_MATCH_BOILERPLATE:
+            out.add(norm)
+    return out
 
 
 def _flatten_text(value: Any) -> str:
@@ -678,6 +954,419 @@ def _infer_vault_moves(archetypes: list[dict[str, Any]]) -> set[str]:
     return moves
 
 
+def _archetype_trap_entries(arch: dict[str, Any]) -> list[tuple[str, set[str]]]:
+    """Return ``(trap_tag, description_tokens)`` pairs for an archetype's cognitiveTraps."""
+    entries: list[tuple[str, set[str]]] = []
+    for t in arch.get("cognitiveTraps") or []:
+        if isinstance(t, dict):
+            tag = str(t.get("trapTag") or "").strip()
+            desc = f"{t.get('name') or ''} {t.get('description') or ''}"
+            if tag or desc.strip():
+                entries.append((tag, _match_tokens(desc)))
+        elif isinstance(t, str) and t.strip():
+            entries.append((t.strip(), set()))
+    return entries
+
+
+def _card_trap_entries(card: dict[str, Any]) -> list[tuple[str, set[str]]]:
+    """Return ``(trap_tag, description_tokens)`` pairs for a card's traps."""
+    entries: list[tuple[str, set[str]]] = []
+    for t in card.get("traps") or []:
+        if isinstance(t, dict):
+            tag = str(t.get("tag") or "").strip()
+            desc = str(t.get("description") or "")
+            if tag or desc.strip():
+                entries.append((tag, _match_tokens(desc)))
+    return entries
+
+
+def _card_qc_entries(card: dict[str, Any]) -> list[tuple[str, set[str]]]:
+    entries: list[tuple[str, set[str]]] = []
+    for qc in card.get("qualityCheckIdeas") or []:
+        if isinstance(qc, dict):
+            qid = str(qc.get("id") or "").strip()
+            chk = str(qc.get("check") or "")
+            if qid or chk.strip():
+                entries.append((qid, _match_tokens(chk)))
+    return entries
+
+
+def _archetype_qc_entries(arch: dict[str, Any]) -> list[tuple[str, set[str]]]:
+    entries: list[tuple[str, set[str]]] = []
+    for qc in arch.get("qualityChecks") or []:
+        if isinstance(qc, dict):
+            qid = str(qc.get("id") or "").strip()
+            chk = str(qc.get("check") or "")
+            if qid or chk.strip():
+                entries.append((qid, _match_tokens(chk)))
+    return entries
+
+
+def _dice_similarity(left: set[str], right: set[str]) -> float:
+    if not left or not right:
+        return 0.0
+    return (2.0 * len(left & right)) / (len(left) + len(right))
+
+
+def _score_trap_overlap(
+    c_traps: list[tuple[str, set[str]]],
+    c_qcs: list[tuple[str, set[str]]],
+    a_traps: list[tuple[str, set[str]]],
+    a_qcs: list[tuple[str, set[str]]],
+    *,
+    is_prg: bool,
+) -> tuple[float, list[str], list[str], list[str]]:
+    """Score trap-tag/description (and PRG QC) overlap between a card and an archetype."""
+    c_trap_map = {tag.lower(): tag for tag, _ in c_traps if tag}
+    a_trap_set = {tag.lower() for tag, _ in a_traps if tag}
+    shared_exact_traps = sorted(c_trap_map[k] for k in (set(c_trap_map) & a_trap_set))
+
+    c_qc_map = {qid.lower(): qid for qid, _ in c_qcs if qid} if is_prg else {}
+    a_qc_set = {qid.lower() for qid, _ in a_qcs if qid} if is_prg else set()
+    shared_exact_qcs = sorted(c_qc_map[k] for k in (set(c_qc_map) & a_qc_set))
+
+    if shared_exact_traps or shared_exact_qcs:
+        trap_ratio = len(shared_exact_traps) / max(len(c_trap_map), 1)
+        qc_ratio = len(shared_exact_qcs) / max(len(c_qc_map), 1) if is_prg else 0.0
+        base = 0.85 if shared_exact_traps else 0.80
+        return (base + 0.15 * max(trap_ratio, qc_ratio), shared_exact_traps, shared_exact_qcs, [])
+
+    best_fuzzy = 0.0
+    fuzzy_labels: list[str] = []
+
+    def _consider(
+        src_tag: str,
+        src_toks: set[str],
+        src_desc: set[str],
+        dst_tag: str,
+        dst_toks: set[str],
+        dst_desc: set[str],
+        scale: float,
+    ) -> None:
+        nonlocal best_fuzzy
+        tag_sim = _dice_similarity(src_toks, dst_toks)
+        if tag_sim >= 0.45 or len(src_toks & dst_toks) >= 2:
+            cand = scale * tag_sim
+            if cand > best_fuzzy:
+                best_fuzzy = cand
+                fuzzy_labels[:] = [f"{src_tag}~{dst_tag}" if src_tag and dst_tag else (src_tag or dst_tag)]
+        desc_shared = len(src_desc & dst_desc)
+        desc_sim = _dice_similarity(src_desc, dst_desc) if desc_shared >= 2 else 0.0
+        if desc_sim >= 0.30:
+            cand = scale * 0.85 * desc_sim
+            if cand > best_fuzzy:
+                best_fuzzy = cand
+                fuzzy_labels[:] = [f"{src_tag}~{dst_tag}" if src_tag and dst_tag else (src_tag or dst_tag)]
+
+    c_trap_toks = [(tag, _match_tag_tokens(tag), desc) for tag, desc in c_traps]
+    a_trap_toks = [(tag, _match_tag_tokens(tag), desc) for tag, desc in a_traps]
+    for c_tag, c_tt, c_desc in c_trap_toks:
+        for a_tag, a_tt, a_desc in a_trap_toks:
+            _consider(c_tag, c_tt, c_desc, a_tag, a_tt, a_desc, 1.0)
+
+    if is_prg:
+        c_qc_toks = [(qid, _match_tag_tokens(qid), desc) for qid, desc in c_qcs]
+        a_qc_toks = [(qid, _match_tag_tokens(qid), desc) for qid, desc in a_qcs]
+        for c_tag, c_tt, c_desc in c_trap_toks:
+            for a_qid, a_qt, a_desc in a_qc_toks:
+                _consider(c_tag, c_tt, c_desc, a_qid, a_qt, a_desc, 0.85)
+        for c_qid, c_qt, c_desc in c_qc_toks:
+            for a_tag, a_tt, a_desc in a_trap_toks:
+                _consider(c_qid, c_qt, c_desc, a_tag, a_tt, a_desc, 0.85)
+
+    return (min(0.75, best_fuzzy), [], [], fuzzy_labels)
+
+
+def _score_skill_overlap(
+    card_tokens: set[str],
+    arch_tokens: set[str],
+    idf: dict[str, float],
+    default_idf: float,
+) -> tuple[float, list[str]]:
+    """Compute IDF-weighted skill/operation similarity and return top shared tokens."""
+    shared = card_tokens & arch_tokens
+    if not shared or not card_tokens or not arch_tokens:
+        return (0.0, [])
+    num = sum(idf.get(tok, default_idf) ** 2 for tok in shared)
+    sq_card = sum(idf.get(tok, default_idf) ** 2 for tok in card_tokens)
+    sq_arch = sum(idf.get(tok, default_idf) ** 2 for tok in arch_tokens)
+    cosine = num / math.sqrt(sq_card * sq_arch) if (sq_card and sq_arch) else 0.0
+    overlap = num / min(sq_card, sq_arch) if min(sq_card, sq_arch) else 0.0
+    score = 0.6 * cosine + 0.4 * overlap
+    ranked_terms = sorted(shared, key=lambda tok: (-idf.get(tok, default_idf), tok))
+    return (score, ranked_terms)
+
+
+def _card_effective_unit(card: dict[str, Any], report_unit_code: str) -> str:
+    later = str(card.get("laterUnit") or "").strip()
+    if later == report_unit_code:
+        return report_unit_code
+    units = card.get("units")
+    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == report_unit_code for u in units):
+        return report_unit_code
+    return str(card.get("unitCode") or report_unit_code).strip()
+
+
+def _compatibility_score(
+    card: dict[str, Any],
+    arch: dict[str, Any],
+    report_unit_code: str,
+    *,
+    is_prg: bool,
+) -> tuple[float, str]:
+    """Score unitCode, level (and PRG archetypeKind) compatibility in ``[0.0, 1.0]``."""
+    card_unit = _card_effective_unit(card, report_unit_code)
+    arch_unit = str(arch.get("unitCode") or arch.get("_vaultFile") or report_unit_code).strip()
+    if card_unit == arch_unit:
+        unit_compat = 1.0
+        unit_note = "unit match"
+    elif arch_unit.startswith(card_unit + "-") or card_unit.startswith(arch_unit + "-"):
+        unit_compat = 0.9
+        unit_note = "chapter-unit match"
+    else:
+        unit_compat = 0.0
+        unit_note = "unit mismatch"
+
+    c_lvl = card.get("level")
+    a_lvl = arch.get("level")
+    if isinstance(c_lvl, int) and isinstance(a_lvl, int):
+        diff = abs(c_lvl - a_lvl)
+        level_compat = 1.0 if diff == 0 else (0.75 if diff == 1 else (0.45 if diff == 2 else 0.2))
+        level_note = f"L{c_lvl}~L{a_lvl}"
+    else:
+        level_compat = 0.5
+        level_note = "level n/a"
+
+    if is_prg:
+        c_kind = _normalize_prg_archetype_kind(card.get("archetypeKind"))
+        a_kind = _normalize_prg_archetype_kind(arch.get("archetype") or arch.get("archetypeKind"))
+        if c_kind and a_kind and c_kind == a_kind:
+            kind_compat = 1.0
+            kind_note = f"{c_kind} kind"
+        else:
+            kind_compat = 0.5
+            kind_note = "cross-kind"
+        score = 0.45 * unit_compat + 0.35 * level_compat + 0.20 * kind_compat
+        return (score, f"{unit_note}, {level_note}, {kind_note}")
+
+    score = 0.55 * unit_compat + 0.45 * level_compat
+    return (score, f"{unit_note}, {level_note}")
+
+
+def _card_skill_tokens(card: dict[str, Any]) -> set[str]:
+    primary = _match_tokens(" ".join(_flatten_text(card.get(k)) for k in ("core", "skill", "relation", "concept")))
+    if primary:
+        return primary
+    return _match_tokens(_flatten_text(card.get("difficultyDriver")))
+
+
+def _archetype_skill_tokens(arch: dict[str, Any]) -> set[str]:
+    return _match_tokens(
+        " ".join(
+            _flatten_text(arch.get(k))
+            for k in ("name", "coreConcept", "governingRelation", "governingInvariant", "competencies")
+        )
+    )
+
+
+def _format_match_reason(
+    *,
+    shared_exact_traps: list[str],
+    shared_exact_qcs: list[str],
+    fuzzy_traps: list[str],
+    matched_terms: list[str],
+    skill_score: float,
+    compat_note: str,
+) -> str:
+    parts: list[str] = []
+    if shared_exact_traps:
+        parts.append(f"trap:{','.join(shared_exact_traps)}")
+    elif fuzzy_traps:
+        parts.append(f"fuzzy-trap:{','.join(fuzzy_traps[:2])}")
+    if shared_exact_qcs:
+        parts.append(f"qc:{','.join(shared_exact_qcs)}")
+    if matched_terms and skill_score > 0:
+        parts.append(f"skill:{','.join(matched_terms[:4])}")
+    parts.append(compat_note)
+    return "; ".join(parts)
+
+
+def _score_card_with_features(
+    card: dict[str, Any],
+    arch: dict[str, Any],
+    *,
+    c_traps: list[tuple[str, set[str]]],
+    c_qcs: list[tuple[str, set[str]]],
+    c_skill: set[str],
+    a_traps: list[tuple[str, set[str]]],
+    a_qcs: list[tuple[str, set[str]]],
+    a_skill: set[str],
+    unit_code: str,
+    is_prg: bool,
+    idf: dict[str, float],
+    default_idf: float,
+) -> dict[str, Any]:
+    trap_score, shared_traps, shared_qcs, fuzzy_traps = _score_trap_overlap(
+        c_traps,
+        c_qcs,
+        a_traps,
+        a_qcs,
+        is_prg=is_prg,
+    )
+    skill_score, matched_terms = _score_skill_overlap(c_skill, a_skill, idf, default_idf)
+    compat_score, compat_note = _compatibility_score(card, arch, unit_code, is_prg=is_prg)
+
+    evidence = max(trap_score, skill_score)
+    compat_gate = min(1.0, evidence / 0.25) if evidence > 0 else 0.0
+    total_score = _TRAP_WEIGHT * trap_score + _SKILL_WEIGHT * skill_score + _COMPAT_WEIGHT * compat_score * compat_gate
+
+    reason = _format_match_reason(
+        shared_exact_traps=shared_traps,
+        shared_exact_qcs=shared_qcs,
+        fuzzy_traps=fuzzy_traps,
+        matched_terms=matched_terms,
+        skill_score=skill_score,
+        compat_note=compat_note,
+    )
+    match: dict[str, Any] = {
+        "archetypeKey": str(arch.get("archetypeKey") or ""),
+        "score": round(total_score, 3),
+        "reason": reason,
+        "scoreBreakdown": {
+            "trap": round(trap_score, 3),
+            "skill": round(skill_score, 3),
+            "compatibility": round(compat_score, 3),
+        },
+        "matchedTraps": shared_traps,
+        "matchedTerms": matched_terms[:6],
+    }
+    if is_prg:
+        match["matchedQualityChecks"] = shared_qcs
+    return match
+
+
+def score_card_against_archetype(
+    card: dict[str, Any],
+    arch: dict[str, Any],
+    *,
+    unit_code: str,
+    is_prg: bool,
+    idf: dict[str, float] | None = None,
+    default_idf: float = 1.0,
+) -> dict[str, Any]:
+    """Score one core card against one vault archetype across traps, skill fields, and compatibility."""
+    return _score_card_with_features(
+        card,
+        arch,
+        c_traps=_card_trap_entries(card),
+        c_qcs=_card_qc_entries(card) if is_prg else [],
+        c_skill=_card_skill_tokens(card),
+        a_traps=_archetype_trap_entries(arch),
+        a_qcs=_archetype_qc_entries(arch) if is_prg else [],
+        a_skill=_archetype_skill_tokens(arch),
+        unit_code=unit_code,
+        is_prg=is_prg,
+        idf=idf or {},
+        default_idf=default_idf,
+    )
+
+
+def _match_cards_to_archetypes(
+    unit_code: str,
+    cards: list[dict[str, Any]],
+    archetypes: list[dict[str, Any]],
+    *,
+    is_prg: bool,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Assign each card to its best archetype (plus at most one high-confidence runner-up) or unmatched."""
+    num_archs = len(archetypes)
+    doc_freq: Counter[str] = Counter()
+    arch_skill_cache: list[set[str]] = []
+    arch_trap_cache: list[list[tuple[str, set[str]]]] = []
+    arch_qc_cache: list[list[tuple[str, set[str]]]] = []
+
+    for arch in archetypes:
+        sk = _archetype_skill_tokens(arch)
+        arch_skill_cache.append(sk)
+        for tok in sk:
+            doc_freq[tok] += 1
+        arch_trap_cache.append(_archetype_trap_entries(arch))
+        arch_qc_cache.append(_archetype_qc_entries(arch) if is_prg else [])
+
+    default_idf = math.log(num_archs + 1.0) if num_archs >= 3 else 1.0
+    idf = {
+        tok: (math.log((num_archs + 1.0) / (count + 0.5)) if num_archs >= 3 else 1.0) for tok, count in doc_freq.items()
+    }
+
+    matched_cards: list[dict[str, Any]] = []
+    unmatched_cards: list[dict[str, Any]] = []
+
+    for card in cards:
+        c_traps = _card_trap_entries(card)
+        c_qcs = _card_qc_entries(card) if is_prg else []
+        c_skill = _card_skill_tokens(card)
+
+        candidates = [
+            _score_card_with_features(
+                card,
+                arch,
+                c_traps=c_traps,
+                c_qcs=c_qcs,
+                c_skill=c_skill,
+                a_traps=arch_trap_cache[idx],
+                a_qcs=arch_qc_cache[idx],
+                a_skill=arch_skill_cache[idx],
+                unit_code=unit_code,
+                is_prg=is_prg,
+                idf=idf,
+                default_idf=default_idf,
+            )
+            for idx, arch in enumerate(archetypes)
+        ]
+
+        candidates.sort(
+            key=lambda m: (
+                -m["score"],
+                -m["scoreBreakdown"]["trap"],
+                -m["scoreBreakdown"]["skill"],
+                m["archetypeKey"],
+            )
+        )
+
+        hits: list[dict[str, Any]] = []
+        if candidates and candidates[0]["score"] >= MATCH_THRESHOLD:
+            hits.append(candidates[0])
+            if len(candidates) > 1 and candidates[1]["score"] >= RUNNER_UP_THRESHOLD:
+                hits.append(candidates[1])
+
+        if is_prg:
+            summary: dict[str, Any] = {
+                "id": card["id"],
+                "skill": card["skill"],
+                "concept": card.get("concept", ""),
+                "language": card.get("language", ""),
+                "level": card["level"],
+                "archetypeKind": card.get("archetypeKind", ""),
+                "bugPattern": card.get("bugPattern", ""),
+            }
+        else:
+            summary = {
+                "id": card["id"],
+                "skill": card["skill"],
+                "level": card["level"],
+                "reasoningMove": card["reasoningMove"],
+            }
+        if card.get("carriedFrom"):
+            summary["carriedFrom"] = card["carriedFrom"]
+
+        if hits:
+            matched_cards.append({**summary, "matches": hits})
+        else:
+            unmatched_cards.append(summary)
+
+    return matched_cards, unmatched_cards
+
+
 def _build_prg_gap_report(
     unit_code: str,
     cpath: str,
@@ -699,79 +1388,29 @@ def _build_prg_gap_report(
         else:
             current_cards.append(card)
 
-    arch_traps: dict[str, set[str]] = {}
-    arch_qcs: dict[str, set[str]] = {}
-    arch_tokens: dict[str, set[str]] = {}
     all_vault_traps: set[str] = set()
     all_vault_qcs: set[str] = set()
     all_vault_trap_tokens: list[set[str]] = []
     vault_levels: set[int] = set()
 
     for arch in archetypes:
-        key = str(arch.get("archetypeKey") or "")
         traps = _archetype_traps(arch)
         qcs = _archetype_quality_check_ids(arch)
-        arch_traps[key] = traps
-        arch_qcs[key] = qcs
         all_vault_traps.update(traps)
         all_vault_qcs.update(qcs)
         for t in arch.get("cognitiveTraps") or []:
             t_blob = _flatten_text(t)
             if t_blob:
                 all_vault_trap_tokens.append(_fuzzy_skill_tokens(t_blob))
-        arch_tokens[key] = _tokens(
-            " ".join(
-                _flatten_text(arch.get(k))
-                for k in ("archetypeKey", "name", "coreConcept", "mentalModel", "competencies", "governingInvariant")
-            )
-        )
         if isinstance(arch.get("level"), int):
             vault_levels.add(arch["level"])
 
-    matched_cards: list[dict[str, Any]] = []
-    unmatched_cards: list[dict[str, Any]] = []
-
-    for card in current_cards:
-        c_traps = {t["tag"] for t in card.get("traps") or [] if isinstance(t, dict) and t.get("tag")}
-        c_qcs = _card_qc_ids(card)
-        c_tokens = _tokens(
-            " ".join(
-                str(card.get(k) or "")
-                for k in ("skill", "concept", "bugPattern", "smell", "testsCatch", "difficultyDriver")
-            )
-        )
-        hits: list[dict[str, Any]] = []
-        for arch in archetypes:
-            key = str(arch.get("archetypeKey") or "")
-            shared_traps = sorted(c_traps & arch_traps[key])
-            shared_qcs = sorted(c_qcs & arch_qcs[key])
-            shared_tokens = sorted(c_tokens & arch_tokens[key])
-            min_tok_hit = 1 if len(c_tokens) <= 2 else 2
-            skill_hit = len(shared_tokens) >= min_tok_hit
-            if shared_traps or shared_qcs or skill_hit:
-                hits.append(
-                    {
-                        "archetypeKey": key,
-                        "matchedTraps": shared_traps,
-                        "matchedQualityChecks": shared_qcs,
-                        "matchedTerms": shared_tokens[:6],
-                    }
-                )
-        summary: dict[str, Any] = {
-            "id": card["id"],
-            "skill": card["skill"],
-            "concept": card.get("concept", ""),
-            "language": card.get("language", ""),
-            "level": card["level"],
-            "archetypeKind": card.get("archetypeKind", ""),
-            "bugPattern": card.get("bugPattern", ""),
-        }
-        if card.get("carriedFrom"):
-            summary["carriedFrom"] = card["carriedFrom"]
-        if hits:
-            matched_cards.append({**summary, "matches": hits})
-        else:
-            unmatched_cards.append(summary)
+    matched_cards, unmatched_cards = _match_cards_to_archetypes(
+        unit_code,
+        current_cards,
+        archetypes,
+        is_prg=True,
+    )
 
     # New trap tags not in any vault archetype's cognitiveTraps
     new_traps_map: dict[str, dict[str, Any]] = {}
@@ -943,55 +1582,20 @@ def build_gap_report(
         else:
             current_cards.append(card)
 
-    arch_traps: dict[str, set[str]] = {}
-    arch_tokens: dict[str, set[str]] = {}
     all_vault_traps: set[str] = set()
     vault_levels: set[int] = set()
 
     for arch in archetypes:
-        key = str(arch.get("archetypeKey") or "")
-        traps = _archetype_traps(arch)
-        arch_traps[key] = traps
-        all_vault_traps.update(traps)
-        arch_tokens[key] = _tokens(
-            " ".join(_flatten_text(arch.get(k)) for k in ("archetypeKey", "name", "coreConcept", "mentalModel"))
-        )
+        all_vault_traps.update(_archetype_traps(arch))
         if isinstance(arch.get("level"), int):
             vault_levels.add(arch["level"])
 
-    matched_cards: list[dict[str, Any]] = []
-    unmatched_cards: list[dict[str, Any]] = []
-
-    for card in current_cards:
-        c_traps = {t["tag"] for t in card.get("traps") or [] if isinstance(t, dict) and t.get("tag")}
-        c_tokens = _tokens(f"{card.get('skill', '')} {card.get('difficultyDriver', '')}")
-        hits: list[dict[str, Any]] = []
-        for arch in archetypes:
-            key = str(arch.get("archetypeKey") or "")
-            shared_traps = sorted(c_traps & arch_traps[key])
-            shared_tokens = sorted(c_tokens & arch_tokens[key])
-            min_tok_hit = 1 if len(c_tokens) <= 2 else 2
-            skill_hit = len(shared_tokens) >= min_tok_hit
-            if shared_traps or skill_hit:
-                hits.append(
-                    {
-                        "archetypeKey": key,
-                        "matchedTraps": shared_traps,
-                        "matchedTerms": shared_tokens[:6],
-                    }
-                )
-        summary = {
-            "id": card["id"],
-            "skill": card["skill"],
-            "level": card["level"],
-            "reasoningMove": card["reasoningMove"],
-        }
-        if card.get("carriedFrom"):
-            summary["carriedFrom"] = card["carriedFrom"]
-        if hits:
-            matched_cards.append({**summary, "matches": hits})
-        else:
-            unmatched_cards.append(summary)
+    matched_cards, unmatched_cards = _match_cards_to_archetypes(
+        unit_code,
+        current_cards,
+        archetypes,
+        is_prg=False,
+    )
 
     # New trap tags not in any existing vault archetype
     new_traps_map: dict[str, dict[str, Any]] = {}
@@ -1129,6 +1733,22 @@ def build_gap_report(
     }
 
 
+def _format_match_target(match: dict[str, Any]) -> str:
+    score = match.get("score")
+    score_prefix = f"{score:.2f}; " if isinstance(score, (int, float)) else ""
+    reason = match.get("reason")
+    if reason:
+        return f"{match['archetypeKey']} ({score_prefix}{reason})"
+    reasons = []
+    if match.get("matchedTraps"):
+        reasons.append(f"trap:{','.join(match['matchedTraps'])}")
+    if match.get("matchedQualityChecks"):
+        reasons.append(f"qc:{','.join(match['matchedQualityChecks'])}")
+    if not reasons and match.get("matchedTerms"):
+        reasons.append(f"skill:{','.join(match['matchedTerms'])}")
+    return f"{match['archetypeKey']} ({score_prefix}{'; '.join(reasons)})"
+
+
 def _format_prg_gap_report(report: dict[str, Any], header: list[str]) -> str:
     lines = list(header)
     lines.append(f"Vault qualityChecks in scope: {len(report.get('vaultQualityCheckIds') or [])}")
@@ -1145,16 +1765,7 @@ def _format_prg_gap_report(report: dict[str, Any], header: list[str]) -> str:
     if not matched:
         lines.append("  (none)")
     for item in matched:
-        parts = []
-        for m in item["matches"]:
-            reasons = []
-            if m.get("matchedTraps"):
-                reasons.append(f"trap:{','.join(m['matchedTraps'])}")
-            if m.get("matchedQualityChecks"):
-                reasons.append(f"qc:{','.join(m['matchedQualityChecks'])}")
-            if not reasons and m.get("matchedTerms"):
-                reasons.append(f"skill:{','.join(m['matchedTerms'])}")
-            parts.append(f"{m['archetypeKey']} ({'; '.join(reasons)})")
+        parts = [_format_match_target(m) for m in item["matches"]]
         carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
         lines.append(
             f"  - [{item['id']}] L{item['level']} {item['archetypeKind']} [{item['language']}] — "
@@ -1270,12 +1881,7 @@ def format_gap_report(report: dict[str, Any]) -> str:
     if not matched:
         lines.append("  (none)")
     for item in matched:
-        targets = ", ".join(
-            f"{m['archetypeKey']} ("
-            + (f"trap:{','.join(m['matchedTraps'])}" if m["matchedTraps"] else f"skill:{','.join(m['matchedTerms'])}")
-            + ")"
-            for m in item["matches"]
-        )
+        targets = ", ".join(_format_match_target(m) for m in item["matches"])
         carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
         lines.append(
             f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}{carried_tag} -> {targets}"
