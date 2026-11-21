@@ -131,3 +131,125 @@ def test_text_report_lists_archetypes_flags_and_missing_practice_data(tmp_path, 
     assert "Archetypes: key | levels seen | attempts | clean | reveals" in output
     assert "powers | L1 | 0 | n/a | 0" in output
     assert "powers@L1 — 1 item(s) have no practice activity" in output
+
+
+def test_counts_only_current_substantive_original_attempts_and_reveals_once(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-01"
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [{"id": "Q01", "level": 2, "archetypeKey": "powers"}],
+        },
+    )
+    _write(
+        tmp_path / f"progress/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {
+                "Q01": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "solutionRevealedBeforeAnswer": True,
+                    "attempts": [
+                        {"ts": "2026-11-19T12:00:00Z", "verdict": "incorrect"},
+                        {"ts": "2026-11-20T12:01:00Z", "verdict": "correct", "kind": "variant"},
+                        {"ts": "2026-11-20T12:02:00Z", "verdict": "parse_error"},
+                        {"ts": "2026-11-20T12:03:00Z", "verdict": "correct"},
+                    ],
+                }
+            },
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+
+    assert report["attempts"] == 1
+    assert report["archetypes"]["powers"]["attempts"] == 1
+    assert report["archetypes"]["powers"]["stepsRevealed"] == 0
+    assert report["archetypes"]["powers"]["solutionRevealed"] == 1
+    assert "powers | L2 | 1 | 0% | 1" in format_report(report)
+
+
+def test_preallocated_similar_slots_do_not_count_as_opened(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-02"
+    _write(
+        tmp_path / "drills/variants/MTH-T02-C01-U01.json",
+        {"unitCode": "MTH-T02-C01-U01", "variants": [{"sourceArchetype": "powers"}]},
+    )
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [{"id": "Q01", "level": 2, "archetypeKey": "powers"}],
+        },
+    )
+    _write(
+        tmp_path / f"progress/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {"Q01": {"similarSlots": [{"servedAt": "", "attempts": []}]}},
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+
+    assert report["archetypes"]["powers"]["similarOpened"] is False
+    assert report["similarNeverOpened"] == ["powers"]
+
+
+def test_served_similar_slot_counts_as_opened(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-04"
+    _write(
+        tmp_path / "drills/variants/MTH-T02-C01-U01.json",
+        {"unitCode": "MTH-T02-C01-U01", "variants": [{"sourceArchetype": "powers"}]},
+    )
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [{"id": "Q01", "level": 2, "archetypeKey": "powers"}],
+        },
+    )
+    _write(
+        tmp_path / f"progress/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {"Q01": {"similarSlots": [{"servedAt": "2026-11-20T12:00:00Z", "attempts": []}]}},
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+
+    assert report["archetypes"]["powers"]["similarOpened"] is True
+    assert report["similarNeverOpened"] == []
+
+
+def test_level_ladder_gap_starts_at_archetype_base_level(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-03"
+    _write(
+        tmp_path / "math_engine/reasoning_vault/MTH-T02-C01-U01.json",
+        {
+            "unitCode": "MTH-T02-C01-U01",
+            "archetypes": [{"archetypeKey": "powers", "unitCode": "MTH-T02-C01-U01", "level": 3}],
+        },
+    )
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [{"id": "Q01", "level": 3, "archetypeKey": "powers"}],
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+    ladder_flags = [flag for flag in report["flags"] if flag["type"] == "level_ladder_gap"]
+
+    assert ladder_flags == [{"type": "level_ladder_gap", "archetype": "powers", "missing": ["L4"]}]
