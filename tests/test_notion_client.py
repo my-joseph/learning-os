@@ -57,6 +57,68 @@ def test_request_retries_then_succeeds(monkeypatch):
     assert calls["n"] == 3
 
 
+def test_deadline_clamps_request_timeout(monkeypatch):
+    seen = []
+
+    def fake_urlopen(req, context=None, timeout=None):
+        seen.append(timeout)
+        return FakeResp(b"{}")
+
+    monkeypatch.setattr(notion_client.urllib.request, "urlopen", fake_urlopen)
+    with notion_client.sync_deadline(0.05):
+        assert notion_request("GET", "x", "t") == {}
+    assert 0 < seen[0] <= 0.05
+
+
+def test_deadline_prevents_backoff_past_remaining_budget(monkeypatch):
+    sleeps = []
+
+    def failing(req, context=None, timeout=None):
+        raise ConnectionResetError()
+
+    monkeypatch.setattr(notion_client.urllib.request, "urlopen", failing)
+    monkeypatch.setattr(notion_client.time, "sleep", sleeps.append)
+    with notion_client.sync_deadline(0.05), pytest.raises(TimeoutError, match="deadline exceeded"):
+        notion_request("GET", "x", "t")
+    assert sleeps == []
+
+
+def test_deadline_caps_retries_and_rejects_long_retry_after(monkeypatch):
+    calls = []
+    sleeps = []
+
+    def rate_limited(req, context=None, timeout=None):
+        calls.append(timeout)
+        raise urllib.error.HTTPError(
+            req.full_url,
+            429,
+            "rate limited",
+            {"Retry-After": "60"},
+            io.BytesIO(b"busy"),
+        )
+
+    monkeypatch.setattr(notion_client.urllib.request, "urlopen", rate_limited)
+    monkeypatch.setattr(notion_client.time, "sleep", sleeps.append)
+    with notion_client.sync_deadline(0.05), pytest.raises(TimeoutError, match="deadline exceeded"):
+        notion_request("GET", "x", "t")
+    assert len(calls) == 1
+    assert sleeps == []
+
+
+def test_deadline_limits_transient_retries_to_four(monkeypatch):
+    calls = []
+
+    def failing(req, context=None, timeout=None):
+        calls.append(timeout)
+        raise ConnectionResetError()
+
+    monkeypatch.setattr(notion_client.urllib.request, "urlopen", failing)
+    monkeypatch.setattr(notion_client.time, "sleep", lambda _seconds: None)
+    with notion_client.sync_deadline(10), pytest.raises(ConnectionResetError):
+        notion_request("GET", "x", "t")
+    assert len(calls) == 4
+
+
 def test_request_http_error_after_retries_raises_runtime_error(monkeypatch):
     monkeypatch.setattr(notion_client.time, "sleep", lambda s: None)
 

@@ -33,6 +33,7 @@ def _doc(**overrides):
 @pytest.fixture
 def no_disk(monkeypatch, tmp_path):
     monkeypatch.setenv("DRILLS_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
     monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
 
 
@@ -67,6 +68,41 @@ def test_notion_outage_is_degraded_not_failed(no_disk, monkeypatch):
     res = drill_sync.sync_drill_to_notion(_doc())
     assert res["ok"] is True and res["degraded"] is True
     assert "Notion was not updated" in res["warning"]
+
+
+def test_expired_sync_deadline_returns_degraded(no_disk, monkeypatch):
+    monkeypatch.setenv("NOTION_SYNC_DEADLINE_S", "0.001")
+
+    def exhaust_then_request(*args, **kwargs):
+        import time
+
+        time.sleep(0.01)
+        drill_sync.notion_request("GET", "pages/x", "tok")
+
+    monkeypatch.setattr(drill_sync, "_sync_drill_to_notion_with_deadline", exhaust_then_request)
+    res = drill_sync.sync_drill_to_notion(_doc())
+    assert res["ok"] is True and res["degraded"] is True
+    assert "deadline exceeded" in res["warning"]
+
+
+def test_mistake_log_dedup_accepts_mention_and_plain_text():
+    drill_id = "DRL-MTH-T02-C01-U01-99"
+    id_map = {drill_id: {"id": "page-1"}}
+    mention_block = {
+        "type": "paragraph",
+        "paragraph": {
+            "rich_text": [
+                {"type": "text", "plain_text": "[2026-11-17] "},
+                {"type": "mention", "mention": {"type": "page", "page": {"id": "page-1"}}},
+            ]
+        },
+    }
+    plain_block = {
+        "type": "paragraph",
+        "paragraph": {"rich_text": [{"type": "text", "plain_text": f"[2026-11-17] {drill_id}"}]},
+    }
+    assert drill_sync._has_mistake_log_entry([mention_block], "2026-11-17", drill_id, id_map)
+    assert drill_sync._has_mistake_log_entry([plain_block], "2026-11-17", drill_id, id_map)
 
 
 def test_bug_during_sync_is_reported_as_failure(no_disk, monkeypatch):

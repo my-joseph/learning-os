@@ -13,6 +13,7 @@ Behaviour notes:
   so a network failure midway never leaves a page empty.
 """
 
+import contextvars
 import json
 import os
 import socket
@@ -22,9 +23,36 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 
 NOTION_VERSION = "2022-06-28"
 RETRYABLE_STATUS = {409, 429, 500, 502, 503, 504}
+_sync_deadline: contextvars.ContextVar[float | None] = contextvars.ContextVar("notion_sync_deadline", default=None)
+
+
+@contextmanager
+def sync_deadline(timeout_s: float):
+    """Set a thread/task-local monotonic deadline for a complete Notion sync."""
+    deadline = time.monotonic() + max(0.0, float(timeout_s))
+    token = _sync_deadline.set(deadline)
+    try:
+        yield
+    finally:
+        _sync_deadline.reset(token)
+
+
+def remaining_sync_seconds() -> float | None:
+    """Return the active sync budget, or ``None`` when no deadline is active."""
+    deadline = _sync_deadline.get()
+    return None if deadline is None else deadline - time.monotonic()
+
+
+def _ensure_sync_time() -> float | None:
+    remaining = remaining_sync_seconds()
+    if remaining is not None and remaining <= 0:
+        raise TimeoutError("Notion sync deadline exceeded")
+    return remaining
+
 
 socket.setdefaulttimeout(15)
 
@@ -107,11 +135,14 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict | None 
         "Connection": "close",
     }
     data = json.dumps(payload).encode("utf-8") if payload is not None else None
-    for attempt in range(max_retries):
-        last = attempt == max_retries - 1
+    retry_limit = min(max_retries, 4) if remaining_sync_seconds() is not None else max_retries
+    for attempt in range(retry_limit):
+        remaining = _ensure_sync_time()
+        last = attempt == retry_limit - 1
         try:
             req = urllib.request.Request(url, data=data, headers=headers, method=method)
-            with urllib.request.urlopen(req, context=SSL_CTX, timeout=30) as resp:
+            timeout = min(30.0, remaining) if remaining is not None else 30.0
+            with urllib.request.urlopen(req, context=SSL_CTX, timeout=timeout) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="ignore")
@@ -122,11 +153,15 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict | None 
                 wait = float(retry_after) if retry_after else 1.5 * (2**attempt)
             except ValueError:
                 wait = 1.5 * (2**attempt)
-            time.sleep(min(wait, 60))
+            wait = min(wait, 60)
         except (urllib.error.URLError, ConnectionResetError, ssl.SSLError, TimeoutError, OSError):
             if last:
                 raise
-            time.sleep(1.5 * (2**attempt))
+            wait = 1.5 * (2**attempt)
+        remaining = _ensure_sync_time()
+        if remaining is not None and wait >= remaining:
+            raise TimeoutError("Notion sync deadline exceeded")
+        time.sleep(wait)
 
 
 def get_all_blocks(block_id: str, token: str) -> list[dict]:
@@ -146,6 +181,7 @@ def get_all_blocks(block_id: str, token: str) -> list[dict]:
 
 def append_blocks(page_id: str, blocks: list[dict], token: str, chunk_size: int = 50) -> None:
     for i in range(0, len(blocks), chunk_size):
+        _ensure_sync_time()
         notion_request("PATCH", f"blocks/{page_id}/children", token, {"children": blocks[i : i + chunk_size]})
 
 
@@ -163,12 +199,19 @@ def replace_page_content(page_id: str, new_blocks: list[dict], token: str, label
 
     def _delete(b_id):
         try:
+            _ensure_sync_time()
             notion_request("DELETE", f"blocks/{b_id}", token)
+        except TimeoutError:
+            raise
         except Exception as exc:  # noqa: BLE001 - collect and report below
             failed.append((b_id, str(exc)[:200]))
 
-    with ThreadPoolExecutor(max_workers=5) as pool:
-        list(pool.map(_delete, old_ids))
+    if remaining_sync_seconds() is not None:
+        for b_id in old_ids:
+            _delete(b_id)
+    else:
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            list(pool.map(_delete, old_ids))
     if failed:
         print(
             f"  WARNING [{label or page_id}]: {len(failed)} old block(s) could not be deleted:",

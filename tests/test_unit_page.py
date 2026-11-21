@@ -407,11 +407,13 @@ def test_drill_sync_inserts_at_end_of_section_6_when_section_7_follows(monkeypat
         _todo("Done", "t1"),
     ]
     insert_calls = []
+    created_pages = []
 
     def fake_req(method, endpoint, token, payload=None):
         if method == "POST" and endpoint == "databases/db1/query":
-            return {"results": []}
+            return {"results": [{"id": page_id} for page_id in created_pages]}
         if method == "POST" and endpoint == "pages":
+            created_pages.append("drill-page-1")
             return {"id": "drill-page-1"}
         return {"results": []}
 
@@ -468,6 +470,7 @@ def test_drill_sync_inserts_at_end_of_section_6_when_section_7_follows(monkeypat
     second_res = drill_sync._sync_drill_to_notion_inner(doc, "drills/data/PRG-T00-C02-U01/DRL-PRG-T00-C02-U01-01.json")
     assert res["ok"] is True
     assert second_res["ok"] is True
+    assert created_pages == ["drill-page-1"]
     assert len(insert_calls) == 1
     assert insert_calls[0][1] == "note-last"
 
