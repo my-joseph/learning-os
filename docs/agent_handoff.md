@@ -40,6 +40,13 @@ Read these in order before acting:
 - Do not change accounts, permissions, branch protection, or required CI checks; force-push; delete files, branches, or worktrees the learner keeps; or start work on anything in the ON HOLD list.
 - Use Studio colors from the design system (`statusTone` tokens; figure colors indigo, emerald, amber, and rose). Never use amber/yellow for answer status. Get learner approval for any new color.
 
+### UI library (decided 2026-11-22)
+
+- Practice Studio standardises on **shadcn/ui** (source copied into the repo, Radix primitives) on the CURRENT stack: Tailwind 3.4, React 18, Next 14 — no framework/Tailwind upgrades as part of this work. FlyonUI, daisyUI, HeroUI, Mantine were considered and rejected (research: `pilot/ui-library-research-2026-11-22/report.md`).
+- Order: one-day proof of concept on a throwaway route (Button, Tabs, Dialog, Popover/Tooltip, Drawer) → learner looks at the real screen → then migrate one component family per PR (buttons → tabs/popovers → dialogs/drawers → tooltips/toasts); delete old local primitives only after parity.
+- Keep behaviour identical (zero-leak, progress/reset flows, keyboard/focus, 44 px targets, reduced motion); existing Studio tests must pass; each UI PR includes before/after screenshots (desktop + phone width) for the learner.
+- Colours are flexible during the migration and settled later, but any NEW colour still needs the learner's approval.
+
 ### ON HOLD — do not start without the learner
 
 - Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including `/api/generate-drill` validation); rename of `rules/06`; PRG Similar/variant bank.
