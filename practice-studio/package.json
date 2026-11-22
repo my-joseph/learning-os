@@ -7,13 +7,20 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1",
     "lint": "next lint",
-    "test:telemetry": "tsx tests/scoringParity.test.ts && tsx tests/sessionSummaryParity.test.ts && tsx tests/applyCheckResult.test.ts && tsx tests/practiceScoringParity.test.ts && tsx tests/reviewItemsParity.test.ts && tsx tests/dailyReview.test.tsx && tsx tests/telemetryTimer.test.ts && tsx tests/questionTimer.test.tsx && tsx tests/progress.test.ts && tsx tests/mathText.test.ts && tsx tests/mathInput.test.tsx && tsx tests/mathPalette.test.tsx && tsx tests/figureLayout.test.ts && tsx tests/reviewGuard.test.ts && tsx tests/reviewOutcome.test.tsx && tsx tests/studioRules.test.tsx && tsx tests/statusTokens.test.tsx && tsx tests/routes.test.ts && tsx tests/redact.test.ts && tsx tests/codeStatus.test.ts && tsx tests/labs.test.tsx && tsx tests/sidePanel.test.tsx && tsx tests/toastDialog.test.tsx && tsx tests/paginationAndGrouping.test.tsx && tsx tests/stepper.test.tsx && tsx tests/drillPicker.test.tsx && tsx tests/drillTree.test.tsx && tsx tests/codeExamples.test.tsx && tsx tests/answerFeedback.test.tsx && tsx tests/shiki.test.tsx && tsx tests/formattedText.test.tsx && tsx tests/lineChoicePrompt.test.ts && tsx tests/workspaceRoute.test.ts && tsx tests/titleText.test.tsx && tsx tests/saveAndSyncRoutes.test.ts && tsx tests/useDrillLogic.test.ts && tsx tests/variantBank.test.tsx && tsx tests/similarTabs.test.tsx && tsx tests/reviewSync.test.tsx"
+    "test:telemetry": "tsx tests/scoringParity.test.ts && tsx tests/sessionSummaryParity.test.ts && tsx tests/applyCheckResult.test.ts && tsx tests/practiceScoringParity.test.ts && tsx tests/reviewItemsParity.test.ts && tsx tests/dailyReview.test.tsx && tsx tests/telemetryTimer.test.ts && tsx tests/questionTimer.test.tsx && tsx tests/progress.test.ts && tsx tests/mathText.test.ts && tsx tests/mathInput.test.tsx && tsx tests/mathPalette.test.tsx && tsx tests/figureLayout.test.ts && tsx tests/reviewGuard.test.ts && tsx tests/reviewOutcome.test.tsx && tsx tests/studioRules.test.tsx && tsx tests/statusTokens.test.tsx && tsx tests/routes.test.ts && tsx tests/redact.test.ts && tsx tests/codeStatus.test.ts && tsx tests/labs.test.tsx && tsx tests/sidePanel.test.tsx && tsx tests/toastDialog.test.tsx && tsx tests/paginationAndGrouping.test.tsx && tsx tests/stepper.test.tsx && tsx tests/drillPicker.test.tsx && tsx tests/drillTree.test.tsx && tsx tests/codeExamples.test.tsx && tsx tests/answerFeedback.test.tsx && tsx tests/shiki.test.tsx && tsx tests/formattedText.test.tsx && tsx tests/lineChoicePrompt.test.ts && tsx tests/workspaceRoute.test.ts && tsx tests/titleText.test.tsx && tsx tests/saveAndSyncRoutes.test.ts && tsx tests/useDrillLogic.test.ts && tsx tests/variantBank.test.tsx && tsx tests/similarTabs.test.tsx && tsx tests/reviewSync.test.tsx && tsx tests/shadcnPoc.test.tsx"
   },
   "dependencies": {
     "@fontsource-variable/roboto-slab": "5.3.0",
     "@fontsource/source-sans-pro": "5.3.0",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-popover": "^1.3.1",
+    "@radix-ui/react-slot": "^1.5.0",
+    "@radix-ui/react-tabs": "^1.2.1",
+    "@radix-ui/react-tooltip": "^1.4.1",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "katex": "^0.19.1",
     "lucide-react": "^1.67.0",
     "mathlive": "0.111.4",
@@ -22,6 +29,7 @@
     "react": "^18",
     "react-dom": "^18",
     "shiki": "4.6.0",
+    "tailwind-merge": "^3.7.1",
     "three": "^0.187.0"
   },
   "devDependencies": {
