@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, BarChart3, Gauge } from "lucide-react";
 import type { DrillDocument, Problem } from "@/types/drill";
 import {
   classifyReviewOutcome,
@@ -41,6 +41,28 @@ export interface SessionSummaryCardProps {
   onScrollToSync: () => void;
   onBackToQuiz: () => void;
   onStartFirst: () => void;
+  defaultView?: "gauge" | "bars";
+}
+
+const SCORE_VIEW_STORAGE_KEY = "review-sync-score-view";
+
+function formatPoints(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function scoreClassName(outcome: ReviewOutcome): string {
+  switch (outcome) {
+    case "correct_first":
+      return "bg-status-correct";
+    case "assisted_or_partial":
+      return "bg-transparent border-2 border-status-assisted";
+    case "wrong":
+      return "bg-status-wrong";
+    case "skipped":
+      return "bg-status-skipped";
+    default:
+      return "bg-status-neutral";
+  }
 }
 
 const TILE_COLORS: Record<ReviewOutcome, string> = {
@@ -129,7 +151,32 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
   onScrollToSync,
   onBackToQuiz,
   onStartFirst,
+  defaultView,
 }) => {
+  const [scoreView, setScoreView] = React.useState<"gauge" | "bars">(defaultView ?? "gauge");
+  const [viewReady, setViewReady] = React.useState(defaultView !== undefined);
+  React.useEffect(() => {
+    if (defaultView !== undefined) {
+      setScoreView(defaultView);
+      setViewReady(true);
+      return;
+    }
+    try {
+      const storedView = window.localStorage.getItem(SCORE_VIEW_STORAGE_KEY);
+      if (storedView === "gauge" || storedView === "bars") setScoreView(storedView);
+    } catch {
+      // Storage can be unavailable in private browsing or restricted test environments.
+    }
+    setViewReady(true);
+  }, [defaultView]);
+  React.useEffect(() => {
+    if (!viewReady || defaultView !== undefined) return;
+    try {
+      window.localStorage.setItem(SCORE_VIEW_STORAGE_KEY, scoreView);
+    } catch {
+      // Keep the view usable when storage is unavailable.
+    }
+  }, [defaultView, scoreView, viewReady]);
   const drillTitle = plainTitle(drill.unitTitle) || drill.unitCode;
   const totalCount = drill.problems.length;
   const rightCount = countRightItems(drill.problems);
@@ -139,6 +186,21 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
   );
   const firstTryCount = groups.firstTryCount;
   const allFirstTry = totalCount > 0 && firstTryCount === totalCount;
+  const scoreRatio = totalCount > 0 ? Math.max(0, Math.min(1, points / totalCount)) : 0;
+  const scoreTone = !hasAnyAttempt
+    ? statusTone.notTried.text
+    : rightCount === totalCount
+      ? statusTone.correct.text
+      : statusTone.wrong.text;
+  const scoreStatus = !hasAnyAttempt
+    ? "Not started"
+    : allFirstTry
+      ? "All first-try"
+      : rightCount === totalCount
+        ? "Strong"
+        : rightCount > 0
+          ? "In progress"
+          : "Needs review";
   const formattedTime = durationMs > 0 ? formatDuration(durationMs) : null;
   const statusLink = syncStatusLinkText(effectiveSyncPhase, syncedAt, isLab);
 
@@ -184,61 +246,92 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
         </button>
       </div>
 
-      {/* Verdict sentence (text-base, numbers/time in font-display) */}
-      <p className="text-base text-zinc-800 dark:text-zinc-200 leading-relaxed">
-        {!hasAnyAttempt ? (
-          <>
-            <span>Nothing answered yet</span>
-            {formattedTime && (
-              <>
-                <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
-                  {formattedTime}
-                </span>
-              </>
-            )}
-          </>
-        ) : allFirstTry ? (
-          <>
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {points} / {totalCount}
-            </span>
-            <span> points · All {totalCount} right on the first try</span>
-            {formattedTime && (
-              <>
-                <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
-                  {formattedTime}
-                </span>
-              </>
-            )}
-          </>
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/40 p-3 sm:p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Session score</p>
+          <div role="group" aria-label="Score view" className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-700 p-0.5">
+            {(["gauge", "bars"] as const).map((view) => {
+              const Icon = view === "gauge" ? Gauge : BarChart3;
+              const label = view === "gauge" ? "Gauge" : "Bars";
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  aria-pressed={scoreView === view}
+                  onClick={() => setScoreView(view)}
+                  className={`inline-flex items-center gap-1.5 min-h-[36px] px-2.5 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${scoreView === view ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
+                >
+                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {scoreView === "gauge" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div className="relative mx-auto w-full max-w-[320px]" aria-label={`${formatPoints(points)} earned points`}>
+              <svg viewBox="0 0 200 118" role="img" aria-label="Segmented score gauge" className="w-full overflow-visible">
+                {hasAnyAttempt ? (
+                  <>
+                    <path d="M 28 100 A 72 72 0 0 1 47.4 47.4" fill="none" stroke="rgb(var(--status-wrong))" strokeWidth="14" strokeLinecap="round" />
+                    <path d="M 51.8 43 A 72 72 0 0 1 97.5 28" fill="none" stroke="rgb(var(--status-wrong) / 0.45)" strokeWidth="14" strokeLinecap="round" />
+                    <path d="M 102.5 28 A 72 72 0 0 1 148.2 43" fill="none" stroke="rgb(var(--accent))" strokeWidth="14" strokeLinecap="round" />
+                    <path d="M 152.6 47.4 A 72 72 0 0 1 172 100" fill="none" stroke="rgb(var(--status-correct))" strokeWidth="14" strokeLinecap="round" />
+                    <circle cx={100 + 72 * Math.cos(Math.PI * (1 - scoreRatio))} cy={100 - 72 * Math.sin(Math.PI * (1 - scoreRatio))} r="10" fill="rgb(var(--surface, 255 255 255))" stroke={`rgb(var(--${rightCount === totalCount ? "status-correct" : "status-wrong"}))`} strokeWidth="4" />
+                  </>
+                ) : (
+                  <path d="M 28 100 A 72 72 0 0 1 172 100" fill="none" stroke="rgb(var(--status-neutral))" strokeWidth="14" strokeLinecap="round" />
+                )}
+              </svg>
+              <div className="absolute inset-x-0 bottom-0 text-center">
+                <div className={`font-display font-bold tabular-nums text-4xl leading-none ${scoreTone}`}>{formatPoints(points)}</div>
+                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{hasAnyAttempt ? "Your total score" : "Nothing answered yet"}</div>
+              </div>
+            </div>
+            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1 text-sm text-zinc-600 dark:text-zinc-300">
+              <span className="font-semibold text-zinc-800 dark:text-zinc-200">{scoreStatus}</span>
+              <span>{hasAnyAttempt ? `${rightCount} of ${totalCount} right` : "Ready when you are"}</span>
+              {allFirstTry && <span>All {totalCount} right on the first try</span>}
+              {!allFirstTry && firstTryCount > 0 && <span>{firstTryCount} on the first try</span>}
+              {formattedTime && <span className="font-display tabular-nums">{formattedTime}</span>}
+            </div>
+          </div>
         ) : (
-          <>
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {points} / {totalCount}
-            </span>
-            <span> points · {rightCount} of {totalCount} right</span>
-            {firstTryCount > 0 && (
-              <>
-                <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-900 dark:text-zinc-100">
-                  {firstTryCount}
-                </span>
-                <span> on the first try</span>
-              </>
-            )}
-            {formattedTime && (
-              <>
-                <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
-                  {formattedTime}
-                </span>
-              </>
-            )}
-          </>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-end gap-3">
+              <span className={`font-display font-bold tabular-nums text-2xl ${scoreTone}`}>{formatPoints(points)}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">{formattedTime ?? "Your total score"}</span>
+            </div>
+            <div className="flex items-end gap-2 overflow-x-auto min-h-[124px] pb-1" role="group" aria-label={isLab ? "Score by milestone" : isCode ? "Score by problem" : "Score by question"}>
+              {drill.problems.map((prob, idx) => {
+                const result = scoreProblem(prob.state, { isPrg: isCode || isLab });
+                const outcome = classifyReviewOutcome(prob.state);
+                const earned = result.score ?? 0;
+                const label = getQuestionLabel(prob.id, idx, isLab);
+                const meta = getReviewOutcomeMeta(outcome).label.toLowerCase();
+                const tooltip = `${label} · ${formatPoints(earned)} ${earned === 1 ? "pt" : "pts"} · ${meta}`;
+                return (
+                  <button
+                    key={prob.id}
+                    type="button"
+                    onClick={() => onJumpToRow(prob.id, outcome === "correct_first")}
+                    aria-label={tooltip}
+                    title={tooltip}
+                    className="group flex min-w-10 flex-1 flex-col items-center justify-end gap-2 rounded-md px-1 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                  >
+                    <span className="flex h-[84px] w-full max-w-8 items-end rounded-md bg-zinc-200/70 dark:bg-zinc-800 p-0.5">
+                      <span className={`w-full rounded-sm transition-[height] group-hover:ring-2 group-hover:ring-[rgb(var(--accent))] ${scoreClassName(outcome)}`} style={{ height: `${Math.max(earned * 100, 8)}%` }} />
+                    </span>
+                    <span className="font-display tabular-nums">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
-      </p>
+      </div>
 
       {/* Labelled outcome strip (no legend — tooltips + aria-labels + rows carry the meaning) */}
       {totalCount > 0 && (

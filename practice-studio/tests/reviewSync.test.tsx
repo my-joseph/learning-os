@@ -4,8 +4,10 @@ import { NextRequest } from "next/server";
 import { renderToStaticMarkup } from "react-dom/server";
 import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
+import { SessionSummaryCard } from "../src/components/review-sync/SessionSummaryCard";
 import { executeNotionSync, mergeSyncStampIntoLatestDrill } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
+import { groupReviewProblems } from "../src/lib/reviewOutcome";
 import { buildSessionSummary, buildSyncPayload, getPersistedStatusOverride, summaryFingerprint } from "../src/lib/sessionSummary";
 import {
   formatChoiceAnswerLabel,
@@ -87,6 +89,26 @@ function render(drill: DrillDocument, overrides: Record<string, unknown> = {}): 
       onMistakeNoteChange={noop}
       onRevisitNoteChange={noop}
       {...overrides}
+    />
+  );
+}
+
+function renderSummary(drill: DrillDocument, defaultView?: "gauge" | "bars"): string {
+  return renderToStaticMarkup(
+    <SessionSummaryCard
+      drill={drill}
+      groups={groupReviewProblems(drill.problems)}
+      durationMs={0}
+      pattern={null}
+      effectiveSyncPhase="idle"
+      isLab={false}
+      isCode={false}
+      hasAnyAttempt={drill.problems.some((problem) => (problem.state?.attempts?.length ?? 0) > 0)}
+      onJumpToRow={noop}
+      onScrollToSync={noop}
+      onBackToQuiz={noop}
+      onStartFirst={noop}
+      defaultView={defaultView}
     />
   );
 }
@@ -410,13 +432,34 @@ const allCorrect = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(
   attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] })] };
 assert.match(render(allCorrect), /right on the first try/);
 assert.match(render(allCorrect), /Nothing to fix/);
-assert.match(render(allCorrect), /1 \/ 1 points/);
-assert.match(render(mathDrill), /0\.5 \/ 3 points/);
-assert.match(render(mathDrill), /0\.5 \/ 3 points/);
-const pointsHtml = render(mathDrill);
-assert.ok((pointsHtml.match(/0\.5 \/ 3/g) || []).length >= 2,
-  "summary and sync card use the same points figure");
-assert.match(pointsHtml, /1 of 3 right/, "right-answer count is secondary to the shared points figure");
+const correctSummaryHtml = renderSummary(allCorrect);
+assert.match(correctSummaryHtml, /Your total score/);
+assert.match(correctSummaryHtml, />1</);
+assert.doesNotMatch(correctSummaryHtml, /1 \/ 1 points/);
+assert.match(render(mathDrill), /1 of 3 right/);
+
+const gaugeHtml = renderSummary(mathDrill);
+assert.match(gaugeHtml, /aria-label="Score view"/);
+assert.match(gaugeHtml, /aria-label="Segmented score gauge"/);
+assert.match(gaugeHtml, /stroke="rgb\(var\(--status-wrong\)\)"/);
+assert.match(gaugeHtml, /stroke="rgb\(var\(--status-wrong\) \/ 0\.45\)"/);
+assert.match(gaugeHtml, /stroke="rgb\(var\(--accent\)\)"/);
+assert.match(gaugeHtml, /stroke="rgb\(var\(--status-correct\)\)"/);
+assert.match(gaugeHtml, /<circle[^>]*r="10"[^>]*stroke-width="4"/);
+assert.doesNotMatch(gaugeHtml, /0\.5 \/ 3/);
+
+const barsHtml = renderSummary(mathDrill, "bars");
+assert.equal((barsHtml.match(/aria-label="Q\d · [^\"]+ · [^\"]+"/g) || []).length, 3,
+  "bars view renders one accessible clickable button per problem");
+assert.match(barsHtml, /height:50%/, "0.5 points maps to half-height");
+assert.match(barsHtml, /height:8%/, "zero-score items keep a visible clickable stub");
+assert.doesNotMatch(barsHtml, /amber-|yellow-/i, "score views use no amber or yellow classes");
+assert.match(barsHtml, /0\.5/);
+
+const untouchedSummary = renderSummary(untouched);
+assert.match(untouchedSummary, /Nothing answered yet/);
+assert.match(untouchedSummary, /<path[^>]*stroke="rgb\(var\(--status-neutral\)\)"/);
+assert.doesNotMatch(untouchedSummary, /<circle[^>]*r="10"/, "untouched gauge has no score pointer");
 const manyWrong = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id) =>
   makeProblem(id, { ...baseState(), score: 0, userInput: "wrong", attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect", matchedTrap: "positive-last-term" }] })) };
 const manyWrongHtml = render(manyWrong);

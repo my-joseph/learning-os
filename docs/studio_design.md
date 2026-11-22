@@ -14,6 +14,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Shell: one slim header row — drill switcher + Generate button, then right-aligned mobile side-drawer icon (`<1024 px`), theme toggle, Notion link, and Reset all icon button.
 - Stepper row under the header: centred horizontally inside the header card; compact 24 px desktop / 22 px mobile circles use `Q1`, `Q2`, … for drills and `M1`, `M2`, … for labs. Connector lines are indigo up to the current step and zinc after it. Small desktop labels show only `Level N` for drills, the milestone name for labs, and `Review` on the trailing clipboard step. Buttons keep 44 px minimum tap targets; steps highlight on hover and do not show a focus ring. On mobile (`<640 px`) labels hide and the strip scrolls horizontally with the current step centred and edge fades.
 - Main column max-width ~720 px, centred. Side panel (Due today & weak spots) collapses into a drawer below `1024 px` and is closed by default while answering.
+- Review & Sync session summaries show earned points alone in a segmented semi-circle gauge by default, with a Gauge / Bars toggle remembered in local storage. The alternate bar view has one keyboard-accessible jump button per question or milestone; the compact outcome strip remains available in both views.
 
 ## Colour (Tailwind tokens; light / dark)
 - Neutral base: `zinc` (bg `zinc-50` / `zinc-950`, surface `white` / `zinc-900`, border `zinc-200` / `zinc-800`, muted text `zinc-500` / `zinc-400`).
