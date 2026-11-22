@@ -56,6 +56,9 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Status toasts stack bottom-right (`>=640 px`) / bottom-centre (`<640 px`).
 - Calm ease-out motion via `practice-studio/src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
 
+## Loading progress
+- Long-running drill loads and Notion syncs show a compact status progress bar with an English status message and an accessible progress label. The current client-side staged progress is an estimate for feedback; it does not report measured backend progress. `StatusProgressBar` accepts controlled `value` and `statusMessage` props for future backend progress updates.
+
 ## Workspaces
 - **Math**: similar-question tab strip at the top of the card (always shown when variants exist, with locked muted ghost tabs until the first substantive attempt on the real question in the current cycle) → prompt → figure → answer input with `=` inside the field → feedback → Hint / equation set-up / steps available before answering on both real and similar questions (revealing before an answer marks that item as used help). Self-score buttons only after an attempt on the real question.
 - **Programming** (dashboard, no editor): brief → visible tests → status line `Tests  Lint  Types  Review` (✓ / ✗ / –) → primary action (Open in VS Code, or Copy `ตรวจโค้ด <ID> <QID>` once tests pass) → review history and explain question in collapsible sections → reference locked until review = pass.

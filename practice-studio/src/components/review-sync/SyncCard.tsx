@@ -24,7 +24,15 @@ import { statusTone, warningTone } from "@/lib/statusTone";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { StatusProgressBar, type ProgressStage } from "@/components/ui/StatusProgressBar";
 import type { EffectiveSyncPhase } from "./SessionSummaryCard";
+
+const NOTION_SYNC_STAGES: ProgressStage[] = [
+  { minPct: 0, message: "Saving progress locally..." },
+  { minPct: 25, message: "Updating Notion drill page..." },
+  { minPct: 60, message: "Updating unit review schedule..." },
+  { minPct: 85, message: "Finalizing sync..." },
+];
 
 export interface SyncCardProps {
   preview: SyncPreview;
@@ -674,37 +682,42 @@ export const SyncCard: React.FC<SyncCardProps> = ({
         {(effectiveSyncPhase === "idle" ||
           effectiveSyncPhase === "syncing" ||
           effectiveSyncPhase === "changed") && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
-            <button
-              type="button"
-              onClick={onSync}
-              disabled={isSyncing || !preview.hasAnyAttempt || preview.summary.maxScore === 0}
-              className={
-                !preview.hasAnyAttempt || preview.summary.maxScore === 0
-                  ? "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-sm font-medium cursor-not-allowed shrink-0"
-                  : "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0"
-              }
-            >
-              {isSyncing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
-                  <span>Syncing…</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" aria-hidden="true" />
-                  <span>
-                    {effectiveSyncPhase === "changed" ? "Sync changes" : "Sync to Notion"}
-                  </span>
-                </>
-              )}
-            </button>
+          <div className={isSyncing ? "space-y-4" : "flex flex-col sm:flex-row sm:items-center gap-2.5"}>
+            {isSyncing && (
+              <StatusProgressBar label="Syncing to Notion" active stages={NOTION_SYNC_STAGES} />
+            )}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <button
+                type="button"
+                onClick={onSync}
+                disabled={isSyncing || !preview.hasAnyAttempt || preview.summary.maxScore === 0}
+                className={
+                  !preview.hasAnyAttempt || preview.summary.maxScore === 0
+                    ? "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-sm font-medium cursor-not-allowed shrink-0"
+                    : "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0"
+                }
+              >
+                {isSyncing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
+                    <span>Syncing…</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" aria-hidden="true" />
+                    <span>
+                      {effectiveSyncPhase === "changed" ? "Sync changes" : "Sync to Notion"}
+                    </span>
+                  </>
+                )}
+              </button>
 
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              {!preview.hasAnyAttempt
-                ? "Nothing to sync yet — answer at least one question"
-                : "Your progress is already saved on this computer."}
-            </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                {!preview.hasAnyAttempt
+                  ? "Nothing to sync yet — answer at least one question"
+                  : "Your progress is already saved on this computer."}
+              </p>
+            </div>
           </div>
         )}
       </div>

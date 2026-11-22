@@ -24,6 +24,7 @@ const ReviewSyncPage = dynamic(
 import { StudioShell } from "@/components/shell/StudioShell";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { StatusProgressBar, type ProgressStage } from "@/components/ui/StatusProgressBar";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -44,6 +45,12 @@ import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
 import { resetAnswerForReviewRetry } from "@/lib/applyCheckResult";
 import { getPersistedStatusOverride } from "@/lib/sessionSummary";
+
+const DRILL_LOAD_STAGES: ProgressStage[] = [
+  { minPct: 0, message: "Fetching drill specification..." },
+  { minPct: 35, message: "Loading saved progress..." },
+  { minPct: 70, message: "Preparing workspace..." },
+];
 
 interface StudioClientProps {
   workspace: Workspace;
@@ -344,11 +351,14 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onStatusChange={setStatus}
     >
       {isLoadingDrill ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4 animate-pulse">
-          <div className="h-5 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-          <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-          <div className="h-24 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
-          <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-5">
+          <StatusProgressBar label="Loading practice data" active stages={DRILL_LOAD_STAGES} />
+          <div className="space-y-3" aria-hidden="true">
+            <div className="h-5 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg animate-pulse" />
+            <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg animate-pulse" />
+            <div className="h-24 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl animate-pulse" />
+            <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl animate-pulse" />
+          </div>
         </div>
       ) : drillNotFound ? (
         <DrillNotFoundCard drillId={drillId} isLab={isLabRoute || isLabId(drillId)} />
