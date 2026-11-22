@@ -435,31 +435,57 @@ assert.match(render(allCorrect), /Nothing to fix/);
 const correctSummaryHtml = renderSummary(allCorrect);
 assert.match(correctSummaryHtml, /Your total score/);
 assert.match(correctSummaryHtml, />1</);
-assert.doesNotMatch(correctSummaryHtml, /1 \/ 1 points/);
+assert.doesNotMatch(correctSummaryHtml, /1\s*\/\s*1/);
 assert.match(render(mathDrill), /1 of 3 right/);
 
 const gaugeHtml = renderSummary(mathDrill);
 assert.match(gaugeHtml, /aria-label="Score view"/);
 assert.match(gaugeHtml, /aria-label="Segmented score gauge"/);
-assert.match(gaugeHtml, /stroke="rgb\(var\(--status-wrong\)\)"/);
-assert.match(gaugeHtml, /stroke="rgb\(var\(--status-wrong\) \/ 0\.45\)"/);
-assert.match(gaugeHtml, /stroke="rgb\(var\(--accent\)\)"/);
-assert.match(gaugeHtml, /stroke="rgb\(var\(--status-correct\)\)"/);
-assert.match(gaugeHtml, /<circle[^>]*r="10"[^>]*stroke-width="4"/);
+assert.match(gaugeHtml, /recharts-pie-sector/);
+assert.match(gaugeHtml, /fill="var\(--color-wrong\)"/);
+assert.match(gaugeHtml, /fill="var\(--color-wrongMuted\)"/);
+assert.match(gaugeHtml, /fill="var\(--color-accent\)"/);
+assert.match(gaugeHtml, /fill="var\(--color-correct\)"/);
+assert.equal((gaugeHtml.match(/recharts-pie-sector/g) || []).length, 4,
+  "gauge view renders four segmented Pie sectors");
+assert.match(gaugeHtml, /data-score-marker="true"[^>]*stroke="var\(--color-wrong\)"/);
 assert.doesNotMatch(gaugeHtml, /0\.5 \/ 3/);
 
 const barsHtml = renderSummary(mathDrill, "bars");
-assert.equal((barsHtml.match(/aria-label="Q\d · [^\"]+ · [^\"]+"/g) || []).length, 3,
-  "bars view renders one accessible clickable button per problem");
-assert.match(barsHtml, /height:50%/, "0.5 points maps to half-height");
-assert.match(barsHtml, /height:8%/, "zero-score items keep a visible clickable stub");
+assert.equal((barsHtml.match(/aria-label="Q\d · [^\"]+"/g) || []).length, 3,
+  "score view keeps one accessible clickable outcome chip per problem");
+assert.match(barsHtml, /recharts-bar-rectangle/, "bars view renders Recharts bars");
+assert.match(barsHtml, /fill="var\(--color-assisted\)"/, "assisted score bars use the assisted token");
+assert.match(barsHtml, /fill="var\(--color-wrong\)"/, "wrong score bars use the wrong token");
+assert.match(barsHtml, /fill="var\(--color-neutral\)"/, "unanswered score bars use the neutral token");
+assert.match(barsHtml, /Q1/);
+assert.match(barsHtml, /Q2/);
+assert.match(barsHtml, /Q3/);
+assert.match(barsHtml, /height="18\.960000000000008"/,
+  "zero and unanswered scores retain the visible 0.12 baseline floor");
 assert.doesNotMatch(barsHtml, /amber-|yellow-/i, "score views use no amber or yellow classes");
 assert.match(barsHtml, /0\.5/);
+assert.doesNotMatch(barsHtml, /0\.5\s*\/\s*3/);
 
 const untouchedSummary = renderSummary(untouched);
 assert.match(untouchedSummary, /Nothing answered yet/);
-assert.match(untouchedSummary, /<path[^>]*stroke="rgb\(var\(--status-neutral\)\)"/);
-assert.doesNotMatch(untouchedSummary, /<circle[^>]*r="10"/, "untouched gauge has no score pointer");
+assert.match(untouchedSummary, /fill="var\(--color-neutral\)"/);
+assert.doesNotMatch(untouchedSummary, /data-score-marker="true"/, "untouched gauge has no score pointer");
+assert.doesNotMatch(untouchedSummary, /amber-|yellow-/i);
+const midBand = { ...mathDrill, problems: [
+  makeProblem("Q01", { ...baseState(), score: 1, attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] }),
+  makeProblem("Q02"),
+] };
+assert.match(renderSummary(midBand), /data-score-marker="true"[^>]*stroke="var\(--color-accent\)"/,
+  "score pointer follows the active score band");
+const quarterBand = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id, index) =>
+  makeProblem(id, index === 0
+    ? { ...baseState(), score: 1, attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] }
+    : baseState())) };
+assert.match(renderSummary(quarterBand), /data-score-marker="true"[^>]*stroke="var\(--color-wrongMuted\)"/,
+  "score pointer uses the muted wrong band at one-quarter score");
+assert.match(correctSummaryHtml, /data-score-marker="true"[^>]*stroke="var\(--color-correct\)"/,
+  "full score pointer uses the correct score band");
 const manyWrong = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id) =>
   makeProblem(id, { ...baseState(), score: 0, userInput: "wrong", attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect", matchedTrap: "positive-last-term" }] })) };
 const manyWrongHtml = render(manyWrong);

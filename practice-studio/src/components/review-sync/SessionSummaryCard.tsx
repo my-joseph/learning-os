@@ -2,7 +2,18 @@
 
 import React from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, BarChart3, Gauge } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Customized,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { DrillDocument, Problem } from "@/types/drill";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import {
   classifyReviewOutcome,
   formatDuration,
@@ -50,18 +61,82 @@ function formatPoints(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-function scoreClassName(outcome: ReviewOutcome): string {
+const SCORE_CHART_CONFIG = {
+  wrong: { label: "Wrong", color: "rgb(var(--status-wrong))" },
+  wrongMuted: { label: "Needs review", color: "rgb(var(--status-wrong) / 0.45)" },
+  accent: { label: "In progress", color: "rgb(var(--accent))" },
+  correct: { label: "Strong", color: "rgb(var(--status-correct))" },
+  neutral: { label: "Not answered", color: "rgb(var(--status-neutral))" },
+  assisted: { label: "Assisted / partial", color: "rgb(var(--status-assisted))" },
+  skipped: { label: "Skipped", color: "rgb(var(--status-skipped))" },
+};
+
+const SCORE_BANDS = ["wrong", "wrongMuted", "accent", "correct"] as const;
+
+function scoreBandIndex(ratio: number): number {
+  return Math.min(SCORE_BANDS.length - 1, Math.floor(Math.max(0, ratio) * SCORE_BANDS.length));
+}
+
+function scoreBandTextClass(ratio: number): string {
+  const band = SCORE_BANDS[scoreBandIndex(ratio)];
+  if (band === "correct") return statusTone.correct.text;
+  if (band === "accent") return "text-accent";
+  if (band === "wrongMuted") return "text-status-wrong/70";
+  return statusTone.wrong.text;
+}
+
+function scoreColorVariable(ratio: number): string {
+  return `var(--color-${SCORE_BANDS[scoreBandIndex(ratio)]})`;
+}
+
+interface ScorePointerProps {
+  width?: number;
+  height?: number;
+  ratio: number;
+  color: string;
+}
+
+const ScorePointer: React.FC<ScorePointerProps> = ({ width = 320, height = 200, ratio, color }) => {
+  const radius = Math.min(width, height) * 0.39;
+  const angle = Math.PI * (1 - Math.max(0, Math.min(1, ratio)));
+  const cx = width / 2 + radius * Math.cos(angle);
+  const cy = height * 0.78 - radius * Math.sin(angle);
+  return (
+    <circle
+      data-score-marker="true"
+      cx={cx}
+      cy={cy}
+      r={8}
+      className="fill-white dark:fill-zinc-900"
+      stroke={color}
+      strokeWidth={4}
+    />
+  );
+};
+
+interface ScoreBarDatum {
+  id: string;
+  label: string;
+  score: number;
+  displayScore: number;
+  outcome: ReviewOutcome;
+  inCorrectGroup: boolean;
+  color: string;
+  status: string;
+}
+
+function scoreBarColor(outcome: ReviewOutcome): string {
   switch (outcome) {
     case "correct_first":
-      return "bg-status-correct";
+      return "var(--color-correct)";
     case "assisted_or_partial":
-      return "bg-transparent border-2 border-status-assisted";
+      return "var(--color-assisted)";
     case "wrong":
-      return "bg-status-wrong";
+      return "var(--color-wrong)";
     case "skipped":
-      return "bg-status-skipped";
+      return "var(--color-skipped)";
     default:
-      return "bg-status-neutral";
+      return "var(--color-neutral)";
   }
 }
 
@@ -187,11 +262,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
   const firstTryCount = groups.firstTryCount;
   const allFirstTry = totalCount > 0 && firstTryCount === totalCount;
   const scoreRatio = totalCount > 0 ? Math.max(0, Math.min(1, points / totalCount)) : 0;
-  const scoreTone = !hasAnyAttempt
-    ? statusTone.notTried.text
-    : rightCount === totalCount
-      ? statusTone.correct.text
-      : statusTone.wrong.text;
+  const scoreTone = hasAnyAttempt ? scoreBandTextClass(scoreRatio) : statusTone.notTried.text;
   const scoreStatus = !hasAnyAttempt
     ? "Not started"
     : allFirstTry
@@ -272,22 +343,52 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
         {scoreView === "gauge" ? (
           <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="relative mx-auto w-full max-w-[320px]" aria-label={`${formatPoints(points)} earned points`}>
-              <svg viewBox="0 0 200 118" role="img" aria-label="Segmented score gauge" className="w-full overflow-visible">
-                {hasAnyAttempt ? (
-                  <>
-                    <path d="M 28 100 A 72 72 0 0 1 47.4 47.4" fill="none" stroke="rgb(var(--status-wrong))" strokeWidth="14" strokeLinecap="round" />
-                    <path d="M 51.8 43 A 72 72 0 0 1 97.5 28" fill="none" stroke="rgb(var(--status-wrong) / 0.45)" strokeWidth="14" strokeLinecap="round" />
-                    <path d="M 102.5 28 A 72 72 0 0 1 148.2 43" fill="none" stroke="rgb(var(--accent))" strokeWidth="14" strokeLinecap="round" />
-                    <path d="M 152.6 47.4 A 72 72 0 0 1 172 100" fill="none" stroke="rgb(var(--status-correct))" strokeWidth="14" strokeLinecap="round" />
-                    <circle cx={100 + 72 * Math.cos(Math.PI * (1 - scoreRatio))} cy={100 - 72 * Math.sin(Math.PI * (1 - scoreRatio))} r="10" fill="rgb(var(--surface, 255 255 255))" stroke={`rgb(var(--${rightCount === totalCount ? "status-correct" : "status-wrong"}))`} strokeWidth="4" />
-                  </>
-                ) : (
-                  <path d="M 28 100 A 72 72 0 0 1 172 100" fill="none" stroke="rgb(var(--status-neutral))" strokeWidth="14" strokeLinecap="round" />
-                )}
-              </svg>
-              <div className="absolute inset-x-0 bottom-0 text-center">
-                <div className={`font-display font-bold tabular-nums text-4xl leading-none ${scoreTone}`}>{formatPoints(points)}</div>
-                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{hasAnyAttempt ? "Your total score" : "Nothing answered yet"}</div>
+              <ChartContainer
+                config={SCORE_CHART_CONFIG}
+                className="w-full"
+                aspectRatio={1.6}
+                initialDimension={{ width: 320, height: 200 }}
+                role="img"
+                aria-label="Segmented score gauge"
+              >
+                <PieChart>
+                  <Pie
+                    data={hasAnyAttempt
+                      ? SCORE_BANDS.map((band) => ({ name: band, value: 1 }))
+                      : [{ name: "neutral", value: 1 }]}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="78%"
+                    innerRadius="62%"
+                    outerRadius="78%"
+                    startAngle={180}
+                    endAngle={0}
+                    paddingAngle={hasAnyAttempt ? 5 : 0}
+                    cornerRadius={8}
+                    stroke="none"
+                    isAnimationActive={false}
+                  >
+                    {(hasAnyAttempt ? SCORE_BANDS : ["neutral"] as const).map((band) => (
+                      <Cell key={band} fill={`var(--color-${band})`} />
+                    ))}
+                  </Pie>
+                  {hasAnyAttempt && (
+                    <Customized
+                      component={
+                        <ScorePointer ratio={scoreRatio} color={scoreColorVariable(scoreRatio)} />
+                      }
+                    />
+                  )}
+                </PieChart>
+              </ChartContainer>
+              <div className="pointer-events-none absolute inset-x-0 bottom-1 text-center">
+                <div className={`font-display font-bold tabular-nums text-4xl leading-none ${scoreTone}`}>
+                  {formatPoints(points)}
+                </div>
+                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+                  {hasAnyAttempt ? "Your total score" : "Nothing answered yet"}
+                </div>
               </div>
             </div>
             <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1 text-sm text-zinc-600 dark:text-zinc-300">
@@ -304,31 +405,71 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
               <span className={`font-display font-bold tabular-nums text-2xl ${scoreTone}`}>{formatPoints(points)}</span>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">{formattedTime ?? "Your total score"}</span>
             </div>
-            <div className="flex items-end gap-2 overflow-x-auto min-h-[124px] pb-1" role="group" aria-label={isLab ? "Score by milestone" : isCode ? "Score by problem" : "Score by question"}>
-              {drill.problems.map((prob, idx) => {
+            <ChartContainer
+              config={SCORE_CHART_CONFIG}
+              className="w-full min-w-0"
+              aspectRatio={2.4}
+              initialDimension={{ width: 480, height: 200 }}
+              role="img"
+              aria-label={isLab ? "Score by milestone" : isCode ? "Score by problem" : "Score by question"}
+            >
+              <BarChart
+                data={drill.problems.map((prob, idx): ScoreBarDatum => {
                 const result = scoreProblem(prob.state, { isPrg: isCode || isLab });
                 const outcome = classifyReviewOutcome(prob.state);
                 const earned = result.score ?? 0;
                 const label = getQuestionLabel(prob.id, idx, isLab);
                 const meta = getReviewOutcomeMeta(outcome).label.toLowerCase();
-                const tooltip = `${label} · ${formatPoints(earned)} ${earned === 1 ? "pt" : "pts"} · ${meta}`;
-                return (
-                  <button
-                    key={prob.id}
-                    type="button"
-                    onClick={() => onJumpToRow(prob.id, outcome === "correct_first")}
-                    aria-label={tooltip}
-                    title={tooltip}
-                    className="group flex min-w-10 flex-1 flex-col items-center justify-end gap-2 rounded-md px-1 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-                  >
-                    <span className="flex h-[84px] w-full max-w-8 items-end rounded-md bg-zinc-200/70 dark:bg-zinc-800 p-0.5">
-                      <span className={`w-full rounded-sm transition-[height] group-hover:ring-2 group-hover:ring-[rgb(var(--accent))] ${scoreClassName(outcome)}`} style={{ height: `${Math.max(earned * 100, 8)}%` }} />
-                    </span>
-                    <span className="font-display tabular-nums">{label}</span>
-                  </button>
-                );
+                return {
+                  id: prob.id,
+                  label,
+                  score: earned,
+                  displayScore: Math.max(earned, 0.12),
+                  outcome,
+                  inCorrectGroup: outcome === "correct_first",
+                  color: scoreBarColor(outcome),
+                  status: meta,
+                };
               })}
-            </div>
+                margin={{ top: 12, right: 12, bottom: 0, left: 0 }}
+                barCategoryGap="24%"
+              >
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "rgb(var(--status-neutral))", fontSize: 11 }}
+                  interval={0}
+                />
+                <YAxis hide domain={[0, 1]} />
+                <ChartTooltip
+                  cursor={{ fill: "rgb(var(--status-neutral) / 0.16)" }}
+                  content={
+                    <ChartTooltipContent
+                      formatter={(_value, _name, item) => {
+                        const datum = item.payload as ScoreBarDatum | undefined;
+                        return datum
+                          ? `${formatPoints(datum.score)} ${datum.score === 1 ? "pt" : "pts"} · ${datum.status}`
+                          : "0 pts";
+                      }}
+                    />
+                  }
+                />
+                <Bar
+                  dataKey="displayScore"
+                  name="Earned score"
+                  radius={[8, 8, 4, 4]}
+                  isAnimationActive={false}
+                  onClick={(entry: ScoreBarDatum) => onJumpToRow(entry.id, entry.inCorrectGroup)}
+                  cursor="pointer"
+                >
+                  {drill.problems.map((prob) => {
+                    const outcome = classifyReviewOutcome(prob.state);
+                    return <Cell key={prob.id} fill={scoreBarColor(outcome)} />;
+                  })}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
           </div>
         )}
       </div>
