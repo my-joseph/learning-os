@@ -40,10 +40,12 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          '"Source Sans Pro"',
+          "var(--font-geist-sans)",
+          '"Geist"',
+          '"Geist Fallback"',
           "-apple-system",
           "BlinkMacSystemFont",
-          "Segoe UI",
+          '"Segoe UI"',
           "Roboto",
           "sans-serif",
         ],
