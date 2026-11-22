@@ -9,6 +9,10 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 4. **Empathy.** Wrong answers get calm, specific feedback in a light-tinted result card and a retry — never saturated alarm colours. Copy is short, second person, never blaming ("Not quite — check the sign in step 2"), and uses the item noun of the workspace (`Question` for math, `Problem` for code drills, `Milestone` for labs).
 5. **No answers before an attempt.** Hidden content is not rendered or fetched until it is earned (see rules/00_core.md §6).
 
+## UI proof of concept
+- The source-owned Radix + Tailwind primitives under `practice-studio/src/components/ui/shadcn/` are demonstrated at `/ui-poc`; keep showcase cards and their contents shrinkable and wrapped so the page has no horizontal overflow at 390 px.
+- `Badge` supports default, secondary, outline, destructive, success, and ghost variants. Status badges use `statusTone` recipes; do not add raw status palette classes. Primary buttons use indigo-600 with white text in both themes for AA contrast.
+
 ## Layout
 - Workspace switch (`Math` / `Programming`, icon-only): fixed vertical rail on the left-middle edge on `>=1024 px`, and an inline icon-only switch in the header below `1024 px`.
 - Shell: one slim header row — drill switcher + Generate button, then right-aligned mobile side-drawer icon (`<1024 px`), theme toggle, Notion link, and Reset all icon button.
