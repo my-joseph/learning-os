@@ -111,8 +111,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
 
   if (embedded) {
     return (
-      <div className="w-full h-full flex flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-900">
-        <div className="min-h-[56px] shrink-0 px-3 pr-14 flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800/80">
+      <div className="w-full h-full flex flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-800/55">
+        <div className="min-h-[56px] shrink-0 px-3 pr-14 flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800">
           <WorkspaceSwitch
             variant="sidebar"
             workspace={workspace}
@@ -158,12 +158,12 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
       }}
       className={cn(
         "hidden lg:flex flex-col shrink-0 overflow-hidden bg-zinc-50 dark:bg-zinc-900 motion-reduce:transition-none",
-        isOpen && "border-r border-zinc-200/80 dark:border-zinc-800/80",
+        isOpen && "border-r border-zinc-200/80 dark:border-zinc-800",
         !isOpen && "pointer-events-none select-none",
         settledClosed && !isOpen && "invisible"
       )}
     >
-      <div className="w-[287px] h-full flex flex-col">
+      <div className="w-[287px] h-full flex flex-col bg-zinc-50 dark:bg-zinc-800/55">
         {/* Top bar inside Left Sidebar: seamless top-to-tree flow (no horizontal border-b) */}
         <div className="h-11 shrink-0 px-2.5 flex items-center justify-between gap-2">
           <Tooltip>
@@ -173,7 +173,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                 size="iconSm"
                 onClick={onToggle}
                 aria-label="Collapse sidebar"
-                className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
+                className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/50 shrink-0"
               >
                 <PanelLeft className="w-4 h-4" aria-hidden="true" />
               </Button>

@@ -82,7 +82,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-2 sm:px-3 flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 px-2 sm:px-3 flex items-center justify-between gap-2">
       {/* Left: mobile drawer trigger OR desktop expand-sidebar button (only when sidebar closed) + drill title */}
       <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
         <Tooltip>

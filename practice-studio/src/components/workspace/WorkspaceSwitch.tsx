@@ -48,13 +48,13 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const defaultNavClassName = isRail
     ? "hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
     : isSidebar
-    ? "relative grid grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-800/80 p-0.5 lg:h-8 shrink-0"
+    ? "relative grid grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-900/75 p-0.5 lg:h-8 shrink-0"
     : "relative grid lg:hidden grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0";
 
   const pillClassName = isRail
     ? "pointer-events-none absolute left-1 right-1 top-1 h-[calc(50%-4px)] rounded-lg bg-white dark:bg-zinc-900 shadow-sm"
     : isSidebar
-    ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-950 shadow-sm"
+    ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-700/80 shadow-sm"
     : "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm";
 
   const pillAnimate = isRail

@@ -588,11 +588,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <FormattedText text={ex.explanation} />
                     </p>
                   )}
-                  <div
-                    className={`bg-zinc-50 ${
-                      frameless ? "dark:bg-zinc-900/60" : "dark:bg-zinc-950"
-                    } border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-xs text-zinc-800 dark:text-zinc-200 space-y-1 overflow-x-auto`}
-                  >
+                  <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-xs text-zinc-800 dark:text-zinc-200 space-y-1 overflow-x-auto">
                     <div>
                       <span className="text-zinc-500 dark:text-zinc-400 select-none">
                         Input:{" "}
@@ -765,9 +761,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                             </div>
                             <CollapsibleContent
                               id={`visible-test-code-${idx}`}
-                              className={`ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 ${
-                                frameless ? "dark:bg-zinc-900/60" : "dark:bg-zinc-950"
-                              } dark:text-zinc-200`}
+                              className="ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                             >
                               <HighlightedCode
                                 code={t.testCode}
@@ -798,9 +792,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               <div
                 role="status"
                 aria-label="Check and review status"
-                className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-sans py-2.5 px-3.5 rounded-xl bg-zinc-50 ${
-                  frameless ? "dark:bg-zinc-900/60" : "dark:bg-zinc-950"
-                } border border-zinc-200 dark:border-zinc-800`}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-sans py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
               >
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Tests </span>

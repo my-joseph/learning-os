@@ -344,7 +344,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
 
       {/* B. To review */}
       {allCorrect ? (
-        <section className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3.5 sm:px-6 text-sm text-zinc-600 dark:text-zinc-300">
+        <section className="bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3.5 sm:px-6 text-sm text-zinc-600 dark:text-zinc-300">
           Nothing to fix. Add a revisit note below if you want.
         </section>
       ) : (

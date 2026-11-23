@@ -36,6 +36,10 @@ export function resolveTheme(saved: string | null, prefersDark: boolean): "light
 export const THEME_INIT_SCRIPT = `
   (function() {
     try {
+      if (!localStorage.getItem('practice_studio_theme_sync_v1')) {
+        localStorage.removeItem('practice_studio_theme');
+        localStorage.setItem('practice_studio_theme_sync_v1', '1');
+      }
       var saved = localStorage.getItem('practice_studio_theme');
       var theme = (${resolveTheme.toString()})(saved, window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.classList.toggle('light', theme === 'light');

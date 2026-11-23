@@ -8,6 +8,7 @@ import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
 import { StudioHeader } from "../src/components/shell/StudioHeader";
+import { StudioShell } from "../src/components/shell/StudioShell";
 import { StudioSidebar } from "../src/components/shell/StudioSidebar";
 import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
@@ -67,6 +68,53 @@ assert.equal(resolveTheme(null, false), "light");
 assert.equal(resolveTheme(null, true), "dark");
 assert.equal(resolveTheme("light", true), "light", "saved preference must override system preference");
 assert.match(THEME_INIT_SCRIPT, /matchMedia/);
+assert.match(THEME_INIT_SCRIPT, /practice_studio_theme_sync_v1/);
+
+// Verify THEME_INIT_SCRIPT clears any legacy override once and then preserves explicit overrides until OS change
+{
+  const store = new Map<string, string>([["practice_studio_theme", "light"]]);
+  const classes = new Set<string>();
+  const mockLocalStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => {
+      store.set(k, String(v));
+    },
+    removeItem: (k: string) => {
+      store.delete(k);
+    },
+  };
+  const mockWindow = {
+    matchMedia: () => ({ matches: true }),
+  };
+  const mockDocument = {
+    documentElement: {
+      classList: {
+        toggle: (cls: string, force?: boolean) => {
+          if (force) classes.add(cls);
+          else classes.delete(cls);
+          return Boolean(force);
+        },
+      },
+    },
+  };
+  const runInit = new Function("localStorage", "window", "document", THEME_INIT_SCRIPT);
+  runInit(mockLocalStorage, mockWindow, mockDocument);
+  assert.equal(store.get("practice_studio_theme_sync_v1"), "1");
+  assert.equal(store.has("practice_studio_theme"), false, "stale theme override cleared once on migration");
+  assert.equal(classes.has("dark"), true);
+  assert.equal(classes.has("light"), false);
+
+  // Subsequent explicit override after migration still applies before hydration until toggled/OS changed
+  store.set("practice_studio_theme", "light");
+  runInit(mockLocalStorage, mockWindow, mockDocument);
+  assert.equal(classes.has("light"), true);
+  assert.equal(classes.has("dark"), false);
+}
+
+const useThemeSrc = readFileSync("src/hooks/useTheme.ts", "utf8");
+assert.match(useThemeSrc, /practice_studio_theme_sync_v1/);
+assert.match(useThemeSrc, /handleMediaChange[\s\S]*localStorage\.removeItem\(STORAGE_KEY\)/);
+assert.match(useThemeSrc, /next === systemTheme[\s\S]*localStorage\.removeItem\(STORAGE_KEY\)/);
 
 const codeDashboard = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
 const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
@@ -129,7 +177,11 @@ assert.doesNotMatch(studioShell, /Study queue/);
 assert.match(studioShell, /border-b border-zinc-200/);
 assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*\?[\s\S]{0,600}StudioSidePanel/);
 assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*&&[\s\S]{0,200}(?:onToggleRightPanel|isSideDrawerOpen|StudioSidePanel)/);
+assert.match(studioShell, /showPaginationBar = false/);
+assert.match(studioShell, /showPaginationBar && hasPagination && currentDrill/);
 assert.match(studioShell, /<QuizPaginationBar[\s\S]*\bcompact\b/);
+assert.match(studioShell, /dark:bg-zinc-900/);
+assert.doesNotMatch(studioShell, /dark:bg-zinc-950/);
 assert.match(studioHeader, /lg:hidden/);
 assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
@@ -144,10 +196,13 @@ assert.match(studioHeader, /Reset all problems/);
 assert.match(studioHeader, /Reset all milestones/);
 assert.match(studioHeader, /Due today & weak spots/);
 assert.match(studioHeader, /<List\b/);
+assert.match(studioHeader, /dark:bg-zinc-900/);
+assert.doesNotMatch(studioHeader, /dark:bg-zinc-950/);
 assert.match(studioSidebar, /Collapse sidebar/);
 assert.match(studioSidebar, /isOpen \? 287 : 0/);
 assert.match(studioSidebar, /w-\[287px\]/);
 assert.match(studioSidebar, /bg-zinc-50 dark:bg-zinc-900/);
+assert.match(studioSidebar, /dark:bg-zinc-800\/55/);
 assert.match(studioSidebar, /<WorkspaceSwitch/);
 assert.match(studioSidebar, /<DrillSwitcher/);
 assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
@@ -461,6 +516,7 @@ assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
 
 // Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewSyncPage
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
+assert.match(globalsCss, /--background:\s*#18181b;/);
 assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /\.dark ::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.3\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /:focus:not\(:focus-visible\)\s*\{\s*outline:\s*none;/s);
@@ -856,6 +912,48 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     />
   );
   assert.doesNotMatch(framelessCodeHtml, /<article[^>]*rounded-2xl/);
+  assert.match(framelessCodeHtml, /dark:bg-zinc-950/);
+
+  const baseShellProps = {
+    workspace: "math" as const,
+    mathHref: "/math/DRL-MTH-T01-C01-01",
+    codeHref: "/code/DRL-PRG-T01-C01-01",
+    viewMode: "quiz" as const,
+    currentDrill: sampleDrillDoc,
+    currentProblemIndex: 0,
+    theme: "dark" as const,
+    onToggleTheme: noop,
+    onResetAll: noop,
+    drills: [],
+    selectedDrillId: "DRL-MTH-T01-C01-01",
+    drillSearch: "",
+    onSearchChange: noop,
+    drillFilter: "ALL" as const,
+    onFilterChange: noop,
+    onSelectDrill: noop,
+    showGenPopover: false,
+    onShowGenPopoverChange: noop,
+    onGenerated: async () => {},
+    onSelectQuestion: noop,
+    onToggleViewMode: noop,
+    status: null,
+    onStatusChange: noop,
+  };
+  const shellHiddenPaginationHtml = renderToStaticMarkup(
+    <StudioShell {...baseShellProps}>
+      <div>Canvas</div>
+    </StudioShell>
+  );
+  assert.doesNotMatch(shellHiddenPaginationHtml, /aria-label="Questions"/);
+  assert.match(shellHiddenPaginationHtml, /dark:bg-zinc-800\/55/);
+  assert.match(shellHiddenPaginationHtml, /dark:bg-zinc-900/);
+
+  const shellShownPaginationHtml = renderToStaticMarkup(
+    <StudioShell {...baseShellProps} showPaginationBar={true}>
+      <div>Canvas</div>
+    </StudioShell>
+  );
+  assert.match(shellShownPaginationHtml, /aria-label="Questions"/);
 
   for (const [label, src] of [
     ["StudioSidebar.tsx", studioSidebar],

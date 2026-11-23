@@ -56,6 +56,7 @@ interface StudioShellProps {
   onShowGenPopoverChange: (open: boolean) => void;
   onGenerated: (drillId: string) => Promise<void>;
   // Pagination / tiles
+  showPaginationBar?: boolean;
   onSelectQuestion: (idx: number) => void;
   onToggleViewMode: (mode: ViewMode) => void;
   // Status banner
@@ -64,7 +65,7 @@ interface StudioShellProps {
   children: React.ReactNode;
 }
 
-/** Edge-to-edge 3-pane flat Studio shell composing Left Sidebar, Top Bar, compact Pagination sub-bar, Center canvas, and Right Panel across quiz & review views. */
+/** Edge-to-edge 3-pane flat Studio shell composing Left Sidebar, Top Bar, optional compact Pagination sub-bar, Center canvas, and Right Panel across quiz & review views. */
 export const StudioShell: React.FC<StudioShellProps> = ({
   workspace,
   mathHref,
@@ -92,6 +93,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   showGenPopover,
   onShowGenPopoverChange,
   onGenerated,
+  showPaginationBar = false,
   onSelectQuestion,
   onToggleViewMode,
   status,
@@ -193,7 +195,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const hasPagination = Boolean(currentDrill && currentDrill.problems.length > 0);
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden flex bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden flex bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 transition-colors">
       {/* >=1024px: Full-height docked Left Sidebar (width 287 <-> 0) */}
       <StudioSidebar
         isOpen={isSidebarOpen}
@@ -241,9 +243,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
         {/* Below Top Bar: Center Pane + collapsible Right Panel (visible in both quiz & review views) */}
         <div className="flex-1 min-h-0 flex">
-          <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-zinc-950">
-            {hasPagination && currentDrill && (
-              <div className="shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-3 sm:px-5 py-1.5">
+          <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-zinc-900">
+            {showPaginationBar && hasPagination && currentDrill && (
+              <div className="shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 px-3 sm:px-5 py-1.5">
                 <QuizPaginationBar
                   compact
                   currentIndex={currentProblemIndex}
@@ -279,7 +281,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               if (!isRightPanelOpen) setRightSettledClosed(true);
             }}
             className={cn(
-              "hidden lg:block shrink-0 overflow-hidden bg-white dark:bg-zinc-950 lg:sticky lg:top-0 lg:overflow-y-auto lg:overscroll-contain motion-reduce:transition-none",
+              "hidden lg:block shrink-0 overflow-hidden bg-white dark:bg-zinc-900 lg:sticky lg:top-0 lg:overflow-y-auto lg:overscroll-contain motion-reduce:transition-none",
               isRightPanelOpen &&
                 "border-l border-zinc-200/80 dark:border-zinc-800/80",
               !isRightPanelOpen && "pointer-events-none select-none",
@@ -410,7 +412,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               prev.focus();
             }
           }}
-          className="lg:hidden overflow-x-hidden bg-white p-4 space-y-4 dark:bg-zinc-950"
+          className="lg:hidden overflow-x-hidden bg-white p-4 space-y-4 dark:bg-zinc-900"
         >
           <div className="flex items-center justify-between gap-2 min-w-0 pb-2 pr-11 border-b border-zinc-200 dark:border-zinc-800">
             <DrawerTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">

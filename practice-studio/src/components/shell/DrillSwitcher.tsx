@@ -152,9 +152,14 @@ function HoverRowCode({ code }: { code: string }) {
   );
 }
 
-function CountPill({ count }: { count: number }) {
+function CountPill({ count, isSidebar = false }: { count: number; isSidebar?: boolean }) {
   return (
-    <Badge variant="status" className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+    <Badge
+      variant="status"
+      className={`text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 ${
+        isSidebar ? "bg-zinc-100 dark:bg-zinc-900/75" : "bg-zinc-100 dark:bg-zinc-800"
+      } px-1.5 py-0.5 rounded-full shrink-0`}
+    >
       {count}
     </Badge>
   );
@@ -162,6 +167,9 @@ function CountPill({ count }: { count: number }) {
 
 const BRANCH_ROW_CLASS =
   "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
+
+const SIDEBAR_BRANCH_ROW_CLASS =
+  "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none min-h-[44px] lg:min-h-0 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
 const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
   { id: "ALL", label: "All" },
@@ -544,7 +552,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         disabled={isTreeEmpty}
         className={`inline-flex items-center gap-1 ${
           isSidebar
-            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/80"
+            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
             : "px-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70"
         } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
       >
@@ -557,7 +565,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         disabled={isTreeEmpty}
         className={`inline-flex items-center gap-1 ${
           isSidebar
-            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/80"
+            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
             : "px-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70"
         } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
       >
@@ -567,9 +575,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     </>
   );
 
-  const branchRowCls = isSidebar
-    ? `${BRANCH_ROW_CLASS} min-h-[44px] lg:min-h-0`
-    : BRANCH_ROW_CLASS;
+  const branchRowCls = isSidebar ? SIDEBAR_BRANCH_ROW_CLASS : BRANCH_ROW_CLASS;
 
   const renderLeafRow = (
     item: PickerItem,
@@ -611,12 +617,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         }transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
           isCurrent
             ? isSidebar
-              ? "bg-zinc-200/70 dark:bg-zinc-800"
+              ? "bg-zinc-200/70 dark:bg-zinc-700/60"
               : "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
             : isSearchTarget
             ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
             : isSidebar
-            ? "hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-800/80"
+            ? "hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50"
             : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80"
         }`}
       >
@@ -642,7 +648,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             <div
               className={`shrink-0 flex items-center gap-2 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25 ${
                 isSidebar
-                  ? "bg-white dark:bg-zinc-950/70"
+                  ? "bg-white dark:bg-zinc-900/90"
                   : "bg-zinc-50 dark:bg-zinc-950"
               }`}
             >
@@ -697,7 +703,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     aria-label="Practice type"
                     className={`relative grid h-auto min-h-0 grid-cols-2 items-center rounded-lg border border-zinc-200 dark:border-zinc-800 p-0.5 ${
                       isSidebar
-                        ? "bg-zinc-200/70 dark:bg-zinc-800/80"
+                        ? "bg-zinc-200/70 dark:bg-zinc-900/60"
                         : "bg-zinc-100 dark:bg-zinc-800/80"
                     }`}
                   >
@@ -705,7 +711,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       aria-hidden
                       className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md shadow-sm ${
                         isSidebar
-                          ? "bg-white dark:bg-zinc-950"
+                          ? "bg-white dark:bg-zinc-700/80"
                           : "bg-white dark:bg-zinc-900"
                       }`}
                       initial={false}
@@ -757,7 +763,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           isViewOpen || isFilterActive
                             ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-zinc-900 dark:text-zinc-100"
                             : isSidebar
-                            ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300"
+                            ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40 text-zinc-700 dark:text-zinc-300"
                             : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300"
                         }`}
                       >
@@ -882,7 +888,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   title={formatFullRowCode(currentPinnedItem)}
                   className={`group w-full text-left px-1.5 py-1.5 ${
                     isSidebar
-                      ? "min-h-[44px] lg:min-h-0 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 hover:bg-zinc-200/90 dark:hover:bg-zinc-800/90"
+                      ? "min-h-[44px] lg:min-h-0 rounded-lg bg-zinc-200/70 dark:bg-zinc-700/60 hover:bg-zinc-200/90 dark:hover:bg-zinc-700/70"
                       : "rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15"
                   } transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70`}
                 >
@@ -1024,7 +1030,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                     {showChapterCode && (
                                       <HoverRowCode code={chapterShortCode} />
                                     )}
-                                    <CountPill count={chapter.itemCount} />
+                                    <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
                                   </button>
 
                                   <Reveal show={isChapterExpanded}>
@@ -1095,7 +1101,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                 {plainTitle(entry.unitTitle)}
                                               </span>
                                               <HoverRowCode code={unitShortCode} />
-                                              <CountPill count={entry.items.length} />
+                                              <CountPill count={entry.items.length} isSidebar={isSidebar} />
                                             </button>
 
                                             <Reveal show={isUnitExpanded}>
