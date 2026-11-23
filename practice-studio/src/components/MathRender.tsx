@@ -48,7 +48,7 @@ export const MathBlock: React.FC<MathBlockProps> = ({ latex, className = "" }) =
 
   return (
     <div
-      className={`overflow-x-auto my-2 ${className}`}
+      className={`overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 my-1 ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

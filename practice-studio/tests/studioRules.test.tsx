@@ -214,6 +214,7 @@ assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8
 }
 assert.match(problemAssistSection, /bg-surface-panel/);
 assert.match(mathItemView, /bg-surface-panel/);
+assert.match(mathItemView, /bg-white dark:bg-zinc-900/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -697,7 +698,7 @@ assert.match(codeGenerateHtml, />Level 5<\/option>/);
 // no CAS copy row on choice questions (their plain text is only the prompt).
 const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
 const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8");
-assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-zinc-100/);
+assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-700\/70/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
 assert.match(mathItemView, /problem\.plainText && !isChoice/);

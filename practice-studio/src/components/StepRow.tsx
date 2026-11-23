@@ -39,7 +39,7 @@ export const StepRow: React.FC<StepRowProps> = ({
       }`}
     >
       {hasLatex && (
-        <div className="overflow-x-auto text-left text-sm text-zinc-900 dark:text-zinc-100">
+        <div className="min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-left text-sm text-zinc-900 dark:text-zinc-100">
           <MathBlock latex={step.latex!} />
         </div>
       )}
