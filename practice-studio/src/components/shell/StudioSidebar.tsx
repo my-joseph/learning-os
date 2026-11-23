@@ -173,7 +173,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                 size="iconSm"
                 onClick={onToggle}
                 aria-label="Collapse sidebar"
-                className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/50 shrink-0"
+                className="lg:min-h-9 lg:min-w-9 lg:h-9 lg:w-9 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/50 shrink-0"
               >
                 <PanelLeft className="w-4 h-4" aria-hidden="true" />
               </Button>

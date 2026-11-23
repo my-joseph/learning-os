@@ -169,7 +169,7 @@ const BRANCH_ROW_CLASS =
   "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
 const SIDEBAR_BRANCH_ROW_CLASS =
-  "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none min-h-[44px] lg:min-h-0 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
+  "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left text-sm transition-colors focus:outline-none min-h-[44px] lg:min-h-9 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
 const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
   { id: "ALL", label: "All" },
@@ -552,11 +552,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         disabled={isTreeEmpty}
         className={`inline-flex items-center gap-1 ${
           isSidebar
-            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
+            ? "px-2 min-h-[44px] lg:min-h-9 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
             : "px-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70"
-        } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
+        } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 ${isSidebar ? "text-sm" : "text-[11px]"} font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
       >
-        <ChevronsUpDown className="w-3 h-3 text-zinc-400 shrink-0" aria-hidden="true" />
+        <ChevronsUpDown className={`${isSidebar ? "w-3.5 h-3.5" : "w-3 h-3"} text-zinc-400 shrink-0`} aria-hidden="true" />
         <span>Expand all</span>
       </button>
       <button
@@ -565,11 +565,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         disabled={isTreeEmpty}
         className={`inline-flex items-center gap-1 ${
           isSidebar
-            ? "px-1.5 min-h-[44px] lg:min-h-0 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
+            ? "px-2 min-h-[44px] lg:min-h-9 bg-white dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-700/40"
             : "px-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70"
-        } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
+        } py-1 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 ${isSidebar ? "text-sm" : "text-[11px]"} font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap`}
       >
-        <ChevronsDownUp className="w-3 h-3 text-zinc-400 shrink-0" aria-hidden="true" />
+        <ChevronsDownUp className={`${isSidebar ? "w-3.5 h-3.5" : "w-3 h-3"} text-zinc-400 shrink-0`} aria-hidden="true" />
         <span>Collapse all</span>
       </button>
     </>
@@ -613,7 +613,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           handlePick(item.id);
         }}
         className={`group w-full text-left px-1.5 py-1.5 ${
-          isSidebar ? "min-h-[44px] lg:min-h-0 rounded-lg " : "rounded-md "
+          isSidebar ? "min-h-[44px] lg:min-h-9 rounded-lg " : "rounded-md "
         }transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
           isCurrent
             ? isSidebar
@@ -629,7 +629,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         <StatusDot status={item.practiceStatus} />
         <NoteBadge hasNotes={hasNotes} isDueToday={isDueToday} />
         <span
-          className={`text-xs truncate min-w-0 flex-1 ${
+          className={`${isSidebar ? "text-sm" : "text-xs"} truncate min-w-0 flex-1 ${
             isCurrent
               ? "font-medium text-zinc-900 dark:text-zinc-100"
               : "text-zinc-700 dark:text-zinc-300"
@@ -664,8 +664,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     : "Search units, chapters, or drill IDs..."
                 }
                 aria-label="Search practice drills"
-                className={`w-full bg-transparent text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none ${
-                  isSidebar ? "min-h-[28px] lg:min-h-0" : ""
+                className={`w-full bg-transparent ${isSidebar ? "text-sm" : "text-xs"} text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none ${
+                  isSidebar ? "min-h-[36px] lg:min-h-9" : ""
                 }`}
                 autoFocus={!isSidebar}
               />
@@ -679,7 +679,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   aria-label="Clear search"
                   className={
                     isSidebar
-                      ? "inline-flex items-center justify-center min-h-[36px] min-w-[36px] lg:min-h-0 lg:min-w-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      ? "inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-9 lg:min-w-9 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                       : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                   }
                 >
@@ -724,8 +724,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           value={tab.id}
                           aria-controls={undefined}
                           className={`relative z-10 inline-flex ${
-                            isSidebar ? "min-h-[44px] lg:min-h-0" : "min-h-0"
-                          } items-center justify-center gap-1.5 rounded-md bg-transparent px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100`}
+                            isSidebar ? "min-h-[44px] lg:min-h-9" : "min-h-0"
+                          } items-center justify-center gap-1.5 rounded-md bg-transparent px-2.5 py-1 ${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100`}
                         >
                           <span>{tab.label}</span>
                           <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400">
@@ -754,8 +754,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         type="button"
                         aria-expanded={isViewOpen}
                         className={`inline-flex items-center gap-1 ${
-                          isSidebar ? "px-1.5 min-h-[44px] lg:min-h-0 " : "px-2 "
-                        }py-1 rounded-md border text-[11px] font-medium transition-colors whitespace-nowrap ${
+                          isSidebar ? "px-2 min-h-[44px] lg:min-h-9 " : "px-2 "
+                        }py-1 rounded-md border ${isSidebar ? "text-sm" : "text-[11px]"} font-medium transition-colors whitespace-nowrap ${
                           isViewOpen || isFilterActive
                             ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-zinc-900 dark:text-zinc-100"
                             : isSidebar
@@ -764,7 +764,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         }`}
                       >
                         <SlidersHorizontal
-                          className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                          className={`${isSidebar ? "w-3.5 h-3.5" : "w-3 h-3"} text-zinc-500 dark:text-zinc-400 shrink-0`}
                           aria-hidden="true"
                         />
                         <span>View</span>
@@ -814,7 +814,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                   isActive
                                     ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium"
                                     : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
-                                }`}
+                                } ${isSidebar ? "text-sm min-h-9" : "text-xs"}`}
                               >
                                 <span>{opt.label}</span>
                                 {isActive && (
@@ -884,7 +884,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   title={formatFullRowCode(currentPinnedItem)}
                   className={`group w-full text-left px-1.5 py-1.5 ${
                     isSidebar
-                      ? "min-h-[44px] lg:min-h-0 rounded-lg bg-zinc-200/70 dark:bg-zinc-700/60 hover:bg-zinc-200/90 dark:hover:bg-zinc-700/70"
+                      ? "min-h-[44px] lg:min-h-9 rounded-lg bg-zinc-200/70 dark:bg-zinc-700/60 hover:bg-zinc-200/90 dark:hover:bg-zinc-700/70"
                       : "rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15"
                   } transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70`}
                 >
@@ -893,7 +893,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     hasNotes={currentPinnedHasNotes}
                     isDueToday={currentPinnedIsDue}
                   />
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
+                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1`}>
                     {currentPinnedItem.setLabel
                       ? `${plainTitle(currentPinnedItem.title)} · ${currentPinnedItem.setLabel}`
                       : plainTitle(currentPinnedItem.title)}
@@ -910,7 +910,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             >
               {isTreeEmpty ? (
                 <div className="py-8 text-center space-y-2">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className={`${isSidebar ? "text-sm" : "text-xs"} text-zinc-500 dark:text-zinc-400`}>
                     {isCodeWorkspace && activeTab === "labs"
                       ? "No labs match the current search or filter."
                       : "No drills match the current search or filter."}
@@ -922,7 +922,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         setActiveTab(activeTab === "labs" ? "drills" : "labs");
                         setActiveNodeId(null);
                       }}
-                      className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                      className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-indigo-600 dark:text-indigo-400 hover:underline`}
                     >
                       Show {otherTabMatchCount} matching{" "}
                       {activeTab === "labs"
@@ -972,7 +972,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                             className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0"
                             aria-hidden="true"
                           />
-                          <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
+                          <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1`}>
                             {plainTitle(topic.topicTitle)}
                           </span>
                           {showTopicCode && <HoverRowCode code={topic.topicCode} />}
@@ -1020,7 +1020,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                       }`}
                                       aria-hidden="true"
                                     />
-                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
+                                    <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
                                       {plainTitle(chapter.chapterTitle)}
                                     </span>
                                     {showChapterCode && (
@@ -1093,7 +1093,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                 }`}
                                                 aria-hidden="true"
                                               />
-                                              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
+                                              <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
                                                 {plainTitle(entry.unitTitle)}
                                               </span>
                                               <HoverRowCode code={unitShortCode} />

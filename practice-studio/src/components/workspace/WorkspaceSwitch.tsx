@@ -64,7 +64,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const itemSizeCls = isRail
     ? "w-8 h-8 rounded-lg"
     : isSidebar
-    ? "min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:w-7 lg:h-7 rounded-md"
+    ? "min-h-[44px] min-w-[44px] lg:min-h-9 lg:min-w-9 lg:w-9 lg:h-9 rounded-md"
     : "w-7 h-7 sm:w-8 sm:h-8 rounded-md";
 
   const tooltipSide = isRail ? "right" : "bottom";
