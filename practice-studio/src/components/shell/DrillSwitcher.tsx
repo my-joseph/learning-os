@@ -42,6 +42,12 @@ import { statusTone } from "@/lib/statusTone";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { plainTitle } from "@/lib/titleText";
 import { DrillFilter } from "@/hooks/types";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/shadcn/Tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/shadcn/Popover";
 
 type PickerTab = "drills" | "labs";
 
@@ -199,7 +205,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const viewContainerRef = useRef<HTMLDivElement | null>(null);
   const viewButtonRef = useRef<HTMLButtonElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const currentTreeRef = useRef<HTMLButtonElement | null>(null);
@@ -338,21 +343,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     return () => window.cancelAnimationFrame(rafId);
   }, [isOpen]);
 
-  // Close View popover when clicking outside it.
-  useEffect(() => {
-    if (!isViewOpen) return;
-    const handlePointerDown = (e: MouseEvent) => {
-      if (
-        viewContainerRef.current &&
-        !viewContainerRef.current.contains(e.target as Node)
-      ) {
-        setIsViewOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, [isViewOpen]);
-
   // Close on Escape even if focus is outside the search input.
   useEffect(() => {
     if (!isOpen) return;
@@ -454,6 +444,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     if (inSearchInput && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
       return;
     }
+
+    // Tabs own arrow-key navigation; do not send those keys to the curriculum tree.
+    if (target?.closest('[role="tablist"]')) return;
 
     // Let non-treeitem toolbar buttons (Tabs, Expand/Collapse, View, Clear) handle their own Enter.
     const isTreeItemTarget = target?.getAttribute("role") === "treeitem";
@@ -664,47 +657,45 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             {/* Header Actions: Drills|Labs Tabs (Programming) + Expand all / Collapse all + View */}
             <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800">
               {isCodeWorkspace ? (
-                <div
-                  role="tablist"
-                  aria-label="Practice type"
-                  className="relative grid grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5"
+                <Tabs
+                  value={activeTab}
+                  activationMode="manual"
+                  onValueChange={(value) => {
+                    setActiveTab(value as PickerTab);
+                    setActiveNodeId(null);
+                  }}
                 >
-                  <m.span
-                    aria-hidden
-                    className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm"
-                    initial={false}
-                    animate={{ x: activeTab === "labs" ? "100%" : "0%" }}
-                    transition={settle}
-                  />
-                  {[
-                    { id: "drills" as const, label: "Drills", count: drills.length },
-                    { id: "labs" as const, label: "Labs", count: labs.length },
-                  ].map((tab) => {
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          setActiveNodeId(null);
-                        }}
-                        className={`relative z-10 inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-                          isActive
-                            ? "text-zinc-900 dark:text-zinc-100"
-                            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-                        }`}
-                      >
-                        <span>{tab.label}</span>
-                        <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400">
-                          {tab.count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  <TabsList
+                    aria-label="Practice type"
+                    className="relative grid h-auto min-h-0 grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5"
+                  >
+                    <m.span
+                      aria-hidden
+                      className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm"
+                      initial={false}
+                      animate={{ x: activeTab === "labs" ? "100%" : "0%" }}
+                      transition={settle}
+                    />
+                    {[
+                      { id: "drills" as const, label: "Drills", count: drills.length },
+                      { id: "labs" as const, label: "Labs", count: labs.length },
+                    ].map((tab) => {
+                      return (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          aria-controls={undefined}
+                          className="relative z-10 inline-flex min-h-0 items-center justify-center gap-1.5 rounded-md bg-transparent px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100"
+                        >
+                          <span>{tab.label}</span>
+                          <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400">
+                            {tab.count}
+                          </span>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+                </Tabs>
               ) : (
                 <div className="inline-flex items-center gap-1.5">
                   {expandCollapseButtons}
@@ -715,121 +706,124 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 {isCodeWorkspace && expandCollapseButtons}
 
                 {/* View Button + Popover */}
-                <div className="relative" ref={viewContainerRef}>
-                  <button
-                    ref={viewButtonRef}
-                    type="button"
-                    onClick={() => setIsViewOpen((v) => !v)}
-                    aria-expanded={isViewOpen}
-                    aria-haspopup="true"
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition-colors whitespace-nowrap ${
-                      isViewOpen || isFilterActive
-                        ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-zinc-900 dark:text-zinc-100"
-                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300"
-                    }`}
-                  >
-                    <SlidersHorizontal
-                      className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span>View</span>
-                    {isFilterActive && (
-                      <span
-                        className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </button>
-
-                  <AnimatePresence>
-                    {isViewOpen && (
-                      <m.div
-                        variants={popover}
-                        {...presence}
-                        style={{ transformOrigin: "top right" }}
-                        className="absolute right-0 mt-1.5 w-52 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-2.5 z-50 space-y-2.5"
+                <Popover open={isViewOpen} onOpenChange={setIsViewOpen}>
+                  <div className="relative">
+                    <PopoverTrigger asChild>
+                      <button
+                        ref={viewButtonRef}
+                        type="button"
+                        aria-expanded={isViewOpen}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition-colors whitespace-nowrap ${
+                          isViewOpen || isFilterActive
+                            ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-zinc-900 dark:text-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300"
+                        }`}
                       >
-                        <div className="space-y-1">
-                          <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                            Status
-                          </div>
-                          <div
-                            role="group"
-                            aria-label="Filter by status"
-                            className="space-y-0.5"
-                          >
-                            {FILTER_OPTIONS.map((opt) => {
-                              const isActive = drillFilter === opt.id;
-                              return (
-                                <button
-                                  key={opt.id}
-                                  type="button"
-                                  aria-pressed={isActive}
-                                  onClick={() => {
-                                    onFilterChange(opt.id);
-                                    setIsViewOpen(false);
-                                    viewButtonRef.current?.focus();
-                                  }}
-                                  className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
-                                    isActive
-                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium"
-                                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
-                                  }`}
-                                >
-                                  <span>{opt.label}</span>
-                                  {isActive && (
-                                    <Check
-                                      className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"
-                                      aria-hidden="true"
-                                    />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <SlidersHorizontal
+                          className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>View</span>
+                        {isFilterActive && (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </button>
+                    </PopoverTrigger>
 
-                        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
-                          <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                            Legend
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1">
-                            {STATUS_LEGEND.map((entry) => (
-                              <div
-                                key={entry.status}
-                                className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400"
+                    <PopoverContent
+                      align="end"
+                      side="bottom"
+                      sideOffset={6}
+                      data-picker-popover="true"
+                      aria-label="View filters"
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") e.stopPropagation();
+                      }}
+                      onEscapeKeyDown={(e) => e.stopPropagation()}
+                      className="w-52 rounded-xl p-2.5 z-[60] space-y-2.5"
+                    >
+                      <div className="space-y-1">
+                        <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                          Status
+                        </div>
+                        <div
+                          role="group"
+                          aria-label="Filter by status"
+                          className="space-y-0.5"
+                        >
+                          {FILTER_OPTIONS.map((opt) => {
+                            const isActive = drillFilter === opt.id;
+                            return (
+                              <button
+                                key={opt.id}
+                                type="button"
+                                aria-pressed={isActive}
+                                onClick={() => {
+                                  onFilterChange(opt.id);
+                                  setIsViewOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                                  isActive
+                                    ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium"
+                                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                                }`}
                               >
-                                <span
-                                  className={`w-2 h-2 rounded-full shrink-0 ${statusDotClass(
-                                    entry.status
-                                  )}`}
-                                  aria-hidden="true"
-                                />
-                                <span className="truncate">{entry.label}</span>
-                              </div>
-                            ))}
+                                <span>{opt.label}</span>
+                                {isActive && (
+                                  <Check
+                                    className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                        <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                          Legend
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1">
+                          {STATUS_LEGEND.map((entry) => (
+                            <div
+                              key={entry.status}
+                              className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400"
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full shrink-0 ${statusDotClass(
+                                  entry.status
+                                )}`}
+                                aria-hidden="true"
+                              />
+                              <span className="truncate">{entry.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/70">
+                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+                            <MessageSquare
+                              className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="truncate">Notes</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/70">
-                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
-                              <MessageSquare
-                                className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0"
-                                aria-hidden="true"
-                              />
-                              <span className="truncate">Notes</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
-                              <MessageSquare
-                                className="w-3 h-3 text-zinc-900 dark:text-zinc-100 fill-zinc-900 dark:fill-zinc-100 shrink-0"
-                                aria-hidden="true"
-                              />
-                              <span className="truncate">Due today</span>
-                            </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+                            <MessageSquare
+                              className="w-3 h-3 text-zinc-900 dark:text-zinc-100 fill-zinc-900 dark:fill-zinc-100 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="truncate">Due today</span>
                           </div>
                         </div>
-                      </m.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      </div>
+                    </PopoverContent>
+                  </div>
+                </Popover>
               </div>
             </div>
 

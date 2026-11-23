@@ -471,20 +471,20 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   );
   assert.match(html, /role="tablist"/);
   assert.match(html, /aria-label="Question 2 and similar questions"/);
-  assert.match(html, /id="tab-Q02-q"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-q")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")[^>]*>/);
   assert.match(html, /aria-label="Question 2, not correct yet"/);
   assert.ok(
     html.includes(`data-status="wrong" class="w-4 h-4 rounded-full ${statusTone.wrong.tabMark}`),
     "wrong tab mark must use statusTone.wrong.tabMark"
   );
-  assert.match(html, /id="tab-Q02-s1"[^>]*aria-selected="true"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 1, correct"[^>]*tabindex="0"/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="true")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 1, correct")(?=[^>]*tabindex="0")[^>]*>/);
   assert.ok(
     html.includes(`data-status="correct" class="w-4 h-4 rounded-full ${statusTone.correct.tabMark}`),
     "correct tab mark must use statusTone.correct.tabMark"
   );
-  assert.match(html, /id="tab-Q02-s2"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 2, not tried"[^>]*tabindex="-1"/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s2")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 2, not tried")(?=[^>]*tabindex="-1")[^>]*>/);
   assert.match(html, /data-status="untried"[^>]*rounded-full[^>]*border-\[1\.5px\]/);
-  assert.match(html, /id="tab-Q02-s3"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 3, correct with help"[^>]*tabindex="-1"/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s3")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 3, correct with help")(?=[^>]*tabindex="-1")[^>]*>/);
   assert.ok(
     html.includes(`data-status="assisted" class="w-4 h-4 rounded-full ${statusTone.assisted.tabMark}`),
     "assisted tab mark must use statusTone.assisted.tabMark"
@@ -540,7 +540,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(lockedStripHtml, /id="similar-lock-desc-Q02"[^>]*>Answer Question 2 first<\/span>/);
   assert.match(
     lockedStripHtml,
-    /id="tab-Q02-s1"[^>]*aria-selected="false"[^>]*aria-disabled="true"[^>]*aria-label="Similar question 1"[^>]*aria-describedby="similar-lock-desc-Q02"[^>]*title="Answer Question 2 first"[^>]*tabindex="-1"/
+    /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="false")(?=[^>]*aria-disabled="true")(?=[^>]*aria-label="Similar question 1")(?=[^>]*aria-describedby="similar-lock-desc-Q02")(?=[^>]*title="Answer Question 2 first")(?=[^>]*tabindex="-1")[^>]*>/
   );
   assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
