@@ -92,6 +92,7 @@ The scoring rule is specified authoritatively in [`docs/studio_design.md`](../do
 - Wrong or skipped: `0`.
 - PRG work awaiting review: `null` until a review supplies a score.
 - Lock an item after a correct check. Reset starts a new cycle at `cycleStartedAt` and retains prior history.
+- Deleting a local drill from the Practice Studio removes its canonical content JSON only. It retains the learner's progress file and drill workspace; future autosaves for that deleted drill are rejected, so no orphan progress is recreated.
 - Self-score may only lower an automatic score; it cannot raise a wrong/skipped result.
 - Marking a diverged step adds a note only and does not change the score.
 

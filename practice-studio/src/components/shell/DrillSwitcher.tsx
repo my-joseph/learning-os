@@ -16,6 +16,8 @@ import {
   MoreHorizontal,
   Search,
   SlidersHorizontal,
+  RotateCcw,
+  Trash2,
   X,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
@@ -71,6 +73,8 @@ interface DrillSwitcherProps {
   drillFilter: DrillFilter;
   onFilterChange: (filter: DrillFilter) => void;
   onSelectDrill: (drillId: string) => void;
+  onResetDrill?: (drillId: string) => void;
+  onDeleteDrill?: (drillId: string) => void;
 }
 
 function statusDotClass(status: PickerStatus): string {
@@ -173,7 +177,15 @@ const BRANCH_ROW_CLASS =
 const SIDEBAR_BRANCH_ROW_CLASS =
   "group min-w-0 flex-1 h-8 flex items-center gap-1.5 px-1.5 rounded-md text-left text-sm transition-colors focus:outline-none hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
-function TreeNodeActions({ nodeId }: { nodeId: string }) {
+function TreeNodeActions({
+  nodeId,
+  onReset,
+  onDelete,
+}: {
+  nodeId: string;
+  onReset: (nodeId: string) => void;
+  onDelete: (nodeId: string) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const copyId = async () => {
@@ -195,7 +207,7 @@ function TreeNodeActions({ nodeId }: { nodeId: string }) {
           title="More actions"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
-          className="group/action inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 opacity-100 transition-opacity hover:bg-zinc-200/70 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100 dark:focus-visible:ring-indigo-400 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
+          className="group/action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-zinc-500 opacity-100 transition-opacity hover:bg-zinc-200/70 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100 dark:focus-visible:ring-indigo-400 lg:h-8 lg:w-8 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -217,6 +229,30 @@ function TreeNodeActions({ nodeId }: { nodeId: string }) {
         >
           <Copy className="h-3.5 w-3.5" aria-hidden="true" />
           {copied ? "Copied" : "Copy ID"}
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => {
+            setOpen(false);
+            onReset(nodeId);
+          }}
+          className="flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400"
+        >
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+          Reset
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => {
+            setOpen(false);
+            onDelete(nodeId);
+          }}
+          className={`flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm ${statusTone.wrong.text} hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400`}
+        >
+          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          Delete
         </button>
       </PopoverContent>
     </Popover>
@@ -255,6 +291,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   drillFilter,
   onFilterChange,
   onSelectDrill,
+  onResetDrill = () => {},
+  onDeleteDrill = () => {},
 }) => {
   const isSidebar = mode === "sidebar";
   const isCodeWorkspace =
@@ -691,7 +729,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         </span>
         <HoverRowCode code={hoverCode} />
       </button>
-      {isSidebar && <TreeNodeActions nodeId={item.id} />}
+      {isSidebar && item.kind === "drill" && (
+        <TreeNodeActions nodeId={item.id} onReset={onResetDrill} onDelete={onDeleteDrill} />
+      )}
       </div>
     );
   };
@@ -1032,7 +1072,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           </span>
                           {showTopicCode && <HoverRowCode code={topic.topicCode} />}
                         </button>
-                        {isSidebar && <TreeNodeActions nodeId={topic.topicCode} />}
                         </div>
 
                         <Reveal show={isTopicExpanded}>
@@ -1086,7 +1125,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                     )}
                                     <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
                                   </button>
-                                  {isSidebar && <TreeNodeActions nodeId={chapter.chapterCode} />}
                                   </div>
 
                                   <Reveal show={isChapterExpanded}>
@@ -1160,7 +1198,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                               <HoverRowCode code={unitShortCode} />
                                               <CountPill count={entry.items.length} isSidebar={isSidebar} />
                                             </button>
-                                            {isSidebar && <TreeNodeActions nodeId={entry.unitCode} />}
                                             </div>
 
                                             <Reveal show={isUnitExpanded}>

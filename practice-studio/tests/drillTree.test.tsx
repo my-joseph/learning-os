@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -405,6 +406,7 @@ const labTreeHtml = renderToStaticMarkup(
 assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>LAB-02</);
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
+assert.doesNotMatch(labTreeHtml, /aria-label="Actions for LAB-/);
 
 const sidebarTreeHtml = renderToStaticMarkup(
   <DrillSwitcher
@@ -426,8 +428,14 @@ const sidebarTreeHtml = renderToStaticMarkup(
 );
 assert.doesNotMatch(sidebarTreeHtml, />Expand all|>Collapse all|>View</);
 assert.doesNotMatch(sidebarTreeHtml, /border-l/);
-assert.match(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
-assert.match(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
+assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
+assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
+assert.match(sidebarTreeHtml, /h-11 w-11[^>]*lg:h-8 lg:w-8/);
+const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Copy ID/);
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Reset/);
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Delete/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
 assert.match(sidebarTreeHtml, /aria-current="true"/);
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);

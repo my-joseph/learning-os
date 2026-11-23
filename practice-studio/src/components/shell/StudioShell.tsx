@@ -51,6 +51,8 @@ interface StudioShellProps {
   drillFilter: DrillFilter;
   onFilterChange: (filter: DrillFilter) => void;
   onSelectDrill: (drillId: string) => void;
+  onResetDrill?: (drillId: string) => void;
+  onDeleteDrill?: (drillId: string) => void;
   // GeneratePopover
   showGenPopover: boolean;
   onShowGenPopoverChange: (open: boolean) => void;
@@ -90,6 +92,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   drillFilter,
   onFilterChange,
   onSelectDrill,
+  onResetDrill,
+  onDeleteDrill,
   showGenPopover,
   onShowGenPopoverChange,
   onGenerated,
@@ -215,6 +219,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         drillFilter={drillFilter}
         onFilterChange={onFilterChange}
         onSelectDrill={onSelectDrill}
+        onResetDrill={onResetDrill}
+        onDeleteDrill={onDeleteDrill}
       />
 
       {/* Right of Left Sidebar: Top Bar + Below-Top-Bar split (Center canvas + Right Panel) */}
@@ -379,6 +385,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               setIsSidebarDrawerOpen(false);
               onSelectDrill(id);
             }}
+            onResetDrill={onResetDrill}
+            onDeleteDrill={onDeleteDrill}
             onCloseDrawer={() => setIsSidebarDrawerOpen(false)}
           />
         </DrawerContent>

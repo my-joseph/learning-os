@@ -38,6 +38,8 @@ export interface StudioSidebarProps {
   drillFilter: DrillFilter;
   onFilterChange: (filter: DrillFilter) => void;
   onSelectDrill: (drillId: string) => void;
+  onResetDrill?: (drillId: string) => void;
+  onDeleteDrill?: (drillId: string) => void;
   embedded?: boolean;
   onCloseDrawer?: () => void;
 }
@@ -61,6 +63,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
   drillFilter,
   onFilterChange,
   onSelectDrill,
+  onResetDrill,
+  onDeleteDrill,
   embedded = false,
   onCloseDrawer,
 }) => {
@@ -140,6 +144,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             drillFilter={drillFilter}
             onFilterChange={onFilterChange}
             onSelectDrill={onSelectDrill}
+            onResetDrill={onResetDrill}
+            onDeleteDrill={onDeleteDrill}
           />
         </div>
       </div>
@@ -210,6 +216,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             drillFilter={drillFilter}
             onFilterChange={onFilterChange}
             onSelectDrill={onSelectDrill}
+            onResetDrill={onResetDrill}
+            onDeleteDrill={onDeleteDrill}
           />
         </div>
       </div>
