@@ -10,6 +10,7 @@ export const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white",
+        status: "",
         secondary: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
         outline: "border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300",
         destructive: statusTone.wrong.solidBadge,

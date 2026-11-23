@@ -15,6 +15,7 @@ import { countRightItems, type SessionPattern } from "@/lib/reviewRow";
 import { scoreProblem } from "@/lib/scoring";
 import { formatSyncTimestamp } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
+import { Button } from "@/components/ui/shadcn/Button";
 import { plainTitle } from "@/lib/titleText";
 
 export type EffectiveSyncPhase =
@@ -174,14 +175,15 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="compact"
           onClick={onScrollToSync}
           className={`self-start sm:self-auto inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs transition-colors rounded-md py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0 ${statusLink.toneClass}`}
         >
           <span className="font-display tabular-nums">{statusLink.label}</span>
           {statusLink.showArrow && <ArrowDown className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
-        </button>
+        </Button>
       </div>
 
       {/* Verdict sentence (text-base, numbers/time in font-display) */}
@@ -291,18 +293,20 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
 
       {/* Footer row: Start Q1 primary when nothing attempted (drills), plus quiet Back link */}
       <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="compact"
           onClick={onBackToQuiz}
           className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[32px] px-1 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
         >
           <ArrowLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           <span>{backLabel}</span>
-        </button>
+        </Button>
 
         {!hasAnyAttempt && totalCount > 0 && (
-          <button
-            type="button"
+          <Button
+            variant={isLab ? "outline" : "primary"}
+            size="compact"
             onClick={onStartFirst}
             className={
               isLab
@@ -312,7 +316,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           >
             <span>Start {firstLabel}</span>
             <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          </button>
+          </Button>
         )}
       </div>
     </section>

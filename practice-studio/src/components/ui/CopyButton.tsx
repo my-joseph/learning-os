@@ -1,4 +1,5 @@
 import React, { useState, type ReactNode } from "react";
+import { Button } from "@/components/ui/shadcn/Button";
 
 interface CopyButtonProps {
   text: string;
@@ -34,14 +35,15 @@ export function CopyButton({
   };
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="compact"
       onClick={handleCopy}
       title={title}
       aria-label={ariaLabel}
       className={className}
     >
       {copied ? copiedContent : children}
-    </button>
+    </Button>
   );
 }

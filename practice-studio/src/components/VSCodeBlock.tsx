@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { Copy, Check, FileCode2 } from "lucide-react";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { Badge } from "@/components/ui/shadcn/Badge";
 import { renderShikiLineTokens, useShikiTokens } from "@/components/HighlightedCode";
 import {
   inferShikiLanguageFromFilename,
@@ -116,9 +117,9 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 min-w-0 px-2.5 sm:px-3 py-1 bg-white dark:bg-zinc-950 border-t-2 border-t-indigo-600 dark:border-t-indigo-500 border-x border-x-zinc-200 dark:border-x-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-sans rounded-t-sm">
-            <span className={`text-[10px] font-bold px-1 rounded shrink-0 ${badge.className}`}>
+            <Badge variant="status" className={`text-[10px] font-bold p-0 rounded shrink-0 ${badge.className}`}>
               {badge.label}
-            </span>
+            </Badge>
             <span className="font-mono text-zinc-700 dark:text-zinc-300 truncate">
               {filename}
             </span>
@@ -127,9 +128,9 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
 
         <div className="flex items-center gap-2 shrink-0">
           {selectableLines && (
-            <span className="text-xs font-sans px-2.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+            <Badge variant="status" className="text-xs font-sans px-2.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
               {selectedLine ? `Selected: Line ${selectedLine}` : "Click defective line in code"}
-            </span>
+            </Badge>
           )}
 
           <CopyButton

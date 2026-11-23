@@ -250,7 +250,14 @@ async function verifyStamping() {
   assert.equal(hungResult.stampedDoc, null, "timed out sync must not stamp");
   const timeoutErrorHtml = render(mathDrill, { syncState: hungResult.syncState, isSyncing: false });
   assert.match(timeoutErrorHtml, /Couldn&#x27;t sync/);
-  assert.match(timeoutErrorHtml, /<button(?![^>]*disabled)[^>]*>(?:(?!<\/button>).)*<span>Retry<\/span><\/button>/, "Retry button must be enabled after timeout");
+  const retryLabelIndex = timeoutErrorHtml.indexOf("<span>Retry</span>");
+  const retryButtonStart = timeoutErrorHtml.lastIndexOf("<button", retryLabelIndex);
+  const retryButtonEnd = timeoutErrorHtml.indexOf(">", retryButtonStart);
+  assert.ok(
+    retryLabelIndex >= 0 && retryButtonStart >= 0 && retryButtonEnd > retryButtonStart,
+    "Retry button must render after timeout"
+  );
+  assert.doesNotMatch(timeoutErrorHtml.slice(retryButtonStart, retryButtonEnd), /\sdisabled(?:=|\s|>)/, "Retry button must be enabled after timeout");
 
   // Merge server stamps into LATEST drill doc without rolling back mid-sync edits (review_sync C2)
   let latestDrill: DrillDocument | null = mathDrill;

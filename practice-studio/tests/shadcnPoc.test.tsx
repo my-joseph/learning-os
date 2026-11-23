@@ -25,6 +25,7 @@ assert.match(html, /Complete/);
 const badgeMarkup = renderToStaticMarkup(
   <div>
     <Badge>Default badge</Badge>
+    <Badge variant="status" className="text-zinc-700">Status badge</Badge>
     <Badge variant="secondary">Secondary badge</Badge>
     <Badge variant="outline">Outline badge</Badge>
     <Badge variant="destructive">Destructive badge</Badge>
@@ -33,11 +34,14 @@ const badgeMarkup = renderToStaticMarkup(
     <Badge asChild><a href="#badge">Linked badge</a></Badge>
   </div>
 );
-for (const expected of ["Default badge", "Secondary badge", "Outline badge", "Destructive badge", "Success badge", "Ghost badge", "Linked badge"]) {
+for (const expected of ["Default badge", "Status badge", "Secondary badge", "Outline badge", "Destructive badge", "Success badge", "Ghost badge", "Linked badge"]) {
   assert.ok(badgeMarkup.includes(expected), `Badge SSR markup must include ${expected}`);
 }
 assert.match(badgeMarkup, /<a href="#badge" class="[^"]*rounded-full/);
 assert.match(badgeMarkup, /bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white/);
+assert.match(badgeMarkup, /Status badge/);
+const statusBadgeClasses = badgeMarkup.match(/<span class="([^"]*)">Status badge/)?.[1] ?? "";
+assert.doesNotMatch(statusBadgeClasses, /bg-indigo-600/);
 assert.match(badgeMarkup, /bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200/);
 assert.match(badgeMarkup, /border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300/);
 assert.match(badgeMarkup, /bg-status-wrong text-status-on-wrong/);
@@ -47,6 +51,8 @@ assert.match(badgeMarkup, /text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 da
 const primitiveMarkup = renderToStaticMarkup(
   <TooltipProvider>
     <Button>Accessible button</Button>
+    <Button size="compact">Compact button</Button>
+    <Button size="iconSm" aria-label="Compact icon action" />
     <Tabs defaultValue="first"><TabsList aria-label="Sample tabs"><TabsTrigger value="first">First tab</TabsTrigger></TabsList></Tabs>
     <Dialog><DialogTrigger>Open dialog</DialogTrigger></Dialog>
     <Popover><PopoverTrigger>Open popover</PopoverTrigger></Popover>
@@ -54,9 +60,18 @@ const primitiveMarkup = renderToStaticMarkup(
     <Drawer><DrawerTrigger>Open drawer</DrawerTrigger></Drawer>
   </TooltipProvider>
 );
-for (const expected of ["Accessible button", "role=\"tablist\"", "role=\"tab\"", "Open dialog", "Open popover", "Tooltip trigger", "Open drawer"]) {
+for (const expected of ["Accessible button", "Compact button", "aria-label=\"Compact icon action\"", "role=\"tablist\"", "role=\"tab\"", "Open dialog", "Open popover", "Tooltip trigger", "Open drawer"]) {
   assert.ok(primitiveMarkup.includes(expected), `SSR primitive markup must include ${expected}`);
 }
+const compactButtonAttrs = primitiveMarkup.match(/<button\b([^>]*)>Compact button<\/button>/)?.[1] ?? "";
+assert.match(compactButtonAttrs, /\btype="button"/);
+assert.match(compactButtonAttrs, /min-h-\[44px\]/);
+assert.match(compactButtonAttrs, /sm:min-h-\[32px\]/);
+const iconSmButtonAttrs = primitiveMarkup.match(/<button\b([^>]*)aria-label="Compact icon action"[^>]*>/)?.[1] ?? "";
+assert.match(iconSmButtonAttrs, /\btype="button"/);
+assert.match(iconSmButtonAttrs, /min-w-\[44px\]/);
+assert.match(iconSmButtonAttrs, /sm:min-w-\[36px\]/);
+assert.match(primitiveMarkup, /<button[^>]*type="button"[^>]*>Accessible button/);
 
 const componentFiles = [
   "src/components/ui/shadcn/Button.tsx",
