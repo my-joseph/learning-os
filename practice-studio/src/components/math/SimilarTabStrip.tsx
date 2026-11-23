@@ -163,7 +163,7 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   const lockTooltip = `Answer Question ${questionNumber} first`;
 
   const baseTabClass =
-    "inline-flex items-center justify-center gap-1.5 shrink-0 snap-start min-h-[44px] sm:min-h-0 sm:h-9 px-3 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors rounded-t-md focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
+    "inline-flex items-center justify-center gap-1.5 shrink-0 snap-start min-h-[44px] sm:min-h-0 sm:h-9 px-3 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
   const selectedClass =
     "text-zinc-900 dark:text-zinc-100 font-semibold border-indigo-600 dark:border-indigo-400";
