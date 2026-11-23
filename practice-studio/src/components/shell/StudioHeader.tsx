@@ -1,11 +1,22 @@
 "use client";
 
 import React from "react";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
+import {
+  ArrowUpRight,
+  PanelLeft,
+  PanelRight,
+  Plus,
+  RotateCcw,
+} from "lucide-react";
 import { DrillDocument } from "@/types/drill";
+import { Workspace, isLabId } from "@/lib/routes";
+import { statusTone } from "@/lib/statusTone";
 import { plainTitle } from "@/lib/titleText";
+import { EASE_OUT, quick } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/shadcn/Button";
+import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import {
   Tooltip,
   TooltipContent,
@@ -13,106 +24,216 @@ import {
 } from "@/components/ui/shadcn/Tooltip";
 
 interface StudioHeaderProps {
-  headerRef?: React.RefObject<HTMLElement>;
-  showHeader: boolean;
+  workspace: Workspace;
   currentDrill: DrillDocument | null;
-  onOpenSidebarDrawer?: () => void;
+  selectedDrillId: string;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
+  onResetAll: () => void;
+  onOpenGenPopover: () => void;
+  isSidebarOpen: boolean;
+  onOpenDesktopSidebar: () => void;
+  onOpenSidebarDrawer: () => void;
+  isRightPanelOpen: boolean;
+  onToggleRightPanel?: () => void;
   onOpenSideDrawer?: () => void;
   sidePanelCount?: number;
-  tiles?: React.ReactNode;
 }
 
-/** Sticky Studio header: pagination-only card on desktop (>=1024px) and slim drawer triggers + pagination on mobile/tablet. */
+/** Flat full-width slim Top Bar with conditional Expand Sidebar button, drill title, and utility actions. */
 export const StudioHeader: React.FC<StudioHeaderProps> = ({
-  headerRef,
-  showHeader,
+  workspace,
   currentDrill,
+  selectedDrillId,
+  theme,
+  onToggleTheme,
+  onResetAll,
+  onOpenGenPopover,
+  isSidebarOpen,
+  onOpenDesktopSidebar,
   onOpenSidebarDrawer,
+  isRightPanelOpen,
+  onToggleRightPanel,
   onOpenSideDrawer,
   sidePanelCount = 0,
-  tiles,
 }) => {
   const drillTitle = currentDrill
     ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
     : "Practice Studio";
 
+  const resetAllLabel = isLabId(selectedDrillId)
+    ? "Reset all milestones"
+    : workspace === "code"
+    ? "Reset all problems"
+    : "Reset all questions";
+
+  const showRightPanelToggle = Boolean(onToggleRightPanel || onOpenSideDrawer);
+
+  const handleRightPanelClick = () => {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      onToggleRightPanel?.();
+    } else {
+      onOpenSideDrawer?.();
+    }
+  };
+
   return (
-    <header
-      ref={headerRef}
-      className={cn(
-        "sticky top-2 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 mb-5 shadow-sm transition-all duration-150",
-        !tiles && "lg:hidden",
-        showHeader
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-[130%] opacity-0 pointer-events-none"
-      )}
-    >
-      {/* Mobile / Tablet (<1024px): Slim drawer-trigger bar */}
-      <div className="flex lg:hidden items-center justify-between gap-2 min-w-0">
-        <div className="flex items-center gap-1 min-w-0 flex-1">
-          {onOpenSidebarDrawer && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="iconSm"
-                  onClick={onOpenSidebarDrawer}
-                  aria-label="Open navigation sidebar"
-                  className="min-h-[44px] min-w-[44px] lg:hidden inline-flex items-center justify-center rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shrink-0"
-                >
-                  <PanelLeft className="w-4 h-4" aria-hidden="true" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Open navigation sidebar</TooltipContent>
-            </Tooltip>
-          )}
-
-          {onOpenSidebarDrawer ? (
-            <button
-              type="button"
+    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/50 px-2 sm:px-3 flex items-center justify-between gap-2">
+      {/* Left: mobile drawer trigger OR desktop expand-sidebar button (only when sidebar closed) + drill title */}
+      <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="iconSm"
               onClick={onOpenSidebarDrawer}
-              aria-label={`Switch drill: ${drillTitle}`}
-              className="min-h-[44px] inline-flex items-center min-w-0 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md px-1"
+              aria-label="Open navigation sidebar"
+              className="min-h-[44px] min-w-[44px] lg:hidden inline-flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
             >
-              <span className="truncate">{drillTitle}</span>
-            </button>
-          ) : (
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate px-1">
-              {drillTitle}
-            </span>
-          )}
-        </div>
+              <PanelLeft className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Open sidebar</TooltipContent>
+        </Tooltip>
 
-        {onOpenSideDrawer && (
+        <AnimatePresence initial={false}>
+          {!isSidebarOpen && (
+            <m.div
+              key="desktop-expand-sidebar"
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto", transition: quick }}
+              exit={{
+                opacity: 0,
+                width: 0,
+                transition: { duration: 0.14, ease: EASE_OUT },
+              }}
+              className="hidden lg:flex items-center overflow-hidden shrink-0"
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="iconSm"
+                    onClick={onOpenDesktopSidebar}
+                    aria-label="Expand sidebar"
+                    className="lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
+                  >
+                    <PanelLeft className="w-4 h-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Open sidebar</TooltipContent>
+              </Tooltip>
+            </m.div>
+          )}
+        </AnimatePresence>
+
+        <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-200 truncate pl-0.5">
+          {drillTitle}
+        </span>
+      </div>
+
+      {/* Right: quiet flat utility icon cluster (+ Generate, Reset, Notion, Theme, divider, Right Panel toggle) */}
+      <div className="flex items-center gap-0.5 shrink-0">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="iconSm"
+              onClick={onOpenGenPopover}
+              aria-label="Generate drill set"
+              className="min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Generate drill set</TooltipContent>
+        </Tooltip>
+
+        {currentDrill && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="iconSm"
-                onClick={onOpenSideDrawer}
-                aria-label="Due today & weak spots"
-                className="relative min-h-[44px] min-w-[44px] lg:hidden inline-flex items-center justify-center rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 shrink-0"
+                onClick={onResetAll}
+                aria-label={resetAllLabel}
+                className={`min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-200/60 dark:hover:bg-zinc-800`}
               >
-                <PanelRight className="w-4 h-4" aria-hidden="true" />
-                {sidePanelCount > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
-                  />
-                )}
+                <RotateCcw className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {sidePanelCount > 0
-                ? `Due today & weak spots (${sidePanelCount})`
-                : "Due today & weak spots"}
-            </TooltipContent>
+            <TooltipContent side="bottom">{resetAllLabel}</TooltipContent>
           </Tooltip>
         )}
-      </div>
 
-      {/* Pagination / Stepper row (sole desktop header content) */}
-      {tiles}
+        {currentDrill?.unitNotionUrl && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <a
+                href={currentDrill.unitNotionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open unit page in Notion"
+                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              >
+                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Open unit page in Notion</TooltipContent>
+          </Tooltip>
+        )}
+
+        <ThemeToggleButton
+          theme={theme}
+          onToggle={onToggleTheme}
+          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
+        />
+
+        {showRightPanelToggle && (
+          <>
+            <span
+              aria-hidden="true"
+              className="hidden sm:block mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-800"
+            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="iconSm"
+                  onClick={handleRightPanelClick}
+                  aria-label="Due today & weak spots"
+                  aria-pressed={isRightPanelOpen}
+                  className={cn(
+                    "relative min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800",
+                    isRightPanelOpen &&
+                      "lg:text-zinc-800 lg:dark:text-zinc-100 lg:bg-zinc-200/50 lg:dark:bg-zinc-800/60"
+                  )}
+                >
+                  <PanelRight className="w-4 h-4" aria-hidden="true" />
+                  {sidePanelCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute top-2.5 right-2.5 lg:top-1.5 lg:right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400",
+                        isRightPanelOpen && "lg:hidden"
+                      )}
+                    />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {sidePanelCount > 0
+                  ? `Due today & weak spots (${sidePanelCount})`
+                  : "Due today & weak spots"}
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </div>
     </header>
   );
 };

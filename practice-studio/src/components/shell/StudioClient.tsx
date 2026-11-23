@@ -411,6 +411,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   {reviewContext}
                   <MathWorkspace
                   key={prob.id}
+                  frameless
                   problem={prob}
                   drillId={currentDrill.drillId}
                   index={idx}
@@ -452,6 +453,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 {reviewContext}
                 <CodeDashboard
                 key={prob.id}
+                frameless
                 problem={prob}
                 drillId={currentDrill.drillId}
                 index={idx}

@@ -69,6 +69,7 @@ export interface MathWorkspaceProps {
   reviewScheduleNote?: string | null;
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
+  frameless?: boolean;
 }
 
 /** Clean centred Math workspace following docs/studio_design.md with Similar Questions v2 tab strip. */
@@ -111,6 +112,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   reviewScheduleNote = null,
   nextCardLabel,
   lastQuestionNavLabel,
+  frameless = false,
 }) => {
   const questionNumber = index + 1;
   const cardRef = useRef<HTMLElement | null>(null);
@@ -343,11 +345,15 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
       <article
         ref={cardRef}
-        className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl scroll-mt-4 ${
-          showTabStrip
-            ? "px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-3 space-y-5"
-            : "p-4 sm:p-6 space-y-6"
-        }`}
+        className={
+          frameless
+            ? `scroll-mt-4 ${showTabStrip ? "space-y-5" : "space-y-6"}`
+            : `bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl scroll-mt-4 ${
+                showTabStrip
+                  ? "px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-3 space-y-5"
+                  : "p-4 sm:p-6 space-y-6"
+              }`
+        }
       >
         {showingExample && example ? (
           <WorkedExampleView

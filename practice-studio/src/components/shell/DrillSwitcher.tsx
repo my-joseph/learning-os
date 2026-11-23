@@ -603,10 +603,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           handlePick(item.id);
         }}
         className={`group w-full text-left px-1.5 py-1.5 ${
-          isSidebar ? "min-h-[44px] lg:min-h-0 " : ""
-        }rounded-md transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
+          isSidebar ? "min-h-[44px] lg:min-h-0 rounded-lg " : "rounded-md "
+        }transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
           isCurrent
-            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
+            ? isSidebar
+              ? "bg-zinc-200/70 dark:bg-zinc-800/80"
+              : "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
             : isSearchTarget
             ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
             : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80"
@@ -857,8 +859,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   onClick={() => handlePick(currentPinnedItem.id)}
                   title={formatFullRowCode(currentPinnedItem)}
                   className={`group w-full text-left px-1.5 py-1.5 ${
-                    isSidebar ? "min-h-[44px] lg:min-h-0 " : ""
-                  }rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15 transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70`}
+                    isSidebar
+                      ? "min-h-[44px] lg:min-h-0 rounded-lg bg-zinc-200/70 dark:bg-zinc-800/80 hover:bg-zinc-200/90 dark:hover:bg-zinc-800"
+                      : "rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15"
+                  } transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70`}
                 >
                   <StatusDot status={currentPinnedItem.practiceStatus} />
                   <NoteBadge

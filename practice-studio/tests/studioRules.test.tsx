@@ -126,18 +126,24 @@ assert.doesNotMatch(studioShell, /fixed left-3 top-1\/2/);
 assert.match(studioShell, /<StudioSidebar/);
 assert.match(studioShell, /Due today &amp; weak spots/);
 assert.doesNotMatch(studioShell, /Study queue/);
+assert.match(studioShell, /border-b border-zinc-200/);
 assert.match(studioHeader, /lg:hidden/);
 assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(studioHeader, /Score:/);
 assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
-assert.doesNotMatch(studioHeader, /DrillSwitcher|Generate drill set|Reset all/);
+assert.doesNotMatch(studioHeader, /DrillSwitcher/);
 assert.match(studioHeader, /Open navigation sidebar/);
+assert.match(studioHeader, /Expand sidebar/);
+assert.match(studioHeader, /Generate drill set/);
+assert.match(studioHeader, /Reset all questions/);
+assert.match(studioHeader, /Reset all problems/);
+assert.match(studioHeader, /Reset all milestones/);
 assert.match(studioHeader, /Due today & weak spots/);
-assert.match(studioSidebar, /Generate drill set/);
-assert.match(studioSidebar, /Reset all questions/);
-assert.match(studioSidebar, /Reset all problems/);
-assert.match(studioSidebar, /Reset all milestones/);
+assert.match(studioSidebar, /Collapse sidebar/);
+assert.match(studioSidebar, /<WorkspaceSwitch/);
+assert.match(studioSidebar, /<DrillSwitcher/);
+assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -651,19 +657,18 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.match(tw, /display: \['"Roboto Slab Variable"'/);
 }
 
-// Left Sidebar prototype SSR + invariant checks
+// Rev 2 Flat 3-pane Sidebar + Header + Frameless workspace SSR & invariant checks
 {
-  const expandedSidebarHtml = renderToStaticMarkup(
+  const openSidebarHtml = renderToStaticMarkup(
     <StudioSidebar
+      isOpen={true}
+      onToggle={noop}
       workspace="math"
       pillWorkspace="math"
       onSelectWorkspace={noop}
       mathHref="/math/DRL-MTH-T01-C01-01"
       codeHref="/code/DRL-PRG-T01-C01-01"
       currentDrill={sampleDrillDoc}
-      theme="light"
-      onToggleTheme={noop}
-      onResetAll={noop}
       drills={[
         {
           drillId: "DRL-MTH-T01-C01-01",
@@ -686,27 +691,25 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       drillFilter="ALL"
       onFilterChange={noop}
       onSelectDrill={noop}
-      onOpenGenPopover={noop}
     />
   );
-  assert.match(expandedSidebarHtml, /role="tree"/);
-  assert.match(expandedSidebarHtml, />MTH</);
-  assert.match(expandedSidebarHtml, />PRG</);
-  assert.match(expandedSidebarHtml, /aria-label="Collapse sidebar"/);
-  assert.match(expandedSidebarHtml, /aria-label="Generate drill set"/);
-  assert.match(expandedSidebarHtml, /aria-label="Reset all questions"/);
+  assert.match(openSidebarHtml, /role="tree"/);
+  assert.match(openSidebarHtml, />MTH</);
+  assert.match(openSidebarHtml, />PRG</);
+  assert.match(openSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.doesNotMatch(openSidebarHtml, /aria-label="Generate drill set"/);
+  assert.doesNotMatch(openSidebarHtml, /aria-label="Reset all/);
 
-  const collapsedSidebarHtml = renderToStaticMarkup(
+  const closedSidebarHtml = renderToStaticMarkup(
     <StudioSidebar
+      isOpen={false}
+      onToggle={noop}
       workspace="math"
       pillWorkspace="math"
       onSelectWorkspace={noop}
       mathHref="/math/DRL-MTH-T01-C01-01"
       codeHref="/code/DRL-PRG-T01-C01-01"
       currentDrill={sampleDrillDoc}
-      theme="light"
-      onToggleTheme={noop}
-      onResetAll={noop}
       drills={[]}
       labs={[]}
       selectedDrillId="DRL-MTH-T01-C01-01"
@@ -715,25 +718,22 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       drillFilter="ALL"
       onFilterChange={noop}
       onSelectDrill={noop}
-      onOpenGenPopover={noop}
-      initialCollapsed={true}
     />
   );
-  assert.match(collapsedSidebarHtml, /aria-label="Expand sidebar"/);
-  assert.match(collapsedSidebarHtml, /aria-label="Browse drills"/);
-  assert.doesNotMatch(collapsedSidebarHtml, /role="tree"/);
+  assert.match(closedSidebarHtml, /aria-hidden="true"/);
+  assert.match(closedSidebarHtml, /pointer-events-none/);
+  assert.match(closedSidebarHtml, /invisible/);
 
   const embeddedSidebarHtml = renderToStaticMarkup(
     <StudioSidebar
+      embedded={true}
+      isOpen={false}
       workspace="math"
       pillWorkspace="math"
       onSelectWorkspace={noop}
       mathHref="/math/DRL-MTH-T01-C01-01"
       codeHref="/code/DRL-PRG-T01-C01-01"
       currentDrill={sampleDrillDoc}
-      theme="light"
-      onToggleTheme={noop}
-      onResetAll={noop}
       drills={[]}
       labs={[]}
       selectedDrillId="DRL-MTH-T01-C01-01"
@@ -742,28 +742,96 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       drillFilter="ALL"
       onFilterChange={noop}
       onSelectDrill={noop}
-      onOpenGenPopover={noop}
-      embedded={true}
-      initialCollapsed={true}
     />
   );
   assert.doesNotMatch(embeddedSidebarHtml, /aria-label="Collapse sidebar"/);
-  assert.match(embeddedSidebarHtml, /aria-label="Generate drill set"/);
+  assert.match(embeddedSidebarHtml, />MTH</);
 
-  const headerHtml = renderToStaticMarkup(
+  const headerOpenHtml = renderToStaticMarkup(
     <StudioHeader
-      showHeader={true}
+      workspace="math"
       currentDrill={sampleDrillDoc}
+      selectedDrillId={sampleDrillDoc.drillId}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      onOpenGenPopover={noop}
+      isSidebarOpen={true}
+      onOpenDesktopSidebar={noop}
       onOpenSidebarDrawer={noop}
+      isRightPanelOpen={true}
+      onToggleRightPanel={noop}
       onOpenSideDrawer={noop}
       sidePanelCount={2}
-      tiles={<div data-testid="tiles" />}
     />
   );
-  assert.match(headerHtml, /aria-label="Open navigation sidebar"/);
-  assert.match(headerHtml, /aria-label="Due today &amp; weak spots"/);
-  assert.match(headerHtml, /Linear Equations/);
-  assert.doesNotMatch(headerHtml, /Generate drill set|Reset all/);
+  assert.match(headerOpenHtml, /aria-label="Open navigation sidebar"/);
+  assert.doesNotMatch(headerOpenHtml, /aria-label="Expand sidebar"/);
+  assert.match(headerOpenHtml, /aria-label="Generate drill set"/);
+  assert.match(headerOpenHtml, /aria-label="Reset all questions"/);
+  assert.match(headerOpenHtml, /aria-label="Due today &amp; weak spots"/);
+  assert.match(headerOpenHtml, /aria-pressed="true"/);
+  assert.match(headerOpenHtml, /Linear Equations/);
+
+  const headerClosedHtml = renderToStaticMarkup(
+    <StudioHeader
+      workspace="math"
+      currentDrill={sampleDrillDoc}
+      selectedDrillId={sampleDrillDoc.drillId}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      onOpenGenPopover={noop}
+      isSidebarOpen={false}
+      onOpenDesktopSidebar={noop}
+      onOpenSidebarDrawer={noop}
+      isRightPanelOpen={false}
+      onToggleRightPanel={noop}
+      onOpenSideDrawer={noop}
+      sidePanelCount={2}
+    />
+  );
+  assert.match(headerClosedHtml, /aria-label="Expand sidebar"/);
+  assert.match(headerClosedHtml, /aria-pressed="false"/);
+
+  const framelessMathHtml = renderToStaticMarkup(
+    <MathWorkspace
+      frameless
+      problem={sampleMathProblem}
+      index={0}
+      totalQuestions={5}
+      drillTitle="Linear Equations"
+      mistakeTags={[]}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(framelessMathHtml, /<article[^>]*rounded-2xl/);
+
+  const framelessCodeHtml = renderToStaticMarkup(
+    <CodeDashboard
+      frameless
+      problem={sampleCodeProblem}
+      drillId="DRL-PRG-T00-C03-02"
+      index={0}
+      totalQuestions={5}
+      drillTitle="JavaScript & TypeScript Baseline"
+      mistakeTags={[]}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(framelessCodeHtml, /<article[^>]*rounded-2xl/);
 
   for (const [label, src] of [
     ["StudioSidebar.tsx", studioSidebar],

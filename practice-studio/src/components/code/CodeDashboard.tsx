@@ -110,6 +110,7 @@ export interface CodeDashboardProps {
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
   initialExpandedVisibleTests?: number[];
+  frameless?: boolean;
 }
 
 const DEFAULT_EXPLAIN_QUESTION =
@@ -165,6 +166,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   nextCardLabel,
   lastQuestionNavLabel,
   initialExpandedVisibleTests,
+  frameless = false,
 }) => {
   const isLab = drillId.startsWith("LAB-") || /^M\d+$/i.test(problem.id);
   const isKata = isLab || isWorkspaceProblem(problem);
@@ -494,7 +496,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         </h1>
       )}
 
-      <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
+      <article
+        className={
+          frameless
+            ? "space-y-6"
+            : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6"
+        }
+      >
         {/* 1. Brief: problem/milestone title + timer + prompt (text-base), then Visible tests */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
