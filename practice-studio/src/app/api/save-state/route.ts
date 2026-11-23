@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isSafeId } from "@/lib/paths";
+import { isSafeId, loadDrillFromDisk } from "@/lib/paths";
 import { writeProgress } from "@/lib/progress";
 
 /** Autosave of practice state: writes progress/<DRILL_ID>.json only, never the drill content file. */
@@ -14,6 +14,11 @@ export async function POST(req: NextRequest) {
     }
     if (!isSafeId(drillId) || (unitCode && !isSafeId(unitCode))) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
+    }
+
+    const canonicalDrill = loadDrillFromDisk(drillId);
+    if (!canonicalDrill || canonicalDrill.drillId !== drillId) {
+      return NextResponse.json({ ok: false, error: "Drill not found" }, { status: 404 });
     }
 
     const progressFilePath = writeProgress(drillDoc, { allowSyncStampUpdate: false });

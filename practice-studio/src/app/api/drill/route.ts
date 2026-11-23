@@ -6,6 +6,8 @@ import {
   getDrillWorkspacesDir,
   getDrillsDataDir,
   getWorkspaceRoot,
+  findCanonicalDrillFilePath,
+  isCanonicalDrillId,
   isSafeId,
   remapWorkspaceFileForMode,
   resolveInsideDrillWorkspace,
@@ -15,6 +17,35 @@ import { redactDrill, redactDrillForReview } from "@/lib/redact";
 import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
 import { plainTitle } from "@/lib/titleText";
 import { findVariantsForProblem } from "@/lib/variants";
+
+/** Delete exactly one local drill content file; progress, workspaces, and Labs are retained. */
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const drillId = searchParams.get("id");
+  if (!drillId) {
+    return NextResponse.json({ ok: false, error: "Missing drill id" }, { status: 400 });
+  }
+  if (!isCanonicalDrillId(drillId)) {
+    return NextResponse.json({ ok: false, error: "Invalid drill id" }, { status: 400 });
+  }
+
+  try {
+    const filePath = findCanonicalDrillFilePath(drillId);
+    if (!filePath) {
+      return NextResponse.json({ ok: false, error: "Drill not found" }, { status: 404 });
+    }
+    fs.unlinkSync(filePath);
+    return NextResponse.json({ ok: true, deleted: true, drillId });
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return NextResponse.json({ ok: false, error: "Drill not found" }, { status: 404 });
+    }
+    return NextResponse.json(
+      { ok: false, error: "Failed to delete drill" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
