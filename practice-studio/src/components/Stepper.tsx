@@ -208,7 +208,7 @@ export const Stepper: React.FC<StepperProps> = ({
   const circleBaseCls = compact ? COMPACT_CIRCLE_BASE_CLS : CIRCLE_BASE_CLS;
   const buttonCls = compact ? COMPACT_BUTTON_CLS : BUTTON_CLS;
   const connectorCls = compact
-    ? "pointer-events-none absolute top-[13px] sm:top-[12px] -translate-y-1/2 left-[calc(50%_+_12px)] w-[28px] sm:left-[calc(50%_+_14px)] sm:w-[calc(100%_-_28px)] h-0.5 rounded-full z-0"
+    ? "pointer-events-none absolute top-[13px] sm:top-[12px] -translate-y-1/2 left-[calc(50%_+_13px)] w-[34px] sm:left-[calc(50%_+_14px)] sm:w-[calc(100%_-_28px)] h-0.5 rounded-full z-0"
     : "pointer-events-none absolute top-[15px] sm:top-4 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0";
   const labelCls = compact
     ? "hidden sm:block mt-0.5 max-w-full truncate px-1 font-display text-[10px] font-medium leading-tight text-zinc-500 dark:text-zinc-400"
