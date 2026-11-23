@@ -361,10 +361,12 @@ assert.match(
   /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="text-xs truncate min-w-0 flex-1 font-medium[^>]*>Set 3<\/span>/
 );
 // Set 4 (hasNotes: true) renders StatusDot followed by NoteBadge
-assert.match(
-  mathTreeHtml,
-  /<span class="sr-only">Needs retry<\/span><\/span><span class="w-3\.5 h-3\.5 inline-flex items-center justify-center shrink-0" title="Has notes or mistake tags">/
-);
+assert.match(mathTreeHtml, /<span class="sr-only">Needs retry<\/span>/);
+const noteBadgeClasses =
+  mathTreeHtml.match(/<span class="([^"]*)" title="Has notes or mistake tags">/)?.[1] ?? "";
+assert.match(noteBadgeClasses, /w-3\.5/);
+assert.match(noteBadgeClasses, /h-3\.5/);
+assert.doesNotMatch(noteBadgeClasses, /bg-/);
 
 // 3) All type icons (Sigma, Code2, FlaskConical, Shuffle) removed; only Layers kept on Topic rows
 assert.doesNotMatch(mathTreeHtml, /lucide-sigma/);

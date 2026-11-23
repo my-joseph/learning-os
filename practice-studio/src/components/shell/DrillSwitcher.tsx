@@ -39,6 +39,7 @@ import {
 } from "@/lib/drillGrouping";
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
+import { Badge } from "@/components/ui/shadcn/Badge";
 import { plainTitle } from "@/lib/titleText";
 import { DrillFilter } from "@/hooks/types";
 
@@ -100,8 +101,9 @@ function NoteBadge({
 }) {
   if (isDueToday) {
     return (
-      <span
-        className="w-3.5 h-3.5 inline-flex items-center justify-center shrink-0"
+      <Badge
+        variant="status"
+        className="w-3.5 h-3.5 p-0 rounded-none text-[0px] gap-0 inline-flex items-center justify-center shrink-0"
         title={hasNotes ? "Due today · has notes" : "Due today"}
       >
         <MessageSquare
@@ -109,13 +111,14 @@ function NoteBadge({
           aria-hidden="true"
         />
         <span className="sr-only">Due today</span>
-      </span>
+      </Badge>
     );
   }
   if (hasNotes) {
     return (
-      <span
-        className="w-3.5 h-3.5 inline-flex items-center justify-center shrink-0"
+      <Badge
+        variant="status"
+        className="w-3.5 h-3.5 p-0 rounded-none text-[0px] gap-0 inline-flex items-center justify-center shrink-0"
         title="Has notes or mistake tags"
       >
         <MessageSquare
@@ -123,7 +126,7 @@ function NoteBadge({
           aria-hidden="true"
         />
         <span className="sr-only">Has notes</span>
-      </span>
+      </Badge>
     );
   }
   return null;
@@ -143,9 +146,9 @@ function HoverRowCode({ code }: { code: string }) {
 
 function CountPill({ count }: { count: number }) {
   return (
-    <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+    <Badge variant="status" className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
       {count}
-    </span>
+    </Badge>
   );
 }
 

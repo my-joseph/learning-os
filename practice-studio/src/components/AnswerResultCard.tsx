@@ -12,6 +12,7 @@ import {
   ResultCardTone,
 } from "@/lib/answerFeedback";
 import { statusTone } from "@/lib/statusTone";
+import { Button } from "@/components/ui/shadcn/Button";
 import { dialogCard, presence } from "@/lib/motion";
 import { CheckResult, MistakeTag, Problem, ProblemState } from "@/types/drill";
 
@@ -208,7 +209,9 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
 
               {actionKind === "back" && onBack && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <button
+                  <Button
+                    variant="primary"
+                    size="compact"
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onBack}
@@ -217,13 +220,15 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   >
                     <span>{backLabel || "Back to question"}</span>
                     <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {actionKind === "next" && onNextQuestion && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="compact"
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onNextQuestion}
@@ -232,13 +237,15 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   >
                     <span>{nextLabel}</span>
                     <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {actionKind === "review" && onOpenReview && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="compact"
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onOpenReview}
@@ -247,13 +254,15 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   >
                     <span>Review</span>
                     <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {actionKind === "retry" && onTryAgain && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="compact"
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onTryAgain}
@@ -262,13 +271,15 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                     className={actionButtonClass}
                   >
                     <span>{retryLabel}</span>
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {actionKind === "show_steps" && onShowSteps && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="compact"
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onShowSteps}
@@ -276,7 +287,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                     className={actionButtonClass}
                   >
                     <span>Show steps</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -284,7 +295,9 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
             {visibleSecondary.length > 0 && (
               <div className="pl-10 flex flex-wrap items-center gap-x-4 gap-y-1">
                 {visibleSecondary.map((act) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="compact"
                     key={act.label}
                     type="button"
                     onClick={act.onClick}
@@ -298,7 +311,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                     {act.trailingChevron && !act.loading && (
                       <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
                     )}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

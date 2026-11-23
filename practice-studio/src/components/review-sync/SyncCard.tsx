@@ -24,6 +24,8 @@ import { statusTone, warningTone } from "@/lib/statusTone";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { Button } from "@/components/ui/shadcn/Button";
+import { Badge } from "@/components/ui/shadcn/Badge";
 import type { EffectiveSyncPhase } from "./SessionSummaryCard";
 
 export interface SyncCardProps {
@@ -228,14 +230,14 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   ({preview.statusReason})
                 </span>
               </span>
-              {preview.hasAnyAttempt && <button
+              {preview.hasAnyAttempt && <Button variant="ghost" size="compact"
                 type="button"
                 disabled={isSyncing}
                 onClick={() => onStatusOverrideChange(toggleTargetStatus)}
                 className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {toggleLabel}
-              </button>}
+              </Button>}
             </div>
           </li>
 
@@ -246,12 +248,13 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               <span>Mistake categories:</span>
               {preview.mistakeCategories.length > 0 ? (
                 preview.mistakeCategories.map((cat) => (
-                  <span
+                  <Badge
                     key={cat}
+                    variant="status"
                     className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700"
                   >
                     {cat}
-                  </span>
+                  </Badge>
                 ))
               ) : (
                 <span className="text-zinc-500 dark:text-zinc-400">No mistakes logged</span>
@@ -276,7 +279,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         {preview.unitTitle}
                       </span>
                     </span>
-                    <button
+                    <Button variant="ghost" size="compact"
                       type="button"
                       onClick={() => setShowLines((prev) => !prev)}
                       aria-expanded={showLines}
@@ -290,7 +293,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                           showLines ? "rotate-180" : ""
                         }`}
                       />
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <span className="text-zinc-500 dark:text-zinc-400">
@@ -386,13 +389,13 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   not tried. They are sent as not tried.
                 </span>
                 {onAnswerFirstUnanswered && (
-                  <button
+                  <Button variant="ghost" size="compact"
                     type="button"
                     onClick={onAnswerFirstUnanswered}
                     className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                   >
                     Answer them first
-                  </button>
+                  </Button>
                 )}
               </div>
             </li>
@@ -479,14 +482,14 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                             {upd.masteryCap.reason}
                           </span>
                           {l4Challenge && onOpenL4Challenge && (
-                            <button
+                            <Button variant="ghost" size="compact"
                               type="button"
                               onClick={() => onOpenL4Challenge(l4Challenge.index)}
                               className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                             >
                               <span>Try an L4 challenge</span>
                               <ArrowRight className="w-3 h-3" aria-hidden="true" />
-                            </button>
+                            </Button>
                           )}
                         </p>
                       )}
@@ -497,14 +500,14 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             )}
 
             <div>
-              <button
+              <Button variant="ghost" size="compact"
                 type="button"
                 onClick={onSync}
                 disabled={isSyncing}
                 className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
               >
                 <span>Sync again</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -525,7 +528,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   <span className="text-xs text-zinc-700 dark:text-zinc-300 break-words">
                     {errorBrief}
                   </span>
-                  <button
+                  <Button variant="ghost" size="compact"
                     type="button"
                     onClick={() => setShowErrorDetails((prev) => !prev)}
                     aria-expanded={showErrorDetails}
@@ -538,7 +541,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         showErrorDetails ? "rotate-180" : ""
                       }`}
                     />
-                  </button>
+                  </Button>
                 </div>
 
                 <Reveal show={showErrorDetails}>
@@ -552,7 +555,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             </div>
 
             <div>
-              <button
+              <Button variant="ghost" size="compact"
                 type="button"
                 onClick={onSync}
                 disabled={isSyncing}
@@ -560,7 +563,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               >
                 <RefreshCw className="w-4 h-4" aria-hidden="true" />
                 <span>Retry</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -593,7 +596,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       <span className="text-zinc-700 dark:text-zinc-300 break-words">
                         {errorBrief}
                       </span>
-                      <button
+                      <Button variant="ghost" size="compact"
                         type="button"
                         onClick={() => setShowErrorDetails((prev) => !prev)}
                         aria-expanded={showErrorDetails}
@@ -606,7 +609,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                             showErrorDetails ? "rotate-180" : ""
                           }`}
                         />
-                      </button>
+                      </Button>
                       <CopyButton
                         text={errorFullText}
                         className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
@@ -638,7 +641,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             </div>
 
             <div>
-              <button
+              <Button variant="ghost" size="compact"
                 type="button"
                 onClick={onSync}
                 disabled={isSyncing}
@@ -646,7 +649,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               >
                 <RefreshCw className="w-4 h-4" aria-hidden="true" />
                 <span>Retry</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -659,14 +662,14 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 ? "Pilot mode: nothing was written to Notion."
                 : "Dry run: nothing was written to Notion."}
             </p>
-            <button
+            <Button variant="ghost" size="compact"
               type="button"
               onClick={onSync}
               disabled={isSyncing}
               className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-600 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
             >
               <span>Sync again</span>
-            </button>
+            </Button>
           </div>
         )}
 
@@ -675,7 +678,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           effectiveSyncPhase === "syncing" ||
           effectiveSyncPhase === "changed") && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
-            <button
+            <Button variant="ghost" size="compact"
               type="button"
               onClick={onSync}
               disabled={isSyncing || !preview.hasAnyAttempt || preview.summary.maxScore === 0}
@@ -698,7 +701,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   </span>
                 </>
               )}
-            </button>
+            </Button>
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
               {!preview.hasAnyAttempt

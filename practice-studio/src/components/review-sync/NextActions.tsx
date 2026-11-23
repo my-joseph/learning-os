@@ -9,6 +9,7 @@ import type {
   WeakSpotSuggestion,
 } from "@/lib/reviewRow";
 import { trapName } from "@/lib/titleText";
+import { Button } from "@/components/ui/shadcn/Button";
 
 export interface NextActionsProps {
   dueReviewCount: number;
@@ -158,16 +159,26 @@ export const NextActions: React.FC<NextActionsProps> = ({
 
           if (action.href) {
             return (
-              <Link key={action.key} href={action.href} className={cls}>
-                {action.icon === "plus" && iconEl}
-                {action.label}
-                {action.icon === "arrow" && iconEl}
-              </Link>
+              <Button
+                key={action.key}
+                asChild
+                variant={isPrimary ? "primary" : "outline"}
+                size="compact"
+                className={cls}
+              >
+                <Link href={action.href}>
+                  {action.icon === "plus" && iconEl}
+                  {action.label}
+                  {action.icon === "arrow" && iconEl}
+                </Link>
+              </Button>
             );
           }
 
           return (
-            <button
+            <Button
+              variant={isPrimary ? "primary" : "outline"}
+              size="compact"
               key={action.key}
               type="button"
               onClick={action.onClick}
@@ -176,7 +187,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
               {action.icon === "plus" && iconEl}
               {action.label}
               {action.icon === "arrow" && iconEl}
-            </button>
+            </Button>
           );
         })}
       </div>
