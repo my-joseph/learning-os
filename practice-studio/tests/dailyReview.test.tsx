@@ -120,12 +120,21 @@ async function runTests() {
   //    revisitNote, PRG non-coding & PRG coding items, and end screen
   // -------------------------------------------------------------------------
   {
-    // 1a. Loading state
+    // 1a. Loading state (standardized Card + reduced-motion Skeleton)
     const loadingHtml = renderToStaticMarkup(
       <DailyReviewView loading={true} items={[]} />
     );
     assert.match(loadingHtml, /<h1[^>]*>Daily review<\/h1>/);
     assert.match(loadingHtml, /Loading daily review…/);
+    assert.match(loadingHtml, /rounded-2xl border/);
+    assert.match(loadingHtml, /animate-pulse motion-reduce:animate-none/);
+
+    // 1a-ii. Loading problem state uses Card + reduced-motion Skeleton
+    const loadingProblemHtml = renderToStaticMarkup(
+      <DailyReviewView items={sampleItems} currentIndex={0} isLoadingProblem={true} />
+    );
+    assert.match(loadingProblemHtml, /aria-label="Loading review problem"/);
+    assert.match(loadingProblemHtml, /animate-pulse motion-reduce:animate-none/);
 
     // 1b. Empty state ("Nothing to review today" + next due date)
     const emptyHtml = renderToStaticMarkup(
@@ -318,6 +327,11 @@ async function runTests() {
     assert.doesNotMatch(afterCorrectHtml, /Trap:/, "a non-trap verdict must not show a trap line");
     assert.match(afterCorrectHtml, /Next time I will…/);
     assert.match(afterCorrectHtml, /Invert the divisor right away\./);
+    assert.match(
+      afterCorrectHtml,
+      /<input[^>]*aria-label="Next time I will…"[^>]*class="[^"]*focus-visible:outline-none[^"]*"/,
+      "revisit note input uses shadcn Input with focus-visible semantics"
+    );
 
     const correctOnRetryHtml = renderToStaticMarkup(
       <DailyReviewView

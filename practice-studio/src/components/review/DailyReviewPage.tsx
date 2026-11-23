@@ -27,6 +27,9 @@ import {
 } from "@/hooks/useDrill";
 import { useTheme } from "@/hooks/useTheme";
 import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
+import { Card } from "@/components/ui/shadcn/Card";
+import { Input } from "@/components/ui/shadcn/Input";
+import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 import { applyDivergedStep } from "@/lib/applyCheckResult";
 import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
@@ -233,22 +236,22 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
 
         <main className="space-y-4">
           {loading ? (
-            <div
+            <Card
               role="status"
               aria-label="Loading daily review"
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4"
+              className="shadow-none p-6 space-y-4"
             >
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Loading daily review…
               </p>
-              <div className="space-y-3 animate-pulse">
-                <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-                <div className="h-20 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
-                <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-1/3 rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+                <Skeleton className="h-10 w-1/2 rounded-xl" />
               </div>
-            </div>
+            </Card>
           ) : error ? (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-3">
+            <Card className="shadow-none p-6 space-y-3">
               <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 Could not load daily review
               </p>
@@ -260,10 +263,10 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Back to drill</span>
               </Link>
-            </div>
+            </Card>
           ) : items.length === 0 ? (
             /* Empty state when nothing is due */
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-4">
+            <Card className="shadow-none p-6 sm:p-8 space-y-4">
               <div className="space-y-1.5">
                 <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                   Nothing to review today
@@ -283,10 +286,10 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </Link>
               </div>
-            </div>
+            </Card>
           ) : completed ? (
             /* End screen */
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6">
+            <Card className="shadow-none p-6 sm:p-8 space-y-6">
               <div className="flex items-start gap-3">
                 <span className={`w-8 h-8 rounded-full ${statusTone.correct.iconCircle} inline-flex items-center justify-center shrink-0`}>
                   <Check className="w-4 h-4" aria-hidden="true" />
@@ -396,13 +399,17 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   </Link>
                 )}
               </div>
-            </div>
+            </Card>
           ) : isLoadingProblem || !currentProblem || !currentItem ? (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4 animate-pulse">
-              <div className="h-4 w-1/4 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-              <div className="h-20 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
-              <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
-            </div>
+            <Card
+              role="status"
+              aria-label="Loading review problem"
+              className="shadow-none p-6 space-y-4"
+            >
+              <Skeleton className="h-4 w-1/4 rounded-lg" />
+              <Skeleton className="h-20 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+              <Skeleton className="h-10 w-1/2 rounded-xl" />
+            </Card>
           ) : (
             (() => {
               // The problem was already redacted/reset once when its drill loaded
@@ -448,14 +455,15 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       </label>
                       <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
                         <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-                        <input
+                        <Input
                           id={`revisit-note-${safeProblem.id}`}
                           type="text"
+                          variant="embedded"
                           value={revisitNoteDraft}
                           onChange={(e) => onRevisitNoteChange?.(e.target.value)}
                           aria-label="Next time I will…"
                           placeholder="Next time I will…"
-                          className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
+                          className="text-xs"
                         />
                       </div>
                     </div>
@@ -483,15 +491,15 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 <div className="space-y-3">
                   {/* Quiet revisitNote from last time ABOVE the problem */}
                   {noteFromLastTime && (
-                    <div
+                    <Card
                       role="note"
-                      className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300"
+                      className="rounded-xl shadow-none px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300"
                     >
                       <span className="text-zinc-500 dark:text-zinc-400">
                         Your note from last time:{" "}
                       </span>
                       <span>{noteFromLastTime}</span>
-                    </div>
+                    </Card>
                   )}
 
                   {currentItem.subject === "PRG" ? (

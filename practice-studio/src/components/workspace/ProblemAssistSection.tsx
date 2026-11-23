@@ -5,6 +5,11 @@ import { ChevronDown, Loader2, RotateCcw } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { FormattedText } from "@/components/FormattedText";
 import { StepRow } from "@/components/StepRow";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/shadcn/Collapsible";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { warningTone } from "@/lib/statusTone";
 import { Problem } from "@/types/drill";
@@ -83,136 +88,173 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
 }) => {
   const canShowHint = Boolean(problem.hasHint || hasCheckpointHint(problem.checkpointHint));
   return (
-    <div className="space-y-3 pt-1">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400 [&_button]:min-h-[32px] sm:[&_button]:min-h-0">
-        {hasAttempt && (
-          <button
-            type="button"
-            onClick={onReset}
-            className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
-          </button>
-        )}
-
-        {hasSetup && onToggleSetup && (
-          <button
-            type="button"
-            onClick={onToggleSetup}
-            aria-expanded={showSetup}
-            title={
-              setupUnopenedUnattempted
-                ? "Opening before checking counts as assisted"
-                : undefined
-            }
-            className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          >
-            <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                showSetup ? "rotate-180" : ""
-              }`}
-            />
-            <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
-          </button>
-        )}
-
-        {(canShowHint || hasCheckpointHint(problem.checkpointHint)) && <button
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+      {hasAttempt && (
+        <button
           type="button"
-          onClick={onToggleHint}
-          aria-expanded={showHint}
-          className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          onClick={onReset}
+          className="order-1 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
         >
-          <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform duration-200 ${
-              showHint ? "rotate-180" : ""
-            }`}
-          />
-          <span>{showHint ? "Hide hint" : "Hint"}</span>
-        </button>}
+          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+          <span>Reset</span>
+        </button>
+      )}
 
+      {hasSetup && (
+        <Collapsible
+          open={Boolean(showSetup)}
+          onOpenChange={(nextOpen) => {
+            if (nextOpen !== Boolean(showSetup)) onToggleSetup?.();
+          }}
+          className="contents"
+        >
+          {onToggleSetup && (
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                title={
+                  setupUnopenedUnattempted
+                    ? "Opening before checking counts as assisted"
+                    : undefined
+                }
+                className="order-2 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              >
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                    showSetup ? "rotate-180" : ""
+                  }`}
+                />
+                <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
+              </button>
+            </CollapsibleTrigger>
+          )}
+          <CollapsibleContent className="order-11 basis-full w-full">
+            {showSetup && setupDisclosure ? (
+              <div className="pt-1">{setupDisclosure}</div>
+            ) : null}
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      {(canShowHint || hasCheckpointHint(problem.checkpointHint)) && (
+        <Collapsible
+          open={showHint}
+          onOpenChange={(nextOpen) => {
+            if (nextOpen !== showHint) onToggleHint();
+          }}
+          className="contents"
+        >
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="order-3 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+            >
+              <ChevronDown
+                aria-hidden="true"
+                className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                  showHint ? "rotate-180" : ""
+                }`}
+              />
+              <span>{showHint ? "Hide hint" : "Hint"}</span>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="order-10 basis-full w-full">
+            {hasCheckpointHint(problem.checkpointHint) ? (
+              <div className="pt-1">
+                <CheckpointHintDisclosure
+                  checkpointHint={problem.checkpointHint}
+                  show={showHint}
+                />
+              </div>
+            ) : null}
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      <Collapsible
+        open={Boolean(showSolution)}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen !== Boolean(showSolution)) onToggleSolution();
+        }}
+        className="contents"
+      >
         {!hideShowStepsButton && (
-          <button
-            type="button"
-            onClick={onToggleSolution}
-            aria-expanded={showSolution}
-            title={
-              stepsUnopenedUnattempted
-                ? "Opening before checking counts as assisted"
-                : undefined
-            }
-            className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          >
-            <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                showSolution ? "rotate-180" : ""
-              }`}
-            />
-            <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-          </button>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              title={
+                stepsUnopenedUnattempted
+                  ? "Opening before checking counts as assisted"
+                  : undefined
+              }
+              className="order-4 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+            >
+              <ChevronDown
+                aria-hidden="true"
+                className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                  showSolution ? "rotate-180" : ""
+                }`}
+              />
+              <span>{showSolution ? "Hide steps" : "Show steps"}</span>
+            </button>
+          </CollapsibleTrigger>
         )}
 
-        {onSkip && !hasAttempt && (
-          <button
-            type="button"
-            onClick={onSkip}
-            className="inline-flex min-h-[36px] items-center gap-1 px-2 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
-          >
-            <span>{skipLabel}</span>
-          </button>
-        )}
-      </div>
-
-      {/* Checkpoint Hint Disclosure */}
-      <CheckpointHintDisclosure
-        checkpointHint={problem.checkpointHint}
-        show={showHint}
-      />
-
-      {/* Equation Set-up Disclosure */}
-      {setupDisclosure}
-
-      {/* Step-by-Step Derivation Disclosure */}
-      <Reveal show={Boolean(showSolution)}>
-        {showSolution && (
-          <div
-            ref={stepsRef}
-            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3"
-          >
-            {showStepsHeader && (
-              <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
-                <span className="font-medium">Steps</span>
-                {problem.answerDisplay && (
-                  <span>
-                    Answer:{" "}
-                    <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                      <FormattedText text={`$${problem.answerDisplay}$`} />
-                    </strong>
-                  </span>
+        {/* Step-by-Step Derivation Disclosure */}
+        <CollapsibleContent className="order-12 basis-full w-full">
+          <Reveal show={Boolean(showSolution)}>
+            {showSolution && (
+              <div
+                ref={stepsRef}
+                className="mt-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3"
+              >
+                {showStepsHeader && (
+                  <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="font-medium">Steps</span>
+                    {problem.answerDisplay && (
+                      <span>
+                        Answer:{" "}
+                        <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                          <FormattedText text={`$${problem.answerDisplay}$`} />
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                )}
+                {loadingSteps ? (
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 py-1">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    <span>Loading steps…</span>
+                  </div>
+                ) : (
+                  <div>
+                    {(problem.steps || []).map((st, sIdx) => (
+                      <StepRow
+                        key={sIdx}
+                        step={st}
+                        index={sIdx}
+                        isDiverged={onMarkDivergedStep ? problem.state.divergedStep === sIdx : false}
+                        onMarkDiverged={onMarkDivergedStep ? () => onMarkDivergedStep(sIdx) : undefined}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             )}
-            {loadingSteps ? (
-              <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 py-1">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                <span>Loading steps…</span>
-              </div>
-            ) : (
-              <div>
-                {(problem.steps || []).map((st, sIdx) => (
-                  <StepRow
-                    key={sIdx}
-                    step={st}
-                    index={sIdx}
-                    isDiverged={onMarkDivergedStep ? problem.state.divergedStep === sIdx : false}
-                    onMarkDiverged={onMarkDivergedStep ? () => onMarkDivergedStep(sIdx) : undefined}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </Reveal>
+          </Reveal>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {onSkip && !hasAttempt && (
+        <button
+          type="button"
+          onClick={onSkip}
+          className="order-5 inline-flex min-h-[44px] sm:min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
+        >
+          <span>{skipLabel}</span>
+        </button>
+      )}
     </div>
   );
 };

@@ -6,6 +6,8 @@ import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
+import { WorkedExampleDisclosure } from "../src/components/math/WorkedExampleView";
+import { ProblemAssistSection } from "../src/components/workspace/ProblemAssistSection";
 import { labToDrillDocument, type LabDetailResponse } from "../src/lib/labModel";
 import { preloadShiki } from "../src/lib/shiki";
 import type { Problem, ProblemState } from "../src/types/drill";
@@ -98,13 +100,131 @@ assert.match(drillHtml, /<code[^>]*>nums<\/code> is sorted ascending/);
 assert.match(drillHtml, /bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3\.5 py-2\.5 font-mono/);
 assert.doesNotMatch(drillHtml, /aria-label="Examples"[\s\S]*border-l-2/);
 
-// Visible test names with code are collapsed disclosure buttons by default.
-assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-0"[^>]*>/);
-assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-1"[^>]*>/);
-assert.match(drillHtml, /<div id="visible-test-code-0" hidden=""/);
+// Visible test names with code are collapsed Radix Collapsible disclosures by default.
+assert.match(drillHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
+assert.match(drillHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-1")[^>]*>/);
+assert.match(drillHtml, /<div(?=[^>]*id="visible-test-code-0")(?=[^>]*hidden="")[^>]*>/);
+assert.doesNotMatch(drillHtml, /searchInsert\(\[1, 3, 5\], 3\)/, "collapsed visible test code stays unmounted");
 assert.match(drillHtml, /rounded-full bg-indigo-600 dark:bg-indigo-400/);
 assert.match(drillHtml, /inserts before the first value/);
 assert.doesNotMatch(drillHtml, /aria-controls="visible-test-code-2"/, "tests without code stay plain names");
+
+// Expanding a single visible test mounts only that test's assertion code.
+const expandedDrillHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={drillProblem}
+    drillId="DRL-PRG-TEST-01"
+    index={0}
+    totalQuestions={1}
+    drillTitle="Sorted Search"
+    mistakeTags={[]}
+    initialExpandedVisibleTests={[0]}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(expandedDrillHtml, /<button(?=[^>]*aria-expanded="true")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
+assert.match(expandedDrillHtml, /searchInsert\(\[1, 3, 5\], 3\), 1/);
+assert.doesNotMatch(expandedDrillHtml, /searchInsert\(\[2\], 1\)/, "other collapsed tests stay unmounted");
+
+// Zero-leak Collapsible guard: closed hints, reference solutions, review history, and explain stay unmounted.
+const gatedProblem: Problem = {
+  ...drillProblem,
+  checkpointHint: "SECRET_CHECKPOINT_HINT_TEXT",
+  solutionCode: "export function searchInsert() { return SECRET_REF_CODE; }",
+};
+const gatedHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={gatedProblem}
+    drillId="DRL-PRG-TEST-01"
+    index={0}
+    totalQuestions={1}
+    drillTitle="Sorted Search"
+    mistakeTags={[]}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(gatedHtml, /<button[^>]*aria-expanded="false"[^>]*>[\s\S]*?Hint<\/span>/);
+assert.match(gatedHtml, /Unlocks after review passes/);
+assert.doesNotMatch(gatedHtml, /SECRET_CHECKPOINT_HINT_TEXT/, "closed checkpoint hint must not mount in DOM");
+assert.doesNotMatch(gatedHtml, /SECRET_REF_CODE/, "locked/closed reference solution must never mount in DOM");
+assert.doesNotMatch(gatedHtml, /No reviews recorded yet\./, "closed review history must remain unmounted");
+
+// WorkedExampleDisclosure keeps steps and answer unmounted until open.
+const sampleExample = {
+  token: "ex-1",
+  prompt: "SECRET_EXAMPLE_PROMPT",
+  answerDisplay: "SECRET_EXAMPLE_ANS",
+  answerPlain: "SECRET_EXAMPLE_ANS",
+  steps: [{ explain: "SECRET_EXAMPLE_STEP" }],
+};
+const closedExampleHtml = renderToStaticMarkup(<WorkedExampleDisclosure example={sampleExample} />);
+assert.match(closedExampleHtml, /aria-expanded="false"/);
+assert.doesNotMatch(closedExampleHtml, /SECRET_EXAMPLE_PROMPT|SECRET_EXAMPLE_ANS|SECRET_EXAMPLE_STEP/);
+const openExampleHtml = renderToStaticMarkup(<WorkedExampleDisclosure example={sampleExample} defaultOpen />);
+assert.match(openExampleHtml, /aria-expanded="true"/);
+assert.match(openExampleHtml, /SECRET_EXAMPLE_PROMPT/);
+assert.match(openExampleHtml, /SECRET_EXAMPLE_STEP/);
+
+// ProblemAssistSection keeps hint, setup, and steps unmounted when closed and preserves assisted hint title.
+const assistProblem: Problem = {
+  ...drillProblem,
+  checkpointHint: "SECRET_ASSIST_HINT",
+  answerDisplay: "SECRET_ASSIST_ANSWER",
+  steps: [{ explain: "SECRET_ASSIST_STEP" }],
+};
+const closedAssistHtml = renderToStaticMarkup(
+  <ProblemAssistSection
+    problem={assistProblem}
+    hasAttempt={false}
+    showHint={false}
+    onToggleHint={noop}
+    showSolution={false}
+    onToggleSolution={noop}
+    stepsUnopenedUnattempted={true}
+    hasSetup={true}
+    showSetup={false}
+    setupUnopenedUnattempted={true}
+    onToggleSetup={noop}
+    setupDisclosure={<div>SECRET_ASSIST_SETUP</div>}
+    onReset={noop}
+  />
+);
+assert.match(closedAssistHtml, /title="Opening before checking counts as assisted"[^>]*>[\s\S]*Show equation set-up/);
+assert.match(closedAssistHtml, /title="Opening before checking counts as assisted"[^>]*>[\s\S]*Show steps/);
+assert.doesNotMatch(closedAssistHtml, /SECRET_ASSIST_HINT|SECRET_ASSIST_SETUP|SECRET_ASSIST_STEP|SECRET_ASSIST_ANSWER/);
+const openAssistHtml = renderToStaticMarkup(
+  <ProblemAssistSection
+    problem={assistProblem}
+    hasAttempt={false}
+    showHint={true}
+    onToggleHint={noop}
+    showSolution={true}
+    onToggleSolution={noop}
+    stepsUnopenedUnattempted={false}
+    showStepsHeader={true}
+    hasSetup={true}
+    showSetup={true}
+    setupUnopenedUnattempted={false}
+    onToggleSetup={noop}
+    setupDisclosure={<div>VISIBLE_ASSIST_SETUP</div>}
+    onReset={noop}
+  />
+);
+assert.match(openAssistHtml, /SECRET_ASSIST_HINT/);
+assert.match(openAssistHtml, /VISIBLE_ASSIST_SETUP/);
+assert.match(openAssistHtml, /SECRET_ASSIST_STEP/);
 
 // Hidden test implementations and trap mutants must never render in the learner list.
 const secretProblem = {
@@ -242,8 +362,28 @@ assert.match(labHtml, /Example 1/);
 assert.match(labHtml, /budget = 4, cost = 1/);
 assert.match(labHtml, /Example 2/);
 assert.match(labHtml, /budget &gt;= 0/);
-assert.match(labHtml, /aria-expanded="false"[^>]*aria-controls="visible-test-code-0"/);
-assert.match(labHtml, /consumeRetry\(4, 1\), 3\);/);
+assert.match(labHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
+assert.doesNotMatch(labHtml, /consumeRetry\(4, 1\), 3\);/, "closed lab visible test code stays unmounted");
+const labExpandedHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={labDrillDoc.problems[0]}
+    drillId={labDrillDoc.drillId}
+    index={0}
+    totalQuestions={1}
+    drillTitle={labDrillDoc.unitTitle}
+    mistakeTags={[]}
+    initialExpandedVisibleTests={[0]}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(labExpandedHtml, /<button(?=[^>]*aria-expanded="true")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
+assert.match(labExpandedHtml, /consumeRetry\(4, 1\), 3\);/);
 
 // 4. After Shiki warms up, Examples Input and Output render highlighted JS token spans
 //    while Input:/Output: labels remain plain zinc and inline <code> in requirements/constraints stays plain.

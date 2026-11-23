@@ -68,6 +68,11 @@ import {
 import { plainTitle } from "@/lib/titleText";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/shadcn/Collapsible";
 import type { SkipOptions } from "@/hooks/types";
 
 export interface CodeDashboardProps {
@@ -104,6 +109,7 @@ export interface CodeDashboardProps {
   reviewScheduleNote?: string | null;
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
+  initialExpandedVisibleTests?: number[];
 }
 
 const DEFAULT_EXPLAIN_QUESTION =
@@ -158,6 +164,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   reviewScheduleNote = null,
   nextCardLabel,
   lastQuestionNavLabel,
+  initialExpandedVisibleTests,
 }) => {
   const isLab = drillId.startsWith("LAB-") || /^M\d+$/i.test(problem.id);
   const isKata = isLab || isWorkspaceProblem(problem);
@@ -182,7 +189,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const [openReference, setOpenReference] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [expandedVisibleTests, setExpandedVisibleTests] = useState<Set<number>>(
-    () => new Set()
+    () => new Set(initialExpandedVisibleTests ?? [])
   );
 
   // In-browser question state
@@ -363,8 +370,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     }
   };
 
-  const handleToggleReference = async () => {
-    const nextOpen = !openReference;
+  const handleHintOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && !showHint && onHintRevealed) {
+      onHintRevealed();
+    }
+    setShowHint(nextOpen);
+  };
+
+  const handleReferenceOpenChange = async (nextOpen: boolean) => {
     setOpenReference(nextOpen);
     if (
       nextOpen &&
@@ -623,7 +636,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               />
             )}
 
-            <div className="space-y-3">
+            <Collapsible
+              open={showHint}
+              onOpenChange={handleHintOpenChange}
+              className="space-y-3"
+            >
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <Link
                   href={openInDrillHref}
@@ -633,37 +650,39 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </Link>
 
-                {hasCheckpointHint(problem.checkpointHint) && <button
-                  type="button"
-                  onClick={() => {
-                    if (!showHint && onHintRevealed) {
-                      onHintRevealed();
-                    }
-                    setShowHint(!showHint);
-                  }}
-                  aria-expanded={showHint}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-                  <span>{showHint ? "Hide hint" : "Hint"}</span>
-                </button>}
+                {hasCheckpointHint(problem.checkpointHint) && (
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    >
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${showHint ? "rotate-180" : ""}`}
+                      />
+                      <span>{showHint ? "Hide hint" : "Hint"}</span>
+                    </button>
+                  </CollapsibleTrigger>
+                )}
 
                 {onSkip && !hasAttempt && (
                   <button
                     type="button"
                     onClick={() => onSkip()}
-                    className="inline-flex min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
+                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
                   >
                     <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
                   </button>
                 )}
               </div>
 
-              <CheckpointHintDisclosure
-                checkpointHint={problem.checkpointHint}
-                show={showHint}
-              />
-            </div>
+              <CollapsibleContent>
+                <CheckpointHintDisclosure
+                  checkpointHint={problem.checkpointHint}
+                  show={showHint}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             {reviewSupplement}
           </>
@@ -698,54 +717,63 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
                 {problem.visibleTests && problem.visibleTests.length > 0 && (
                   <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
-                    {problem.visibleTests.map((t, idx) => (
-                      <li key={t.id || idx} className="space-y-1">
-                        <div className="flex items-start gap-2">
-                          <ListDot />
-                          {t.testCode ? (
-                            <button
-                              type="button"
-                              aria-expanded={expandedVisibleTests.has(idx)}
-                              aria-controls={`visible-test-code-${idx}`}
-                              onClick={() => {
-                                setExpandedVisibleTests((current) => {
-                                  const next = new Set(current);
-                                  if (next.has(idx)) next.delete(idx);
-                                  else next.add(idx);
-                                  return next;
-                                });
-                              }}
-                              className="inline-flex min-w-0 items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    {problem.visibleTests.map((t, idx) =>
+                      t.testCode ? (
+                        <Collapsible
+                          key={t.id || idx}
+                          asChild
+                          open={expandedVisibleTests.has(idx)}
+                          onOpenChange={(nextOpen) => {
+                            setExpandedVisibleTests((current) => {
+                              const next = new Set(current);
+                              if (nextOpen) next.add(idx);
+                              else next.delete(idx);
+                              return next;
+                            });
+                          }}
+                        >
+                          <li className="space-y-1">
+                            <div className="flex items-start gap-2">
+                              <ListDot className="mt-3 sm:mt-0" />
+                              <CollapsibleTrigger asChild>
+                                <button
+                                  type="button"
+                                  aria-controls={`visible-test-code-${idx}`}
+                                  className="inline-flex min-h-[44px] py-3 sm:min-h-0 sm:py-0 min-w-0 items-start sm:items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                                >
+                                  <span>
+                                    <FormattedText text={t.name} />
+                                  </span>
+                                  <ChevronDown
+                                    aria-hidden="true"
+                                    className={`mt-0.5 sm:mt-0 h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none ${expandedVisibleTests.has(idx) ? "rotate-180" : ""}`}
+                                  />
+                                </button>
+                              </CollapsibleTrigger>
+                            </div>
+                            <CollapsibleContent
+                              id={`visible-test-code-${idx}`}
+                              className="ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                             >
-                              <span>
-                                <FormattedText text={t.name} />
-                              </span>
-                              <ChevronDown
-                                aria-hidden="true"
-                                className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform duration-200 ${expandedVisibleTests.has(idx) ? "rotate-180" : ""}`}
+                              <HighlightedCode
+                                code={t.testCode}
+                                language={snippetLanguage}
+                                className="whitespace-pre-wrap break-words"
                               />
-                            </button>
-                          ) : (
+                            </CollapsibleContent>
+                          </li>
+                        </Collapsible>
+                      ) : (
+                        <li key={t.id || idx} className="space-y-1">
+                          <div className="flex items-start gap-2">
+                            <ListDot />
                             <span>
                               <FormattedText text={t.name} />
                             </span>
-                          )}
-                        </div>
-                        {t.testCode && (
-                          <div
-                            id={`visible-test-code-${idx}`}
-                            hidden={!expandedVisibleTests.has(idx)}
-                            className="ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                          >
-                            <HighlightedCode
-                              code={t.testCode}
-                              language={snippetLanguage}
-                              className="whitespace-pre-wrap break-words"
-                            />
                           </div>
-                        )}
-                      </li>
-                    ))}
+                        </li>
+                      )
+                    )}
                   </ul>
                 )}
               </div>
@@ -806,7 +834,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             </div>
 
             {/* 3. One primary action + Secondary text buttons */}
-            <div className="space-y-2.5">
+            <Collapsible
+              open={showHint}
+              onOpenChange={handleHintOpenChange}
+              className="space-y-2.5"
+            >
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 {primaryAction.kind === "open_vscode" && (
                   <a
@@ -857,7 +889,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 >
                   {isRunningChecks ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                       <span>Running checks…</span>
                     </>
                   ) : (
@@ -884,20 +916,20 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </a>
                 )}
 
-                {hasCheckpointHint(problem.checkpointHint) && <button
-                  type="button"
-                  onClick={() => {
-                    if (!showHint && onHintRevealed) {
-                      onHintRevealed();
-                    }
-                    setShowHint(!showHint);
-                  }}
-                  aria-expanded={showHint}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-                  <span>{showHint ? "Hide hint" : "Hint"}</span>
-                </button>}
+                {hasCheckpointHint(problem.checkpointHint) && (
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    >
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${showHint ? "rotate-180" : ""}`}
+                      />
+                      <span>{showHint ? "Hide hint" : "Hint"}</span>
+                    </button>
+                  </CollapsibleTrigger>
+                )}
               </div>
 
               {primaryAction.kind === "copy_review" && drillId && (
@@ -906,189 +938,227 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
               )}
 
-              <CheckpointHintDisclosure
-                checkpointHint={problem.checkpointHint}
-                show={showHint}
-              />
-            </div>
+              <CollapsibleContent>
+                <CheckpointHintDisclosure
+                  checkpointHint={problem.checkpointHint}
+                  show={showHint}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* 5. Collapsible sections (closed by default): Review history, Explain, Reference */}
             <div className="divide-y divide-zinc-200 dark:divide-zinc-800 border-t border-zinc-200 dark:border-zinc-800">
               {/* Review history */}
-              <div className="py-2.5">
-                <button
-                  type="button"
-                  onClick={() => setOpenHistory(!openHistory)}
-                  aria-expanded={openHistory}
-                  className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
-                >
-                  <span>
-                    Review history
-                    {reviews.length > 0 ? ` (${reviews.length})` : ""}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openHistory ? "rotate-180" : ""}`} />
-                </button>
-                <Reveal show={Boolean(openHistory)}>
-                {openHistory && (
-                  <div className="pt-2 pb-1 space-y-3 text-xs text-zinc-600 dark:text-zinc-400">
-                    {reviews.length === 0 ? (
-                      <p className="text-zinc-500 dark:text-zinc-400">
-                        No reviews recorded yet.
-                      </p>
-                    ) : (
-                      reviews.map((r, rIdx) => (
-                        <div
-                          key={r.attempt || rIdx}
-                          className={`border-l-2 pl-3 py-0.5 space-y-1 ${
-                            r.verdict === "pass"
-                              ? statusTone.correct.border
-                              : statusTone.wrong.border
-                          }`}
-                        >
-                          <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
-                            <span className="font-display tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                              #{r.attempt ?? rIdx + 1} {r.verdict}
-                            </span>
-                            {r.at && (
-                              <span className="text-zinc-500 dark:text-zinc-400">
-                                {formatReviewDate(r.at)}
-                              </span>
-                            )}
-                            {r.tests && (
-                              <span className="text-zinc-500 dark:text-zinc-400">
-                                tests{" "}
-                                <span className="font-display tabular-nums">
-                                  {r.tests.passed}/{r.tests.total}
+              <Collapsible
+                open={openHistory}
+                onOpenChange={setOpenHistory}
+                className="py-2.5"
+              >
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                  >
+                    <span>
+                      Review history
+                      {reviews.length > 0 ? ` (${reviews.length})` : ""}
+                    </span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={`w-4 h-4 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none ${openHistory ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <Reveal show={Boolean(openHistory)}>
+                    {openHistory && (
+                      <div className="pt-2 pb-1 space-y-3 text-xs text-zinc-600 dark:text-zinc-400">
+                        {reviews.length === 0 ? (
+                          <p className="text-zinc-500 dark:text-zinc-400">
+                            No reviews recorded yet.
+                          </p>
+                        ) : (
+                          reviews.map((r, rIdx) => (
+                            <div
+                              key={r.attempt || rIdx}
+                              className={`border-l-2 pl-3 py-0.5 space-y-1 ${
+                                r.verdict === "pass"
+                                  ? statusTone.correct.border
+                                  : statusTone.wrong.border
+                              }`}
+                            >
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+                                <span className="font-display tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+                                  #{r.attempt ?? rIdx + 1} {r.verdict}
                                 </span>
-                              </span>
-                            )}
-                          </div>
-                          {r.findings && r.findings.length > 0 ? (
-                            <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-sans">
-                              {r.findings.map((f, fIdx) => (
-                                <li key={fIdx} className="flex items-start gap-2">
-                                  <ListDot kind="info" />
-                                  <span className="min-w-0 break-words">
-                                    <code className="font-mono">{f.check}</code> ({f.severity}
-                                    {f.line ? `, line ${f.line}` : ""}
-                                    {f.disputed ? ", disputed" : ""}): {f.note}
+                                {r.at && (
+                                  <span className="text-zinc-500 dark:text-zinc-400">
+                                    {formatReviewDate(r.at)}
                                   </span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                              No rubric findings.
-                            </p>
-                          )}
-                        </div>
-                      ))
+                                )}
+                                {r.tests && (
+                                  <span className="text-zinc-500 dark:text-zinc-400">
+                                    tests{" "}
+                                    <span className="font-display tabular-nums">
+                                      {r.tests.passed}/{r.tests.total}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                              {r.findings && r.findings.length > 0 ? (
+                                <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-sans">
+                                  {r.findings.map((f, fIdx) => (
+                                    <li key={fIdx} className="flex items-start gap-2">
+                                      <ListDot kind="info" />
+                                      <span className="min-w-0 break-words">
+                                        <code className="font-mono">{f.check}</code> ({f.severity}
+                                        {f.line ? `, line ${f.line}` : ""}
+                                        {f.disputed ? ", disputed" : ""}): {f.note}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  No rubric findings.
+                                </p>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
-                </Reveal>
-              </div>
+                  </Reveal>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Explain */}
-              <div className="py-2.5">
-                <button
-                  type="button"
-                  onClick={() => setOpenExplain(!openExplain)}
-                  aria-expanded={openExplain}
-                  className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
-                >
-                  <span>Explain</span>
-                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openExplain ? "rotate-180" : ""}`} />
-                </button>
-                <Reveal show={Boolean(openExplain)}>
-                {openExplain && (
-                  <div className="pt-2 pb-1 space-y-2 text-xs">
-                    <p className="text-zinc-700 dark:text-zinc-300">
-                      <FormattedText text={explainQuestion} />
-                    </p>
-                    {recordedExplain ? (
-                      <div className={`border-l-2 ${statusTone.correct.border} pl-3 py-0.5 text-zinc-800 dark:text-zinc-200`}>
-                        <FormattedText text={recordedExplain} />
+              <Collapsible
+                open={openExplain}
+                onOpenChange={setOpenExplain}
+                className="py-2.5"
+              >
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                  >
+                    <span>Explain</span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={`w-4 h-4 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none ${openExplain ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <Reveal show={Boolean(openExplain)}>
+                    {openExplain && (
+                      <div className="pt-2 pb-1 space-y-2 text-xs">
+                        <p className="text-zinc-700 dark:text-zinc-300">
+                          <FormattedText text={explainQuestion} />
+                        </p>
+                        {recordedExplain ? (
+                          <div className={`border-l-2 ${statusTone.correct.border} pl-3 py-0.5 text-zinc-800 dark:text-zinc-200`}>
+                            <FormattedText text={recordedExplain} />
+                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Ask Claude to review your code, e.g.{" "}
+                            <code className="font-mono text-zinc-700 dark:text-zinc-300">
+                              {drillId ? reviewRequestText : `ตรวจโค้ด <ID> ${problem.id}`}
+                            </code>
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Ask Claude to review your code, e.g.{" "}
-                        <code className="font-mono text-zinc-700 dark:text-zinc-300">
-                          {drillId ? reviewRequestText : `ตรวจโค้ด <ID> ${problem.id}`}
-                        </code>
-                      </p>
                     )}
-                  </div>
-                )}
-                </Reveal>
-              </div>
+                  </Reveal>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Reference (drills) or Lab README (labs; _reference is never served) */}
               {isLab ? (
                 labReadme ? (
-                  <div className="py-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setOpenReference(!openReference)}
-                      aria-expanded={openReference}
-                      className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
-                    >
-                      <span>Lab README</span>
-                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
-                    </button>
-                    <Reveal show={Boolean(openReference)}>
-                    {openReference && (
-                      <div className="pt-2 pb-1 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                        <FormattedText text={labReadme} />
-                      </div>
-                    )}
-                    </Reveal>
-                  </div>
+                  <Collapsible
+                    open={openReference}
+                    onOpenChange={setOpenReference}
+                    className="py-2.5"
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      >
+                        <span>Lab README</span>
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`w-4 h-4 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none ${openReference ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <Reveal show={Boolean(openReference)}>
+                        {openReference && (
+                          <div className="pt-2 pb-1 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                            <FormattedText text={labReadme} />
+                          </div>
+                        )}
+                      </Reveal>
+                    </CollapsibleContent>
+                  </Collapsible>
                 ) : null
               ) : (
-                <div className="py-2.5">
-                  <button
-                    type="button"
-                    onClick={handleToggleReference}
-                    aria-expanded={openReference}
-                    className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
-                  >
-                    <span>Reference</span>
-                    <span className="inline-flex items-center gap-2">
-                      {!referenceAllowed && (
-                        <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                          Unlocks after review passes
-                        </span>
-                      )}
-                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
-                    </span>
-                  </button>
-                  <Reveal show={Boolean(openReference)}>
-                  {openReference && (
-                    <div className="pt-2 pb-1">
-                      {!referenceAllowed ? (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Unlocks after review passes
-                        </p>
-                      ) : isLoadingReference ? (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Loading reference…
-                        </p>
-                      ) : problem.solutionCode || revealedSolutionCode ? (
-                        <VSCodeBlock
-                          code={(problem.solutionCode || revealedSolutionCode)!}
-                          language={snippetLanguage}
-                          filename={`reference-${filename}`}
+                <Collapsible
+                  open={openReference}
+                  onOpenChange={(nextOpen) => void handleReferenceOpenChange(nextOpen)}
+                  className="py-2.5"
+                >
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    >
+                      <span>Reference</span>
+                      <span className="inline-flex items-center gap-2">
+                        {!referenceAllowed && (
+                          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                            Unlocks after review passes
+                          </span>
+                        )}
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`w-4 h-4 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none ${openReference ? "rotate-180" : ""}`}
                         />
-                      ) : (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Reference solution unavailable.
-                        </p>
+                      </span>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <Reveal show={Boolean(openReference)}>
+                      {openReference && (
+                        <div className="pt-2 pb-1">
+                          {!referenceAllowed ? (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              Unlocks after review passes
+                            </p>
+                          ) : isLoadingReference ? (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              Loading reference…
+                            </p>
+                          ) : problem.solutionCode || revealedSolutionCode ? (
+                            <VSCodeBlock
+                              code={(problem.solutionCode || revealedSolutionCode)!}
+                              language={snippetLanguage}
+                              filename={`reference-${filename}`}
+                            />
+                          ) : (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              Reference solution unavailable.
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
-                  </Reveal>
-                </div>
+                    </Reveal>
+                  </CollapsibleContent>
+                </Collapsible>
               )}
             </div>
           </>

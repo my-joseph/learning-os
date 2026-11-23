@@ -24,6 +24,8 @@ const ReviewSyncPage = dynamic(
 import { StudioShell } from "@/components/shell/StudioShell";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Card } from "@/components/ui/shadcn/Card";
+import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -344,28 +346,32 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onStatusChange={setStatus}
     >
       {isLoadingDrill ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4 animate-pulse">
-          <div className="h-5 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-          <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
-          <div className="h-24 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
-          <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
-        </div>
+        <Card
+          role="status"
+          aria-label="Loading drill"
+          className="shadow-none p-6 space-y-4"
+        >
+          <Skeleton className="h-5 w-1/3 rounded-lg" />
+          <Skeleton className="h-4 w-2/3 rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+          <Skeleton className="h-10 w-1/2 rounded-xl" />
+        </Card>
       ) : drillNotFound ? (
         <DrillNotFoundCard drillId={drillId} isLab={isLabRoute || isLabId(drillId)} />
       ) : !currentDrill ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-3">
+        <Card className="shadow-none p-10 text-center space-y-3">
           <p className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
             No practice drill selected
           </p>
           <button
             type="button"
             onClick={() => setShowGenPopover(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-semibold"
+            className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
           >
             <Plus className="w-4 h-4" />
             <span>Generate drill set</span>
           </button>
-        </div>
+        </Card>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
         <m.div
           key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}:${resetAllVersion}`}

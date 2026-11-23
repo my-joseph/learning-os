@@ -3,6 +3,7 @@
 import React from "react";
 import { PenLine } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
+import { Input } from "@/components/ui/shadcn/Input";
 import { statusTone } from "@/lib/statusTone";
 import { MistakeTag } from "@/types/drill";
 
@@ -121,14 +122,15 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
 
       <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
         <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-        <input
+        <Input
           type="text"
+          variant="embedded"
           disabled={disabled}
           value={mistakeNote || ""}
           onChange={(e) => onMistakeNoteChange(e.target.value)}
           aria-label={noteAriaLabel}
           placeholder="Note what went wrong (optional)…"
-          className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-xs"
         />
       </div>
     </div>

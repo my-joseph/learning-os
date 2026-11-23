@@ -39,6 +39,12 @@ import { MathFigure } from "@/components/MathFigure";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/shadcn/Collapsible";
+import { Input } from "@/components/ui/shadcn/Input";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 
 export interface ReviewItemRowProps {
@@ -322,198 +328,202 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
     : `Answer ${qLabel}`;
 
   return (
-    <div
+    <Collapsible
       id={`review-row-${problem.id}`}
       ref={rowRef}
-      className={`transition-colors ${
+      open={expanded}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen !== expanded) onToggle();
+      }}
+      className={`transition-colors motion-reduce:transition-none ${
         highlighted ? "bg-indigo-50/70 dark:bg-indigo-950/25" : ""
       }`}
     >
       {/* Collapsed summary header (~48px height, wraps cleanly at 390px) */}
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        aria-controls={panelId}
-        className="w-full min-h-[48px] px-4 py-3 sm:px-6 flex items-start sm:items-center justify-between gap-3 text-left hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-      >
-        <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span
-              title={meta.label}
-              aria-hidden="true"
-              className={`w-2.5 h-2.5 rounded-[3px] shrink-0 ${meta.nodeClassName}`}
-            />
-            <span className="font-display text-xs font-semibold tabular-nums text-zinc-900 dark:text-zinc-100 shrink-0">
-              {qLabel}
-            </span>
-            <span className="min-w-0 flex items-center gap-2 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              <span className="truncate"><FormattedText text={title} /></span>
-              <span className="shrink-0 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                {problem.levelLabel || `Level ${problem.level}`}
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          aria-controls={panelId}
+          className="w-full min-h-[48px] px-4 py-3 sm:px-6 flex items-start sm:items-center justify-between gap-3 text-left hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+        >
+          <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                title={meta.label}
+                aria-hidden="true"
+                className={`w-2.5 h-2.5 rounded-[3px] shrink-0 ${meta.nodeClassName}`}
+              />
+              <span className="font-display text-xs font-semibold tabular-nums text-zinc-900 dark:text-zinc-100 shrink-0">
+                {qLabel}
               </span>
+              <span className="min-w-0 flex items-center gap-2 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                <span className="truncate"><FormattedText text={title} /></span>
+                <span className="shrink-0 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                  {problem.levelLabel || `Level ${problem.level}`}
+                </span>
+              </span>
+            </div>
+
+            <span className="pl-5 sm:pl-0 text-xs text-zinc-500 dark:text-zinc-400 break-words sm:truncate min-w-0">
+              {reason}
             </span>
           </div>
 
-          <span className="pl-5 sm:pl-0 text-xs text-zinc-500 dark:text-zinc-400 break-words sm:truncate min-w-0">
-            {reason}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 pt-0.5 sm:pt-0">
-          {hasRecordedNote && (
-            <span
-              title="Note recorded"
-              aria-label="Note recorded"
-              className="text-zinc-500 dark:text-zinc-400"
-            >
-              <PenLine className="w-3.5 h-3.5" aria-hidden="true" />
-            </span>
-          )}
-          {hasRecordedTags && (
-            <span
-              title="Mistake tag recorded"
-              aria-label="Mistake tag recorded"
-              className={`w-2 h-2 rounded-full ${statusTone.wrong.dot} shrink-0`}
+          <div className="flex items-center gap-2 shrink-0 pt-0.5 sm:pt-0">
+            {hasRecordedNote && (
+              <span
+                title="Note recorded"
+                aria-label="Note recorded"
+                className="text-zinc-500 dark:text-zinc-400"
+              >
+                <PenLine className="w-3.5 h-3.5" aria-hidden="true" />
+              </span>
+            )}
+            {hasRecordedTags && (
+              <span
+                title="Mistake tag recorded"
+                aria-label="Mistake tag recorded"
+                className={`w-2 h-2 rounded-full ${statusTone.wrong.dot} shrink-0`}
+              />
+            )}
+            <ChevronDown
+              aria-hidden="true"
+              className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+                expanded ? "rotate-180" : ""
+              }`}
             />
-          )}
-          <ChevronDown
-            aria-hidden="true"
-            className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0 transition-transform duration-150 ${
-              expanded ? "rotate-180" : ""
-            }`}
-          />
-        </div>
-      </button>
+          </div>
+        </button>
+      </CollapsibleTrigger>
 
       {/* Expanded detail (inside the row, no card-in-card, pl-[72px] on desktop, full width on mobile) */}
-      <Reveal show={expanded}>
-        {expanded && (
-          <div
-            id={panelId}
-            className="px-4 pb-4 sm:px-6 sm:pb-5 sm:pl-[72px] space-y-4 text-sm"
-          >
-            {/* 1. Full prompt & figure (never display set-up, steps, hints, or reference solution) */}
-            <div className="space-y-3">
-              <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 break-words">
-                <FormattedText text={problem.prompt} />
-              </div>
-              {hasFigure && (
-                <MathFigure
-                  figure={problem.figure || problem.visual!}
-                  className="w-full"
-                />
-              )}
-            </div>
-
-            {/* 2. Unanswered vs Attempted content */}
-            {outcome === "unanswered" ? (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                <span className="text-zinc-500 dark:text-zinc-400">Not tried yet</span>
-                <button
-                  type="button"
-                  onClick={onOpen}
-                  className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
-                >
-                  <span>{unansweredActionLabel}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <ReviewItemResult
-                  problem={problem}
-                  outcome={outcome}
-                  isCode={isCode}
-                  isLab={isLab}
-                />
-
-                {/* 3. Record block (only after substantive attempt/skip) */}
-                {isAttempted && (
-                  <div className="space-y-3">
-                    {!isGotRightRow && (
-                      <ProblemSelfEval
-                        hasAttempt={isAttempted}
-                        showSelfScore={!isCode && !isLab}
-                        disabled={disabled}
-                        maxScore={maxAllowedSelfScore(problem.state, { isPrg: isCode || isLab })}
-                        skipped={Boolean(problem.state.skipped)}
-                        score={scoreProblem(problem.state, { isPrg: isCode || isLab }).score}
-                        mistakes={problem.state.mistakes || []}
-                        mistakeNote={problem.state.mistakeNote}
-                        mistakeTags={mistakeTags}
-                        noteAriaLabel={`Note for ${qLabel}`}
-                        onSetScore={onSetScore}
-                        onToggleMistakeTag={onToggleMistakeTag}
-                        onMistakeNoteChange={onMistakeNoteChange}
-                      />
-                    )}
-
-                    {/* Revisit note stays in learner progress; the Notion drill page does not display it. */}
-                    <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
-                      <RotateCcw
-                        className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0"
-                        aria-hidden="true"
-                      />
-                      <input
-                        type="text"
-                        disabled={disabled}
-                        value={problem.state.revisitNote || ""}
-                        onChange={(e) => onRevisitNoteChange(e.target.value)}
-                        aria-label={`Revisit note for ${qLabel}`}
-                        placeholder="Next time I will…"
-                        className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
+      <CollapsibleContent id={panelId}>
+        <Reveal show={expanded}>
+          {expanded && (
+            <div className="px-4 pb-4 sm:px-6 sm:pb-5 sm:pl-[72px] space-y-4 text-sm">
+              {/* 1. Full prompt & figure (never display set-up, steps, hints, or reference solution) */}
+              <div className="space-y-3">
+                <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 break-words">
+                  <FormattedText text={problem.prompt} />
+                </div>
+                {hasFigure && (
+                  <MathFigure
+                    figure={problem.figure || problem.visual!}
+                    className="w-full"
+                  />
                 )}
+              </div>
 
-                {/* 4. Row actions as quiet text links */}
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-0.5">
+              {/* 2. Unanswered vs Attempted content */}
+              {outcome === "unanswered" ? (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                  <span className="text-zinc-500 dark:text-zinc-400">Not tried yet</span>
                   <button
                     type="button"
                     onClick={onOpen}
-                    className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                    className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                   >
-                    <span>Open {qLabel}</span>
+                    <span>{unansweredActionLabel}</span>
                     <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
+                </div>
+              ) : (
+                <>
+                  <ReviewItemResult
+                    problem={problem}
+                    outcome={outcome}
+                    isCode={isCode}
+                    isLab={isLab}
+                  />
 
-                  {!isCode && !isLab && problem.hasVariants && onTrySimilar && similarUnlock(problem.state) && (
+                  {/* 3. Record block (only after substantive attempt/skip) */}
+                  {isAttempted && (
+                    <div className="space-y-3">
+                      {!isGotRightRow && (
+                        <ProblemSelfEval
+                          hasAttempt={isAttempted}
+                          showSelfScore={!isCode && !isLab}
+                          disabled={disabled}
+                          maxScore={maxAllowedSelfScore(problem.state, { isPrg: isCode || isLab })}
+                          skipped={Boolean(problem.state.skipped)}
+                          score={scoreProblem(problem.state, { isPrg: isCode || isLab }).score}
+                          mistakes={problem.state.mistakes || []}
+                          mistakeNote={problem.state.mistakeNote}
+                          mistakeTags={mistakeTags}
+                          noteAriaLabel={`Note for ${qLabel}`}
+                          onSetScore={onSetScore}
+                          onToggleMistakeTag={onToggleMistakeTag}
+                          onMistakeNoteChange={onMistakeNoteChange}
+                        />
+                      )}
+
+                      {/* Revisit note stays in learner progress; the Notion drill page does not display it. */}
+                      <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
+                        <RotateCcw
+                          className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <Input
+                          type="text"
+                          variant="embedded"
+                          disabled={disabled}
+                          value={problem.state.revisitNote || ""}
+                          onChange={(e) => onRevisitNoteChange(e.target.value)}
+                          aria-label={`Revisit note for ${qLabel}`}
+                          placeholder="Next time I will…"
+                          className="text-xs"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. Row actions as quiet text links */}
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-0.5">
                     <button
                       type="button"
-                      onClick={onTrySimilar}
+                      onClick={onOpen}
                       className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                     >
-                      <span>Try a similar question</span>
+                      <span>Open {qLabel}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
-                  )}
 
-                  {canCopyReviewRequest && (
-                    <CopyButton
-                      text={reviewRequestCmd}
-                      className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
-                      timeoutMs={1500}
-                      requireClipboard
-                      copiedContent={
+                    {!isCode && !isLab && problem.hasVariants && onTrySimilar && similarUnlock(problem.state) && (
+                      <button
+                        type="button"
+                        onClick={onTrySimilar}
+                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                      >
+                        <span>Try a similar question</span>
+                      </button>
+                    )}
+
+                    {canCopyReviewRequest && (
+                      <CopyButton
+                        text={reviewRequestCmd}
+                        className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                        timeoutMs={1500}
+                        requireClipboard
+                        copiedContent={
+                          <>
+                            <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Copied review request</span>
+                          </>
+                        }
+                      >
                         <>
-                          <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Copied review request</span>
+                          <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Copy review request</span>
                         </>
-                      }
-                    >
-                      <>
-                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                        <span>Copy review request</span>
-                      </>
-                    </CopyButton>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </Reveal>
-    </div>
+                      </CopyButton>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </Reveal>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };

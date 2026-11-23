@@ -8,6 +8,8 @@ import { plainTitle } from "@/lib/titleText";
 import { warningTone } from "@/lib/statusTone";
 import type { DueTodayUnit, UnitMasteryContext, WeakSpotUnit } from "@/lib/dueToday";
 import { FormattedText } from "@/components/FormattedText";
+import { Card } from "@/components/ui/shadcn/Card";
+import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 
 const FALLBACK_MINUTES_PER_ITEM = 1.5;
 
@@ -127,14 +129,8 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
     ? "No open check or lint issues in this unit."
     : "No open traps for this unit yet.";
 
-  return (
-    <div
-      className={
-        embedded
-          ? "min-w-0 max-w-full overflow-x-hidden divide-y divide-zinc-200 dark:divide-zinc-800"
-          : "min-w-0 max-w-full overflow-x-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 divide-y divide-zinc-200 dark:divide-zinc-800"
-      }
-    >
+  const content = (
+    <>
       {/* Section 1: Due today (single item-level queue, split by workspace) */}
       <section aria-labelledby="side-panel-due-heading" className="pb-4 space-y-2.5 min-w-0">
         <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 min-w-0">
@@ -155,10 +151,10 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           <div
             role="status"
             aria-label="Loading due reviews"
-            className="space-y-2.5 animate-pulse"
+            className="space-y-2.5"
           >
-            <div className="h-3.5 w-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-10 w-full bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+            <Skeleton className="h-3.5 w-32 rounded" />
+            <Skeleton className="h-10 w-full rounded-xl" />
           </div>
         ) : dueError && dueReviewCount === 0 ? (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -248,11 +244,11 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           <div
             role="status"
             aria-label="Loading unit weak spots"
-            className="space-y-2 animate-pulse"
+            className="space-y-2"
           >
-            <div className="h-3.5 w-3/4 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-3 w-full bg-zinc-100 dark:bg-zinc-800/70 rounded" />
-            <div className="h-3.5 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <Skeleton className="h-3.5 w-3/4 rounded" />
+            <Skeleton className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800/70" />
+            <Skeleton className="h-3.5 w-2/3 rounded" />
           </div>
         ) : weakError ? (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -297,6 +293,20 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           </ul>
         )}
       </section>
-    </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="min-w-0 max-w-full overflow-x-hidden divide-y divide-zinc-200 dark:divide-zinc-800">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="max-w-full overflow-x-hidden shadow-none p-4 divide-y divide-zinc-200 dark:divide-zinc-800">
+      {content}
+    </Card>
   );
 };
