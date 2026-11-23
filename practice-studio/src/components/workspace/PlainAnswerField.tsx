@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Equal, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/shadcn/Input";
+import { cn } from "@/lib/cn";
 
 export const ANSWER_FIELD_CONTAINER_CLASS =
   "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
@@ -63,9 +65,10 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
 }) => {
   return (
     <div className={ANSWER_FIELD_CONTAINER_CLASS}>
-      <input
+      <Input
         ref={inputRef}
         type="text"
+        variant="embedded"
         value={value}
         readOnly={locked}
         aria-readonly={locked || undefined}
@@ -80,9 +83,10 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className={`w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500 ${
-          locked ? "opacity-75 cursor-default" : ""
-        }`}
+        className={cn(
+          "h-11 font-mono text-sm text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+          locked && "opacity-75 cursor-default"
+        )}
       />
       <InlineCheckButton
         onClick={onCheck}

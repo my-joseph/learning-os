@@ -6,6 +6,11 @@ import { FormattedText } from "@/components/FormattedText";
 import { MathFigure } from "@/components/MathFigure";
 import { StepRow } from "@/components/StepRow";
 import { Reveal } from "@/components/motion/Reveal";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/shadcn/Collapsible";
 import { WorkedExampleVariant } from "@/types/drill";
 
 export interface WorkedExampleViewProps {
@@ -194,65 +199,67 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-        className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-0 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-      >
-        <ChevronRight
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-            open ? "rotate-90" : ""
-          }`}
-          aria-hidden="true"
-        />
-        <span>Worked example</span>
-      </button>
+    <Collapsible open={open} onOpenChange={setOpen} className="space-y-2">
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-0 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+        >
+          <ChevronRight
+            className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+              open ? "rotate-90" : ""
+            }`}
+            aria-hidden="true"
+          />
+          <span>Worked example</span>
+        </button>
+      </CollapsibleTrigger>
 
-      <Reveal show={open}>
-        {open && (
-          <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-              <span>A similar question, not yours</span>
-              {(example.answerDisplay || example.answerPlain) && (
-                <span>
-                  Answer:{" "}
-                  <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                    <FormattedText
-                      text={
-                        example.answerDisplay
-                          ? `$${example.answerDisplay}$`
-                          : example.answerPlain
-                      }
-                    />
-                  </strong>
-                </span>
-              )}
-            </div>
-
-            <div className="text-sm leading-relaxed text-zinc-900 dark:text-zinc-100">
-              <FormattedText text={example.prompt} />
-            </div>
-
-            {(example.figure || example.visual) && (
-              <div className="w-full">
-                <MathFigure figure={example.figure || example.visual!} className="w-full" />
+      <CollapsibleContent>
+        <Reveal show={open}>
+          {open && (
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <span>A similar question, not yours</span>
+                {(example.answerDisplay || example.answerPlain) && (
+                  <span>
+                    Answer:{" "}
+                    <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                      <FormattedText
+                        text={
+                          example.answerDisplay
+                            ? `$${example.answerDisplay}$`
+                            : example.answerPlain
+                        }
+                      />
+                    </strong>
+                  </span>
+                )}
               </div>
-            )}
 
-            <div>
-              {(example.steps || []).map((st, sIdx) => (
-                <StepRow
-                  key={sIdx}
-                  step={st}
-                  index={sIdx}
-                />
-              ))}
+              <div className="text-sm leading-relaxed text-zinc-900 dark:text-zinc-100">
+                <FormattedText text={example.prompt} />
+              </div>
+
+              {(example.figure || example.visual) && (
+                <div className="w-full">
+                  <MathFigure figure={example.figure || example.visual!} className="w-full" />
+                </div>
+              )}
+
+              <div>
+                {(example.steps || []).map((st, sIdx) => (
+                  <StepRow
+                    key={sIdx}
+                    step={st}
+                    index={sIdx}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </Reveal>
-    </div>
+          )}
+        </Reveal>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };

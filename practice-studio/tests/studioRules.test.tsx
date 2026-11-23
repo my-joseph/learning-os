@@ -78,8 +78,8 @@ const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8")
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
-assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
-assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\)?\s*&&\s*<button/);
+assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*(?:\(\s*)?(?:<CollapsibleTrigger\s+asChild>\s*)?<button/);
+assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\)?\s*&&\s*(?:\(\s*)?(?:<Collapsible\b[\s\S]*?<CollapsibleTrigger\s+asChild>\s*)?<button/);
 assert.match(problemAssistSection, /<StepRow/);
 assert.doesNotMatch(codeDashboard, /Diverged here/);
 assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);
@@ -340,8 +340,36 @@ const codeInitialHtml = renderToStaticMarkup(
 assert.match(codeInitialHtml, /clamps above 100 to 100/, "visible test name must render");
 assert.match(
   codeInitialHtml,
-  /aria-expanded="false" aria-controls="visible-test-code-0"[^>]*>[\s\S]*?<\/button><\/div><div id="visible-test-code-0" hidden=""[^>]*>[\s\S]*?assert\.strictEqual/,
-  "visible test assertion code must render inside its collapsed disclosure"
+  /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>[\s\S]*?<\/button><\/div><div(?=[^>]*id="visible-test-code-0")(?=[^>]*hidden="")[^>]*>/,
+  "visible test disclosure must render collapsed by default"
+);
+assert.doesNotMatch(
+  codeInitialHtml,
+  /assert\.strictEqual/,
+  "closed visible test CollapsibleContent must stay unmounted until expanded"
+);
+const codeExpandedTestHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={sampleCodeProblem}
+    drillId="DRL-PRG-T00-C03-02"
+    index={0}
+    totalQuestions={5}
+    drillTitle="JavaScript & TypeScript Baseline"
+    mistakeTags={[]}
+    initialExpandedVisibleTests={[0]}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(
+  codeExpandedTestHtml,
+  /<button(?=[^>]*aria-expanded="true")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>[\s\S]*?<\/button><\/div><div(?=[^>]*id="visible-test-code-0")(?![^>]*hidden="")[^>]*>[\s\S]*?assert\.strictEqual/,
+  "visible test assertion code must mount inside its expanded CollapsibleContent"
 );
 assert.match(codeInitialHtml, /Open in VS Code/);
 assert.match(codeInitialHtml, /Run checks/);
