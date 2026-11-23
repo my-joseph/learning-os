@@ -1,5 +1,6 @@
 import React from "react";
 import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/shadcn/Button";
 
 export function ThemeToggleButton({
   theme,
@@ -13,8 +14,9 @@ export function ThemeToggleButton({
   const label = theme === "light" ? "Switch to dark mode" : "Switch to light mode";
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="iconSm"
       onClick={onToggle}
       title={label}
       aria-label={label}
@@ -25,6 +27,6 @@ export function ThemeToggleButton({
       ) : (
         <Sun className="w-4 h-4" />
       )}
-    </button>
+    </Button>
   );
 }

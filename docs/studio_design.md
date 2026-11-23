@@ -11,7 +11,8 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 
 ## UI proof of concept
 - The source-owned Radix + Tailwind primitives under `practice-studio/src/components/ui/shadcn/` are demonstrated at `/ui-poc`; keep showcase cards and their contents shrinkable and wrapped so the page has no horizontal overflow at 390 px.
-- `Badge` supports default, secondary, outline, destructive, success, and ghost variants. Status badges use `statusTone` recipes; do not add raw status palette classes. Primary buttons use indigo-600 with white text in both themes for AA contrast.
+- `Button` supports compact controls with 44 px mobile targets and 32 px desktop height, plus compact icon controls with 44 px mobile targets and 36 px desktop targets. Native buttons default to `type="button"`; `asChild` links keep their element semantics. Primary buttons use indigo-600 with white text in both themes for AA contrast.
+- `Badge` supports default, secondary, outline, destructive, success, ghost, and layout-only `status` variants. Status badges use `statusTone` or `warningTone` recipes through caller classes; do not add raw status palette classes.
 
 ## Layout
 - Workspace switch (`Math` / `Programming`, icon-only): fixed vertical rail on the left-middle edge on `>=1024 px`, and an inline icon-only switch in the header below `1024 px`.

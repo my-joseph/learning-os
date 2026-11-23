@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { isLabId } from "@/lib/routes";
+import { Button } from "@/components/ui/shadcn/Button";
 
 interface DrillNotFoundCardProps {
   drillId: string;
@@ -33,13 +34,12 @@ export const DrillNotFoundCard: React.FC<DrillNotFoundCardProps> = ({
         </p>
       </div>
       <div>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
-        >
+        <Button asChild>
+          <Link href="/">
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Studio</span>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );

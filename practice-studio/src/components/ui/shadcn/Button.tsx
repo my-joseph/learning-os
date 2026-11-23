@@ -18,8 +18,10 @@ export const buttonVariants = cva(
       size: {
         default: "min-w-[44px]",
         sm: "min-w-[44px] px-3 text-xs",
+        compact: "min-h-[44px] min-w-[44px] px-3 sm:min-h-[32px] sm:min-w-0 sm:px-2.5 py-1.5 sm:py-1 text-xs",
         lg: "min-h-[48px] min-w-[48px] px-6",
         icon: "min-w-[44px] px-2",
+        iconSm: "min-h-[44px] min-w-[44px] p-0 sm:min-h-[36px] sm:min-w-[36px]",
       },
     },
     defaultVariants: { variant: "primary", size: "default" },
@@ -33,9 +35,16 @@ export interface ButtonProps
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, type, ...props }, ref) => {
     const Component = asChild ? Slot : "button";
-    return <Component ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+    return (
+      <Component
+        ref={ref}
+        className={cn(buttonVariants({ variant, size }), className)}
+        type={type ?? (!asChild ? "button" : undefined)}
+        {...props}
+      />
+    );
   }
 );
 Button.displayName = "Button";

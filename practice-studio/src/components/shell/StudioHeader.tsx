@@ -13,6 +13,7 @@ import { DrillFilter } from "@/hooks/types";
 import { Workspace, isLabId } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
 import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
+import { Button } from "@/components/ui/shadcn/Button";
 import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { DrillSwitcher } from "./DrillSwitcher";
 
@@ -138,8 +139,9 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             onSelectDrill={onSelectDrill}
           />
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="compact"
             onClick={onOpenGenPopover}
             aria-label="Generate drill set"
             title="Generate drill set"
@@ -147,14 +149,15 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           >
             <Plus className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="hidden sm:inline">Generate</span>
-          </button>
+          </Button>
         </div>
 
         {/* Right: Side drawer (<1024px) + Theme toggle + Notion link + Reset all */}
         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {onOpenSideDrawer && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="iconSm"
               onClick={onOpenSideDrawer}
               aria-label="Due today & weak spots"
               title={
@@ -171,7 +174,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                   className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
                 />
               )}
-            </button>
+            </Button>
           )}
 
           <ThemeToggleButton
@@ -195,15 +198,16 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           )}
 
           {currentDrill && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="iconSm"
               onClick={onResetAll}
               aria-label={resetAllLabel}
               title={resetAllLabel}
               className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-zinc-600 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
             >
               <RotateCcw className="w-4 h-4" aria-hidden="true" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
