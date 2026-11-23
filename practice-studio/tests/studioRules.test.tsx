@@ -201,11 +201,19 @@ assert.doesNotMatch(studioHeader, /dark:bg-zinc-950/);
 assert.match(studioSidebar, /Collapse sidebar/);
 assert.match(studioSidebar, /isOpen \? 287 : 0/);
 assert.match(studioSidebar, /w-\[287px\]/);
-assert.match(studioSidebar, /bg-zinc-50 dark:bg-zinc-900/);
-assert.match(studioSidebar, /dark:bg-zinc-800\/55/);
+assert.match(studioSidebar, /bg-surface-panel/);
 assert.match(studioSidebar, /<WorkspaceSwitch/);
 assert.match(studioSidebar, /<DrillSwitcher/);
 assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
+assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8"), /bg-white dark:bg-zinc-900/);
+{
+  const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
+  assert.match(mathPaletteSrc, /<m\.span/);
+  assert.match(mathPaletteSrc, /dark:bg-zinc-700\/80/);
+  assert.match(mathPaletteSrc, /bg-surface-panel/);
+}
+assert.match(problemAssistSection, /bg-surface-panel/);
+assert.match(mathItemView, /bg-surface-panel/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -912,7 +920,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     />
   );
   assert.doesNotMatch(framelessCodeHtml, /<article[^>]*rounded-2xl/);
-  assert.match(framelessCodeHtml, /dark:bg-zinc-950/);
+  assert.match(framelessCodeHtml, /bg-surface-panel/);
 
   const baseShellProps = {
     workspace: "math" as const,
@@ -945,7 +953,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     </StudioShell>
   );
   assert.doesNotMatch(shellHiddenPaginationHtml, /aria-label="Questions"/);
-  assert.match(shellHiddenPaginationHtml, /dark:bg-zinc-800\/55/);
+  assert.match(shellHiddenPaginationHtml, /bg-surface-panel/);
   assert.match(shellHiddenPaginationHtml, /dark:bg-zinc-900/);
 
   const shellShownPaginationHtml = renderToStaticMarkup(
@@ -960,6 +968,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     ["StudioHeader.tsx", studioHeader],
     ["StudioShell.tsx", studioShell],
     ["WorkspaceSwitch.tsx", readFileSync("src/components/workspace/WorkspaceSwitch.tsx", "utf8")],
+    ["MathPalette.tsx", readFileSync("src/components/math/MathPalette.tsx", "utf8")],
   ] as const) {
     assert.doesNotMatch(src, /\b(?:amber|yellow|emerald|rose)-\d/, `${label} must not use raw palette classes`);
     assert.doesNotMatch(src, /forceMount/, `${label} must not use forceMount`);
@@ -968,6 +977,24 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     assert.doesNotMatch(src, /\blayout(?:Id)?\b/, `${label} must not use layout or layoutId`);
     assert.doesNotMatch(src, /[\u0E00-\u0E7F]/, `${label} must stay 100% English`);
     assert.doesNotMatch(src, /\p{Extended_Pictographic}/u, `${label} must use Lucide icons only`);
+  }
+
+  // Enforce zero dark:bg-zinc-950 regressions across practice-studio/src/
+  const walkAllSrc = (dir: string): string[] =>
+    readdirSync(dir).flatMap((f) => {
+      const p = `${dir}/${f}`;
+      return statSync(p).isDirectory()
+        ? walkAllSrc(p)
+        : /\.(?:ts|tsx|css)$/.test(p)
+        ? [p]
+        : [];
+    });
+  for (const file of walkAllSrc("src")) {
+    assert.doesNotMatch(
+      readFileSync(file, "utf8"),
+      /dark:bg-zinc-950/,
+      `${file} must not regress to dark:bg-zinc-950 (use dark:bg-zinc-900 or bg-surface-panel)`
+    );
   }
 }
 

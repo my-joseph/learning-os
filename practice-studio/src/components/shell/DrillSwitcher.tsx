@@ -648,8 +648,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             <div
               className={`shrink-0 flex items-center gap-2 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25 ${
                 isSidebar
-                  ? "bg-white dark:bg-zinc-900/90"
-                  : "bg-zinc-50 dark:bg-zinc-950"
+                  ? "bg-white dark:bg-zinc-900"
+                  : "bg-surface-panel dark:bg-zinc-900"
               }`}
             >
               <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
@@ -703,17 +703,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     aria-label="Practice type"
                     className={`relative grid h-auto min-h-0 grid-cols-2 items-center rounded-lg border border-zinc-200 dark:border-zinc-800 p-0.5 ${
                       isSidebar
-                        ? "bg-zinc-200/70 dark:bg-zinc-900/60"
-                        : "bg-zinc-100 dark:bg-zinc-800/80"
+                        ? "bg-zinc-200/70 dark:bg-zinc-900/75"
+                        : "bg-zinc-200/70 dark:bg-surface-panel"
                     }`}
                   >
                     <m.span
                       aria-hidden
-                      className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md shadow-sm ${
-                        isSidebar
-                          ? "bg-white dark:bg-zinc-700/80"
-                          : "bg-white dark:bg-zinc-900"
-                      }`}
+                      className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md shadow-sm bg-white dark:bg-zinc-700/80"
                       initial={false}
                       animate={{ x: activeTab === "labs" ? "100%" : "0%" }}
                       transition={settle}

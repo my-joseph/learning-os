@@ -416,7 +416,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     ) : isLoadingActiveTab || !activeSimilarProblem ? (
                       <div className="space-y-4 animate-pulse py-2" aria-busy="true">
                         <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
-                        <div className="h-16 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
+                        <div className="h-16 w-full bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
                         <div className="h-10 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
                       </div>
                     ) : (

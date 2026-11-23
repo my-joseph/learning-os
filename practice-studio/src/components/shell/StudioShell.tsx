@@ -353,7 +353,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               prev.focus();
             }
           }}
-          className="lg:hidden p-0 overflow-hidden bg-zinc-50 dark:bg-zinc-900 flex flex-col"
+          className="lg:hidden p-0 overflow-hidden bg-surface-panel flex flex-col"
         >
           <DrawerTitle className="sr-only">Practice navigation</DrawerTitle>
           <DrawerDescription id={sidebarDrawerDescId} className="sr-only">

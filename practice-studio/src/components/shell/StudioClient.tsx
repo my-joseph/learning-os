@@ -353,7 +353,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         >
           <Skeleton className="h-5 w-1/3 rounded-lg" />
           <Skeleton className="h-4 w-2/3 rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+          <Skeleton className="h-24 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
           <Skeleton className="h-10 w-1/2 rounded-xl" />
         </Card>
       ) : drillNotFound ? (

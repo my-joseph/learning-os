@@ -197,7 +197,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
     summary ?? summarizeReviewSession(items, {}, nextDueDate);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
       <div className="mx-auto w-full max-w-[720px] space-y-4">
         {/* Slim header row: one h1 ("Daily review"), progress "3 of 8", back link, theme toggle */}
         <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-sm flex items-center justify-between gap-3">
@@ -246,7 +246,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
               </p>
               <div className="space-y-3">
                 <Skeleton className="h-4 w-1/3 rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+                <Skeleton className="h-20 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
                 <Skeleton className="h-10 w-1/2 rounded-xl" />
               </div>
             </Card>
@@ -306,7 +306,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-surface-panel px-3.5 py-2.5 space-y-0.5">
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved up
                   </div>
@@ -315,7 +315,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-surface-panel px-3.5 py-2.5 space-y-0.5">
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved down
                   </div>
@@ -324,7 +324,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-surface-panel px-3.5 py-2.5 space-y-0.5">
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Next due
                   </div>
@@ -344,7 +344,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                         <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                           {group} ({rows.length})
                         </h3>
-                        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/60">
+                        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-surface-panel/60">
                           {rows.map((missed) => (
                             <li key={`${missed.drillId}/${missed.qid}`}>
                               <Link
@@ -407,7 +407,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
               className="shadow-none p-6 space-y-4"
             >
               <Skeleton className="h-4 w-1/4 rounded-lg" />
-              <Skeleton className="h-20 w-full rounded-xl bg-zinc-100 dark:bg-zinc-950" />
+              <Skeleton className="h-20 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
               <Skeleton className="h-10 w-1/2 rounded-xl" />
             </Card>
           ) : (
@@ -453,7 +453,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       >
                         Next time I will…
                       </label>
-                      <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
+                      <div className="flex items-center gap-2 bg-surface-panel dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
                         <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
                         <Input
                           id={`revisit-note-${safeProblem.id}`}

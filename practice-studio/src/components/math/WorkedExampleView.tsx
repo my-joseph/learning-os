@@ -117,7 +117,7 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
       {/* Progressive steps */}
       <div className="space-y-4">
         {revealedCount > 0 && (
-          <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2">
+          <div className="bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2">
             {steps.slice(0, revealedCount).map((st, sIdx) => (
               <StepRow
                 key={sIdx}
@@ -218,7 +218,7 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
       <CollapsibleContent>
         <Reveal show={open}>
           {open && (
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-4">
+            <div className="bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                 <span>A similar question, not yours</span>
                 {(example.answerDisplay || example.answerPlain) && (

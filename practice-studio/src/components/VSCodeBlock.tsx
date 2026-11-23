@@ -106,7 +106,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
   const badge = getLanguageBadge(language, filename);
 
   return (
-    <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm mb-4 font-mono text-xs md:text-sm">
+    <div className="bg-white dark:bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm mb-4 font-mono text-xs md:text-sm">
       {/* VS Code Window Top Title Bar */}
       <div className="flex items-center justify-between gap-2 px-3.5 py-2 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 select-none">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -116,7 +116,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
             <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
           </div>
 
-          <div className="flex items-center gap-1.5 min-w-0 px-2.5 sm:px-3 py-1 bg-white dark:bg-zinc-950 border-t-2 border-t-indigo-600 dark:border-t-indigo-500 border-x border-x-zinc-200 dark:border-x-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-sans rounded-t-sm">
+          <div className="flex items-center gap-1.5 min-w-0 px-2.5 sm:px-3 py-1 bg-white dark:bg-surface-panel border-t-2 border-t-indigo-600 dark:border-t-indigo-500 border-x border-x-zinc-200 dark:border-x-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-sans rounded-t-sm">
             <Badge variant="status" className={`text-[10px] font-bold p-0 rounded shrink-0 ${badge.className}`}>
               {badge.label}
             </Badge>
@@ -152,7 +152,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
       </div>
 
       {/* Breadcrumbs Bar */}
-      <div className="px-4 py-1 bg-zinc-50/70 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-xs font-sans text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 select-none">
+      <div className="px-4 py-1 bg-zinc-50/70 dark:bg-surface-panel border-b border-zinc-200 dark:border-zinc-800 text-xs font-sans text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 select-none">
         <FileCode2 className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" />
         <span>src</span>
         <span>&rsaquo;</span>

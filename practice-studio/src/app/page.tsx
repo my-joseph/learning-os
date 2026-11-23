@@ -15,7 +15,7 @@ export default function PracticeStudioRootPage({ searchParams }: RootPageProps) 
       redirect(drillHref(legacy.drillId, legacy.qid));
     }
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <DrillNotFoundCard drillId={legacy.drillId} />
         </div>

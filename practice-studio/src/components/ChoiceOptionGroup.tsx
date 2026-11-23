@@ -51,7 +51,7 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
         const isWrongChosen = isSelected && !isCheckingThis && resultStatus === "wrong";
 
         let buttonCls =
-          "bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
+          "bg-surface-panel text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
         let badgeCls =
           "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800";
 

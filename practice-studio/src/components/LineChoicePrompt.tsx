@@ -49,7 +49,7 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
             isSelected && !isCheckingThis && resultStatus === "wrong";
 
           let rowCls =
-            "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
+            "bg-surface-panel border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
           let lineNumCls =
             "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800";
           let circleCls = "border border-zinc-300 dark:border-zinc-700";

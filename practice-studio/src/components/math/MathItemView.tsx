@@ -442,7 +442,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                <div className="bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {problem.display && (
                     <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
                       <MathBlock latex={problem.display} />

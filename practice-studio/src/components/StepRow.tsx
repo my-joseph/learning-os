@@ -67,7 +67,7 @@ export const StepRow: React.FC<StepRowProps> = ({
             }}
             className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
               isDiverged
-                ? `opacity-100 ${statusTone.wrong.border} ${statusTone.wrong.text} bg-zinc-50 dark:bg-zinc-950`
+                ? `opacity-100 ${statusTone.wrong.border} ${statusTone.wrong.text} bg-surface-panel`
                 : `opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} ${statusTone.wrong.hoverBorderSoft}`
             }`}
           >
