@@ -4,6 +4,11 @@ import React from "react";
 import { MoreHorizontal, Sigma, Type } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { MathKeyIcon } from "@/components/math/MathKeyIcons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/shadcn/Tooltip";
 import type { MathInputMode, UnitKeyboardProfile } from "@/lib/mathInput";
 import { getMathPaletteSections, QUICK_PALETTE_KEYS } from "@/lib/mathPalette";
 
@@ -75,22 +80,27 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             aria-label="Quick math templates"
             className="flex items-center gap-1"
           >
+            {/* Native title stays as SSR/no-JS fallback; TooltipTrigger strips it after hydration. */}
             {QUICK_PALETTE_KEYS.map((key) => (
-              <button
-                key={key.id}
-                type="button"
-                disabled={disabled}
-                aria-label={key.label}
-                title={key.label}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => onInsertLatex(key.insertLatex)}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
-              >
-                <MathKeyIcon
-                  iconId={key.iconId}
-                  className="h-[22px] w-auto max-w-[26px] shrink-0 pointer-events-none"
-                />
-              </button>
+              <Tooltip key={key.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    aria-label={key.label}
+                    title={key.label}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => onInsertLatex(key.insertLatex)}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
+                  >
+                    <MathKeyIcon
+                      iconId={key.iconId}
+                      className="h-[22px] w-auto max-w-[26px] shrink-0 pointer-events-none"
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{key.label}</TooltipContent>
+              </Tooltip>
             ))}
 
             <span
@@ -98,23 +108,29 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
               className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-0.5"
             />
 
-            <button
-              type="button"
-              disabled={disabled}
-              aria-label={panelOpen ? "Close math palette" : "Open math palette"}
-              title={panelOpen ? "Close math palette" : "More math symbols"}
-              aria-expanded={panelOpen}
-              aria-pressed={panelOpen}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onTogglePanel}
-              className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40 ${
-                panelOpen
-                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              }`}
-            >
-              <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  aria-label={panelOpen ? "Close math palette" : "Open math palette"}
+                  aria-expanded={panelOpen}
+                  aria-pressed={panelOpen}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={onTogglePanel}
+                  className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40 ${
+                    panelOpen
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {panelOpen ? "Close math palette" : "More math symbols"}
+              </TooltipContent>
+            </Tooltip>
           </div>
         )}
       </div>
@@ -135,21 +151,24 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {section.keys.map((key) => (
-                    <button
-                      key={key.id}
-                      type="button"
-                      disabled={disabled}
-                      aria-label={key.label}
-                      title={key.label}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => onInsertLatex(key.insertLatex)}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-700 dark:text-zinc-200 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
-                    >
-                      <MathKeyIcon
-                        iconId={key.iconId}
-                        className="h-[24px] w-auto max-w-[28px] shrink-0 pointer-events-none"
-                      />
-                    </button>
+                    <Tooltip key={key.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          aria-label={key.label}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => onInsertLatex(key.insertLatex)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-700 dark:text-zinc-200 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
+                        >
+                          <MathKeyIcon
+                            iconId={key.iconId}
+                            className="h-[24px] w-auto max-w-[28px] shrink-0 pointer-events-none"
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{key.label}</TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
