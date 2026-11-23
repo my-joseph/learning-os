@@ -229,6 +229,12 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   // Close DrillSwitcher on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      if (
+        e.target instanceof Element &&
+        e.target.closest("[data-picker-popover='true']")
+      ) {
+        return;
+      }
       if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
         setShowDrillSwitcher(false);
       }

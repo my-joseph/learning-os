@@ -435,6 +435,11 @@ const codeSearchHtml = renderToStaticMarkup(
 );
 assert.match(codeSearchHtml, />Drills</);
 assert.match(codeSearchHtml, />Labs</);
+assert.match(codeSearchHtml, /role="tablist"[^>]*aria-label="Practice type"/);
+assert.match(codeSearchHtml, /role="tab"[^>]*aria-selected="true"[^>]*data-state="active"/);
+assert.match(codeSearchHtml, /role="tab"[^>]*aria-selected="false"[^>]*data-state="inactive"/);
+assert.match(codeSearchHtml, /aria-expanded="false"[^>]*aria-haspopup="dialog"[^>]*data-state="closed"/);
+assert.match(codeSearchHtml, /aria-expanded="false"[^>]*aria-haspopup="dialog"[^>]*data-state="closed"[^>]*>[^<]*<svg/);
 assert.match(codeSearchHtml, /Closures/);
 assert.match(codeSearchHtml, />U02</);
 assert.match(codeSearchHtml, /Has notes/);
