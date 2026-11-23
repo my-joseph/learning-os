@@ -742,7 +742,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 </div>
               )}
 
-              <div className={`flex items-center ${isSidebar ? "gap-1" : "gap-1.5"}`}>
+              <div className={`flex shrink-0 items-center ${isSidebar ? "gap-1" : "gap-1.5"}`}>
                 {isCodeWorkspace && expandCollapseButtons}
 
                 {/* View Button + Popover */}
