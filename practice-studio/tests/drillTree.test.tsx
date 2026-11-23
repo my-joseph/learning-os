@@ -431,13 +431,28 @@ assert.doesNotMatch(sidebarTreeHtml, /border-l/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
-assert.match(sidebarTreeHtml, /h-11 w-11[^>]*lg:h-8 lg:w-8/);
+assert.match(sidebarTreeHtml, /h-7 w-7/);
 const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
+assert.match(sidebarActionSource, /data-menu-open=\{openActionNodeId === item\.id/);
+assert.match(sidebarActionSource, /isCurrent \|\| openActionNodeId === item\.id/);
 assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Copy ID/);
 assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Reset/);
 assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Delete/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
 assert.match(sidebarTreeHtml, /aria-current="true"/);
+const selectedLeafMarkup = sidebarTreeHtml.match(
+  /<div[^>]*data-sidebar-leaf="DRL-MTH-T02-C01-U01-03"[\s\S]*?<\/div>/
+)?.[0];
+assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
+assert.match(selectedLeafMarkup, /rounded-full[^>]*h-8|h-8[^>]*rounded-full/);
+assert.match(selectedLeafMarkup, /bg-zinc-200\/70/);
+assert.match(selectedLeafMarkup, /aria-current="true"/);
+assert.match(selectedLeafMarkup, /h-7 w-7/);
+assert.match(
+  selectedLeafMarkup,
+  /<\/button><button[^>]*aria-label="Actions for DRL-MTH-T02-C01-U01-03"/,
+  "drill selection and action targets are sibling buttons, never nested"
+);
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
 assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
 assert.ok(

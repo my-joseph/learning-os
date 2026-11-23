@@ -181,12 +181,15 @@ function TreeNodeActions({
   nodeId,
   onReset,
   onDelete,
+  open,
+  onOpenChange,
 }: {
   nodeId: string;
   onReset: (nodeId: string) => void;
   onDelete: (nodeId: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const copyId = async () => {
     try {
@@ -199,7 +202,7 @@ function TreeNodeActions({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -207,7 +210,7 @@ function TreeNodeActions({
           title="More actions"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
-          className="group/action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-zinc-500 opacity-100 transition-opacity hover:bg-zinc-200/70 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100 dark:focus-visible:ring-indigo-400 lg:h-8 lg:w-8 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
+          className="group/action mr-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-500 opacity-100 transition-colors hover:bg-zinc-300/70 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-600/60 dark:hover:text-zinc-100 dark:focus-visible:ring-indigo-400 lg:opacity-0 lg:group-hover/leaf:opacity-100 lg:focus-visible:opacity-100"
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -234,7 +237,7 @@ function TreeNodeActions({
           type="button"
           role="menuitem"
           onClick={() => {
-            setOpen(false);
+            onOpenChange(false);
             onReset(nodeId);
           }}
           className="flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400"
@@ -246,7 +249,7 @@ function TreeNodeActions({
           type="button"
           role="menuitem"
           onClick={() => {
-            setOpen(false);
+            onOpenChange(false);
             onDelete(nodeId);
           }}
           className={`flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm ${statusTone.wrong.text} hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400`}
@@ -305,6 +308,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const [activeTab, setActiveTab] = useState<PickerTab>(defaultTab);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [openActionNodeId, setOpenActionNodeId] = useState<string | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
@@ -684,7 +688,22 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     const isDueToday = dueUnitSet.has(item.unitCode);
 
     return (
-      <div key={nodeId} className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
+      <div
+        key={nodeId}
+        data-sidebar-leaf={isSidebar ? item.id : undefined}
+        data-menu-open={openActionNodeId === item.id || undefined}
+        className={`group/leaf flex min-w-0 items-center ${
+          isSidebar
+            ? `h-8 overflow-hidden rounded-full transition-colors ${
+                isCurrent || openActionNodeId === item.id
+                  ? "bg-zinc-200/70 dark:bg-zinc-700/60"
+                  : isSearchTarget
+                    ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+                    : "hover:bg-zinc-200/50 focus-within:bg-zinc-200/60 dark:hover:bg-zinc-700/40 dark:focus-within:bg-zinc-700/50"
+              } focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600/70 dark:focus-within:ring-indigo-400/70`
+            : "gap-0.5"
+        }`}
+      >
       <button
         ref={(el) => {
           registerNodeRef(nodeId, el);
@@ -702,17 +721,19 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`group ${isSidebar ? "min-w-0 flex-1 h-8" : "w-full"} text-left px-1.5 py-1.5 ${
-          isSidebar ? "h-8 rounded-lg " : "rounded-md "
-        }transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
+        className={`group min-w-0 ${isSidebar ? "h-8 flex-1 rounded-l-full" : "w-full rounded-md"} overflow-hidden text-left px-1.5 py-1.5 transition-colors flex items-center gap-1.5 focus:outline-none ${
+          isSidebar ? "focus-visible:ring-0" : "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70"
+        } ${
           isCurrent
             ? isSidebar
-              ? "bg-zinc-200/70 dark:bg-zinc-700/60"
+              ? "bg-transparent"
               : "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
             : isSearchTarget
-            ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+            ? isSidebar
+              ? "bg-transparent"
+              : "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
             : isSidebar
-            ? "hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50"
+            ? "bg-transparent"
             : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80"
         }`}
       >
@@ -730,7 +751,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         <HoverRowCode code={hoverCode} />
       </button>
       {isSidebar && item.kind === "drill" && (
-        <TreeNodeActions nodeId={item.id} onReset={onResetDrill} onDelete={onDeleteDrill} />
+        <TreeNodeActions
+          nodeId={item.id}
+          onReset={onResetDrill}
+          onDelete={onDeleteDrill}
+          open={openActionNodeId === item.id}
+          onOpenChange={(open) => setOpenActionNodeId(open ? item.id : null)}
+        />
       )}
       </div>
     );
