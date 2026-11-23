@@ -431,7 +431,8 @@ assert.doesNotMatch(sidebarTreeHtml, /border-l/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
-assert.match(sidebarTreeHtml, /h-7 w-7/);
+assert.match(sidebarTreeHtml, /h-11 w-11/);
+assert.match(sidebarTreeHtml, /lg:h-7 lg:w-7/);
 const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
 assert.match(sidebarActionSource, /data-menu-open=\{openActionNodeId === item\.id/);
 assert.match(sidebarActionSource, /isCurrent \|\| openActionNodeId === item\.id/);
@@ -447,13 +448,21 @@ assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
 assert.match(selectedLeafMarkup, /rounded-full[^>]*h-8|h-8[^>]*rounded-full/);
 assert.match(selectedLeafMarkup, /bg-zinc-200\/70/);
 assert.match(selectedLeafMarkup, /aria-current="true"/);
-assert.match(selectedLeafMarkup, /h-7 w-7/);
+assert.match(selectedLeafMarkup, /h-11 w-11/);
+assert.match(selectedLeafMarkup, /lg:h-7 lg:w-7/);
 assert.match(
   selectedLeafMarkup,
   /<\/button><button[^>]*aria-label="Actions for DRL-MTH-T02-C01-U01-03"/,
   "drill selection and action targets are sibling buttons, never nested"
 );
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="topic"[^>]*class="[^"]*w-full h-8[^"]*px-1\.5/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="chapter"[^>]*class="[^"]*w-full h-8[^"]*pl-4/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="unit"[^>]*class="[^"]*w-full h-8[^"]*pl-\[26px\]/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"[^>]*class="[^"]*w-full[^\"]*h-8/);
+assert.match(sidebarTreeHtml, /pl-\[36px\]/, "deep drill contents indent independently of the full-width row");
+assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-3/, "sidebar branches keep a shared left edge");
 assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
 assert.ok(
   (sidebarTreeHtml.match(/h-8/g) ?? []).length >= 10,
