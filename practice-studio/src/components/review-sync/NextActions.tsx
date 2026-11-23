@@ -10,6 +10,7 @@ import type {
 } from "@/lib/reviewRow";
 import { trapName } from "@/lib/titleText";
 import { Button } from "@/components/ui/shadcn/Button";
+import { Card } from "@/components/ui/shadcn/Card";
 
 export interface NextActionsProps {
   dueReviewCount: number;
@@ -135,10 +136,8 @@ export const NextActions: React.FC<NextActionsProps> = ({
   if (actions.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="what-next-heading"
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-3"
-    >
+    <Card asChild className="shadow-none p-4 sm:p-6 space-y-3">
+      <section aria-labelledby="what-next-heading">
       <h2
         id="what-next-heading"
         className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
@@ -191,6 +190,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
           );
         })}
       </div>
-    </section>
+      </section>
+    </Card>
   );
 };

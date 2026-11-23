@@ -26,6 +26,7 @@ import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { Button } from "@/components/ui/shadcn/Button";
 import { Badge } from "@/components/ui/shadcn/Badge";
+import { Card } from "@/components/ui/shadcn/Card";
 import type { EffectiveSyncPhase } from "./SessionSummaryCard";
 
 export interface SyncCardProps {
@@ -97,10 +98,10 @@ export const SyncCard: React.FC<SyncCardProps> = ({
     const notTried = labSummary?.notTried ?? total;
 
     return (
-      <section
+      <Card asChild className="shadow-none p-4 sm:p-6 space-y-4">
+        <section
         id="review-sync-section"
         aria-labelledby="sync-card-heading"
-        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4"
       >
         <div className="space-y-1">
           <h2
@@ -171,7 +172,8 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             Runs every test (including hidden ones) and records the result in Notion.
           </p>
         </div>
-      </section>
+        </section>
+      </Card>
     );
   }
 
@@ -195,10 +197,10 @@ export const SyncCard: React.FC<SyncCardProps> = ({
   const errorBrief = firstLine(errorFullText);
 
   return (
-    <section
+    <Card asChild className="shadow-none p-4 sm:p-6 space-y-4">
+      <section
       id="review-sync-section"
       aria-labelledby="sync-card-heading"
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4"
     >
       <h2
         id="sync-card-heading"
@@ -711,6 +713,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
       </div>
-    </section>
+      </section>
+    </Card>
   );
 };

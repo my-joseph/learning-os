@@ -16,6 +16,7 @@ import { scoreProblem } from "@/lib/scoring";
 import { formatSyncTimestamp } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
 import { Button } from "@/components/ui/shadcn/Button";
+import { Card } from "@/components/ui/shadcn/Card";
 import {
   Tooltip,
   TooltipContent,
@@ -162,10 +163,8 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
     : "Question outcomes";
 
   return (
-    <section
-      aria-labelledby="review-sync-heading"
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4"
-    >
+    <Card asChild className="shadow-none p-4 sm:p-6 space-y-4">
+      <section aria-labelledby="review-sync-heading">
       {/* Top row: h1 title + right-aligned quiet sync status link */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div className="min-w-0 space-y-0.5">
@@ -329,6 +328,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           </Button>
         )}
       </div>
-    </section>
+      </section>
+    </Card>
   );
 };

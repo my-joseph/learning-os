@@ -3,6 +3,7 @@
 import React from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/shadcn/Button";
+import { cn } from "@/lib/cn";
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +17,7 @@ export function ThemeToggleButton({
 }: {
   theme: "light" | "dark";
   onToggle: () => void;
-  className: string;
+  className?: string;
 }) {
   const label = theme === "light" ? "Switch to dark mode" : "Switch to light mode";
 
@@ -28,7 +29,7 @@ export function ThemeToggleButton({
           size="iconSm"
           onClick={onToggle}
           aria-label={label}
-          className={className}
+          className={cn("rounded-lg", className)}
         >
           {theme === "light" ? (
             <Moon className="w-4 h-4" aria-hidden="true" />
