@@ -667,11 +667,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 >
                   <TabsList
                     aria-label="Practice type"
-                    className="relative grid h-auto min-h-0 grid-cols-2 items-center rounded-none bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5"
+                    className="relative grid h-auto min-h-0 grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5"
                   >
                     <m.span
                       aria-hidden
-                      className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-none bg-white dark:bg-zinc-900 shadow-sm"
+                      className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm"
                       initial={false}
                       animate={{ x: activeTab === "labs" ? "100%" : "0%" }}
                       transition={settle}
@@ -685,7 +685,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           key={tab.id}
                           value={tab.id}
                           aria-controls={undefined}
-                          className="relative z-10 inline-flex min-h-0 items-center justify-center gap-1.5 rounded-none bg-transparent px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100"
+                          className="relative z-10 inline-flex min-h-0 items-center justify-center gap-1.5 rounded-md bg-transparent px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100"
                         >
                           <span>{tab.label}</span>
                           <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400">

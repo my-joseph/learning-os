@@ -20,6 +20,7 @@ import { POST as checkAnswerPOST } from "../src/app/api/check-answer/route";
 import { SimilarTabStrip } from "../src/components/math/SimilarTabStrip";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
+import { Tabs, TabsList, TabsTrigger } from "../src/components/ui/shadcn/Tabs";
 import {
   SIMILAR_LIST_ERROR_MESSAGE,
   SIMILAR_LIST_RETRY_DELAYS_MS,
@@ -545,6 +546,63 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /cursor-not-allowed/);
+
+  // Square corners on SimilarTabStrip (underline variant) vs rounded corners on default segmented Tabs
+  for (const stripMarkup of [html, lockedStripHtml]) {
+    const stripListTag = stripMarkup.match(/<div\b[^>]*\brole="tablist"[^>]*>/)?.[0] ?? "";
+    assert.match(stripListTag, /\brounded-none\b/, "SimilarTabStrip TabsList must use rounded-none");
+    assert.doesNotMatch(
+      stripListTag,
+      /\brounded-(?:md|lg|t-md)\b/,
+      "SimilarTabStrip TabsList must not include rounded-md, rounded-lg, or rounded-t-md"
+    );
+    const stripTabs = stripMarkup.match(/<button\b[^>]*\brole="tab"[^>]*>/g) ?? [];
+    assert.equal(stripTabs.length, 4);
+    for (const tabTag of stripTabs) {
+      assert.match(tabTag, /\brounded-none\b/, "SimilarTabStrip tab trigger must use rounded-none");
+      assert.doesNotMatch(
+        tabTag,
+        /\brounded-(?:md|lg|t-md)\b/,
+        "SimilarTabStrip tab trigger must not include rounded-md, rounded-lg, or rounded-t-md"
+      );
+    }
+  }
+
+  const defaultTabsHtml = renderToStaticMarkup(
+    <Tabs defaultValue="drills">
+      <TabsList aria-label="Default segmented tabs">
+        <TabsTrigger value="drills">Drills</TabsTrigger>
+        <TabsTrigger value="labs">Labs</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
+  const defaultListTag = defaultTabsHtml.match(/<div\b[^>]*\brole="tablist"[^>]*>/)?.[0] ?? "";
+  assert.match(defaultListTag, /\brounded-lg\b/, "Default TabsList must include rounded-lg");
+  assert.doesNotMatch(defaultListTag, /\brounded-none\b/);
+  const defaultTriggers = defaultTabsHtml.match(/<button\b[^>]*\brole="tab"[^>]*>/g) ?? [];
+  assert.equal(defaultTriggers.length, 2);
+  for (const triggerTag of defaultTriggers) {
+    assert.match(triggerTag, /\brounded-md\b/, "Default TabsTrigger must include rounded-md");
+    assert.doesNotMatch(triggerTag, /\brounded-none\b/);
+  }
+
+  const underlineTabsHtml = renderToStaticMarkup(
+    <Tabs defaultValue="one">
+      <TabsList variant="underline" aria-label="Underline tabs">
+        <TabsTrigger value="one">One</TabsTrigger>
+        <TabsTrigger value="two">Two</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
+  const underlineListTag = underlineTabsHtml.match(/<div\b[^>]*\brole="tablist"[^>]*>/)?.[0] ?? "";
+  assert.match(underlineListTag, /\brounded-none\b/, "Underline TabsList must include rounded-none");
+  assert.doesNotMatch(underlineListTag, /\brounded-(?:md|lg|t-md)\b/);
+  const underlineTriggers = underlineTabsHtml.match(/<button\b[^>]*\brole="tab"[^>]*>/g) ?? [];
+  assert.equal(underlineTriggers.length, 2);
+  for (const triggerTag of underlineTriggers) {
+    assert.match(triggerTag, /\brounded-none\b/, "Underline TabsTrigger must include rounded-none");
+    assert.doesNotMatch(triggerTag, /\brounded-(?:md|lg|t-md)\b/);
+  }
 
   // B4: Unlocked strip with failed list load shows quiet error + Retry action instead of permanent "Answer Question N first" lock
   const listErrorStripHtml = renderToStaticMarkup(
