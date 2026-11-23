@@ -1,7 +1,11 @@
+"use client";
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { m, type HTMLMotionProps } from "motion/react";
 import { cn } from "@/lib/cn";
+import { quick, tapPress } from "@/lib/motion";
 import { DESTRUCTIVE_BUTTON_CLS } from "@/lib/statusTone";
 
 export const buttonVariants = cva(
@@ -36,13 +40,25 @@ export interface ButtonProps
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, type, ...props }, ref) => {
-    const Component = asChild ? Slot : "button";
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          className={cn(buttonVariants({ variant, size }), className)}
+          {...props}
+          {...(type !== undefined ? { type } : {})}
+        />
+      );
+    }
+
     return (
-      <Component
+      <m.button
         ref={ref}
+        type={type ?? "button"}
+        whileTap={props.disabled ? undefined : tapPress}
+        transition={quick}
         className={cn(buttonVariants({ variant, size }), className)}
-        type={type ?? (!asChild ? "button" : undefined)}
-        {...props}
+        {...(props as HTMLMotionProps<"button">)}
       />
     );
   }

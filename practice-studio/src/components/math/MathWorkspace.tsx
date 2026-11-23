@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, m } from "motion/react";
+import { tabPanel } from "@/lib/motion";
 import { Problem, MistakeTag } from "@/types/drill";
 import { QuestionTimer } from "@/components/QuestionTimer";
 import { ResultCardSecondaryAction } from "@/components/AnswerResultCard";
@@ -382,142 +384,153 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               tabIndex={showTabStrip ? -1 : undefined}
               className="space-y-6 focus:outline-none"
             >
-              {selectedTab !== "q" && activeSimilarTab ? (
-                activeTabError ? (
-                  <div className="py-8 text-center space-y-3">
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {activeTabError}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={retryActiveTab}
-                      className="inline-flex items-center justify-center min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                ) : isLoadingActiveTab || !activeSimilarProblem ? (
-                  <div className="space-y-4 animate-pulse py-2" aria-busy="true">
-                    <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
-                    <div className="h-16 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
-                    <div className="h-10 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
-                  </div>
-                ) : (
-                  <MathItemView
-                    key={activeSimilarTab.token}
-                    ref={similarItemRef}
-                    problem={activeSimilarProblem}
-                    header={
-                      <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        <div className="min-w-0 truncate">
-                          <span className="hidden sm:inline">
-                            Similar question{" "}
-                            <span className="font-display tabular-nums">
-                              {activeSimilarTab.slot}
-                            </span>{" "}
-                            of{" "}
-                            <span className="font-display tabular-nums">
-                              {tabs.length}
-                            </span>
-                          </span>
-                          <span className="sm:hidden">
-                            Similar{" "}
-                            <span className="font-display tabular-nums">
-                              {activeSimilarTab.slot}/{tabs.length}
-                            </span>
-                          </span>
-                        </div>
-                        <QuestionTimer
-                          questionMs={similarTimerMs}
-                          totalMs={similarTimerMs}
-                          isPaused={similarIsCorrect ? false : isSimilarPaused}
-                          onTogglePause={similarIsCorrect ? undefined : toggleSimilarPaused}
-                        />
+              <AnimatePresence mode="wait" initial={false}>
+                <m.div
+                  key={selectedTab}
+                  variants={tabPanel}
+                  initial="hidden"
+                  animate="shown"
+                  exit="exit"
+                  className="space-y-6"
+                >
+                  {selectedTab !== "q" && activeSimilarTab ? (
+                    activeTabError ? (
+                      <div className="py-8 text-center space-y-3">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                          {activeTabError}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={retryActiveTab}
+                          className="inline-flex items-center justify-center min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                        >
+                          Retry
+                        </button>
                       </div>
-                    }
-                    unitCode={unitCode}
-                    drillTitle={drillTitle}
-                    mistakeTags={[]}
-                    isVariant={true}
-                    useSessionInputMode={isReviewSession}
-                    hideShowStepsButton={sPlan.showSimilarShowSteps}
-                    loadingSteps={loadingSteps}
-                    ariaLabel={`Answer for similar question ${activeSimilarTab.slot} of ${tabs.length}`}
-                    backLabel={`Back to Question ${questionNumber}`}
-                    retryLabel={sPlan.retryLabel}
-                    onBack={
-                      similarIsCorrect
-                        ? () => selectTab("q", { selectOriginal: true })
-                        : undefined
-                    }
-                    resultSecondaryActions={similarSecondaryActions}
-                    onInputChange={handleSimilarInputChange}
-                    onCheckAnswer={handleSimilarCheckAnswer}
-                    onReset={handleSimilarReset}
-                    onHintRevealed={handleSimilarHintRevealed}
-                    onSetupRevealed={() => void handleSimilarSetupRevealed()}
-                    onSolutionRevealed={() => void handleSimilarSolutionRevealed()}
-                    onStepsOpenChange={setSimilarStepsOpen}
-                  />
-                )
-              ) : (
-                <MathItemView
-                  ref={originalItemRef}
-                  problem={problem}
-                  header={questionHeader}
-                  unitCode={unitCode}
-                  drillTitle={drillTitle}
-                  mistakeTags={mistakeTags}
-                  isLastQuestion={isReviewSession ? false : isLastQuestion}
-                  isReviewSession={isReviewSession}
-                  isCorrectOnRetry={isCorrectOnRetry}
-                  reviewScheduleNote={isReviewSession ? reviewScheduleNote : null}
-                  skipLabel={isReviewSession ? "Skip · due tomorrow" : "Skip"}
-                  autoRevealOnSkip={!isReviewSession}
-                  ariaLabel={
-                    isReviewSession
-                      ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}`
-                      : `Answer for question ${problem.id}`
-                  }
-                  nextLabel={nextCardLabel ?? "Next question"}
-                  retryLabel={rPlan.retryLabel}
-                  retryAriaLabel={rPlan.retryAriaLabel}
-                  resultFootnote={rPlan.footnote}
-                  resultSecondaryActions={originalSecondaryActions}
-                  onInputChange={onInputChange}
-                  onCheckAnswer={onCheckAnswer}
-                  onSkip={onSkip}
-                  onMarkDivergedStep={onMarkDivergedStep}
-                  onReset={() => {
-                    resetAllVariantUi();
-                    onResetProblem();
-                  }}
-                  onHintRevealed={onHintRevealed}
-                  onSetupRevealed={onSetupRevealed}
-                  onSolutionRevealed={onSolutionRevealed}
-                  onNextQuestion={onNextQuestion}
-                  onOpenReview={onOpenReview}
-                  afterResultCard={
-                    example ? <WorkedExampleDisclosure example={example} /> : undefined
-                  }
-                  supplement={reviewSupplement}
-                  footer={
-                    <ProblemSelfEval
-                      hasAttempt={hasAttempt}
-                      maxScore={maxSelfScore}
-                      skipped={Boolean(problem.state.skipped)}
-                      score={score}
-                      mistakes={problem.state.mistakes}
-                      mistakeNote={problem.state.mistakeNote}
+                    ) : isLoadingActiveTab || !activeSimilarProblem ? (
+                      <div className="space-y-4 animate-pulse py-2" aria-busy="true">
+                        <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                        <div className="h-16 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
+                        <div className="h-10 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+                      </div>
+                    ) : (
+                      <MathItemView
+                        key={activeSimilarTab.token}
+                        ref={similarItemRef}
+                        problem={activeSimilarProblem}
+                        header={
+                          <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                            <div className="min-w-0 truncate">
+                              <span className="hidden sm:inline">
+                                Similar question{" "}
+                                <span className="font-display tabular-nums">
+                                  {activeSimilarTab.slot}
+                                </span>{" "}
+                                of{" "}
+                                <span className="font-display tabular-nums">
+                                  {tabs.length}
+                                </span>
+                              </span>
+                              <span className="sm:hidden">
+                                Similar{" "}
+                                <span className="font-display tabular-nums">
+                                  {activeSimilarTab.slot}/{tabs.length}
+                                </span>
+                              </span>
+                            </div>
+                            <QuestionTimer
+                              questionMs={similarTimerMs}
+                              totalMs={similarTimerMs}
+                              isPaused={similarIsCorrect ? false : isSimilarPaused}
+                              onTogglePause={similarIsCorrect ? undefined : toggleSimilarPaused}
+                            />
+                          </div>
+                        }
+                        unitCode={unitCode}
+                        drillTitle={drillTitle}
+                        mistakeTags={[]}
+                        isVariant={true}
+                        useSessionInputMode={isReviewSession}
+                        hideShowStepsButton={sPlan.showSimilarShowSteps}
+                        loadingSteps={loadingSteps}
+                        ariaLabel={`Answer for similar question ${activeSimilarTab.slot} of ${tabs.length}`}
+                        backLabel={`Back to Question ${questionNumber}`}
+                        retryLabel={sPlan.retryLabel}
+                        onBack={
+                          similarIsCorrect
+                            ? () => selectTab("q", { selectOriginal: true })
+                            : undefined
+                        }
+                        resultSecondaryActions={similarSecondaryActions}
+                        onInputChange={handleSimilarInputChange}
+                        onCheckAnswer={handleSimilarCheckAnswer}
+                        onReset={handleSimilarReset}
+                        onHintRevealed={handleSimilarHintRevealed}
+                        onSetupRevealed={() => void handleSimilarSetupRevealed()}
+                        onSolutionRevealed={() => void handleSimilarSolutionRevealed()}
+                        onStepsOpenChange={setSimilarStepsOpen}
+                      />
+                    )
+                  ) : (
+                    <MathItemView
+                      ref={originalItemRef}
+                      problem={problem}
+                      header={questionHeader}
+                      unitCode={unitCode}
+                      drillTitle={drillTitle}
                       mistakeTags={mistakeTags}
-                      noteAriaLabel={`Note for question ${questionNumber}`}
-                      onSetScore={onSetScore}
-                      onToggleMistakeTag={onToggleMistakeTag}
-                      onMistakeNoteChange={onMistakeNoteChange}
+                      isLastQuestion={isReviewSession ? false : isLastQuestion}
+                      isReviewSession={isReviewSession}
+                      isCorrectOnRetry={isCorrectOnRetry}
+                      reviewScheduleNote={isReviewSession ? reviewScheduleNote : null}
+                      skipLabel={isReviewSession ? "Skip · due tomorrow" : "Skip"}
+                      autoRevealOnSkip={!isReviewSession}
+                      ariaLabel={
+                        isReviewSession
+                          ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}`
+                          : `Answer for question ${problem.id}`
+                      }
+                      nextLabel={nextCardLabel ?? "Next question"}
+                      retryLabel={rPlan.retryLabel}
+                      retryAriaLabel={rPlan.retryAriaLabel}
+                      resultFootnote={rPlan.footnote}
+                      resultSecondaryActions={originalSecondaryActions}
+                      onInputChange={onInputChange}
+                      onCheckAnswer={onCheckAnswer}
+                      onSkip={onSkip}
+                      onMarkDivergedStep={onMarkDivergedStep}
+                      onReset={() => {
+                        resetAllVariantUi();
+                        onResetProblem();
+                      }}
+                      onHintRevealed={onHintRevealed}
+                      onSetupRevealed={onSetupRevealed}
+                      onSolutionRevealed={onSolutionRevealed}
+                      onNextQuestion={onNextQuestion}
+                      onOpenReview={onOpenReview}
+                      afterResultCard={
+                        example ? <WorkedExampleDisclosure example={example} /> : undefined
+                      }
+                      supplement={reviewSupplement}
+                      footer={
+                        <ProblemSelfEval
+                          hasAttempt={hasAttempt}
+                          maxScore={maxSelfScore}
+                          skipped={Boolean(problem.state.skipped)}
+                          score={score}
+                          mistakes={problem.state.mistakes}
+                          mistakeNote={problem.state.mistakeNote}
+                          mistakeTags={mistakeTags}
+                          noteAriaLabel={`Note for question ${questionNumber}`}
+                          onSetScore={onSetScore}
+                          onToggleMistakeTag={onToggleMistakeTag}
+                          onMistakeNoteChange={onMistakeNoteChange}
+                        />
+                      }
                     />
-                  }
-                />
-              )}
+                  )}
+                </m.div>
+              </AnimatePresence>
             </div>
           </>
         )}

@@ -2,17 +2,30 @@
 
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
+import { m } from "motion/react";
 import { Button, type ButtonProps } from "@/components/ui/shadcn/Button";
 import { cn } from "@/lib/cn";
+import { dialogCard, fade } from "@/lib/motion";
 
-export const AlertDialog = AlertDialogPrimitive.Root;
+const AlertDialogOpenContext = React.createContext<boolean>(false);
+
+export const AlertDialog: React.FC<
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Root>
+> = ({ open, defaultOpen, children, ...props }) => (
+  <AlertDialogOpenContext.Provider value={Boolean(open ?? defaultOpen)}>
+    <AlertDialogPrimitive.Root open={open} defaultOpen={defaultOpen} {...props}>
+      {children}
+    </AlertDialogPrimitive.Root>
+  </AlertDialogOpenContext.Provider>
+);
 export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
 export const AlertDialogPortal: React.FC<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Portal>
 > = ({ children, ...props }) => {
+  const ssrOpen = React.useContext(AlertDialogOpenContext);
   if (typeof document === "undefined") {
-    return <>{children}</>;
+    return ssrOpen ? <>{children}</> : null;
   }
   return <AlertDialogPrimitive.Portal {...props}>{children}</AlertDialogPrimitive.Portal>;
 };
@@ -21,17 +34,35 @@ export const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-zinc-950/70 data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:transition-none", className)} {...props} />
+  <AlertDialogPrimitive.Overlay ref={ref} asChild {...props}>
+    <m.div
+      variants={fade}
+      initial="hidden"
+      animate="shown"
+      className={cn("fixed inset-0 z-50 bg-zinc-950/70 motion-reduce:transition-none", className)}
+    />
+  </AlertDialogPrimitive.Overlay>
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 export const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <AlertDialogPortal>
     <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content ref={ref} className={cn("fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-zinc-200 bg-white p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800 dark:bg-zinc-900", className)} {...props} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+      <AlertDialogPrimitive.Content ref={ref} asChild {...props}>
+        <m.div
+          variants={dialogCard}
+          initial="hidden"
+          animate="shown"
+          className={cn("pointer-events-auto relative grid w-full max-w-lg gap-4 rounded-2xl border border-zinc-200 bg-white p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800 dark:bg-zinc-900", className)}
+        >
+          {children}
+        </m.div>
+      </AlertDialogPrimitive.Content>
+    </div>
   </AlertDialogPortal>
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
