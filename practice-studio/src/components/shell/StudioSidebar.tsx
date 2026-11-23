@@ -42,7 +42,7 @@ export interface StudioSidebarProps {
   onCloseDrawer?: () => void;
 }
 
-/** Full-height flat left navigation sidebar (268px open <-> 0px closed on desktop, plus embedded mobile drawer mode). */
+/** Full-height flat left navigation sidebar (287px open <-> 0px closed on desktop, plus embedded mobile drawer mode). */
 export const StudioSidebar: React.FC<StudioSidebarProps> = ({
   isOpen = true,
   onToggle,
@@ -111,7 +111,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
 
   if (embedded) {
     return (
-      <div className="w-full h-full flex flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+      <div className="w-full h-full flex flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-900">
         <div className="min-h-[56px] shrink-0 px-3 pr-14 flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800/80">
           <WorkspaceSwitch
             variant="sidebar"
@@ -151,19 +151,19 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
       aria-label="Practice navigation"
       aria-hidden={!isOpen || undefined}
       initial={false}
-      animate={{ width: isOpen ? 268 : 0, opacity: isOpen ? 1 : 0 }}
+      animate={{ width: isOpen ? 287 : 0, opacity: isOpen ? 1 : 0 }}
       transition={settle}
       onAnimationComplete={() => {
         if (!isOpen) setSettledClosed(true);
       }}
       className={cn(
-        "hidden lg:flex flex-col shrink-0 overflow-hidden bg-zinc-50/70 dark:bg-zinc-950 motion-reduce:transition-none",
+        "hidden lg:flex flex-col shrink-0 overflow-hidden bg-zinc-50 dark:bg-zinc-900 motion-reduce:transition-none",
         isOpen && "border-r border-zinc-200/80 dark:border-zinc-800/80",
         !isOpen && "pointer-events-none select-none",
         settledClosed && !isOpen && "invisible"
       )}
     >
-      <div className="w-[268px] h-full flex flex-col">
+      <div className="w-[287px] h-full flex flex-col">
         {/* Top bar inside Left Sidebar: seamless top-to-tree flow (no horizontal border-b) */}
         <div className="h-11 shrink-0 px-2.5 flex items-center justify-between gap-2">
           <Tooltip>
@@ -173,7 +173,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                 size="iconSm"
                 onClick={onToggle}
                 aria-label="Collapse sidebar"
-                className="lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
+                className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
               >
                 <PanelLeft className="w-4 h-4" aria-hidden="true" />
               </Button>

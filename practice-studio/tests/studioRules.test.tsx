@@ -127,6 +127,9 @@ assert.match(studioShell, /<StudioSidebar/);
 assert.match(studioShell, /Due today &amp; weak spots/);
 assert.doesNotMatch(studioShell, /Study queue/);
 assert.match(studioShell, /border-b border-zinc-200/);
+assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*\?[\s\S]{0,600}StudioSidePanel/);
+assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*&&[\s\S]{0,200}(?:onToggleRightPanel|isSideDrawerOpen|StudioSidePanel)/);
+assert.match(studioShell, /<QuizPaginationBar[\s\S]*\bcompact\b/);
 assert.match(studioHeader, /lg:hidden/);
 assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
@@ -140,7 +143,11 @@ assert.match(studioHeader, /Reset all questions/);
 assert.match(studioHeader, /Reset all problems/);
 assert.match(studioHeader, /Reset all milestones/);
 assert.match(studioHeader, /Due today & weak spots/);
+assert.match(studioHeader, /<List\b/);
 assert.match(studioSidebar, /Collapse sidebar/);
+assert.match(studioSidebar, /isOpen \? 287 : 0/);
+assert.match(studioSidebar, /w-\[287px\]/);
+assert.match(studioSidebar, /bg-zinc-50 dark:bg-zinc-900/);
 assert.match(studioSidebar, /<WorkspaceSwitch/);
 assert.match(studioSidebar, /<DrillSwitcher/);
 assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
@@ -694,8 +701,10 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     />
   );
   assert.match(openSidebarHtml, /role="tree"/);
-  assert.match(openSidebarHtml, />MTH</);
-  assert.match(openSidebarHtml, />PRG</);
+  assert.match(openSidebarHtml, /aria-label="Math"/);
+  assert.match(openSidebarHtml, /aria-label="Programming"/);
+  assert.doesNotMatch(openSidebarHtml, />MTH</);
+  assert.doesNotMatch(openSidebarHtml, />PRG</);
   assert.match(openSidebarHtml, /aria-label="Collapse sidebar"/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Generate drill set"/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Reset all/);
@@ -745,7 +754,8 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     />
   );
   assert.doesNotMatch(embeddedSidebarHtml, /aria-label="Collapse sidebar"/);
-  assert.match(embeddedSidebarHtml, />MTH</);
+  assert.match(embeddedSidebarHtml, /aria-label="Math"/);
+  assert.doesNotMatch(embeddedSidebarHtml, />MTH</);
 
   const headerOpenHtml = renderToStaticMarkup(
     <StudioHeader
@@ -770,8 +780,22 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.match(headerOpenHtml, /aria-label="Generate drill set"/);
   assert.match(headerOpenHtml, /aria-label="Reset all questions"/);
   assert.match(headerOpenHtml, /aria-label="Due today &amp; weak spots"/);
+  assert.match(headerOpenHtml, /lucide-list/);
   assert.match(headerOpenHtml, /aria-pressed="true"/);
   assert.match(headerOpenHtml, /Linear Equations/);
+
+  const compactTilesHtml = renderToStaticMarkup(
+    <QuizPaginationBar
+      compact
+      currentIndex={0}
+      problems={[sampleMathProblem]}
+      viewMode="quiz"
+      onSelectQuestion={noop}
+      onToggleViewMode={noop}
+    />
+  );
+  assert.doesNotMatch(compactTilesHtml, /border-t border-zinc-200/);
+  assert.match(compactTilesHtml, /w-\[18px\] h-\[18px\] sm:w-5 sm:h-5/);
 
   const headerClosedHtml = renderToStaticMarkup(
     <StudioHeader

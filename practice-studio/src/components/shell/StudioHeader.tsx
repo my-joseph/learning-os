@@ -4,8 +4,8 @@ import React from "react";
 import { AnimatePresence, m } from "motion/react";
 import {
   ArrowUpRight,
+  List,
   PanelLeft,
-  PanelRight,
   Plus,
   RotateCcw,
 } from "lucide-react";
@@ -82,7 +82,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/50 px-2 sm:px-3 flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-2 sm:px-3 flex items-center justify-between gap-2">
       {/* Left: mobile drawer trigger OR desktop expand-sidebar button (only when sidebar closed) + drill title */}
       <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
         <Tooltip>
@@ -120,7 +120,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                     size="iconSm"
                     onClick={onOpenDesktopSidebar}
                     aria-label="Expand sidebar"
-                    className="lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
+                    className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
                   >
                     <PanelLeft className="w-4 h-4" aria-hidden="true" />
                   </Button>
@@ -145,7 +145,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
               size="iconSm"
               onClick={onOpenGenPopover}
               aria-label="Generate drill set"
-              className="min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
+              className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -161,7 +161,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                 size="iconSm"
                 onClick={onResetAll}
                 aria-label={resetAllLabel}
-                className={`min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-200/60 dark:hover:bg-zinc-800`}
+                className={`min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-200/60 dark:hover:bg-zinc-800`}
               >
                 <RotateCcw className="w-4 h-4" aria-hidden="true" />
               </Button>
@@ -178,7 +178,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open unit page in Notion"
-                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
               >
                 <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
               </a>
@@ -190,7 +190,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <ThemeToggleButton
           theme={theme}
           onToggle={onToggleTheme}
-          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
         />
 
         {showRightPanelToggle && (
@@ -208,12 +208,12 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                   aria-label="Due today & weak spots"
                   aria-pressed={isRightPanelOpen}
                   className={cn(
-                    "relative min-h-[44px] min-w-[44px] lg:min-h-[32px] lg:min-w-[32px] lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800",
+                    "relative min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800",
                     isRightPanelOpen &&
                       "lg:text-zinc-800 lg:dark:text-zinc-100 lg:bg-zinc-200/50 lg:dark:bg-zinc-800/60"
                   )}
                 >
-                  <PanelRight className="w-4 h-4" aria-hidden="true" />
+                  <List className="w-4 h-4" aria-hidden="true" />
                   {sidePanelCount > 0 && (
                     <span
                       aria-hidden="true"

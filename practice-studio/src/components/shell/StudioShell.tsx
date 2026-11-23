@@ -64,7 +64,7 @@ interface StudioShellProps {
   children: React.ReactNode;
 }
 
-/** Edge-to-edge 3-pane flat Studio shell composing Left Sidebar, Top Bar, Pagination sub-bar, Center Problem canvas, and collapsible Right Panel. */
+/** Edge-to-edge 3-pane flat Studio shell composing Left Sidebar, Top Bar, compact Pagination sub-bar, Center canvas, and Right Panel across quiz & review views. */
 export const StudioShell: React.FC<StudioShellProps> = ({
   workspace,
   mathHref,
@@ -189,12 +189,12 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     setIsSidebarDrawerOpen(false);
   }, [selectedDrillId, viewMode]);
 
-  const drawerActive = viewMode === "quiz" && isSideDrawerOpen;
+  const drawerActive = isSideDrawerOpen;
   const hasPagination = Boolean(currentDrill && currentDrill.problems.length > 0);
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden flex bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors">
-      {/* >=1024px: Full-height docked Left Sidebar (width 268 <-> 0) */}
+      {/* >=1024px: Full-height docked Left Sidebar (width 287 <-> 0) */}
       <StudioSidebar
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen((prev) => !prev)}
@@ -215,7 +215,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         onSelectDrill={onSelectDrill}
       />
 
-      {/* Right of Left Sidebar: Top Bar + Below-Top-Bar split (Center Problem + Right Panel) */}
+      {/* Right of Left Sidebar: Top Bar + Below-Top-Bar split (Center canvas + Right Panel) */}
       <div className="flex-1 min-w-0 flex flex-col lg:h-full lg:overflow-hidden">
         {/* Provide sr-only h1 when no active drill or not-found card renders a visible h1 */}
         {viewMode === "quiz" && !currentDrill && !drillNotFound && (
@@ -234,19 +234,18 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           onOpenDesktopSidebar={() => setSidebarOpen(true)}
           onOpenSidebarDrawer={() => setIsSidebarDrawerOpen(true)}
           isRightPanelOpen={isRightPanelOpen}
-          onToggleRightPanel={viewMode === "quiz" ? toggleRightPanel : undefined}
-          onOpenSideDrawer={
-            viewMode === "quiz" ? () => setIsSideDrawerOpen(true) : undefined
-          }
+          onToggleRightPanel={toggleRightPanel}
+          onOpenSideDrawer={() => setIsSideDrawerOpen(true)}
           sidePanelCount={sidePanelCount}
         />
 
-        {/* Below Top Bar: Center Problem Pane + collapsible Right Panel */}
+        {/* Below Top Bar: Center Pane + collapsible Right Panel (visible in both quiz & review views) */}
         <div className="flex-1 min-h-0 flex">
-          <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-zinc-900/50">
+          <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-zinc-950">
             {hasPagination && currentDrill && (
-              <div className="shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/50 px-3 sm:px-5 py-2 [&>div]:border-t-0 [&>div]:pt-0">
+              <div className="shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-3 sm:px-5 py-1.5">
                 <QuizPaginationBar
+                  compact
                   currentIndex={currentProblemIndex}
                   problems={currentDrill.problems}
                   currentDrill={currentDrill}
@@ -267,49 +266,47 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             </div>
           </div>
 
-          {viewMode === "quiz" && (
-            <m.aside
-              aria-label="Due today and weak spots"
-              aria-hidden={!isRightPanelOpen || undefined}
-              initial={false}
-              animate={{
-                width: isRightPanelOpen ? 276 : 0,
-                opacity: isRightPanelOpen ? 1 : 0,
-              }}
-              transition={settle}
-              onAnimationComplete={() => {
-                if (!isRightPanelOpen) setRightSettledClosed(true);
-              }}
-              className={cn(
-                "hidden lg:block shrink-0 overflow-hidden bg-zinc-50/70 dark:bg-zinc-950 lg:sticky lg:top-0 lg:overflow-y-auto lg:overscroll-contain motion-reduce:transition-none",
-                isRightPanelOpen &&
-                  "border-l border-zinc-200/80 dark:border-zinc-800/80",
-                !isRightPanelOpen && "pointer-events-none select-none",
-                rightSettledClosed && !isRightPanelOpen && "invisible"
-              )}
-            >
-              <div className="w-[276px] p-4">
-                <StudioSidePanel
-                  workspace={workspace}
-                  currentUnitCode={currentDrill?.unitCode}
-                  drillLoading={isLoadingDrill}
-                  dueReviewCount={dueReviewCount}
-                  reviewSessionSize={reviewSessionSize}
-                  otherWorkspaceDueCount={otherWorkspaceDueCount}
-                  estimatedMinutes={estimatedMinutes}
-                  nextDueDate={nextDueDate}
-                  currentUnitMastery={currentUnitMastery}
-                  dueLoading={dueLoading}
-                  dueError={dueError}
-                  weakSpotUnits={weakSpotUnits}
-                  weakLoading={weakLoading}
-                  weakError={weakError}
-                  embedded
-                  onNavigate={() => setIsSideDrawerOpen(false)}
-                />
-              </div>
-            </m.aside>
-          )}
+          <m.aside
+            aria-label="Due today and weak spots"
+            aria-hidden={!isRightPanelOpen || undefined}
+            initial={false}
+            animate={{
+              width: isRightPanelOpen ? 276 : 0,
+              opacity: isRightPanelOpen ? 1 : 0,
+            }}
+            transition={settle}
+            onAnimationComplete={() => {
+              if (!isRightPanelOpen) setRightSettledClosed(true);
+            }}
+            className={cn(
+              "hidden lg:block shrink-0 overflow-hidden bg-white dark:bg-zinc-950 lg:sticky lg:top-0 lg:overflow-y-auto lg:overscroll-contain motion-reduce:transition-none",
+              isRightPanelOpen &&
+                "border-l border-zinc-200/80 dark:border-zinc-800/80",
+              !isRightPanelOpen && "pointer-events-none select-none",
+              rightSettledClosed && !isRightPanelOpen && "invisible"
+            )}
+          >
+            <div className="w-[276px] p-4">
+              <StudioSidePanel
+                workspace={workspace}
+                currentUnitCode={currentDrill?.unitCode}
+                drillLoading={isLoadingDrill}
+                dueReviewCount={dueReviewCount}
+                reviewSessionSize={reviewSessionSize}
+                otherWorkspaceDueCount={otherWorkspaceDueCount}
+                estimatedMinutes={estimatedMinutes}
+                nextDueDate={nextDueDate}
+                currentUnitMastery={currentUnitMastery}
+                dueLoading={dueLoading}
+                dueError={dueError}
+                weakSpotUnits={weakSpotUnits}
+                weakLoading={weakLoading}
+                weakError={weakError}
+                embedded
+                onNavigate={() => setIsSideDrawerOpen(false)}
+              />
+            </div>
+          </m.aside>
         </div>
       </div>
 
@@ -354,7 +351,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               prev.focus();
             }
           }}
-          className="lg:hidden p-0 overflow-hidden bg-zinc-50 dark:bg-zinc-950 flex flex-col"
+          className="lg:hidden p-0 overflow-hidden bg-zinc-50 dark:bg-zinc-900 flex flex-col"
         >
           <DrawerTitle className="sr-only">Practice navigation</DrawerTitle>
           <DrawerDescription id={sidebarDrawerDescId} className="sr-only">
@@ -413,7 +410,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               prev.focus();
             }
           }}
-          className="lg:hidden overflow-x-hidden bg-white p-4 space-y-4 dark:bg-zinc-900"
+          className="lg:hidden overflow-x-hidden bg-white p-4 space-y-4 dark:bg-zinc-950"
         >
           <div className="flex items-center justify-between gap-2 min-w-0 pb-2 pr-11 border-b border-zinc-200 dark:border-zinc-800">
             <DrawerTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">

@@ -22,7 +22,7 @@ export interface WorkspaceSwitchProps {
   className?: string;
 }
 
-/** Shared Math / Programming segmented workspace switcher (vertical rail, compact header, and expanded sidebar). */
+/** Shared icon-only Math / Programming segmented workspace switcher (vertical rail, compact header, and sidebar). */
 export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   variant,
   workspace,
@@ -35,12 +35,11 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const options: {
     id: Workspace;
     label: string;
-    shortLabel: string;
     href: string | null;
     icon: LucideIcon;
   }[] = [
-    { id: "math", label: "Math", shortLabel: "MTH", href: mathHref, icon: Sigma },
-    { id: "code", label: "Programming", shortLabel: "PRG", href: codeHref, icon: Code2 },
+    { id: "math", label: "Math", href: mathHref, icon: Sigma },
+    { id: "code", label: "Programming", href: codeHref, icon: Code2 },
   ];
 
   const isRail = variant === "rail";
@@ -49,13 +48,13 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const defaultNavClassName = isRail
     ? "hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
     : isSidebar
-    ? "relative grid grid-cols-2 items-center rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
+    ? "relative grid grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-800/80 p-0.5 lg:h-8 shrink-0"
     : "relative grid lg:hidden grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0";
 
   const pillClassName = isRail
     ? "pointer-events-none absolute left-1 right-1 top-1 h-[calc(50%-4px)] rounded-lg bg-white dark:bg-zinc-900 shadow-sm"
     : isSidebar
-    ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-[10px] bg-white dark:bg-zinc-900 shadow-sm"
+    ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-950 shadow-sm"
     : "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm";
 
   const pillAnimate = isRail
@@ -65,7 +64,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const itemSizeCls = isRail
     ? "w-8 h-8 rounded-lg"
     : isSidebar
-    ? "min-h-[44px] lg:min-h-[32px] lg:h-8 px-2.5 gap-1.5 rounded-[10px]"
+    ? "min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:w-7 lg:h-7 rounded-md"
     : "w-7 h-7 sm:w-8 sm:h-8 rounded-md";
 
   const tooltipSide = isRail ? "right" : "bottom";
@@ -88,17 +87,6 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
             ? "text-zinc-900 dark:text-zinc-100"
             : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
         }`;
-        const iconCls = isSidebar ? "w-3.5 h-3.5 shrink-0" : "w-4 h-4";
-        const content = (
-          <>
-            <Icon className={iconCls} aria-hidden={true} />
-            {isSidebar && (
-              <span className="font-display text-xs font-semibold tracking-tight">
-                {opt.shortLabel}
-              </span>
-            )}
-          </>
-        );
 
         if (!opt.href) {
           return (
@@ -110,7 +98,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
                   aria-disabled={!isActive ? true : undefined}
                   className={`${cls} ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  {content}
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden={true} />
                 </span>
               </TooltipTrigger>
               <TooltipContent side={tooltipSide}>{opt.label}</TooltipContent>
@@ -127,7 +115,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
                 onClick={() => onSelectWorkspace(opt.id)}
                 className={cls}
               >
-                {content}
+                <Icon className="w-4 h-4 shrink-0" aria-hidden={true} />
               </Link>
             </TooltipTrigger>
             <TooltipContent side={tooltipSide}>{opt.label}</TooltipContent>

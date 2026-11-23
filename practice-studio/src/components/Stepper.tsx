@@ -20,15 +20,22 @@ export interface StepperProps {
   review: ReviewStepMeta;
   onSelect: (index: number) => void;
   onToggleReview: () => void;
+  compact?: boolean;
 }
 
 const CIRCLE_BASE_CLS =
   "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color,filter] duration-150";
 
+const COMPACT_CIRCLE_BASE_CLS =
+  "relative flex items-center justify-center shrink-0 w-[18px] h-[18px] sm:w-5 sm:h-5 rounded-full border-2 font-display text-[9px] sm:text-[10px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color,filter] duration-150";
+
 const CURRENT_HALO_CLS = "ring-4 ring-indigo-600/15 dark:ring-indigo-400/25";
 
 const BUTTON_CLS =
   "group relative z-10 flex w-full flex-col items-center justify-start min-w-11 min-h-11 py-1 sm:min-w-0 rounded-lg cursor-pointer focus:outline-none focus-visible:outline-none";
+
+const COMPACT_BUTTON_CLS =
+  "group relative z-10 flex w-full flex-col items-center justify-start min-w-11 min-h-11 py-1 sm:min-w-0 sm:min-h-0 sm:py-0.5 rounded-lg cursor-pointer focus:outline-none focus-visible:outline-none";
 
 const STEP_LI_CLS =
   "relative first:ml-auto last:mr-auto flex-none w-11 sm:flex-1 sm:basis-0 sm:min-w-[72px] sm:max-w-[160px]";
@@ -65,11 +72,18 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
   }
 }
 
-function renderCircleContent(result: StepResult, circleLabel: string): React.ReactNode {
+function renderCircleContent(
+  result: StepResult,
+  circleLabel: string,
+  compact = false
+): React.ReactNode {
+  const iconCls = compact
+    ? "w-2.5 h-2.5 shrink-0"
+    : "w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0";
   if (result === "correct" || result === "passed" || result === "assisted") {
     return (
       <Check
-        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
+        className={iconCls}
         strokeWidth={2.5}
         aria-hidden="true"
       />
@@ -78,7 +92,7 @@ function renderCircleContent(result: StepResult, circleLabel: string): React.Rea
   if (result === "partial") {
     return (
       <Minus
-        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
+        className={iconCls}
         strokeWidth={2.5}
         aria-hidden="true"
       />
@@ -87,7 +101,7 @@ function renderCircleContent(result: StepResult, circleLabel: string): React.Rea
   if (result === "wrong") {
     return (
       <X
-        className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
+        className={iconCls}
         strokeWidth={2.5}
         aria-hidden="true"
       />
@@ -109,6 +123,7 @@ export const Stepper: React.FC<StepperProps> = ({
   review,
   onSelect,
   onToggleReview,
+  compact = false,
 }) => {
   const navRef = useRef<HTMLElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
@@ -190,8 +205,23 @@ export const Stepper: React.FC<StepperProps> = ({
     ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300 ${CURRENT_HALO_CLS}`
     : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
 
+  const circleBaseCls = compact ? COMPACT_CIRCLE_BASE_CLS : CIRCLE_BASE_CLS;
+  const buttonCls = compact ? COMPACT_BUTTON_CLS : BUTTON_CLS;
+  const connectorCls = compact
+    ? "pointer-events-none absolute top-[13px] sm:top-[12px] -translate-y-1/2 left-[calc(50%_+_12px)] w-[28px] sm:left-[calc(50%_+_14px)] sm:w-[calc(100%_-_28px)] h-0.5 rounded-full z-0"
+    : "pointer-events-none absolute top-[15px] sm:top-4 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0";
+  const labelCls = compact
+    ? "hidden sm:block mt-0.5 max-w-full truncate px-1 font-display text-[10px] font-medium leading-tight text-zinc-500 dark:text-zinc-400"
+    : "hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400";
+
   return (
-    <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 min-w-0">
+    <div
+      className={
+        compact
+          ? "min-w-0"
+          : "pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 min-w-0"
+      }
+    >
       <nav ref={navRef} aria-label={navLabel} className="min-w-0">
         <div
           ref={scrollerRef}
@@ -213,7 +243,7 @@ export const Stepper: React.FC<StepperProps> = ({
                   <span
                     aria-hidden="true"
                     data-connector-active={isSegmentIndigo ? "true" : "false"}
-                    className="pointer-events-none absolute top-[15px] sm:top-4 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0"
+                    className={connectorCls}
                   >
                     <span className="block w-full h-full bg-zinc-200 dark:bg-zinc-800 rounded-full" />
                     <m.span
@@ -236,22 +266,19 @@ export const Stepper: React.FC<StepperProps> = ({
                         aria-label={fullLabel}
                         title={fullLabel}
                         aria-current={isCurrent ? "step" : undefined}
-                        className={BUTTON_CLS}
+                        className={buttonCls}
                       >
                         <m.span
                           aria-hidden="true"
                           initial={false}
                           animate={{ scale: isCurrent ? 1 : 0.92 }}
                           transition={quick}
-                          className={`${CIRCLE_BASE_CLS} ${getCircleClass(step.result, isCurrent)}`}
+                          className={`${circleBaseCls} ${getCircleClass(step.result, isCurrent)}`}
                         >
-                          {renderCircleContent(step.result, step.circleLabel)}
+                          {renderCircleContent(step.result, step.circleLabel, compact)}
                         </m.span>
 
-                        <span
-                          aria-hidden="true"
-                          className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
-                        >
+                        <span aria-hidden="true" className={labelCls}>
                           {step.title}
                         </span>
                       </button>
@@ -273,26 +300,23 @@ export const Stepper: React.FC<StepperProps> = ({
                     aria-pressed={isReview}
                     aria-current={isReview ? "step" : undefined}
                     title={review.ariaLabel}
-                    className={BUTTON_CLS}
+                    className={buttonCls}
                   >
                     <m.span
                       aria-hidden="true"
                       initial={false}
                       animate={{ scale: isReview ? 1 : 0.92 }}
                       transition={quick}
-                      className={`${CIRCLE_BASE_CLS} ${reviewCircleCls}`}
+                      className={`${circleBaseCls} ${reviewCircleCls}`}
                     >
                       <ClipboardCheck
-                        className="w-3 h-3 shrink-0"
+                        className={compact ? "w-2.5 h-2.5 shrink-0" : "w-3 h-3 shrink-0"}
                         strokeWidth={2}
                         aria-hidden="true"
                       />
                     </m.span>
 
-                    <span
-                      aria-hidden="true"
-                      className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
-                    >
+                    <span aria-hidden="true" className={labelCls}>
                       Review
                     </span>
                   </button>

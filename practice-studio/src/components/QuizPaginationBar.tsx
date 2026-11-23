@@ -27,6 +27,7 @@ export interface QuizPaginationBarProps {
   isLab?: boolean;
   onSelectQuestion: (index: number) => void;
   onToggleViewMode: (mode: "quiz" | "review") => void;
+  compact?: boolean;
 }
 
 /** Thin adapter rendering the shared horizontal Stepper for Math drills, Programming drills, and Project Labs. */
@@ -42,6 +43,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   isLab,
   onSelectQuestion,
   onToggleViewMode,
+  compact = false,
 }) => {
   const labMode =
     isLab ?? (problems.length > 0 && problems.every((p) => /^M\d+$/i.test(p.id)));
@@ -74,6 +76,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
       review={review}
       onSelect={onSelectQuestion}
       onToggleReview={() => onToggleViewMode(isReview ? "quiz" : "review")}
+      compact={compact}
     />
   );
 };
