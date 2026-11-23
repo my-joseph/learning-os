@@ -48,7 +48,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const defaultNavClassName = isRail
     ? "hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
     : isSidebar
-    ? "relative grid grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-900/75 p-0.5 lg:h-8 shrink-0"
+    ? "relative grid min-h-[44px] grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-900/75 p-0.5 shrink-0 lg:h-9"
     : "relative grid lg:hidden grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0";
 
   const pillClassName = isRail

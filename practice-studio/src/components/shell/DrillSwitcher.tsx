@@ -10,8 +10,10 @@ import {
   ChevronRight,
   ChevronsDownUp,
   ChevronsUpDown,
+  Copy,
   Layers,
   MessageSquare,
+  MoreHorizontal,
   Search,
   SlidersHorizontal,
   X,
@@ -157,7 +159,7 @@ function CountPill({ count, isSidebar = false }: { count: number; isSidebar?: bo
     <Badge
       variant="status"
       className={`text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 ${
-        isSidebar ? "bg-zinc-100 dark:bg-zinc-900/75" : "bg-zinc-100 dark:bg-zinc-800"
+        isSidebar ? "bg-transparent" : "bg-zinc-100 dark:bg-zinc-800"
       } px-1.5 py-0.5 rounded-full shrink-0`}
     >
       {count}
@@ -169,7 +171,57 @@ const BRANCH_ROW_CLASS =
   "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
 const SIDEBAR_BRANCH_ROW_CLASS =
-  "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left text-sm transition-colors focus:outline-none min-h-[44px] lg:min-h-9 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
+  "group min-w-0 flex-1 h-8 flex items-center gap-1.5 px-1.5 rounded-md text-left text-sm transition-colors focus:outline-none hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
+
+function TreeNodeActions({ nodeId }: { nodeId: string }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(nodeId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      // Clipboard permissions can be unavailable in non-secure browser contexts.
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Actions for ${nodeId}`}
+          title="More actions"
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+          className="group/action inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 opacity-100 transition-opacity hover:bg-zinc-200/70 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100 dark:focus-visible:ring-indigo-400 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
+        >
+          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        side="right"
+        sideOffset={4}
+        className="w-40 p-1"
+        role="menu"
+        aria-label={`Actions for ${nodeId}`}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          role="menuitem"
+          onClick={copyId}
+          className="flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400"
+        >
+          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          {copied ? "Copied" : "Copy ID"}
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
   { id: "ALL", label: "All" },
@@ -533,7 +585,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   };
 
   const currentPinnedItem =
-    !sections.isSearching && sections.currentItem ? sections.currentItem : null;
+    !isSidebar && !sections.isSearching && sections.currentItem ? sections.currentItem : null;
   const currentPinnedHasNotes = currentPinnedItem
     ? currentPinnedItem.hasNotes || Boolean(currentDrillHasNotes)
     : false;
@@ -594,8 +646,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     const isDueToday = dueUnitSet.has(item.unitCode);
 
     return (
+      <div key={nodeId} className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
       <button
-        key={nodeId}
         ref={(el) => {
           registerNodeRef(nodeId, el);
           if (isCurrent) {
@@ -612,8 +664,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`group w-full text-left px-1.5 py-1.5 ${
-          isSidebar ? "min-h-[44px] lg:min-h-9 rounded-lg " : "rounded-md "
+        className={`group ${isSidebar ? "min-w-0 flex-1 h-8" : "w-full"} text-left px-1.5 py-1.5 ${
+          isSidebar ? "h-8 rounded-lg " : "rounded-md "
         }transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70 ${
           isCurrent
             ? isSidebar
@@ -639,6 +691,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         </span>
         <HoverRowCode code={hoverCode} />
       </button>
+      {isSidebar && <TreeNodeActions nodeId={item.id} />}
+      </div>
     );
   };
 
@@ -688,8 +742,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               )}
             </div>
 
-            {/* Header Actions: Drills|Labs Tabs (Programming) + Expand all / Collapse all + View */}
-            <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800">
+            {/* Workspace tabs remain in the sidebar; global tree controls stay in dropdown mode. */}
+            {(!isSidebar || isCodeWorkspace) && <div className={`shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 ${isSidebar ? "" : "border-b border-zinc-200 dark:border-zinc-800"}`}>
               {isCodeWorkspace ? (
                 <Tabs
                   value={activeTab}
@@ -724,7 +778,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           value={tab.id}
                           aria-controls={undefined}
                           className={`relative z-10 inline-flex ${
-                            isSidebar ? "min-h-[44px] lg:min-h-9" : "min-h-0"
+                            isSidebar ? "h-8" : "min-h-0"
                           } items-center justify-center gap-1.5 rounded-md bg-transparent px-2.5 py-1 ${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-500 shadow-none transition-colors whitespace-nowrap hover:text-zinc-900 data-[state=active]:bg-transparent data-[state=active]:text-zinc-900 data-[state=active]:shadow-none dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[state=active]:text-zinc-100`}
                         >
                           <span>{tab.label}</span>
@@ -742,7 +796,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 </div>
               )}
 
-              <div className={`flex shrink-0 items-center ${isSidebar ? "gap-1" : "gap-1.5"}`}>
+              {!isSidebar && <div className="flex shrink-0 items-center gap-1.5">
                 {isCodeWorkspace && expandCollapseButtons}
 
                 {/* View Button + Popover */}
@@ -869,8 +923,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     </PopoverContent>
                   </div>
                 </Popover>
-              </div>
-            </div>
+              </div>}
+            </div>}
 
             {/* Pinned Current Row */}
             {currentPinnedItem && (
@@ -947,7 +1001,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     const showTopicCode = topic.topicTitle !== topic.topicCode;
 
                     return (
-                      <div key={topic.topicCode}>
+                      <div key={topic.topicCode} className="group flex flex-col">
+                        <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
                         <button
                           ref={(el) => registerNodeRef(topicNodeId, el)}
                           type="button"
@@ -960,7 +1015,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                             setActiveNodeId(topicNodeId);
                             setBranchExpanded("topic", topic.topicCode, "toggle");
                           }}
-                          className={branchRowCls}
+                          className={isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`}
                         >
                           <ChevronRight
                             className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
@@ -977,11 +1032,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           </span>
                           {showTopicCode && <HoverRowCode code={topic.topicCode} />}
                         </button>
+                        {isSidebar && <TreeNodeActions nodeId={topic.topicCode} />}
+                        </div>
 
                         <Reveal show={isTopicExpanded}>
                           <div
                             role="group"
-                            className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
+                            className="ml-3 space-y-0.5 py-0.5"
                           >
                             {topic.chapters.map((chapter) => {
                               const chapterNodeId = `chapter:${chapter.chapterCode}`;
@@ -995,7 +1052,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                 chapter.chapterTitle !== chapterShortCode;
 
                               return (
-                                <div key={chapter.chapterCode}>
+                                <div key={chapter.chapterCode} className="group flex flex-col">
+                                  <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
                                   <button
                                     ref={(el) => registerNodeRef(chapterNodeId, el)}
                                     type="button"
@@ -1012,7 +1070,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                         "toggle"
                                       );
                                     }}
-                                    className={branchRowCls}
+                                    className={isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`}
                                   >
                                     <ChevronRight
                                       className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
@@ -1028,11 +1086,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                     )}
                                     <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
                                   </button>
+                                  {isSidebar && <TreeNodeActions nodeId={chapter.chapterCode} />}
+                                  </div>
 
                                   <Reveal show={isChapterExpanded}>
                                     <div
                                       role="group"
-                                      className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
+                                      className="ml-3 space-y-0.5 py-0.5"
                                     >
                                       {chapter.entries.map((entry) => {
                                         if (entry.kind === "single") {
@@ -1066,7 +1126,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                         });
 
                                         return (
-                                          <div key={entry.key}>
+                                          <div key={entry.key} className="group flex flex-col">
+                                            <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
                                             <button
                                               ref={(el) =>
                                                 registerNodeRef(unitNodeId, el)
@@ -1085,7 +1146,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                   "toggle"
                                                 );
                                               }}
-                                              className={branchRowCls}
+                                              className={isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`}
                                             >
                                               <ChevronRight
                                                 className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
@@ -1099,11 +1160,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                               <HoverRowCode code={unitShortCode} />
                                               <CountPill count={entry.items.length} isSidebar={isSidebar} />
                                             </button>
+                                            {isSidebar && <TreeNodeActions nodeId={entry.unitCode} />}
+                                            </div>
 
                                             <Reveal show={isUnitExpanded}>
                                               <div
                                                 role="group"
-                                                className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
+                                                className="ml-3 space-y-0.5 py-0.5"
                                               >
                                                 {entry.items.map((setEntry) =>
                                                   renderLeafRow(

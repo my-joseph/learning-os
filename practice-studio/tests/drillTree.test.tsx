@@ -19,6 +19,7 @@ import {
   resolveTreeKeyAction,
 } from "../src/lib/drillGrouping";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
+import { WorkspaceSwitch } from "../src/components/workspace/WorkspaceSwitch";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
 
@@ -404,6 +405,50 @@ const labTreeHtml = renderToStaticMarkup(
 assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>LAB-02</);
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
+
+const sidebarTreeHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="math"
+    currentDrill={null}
+    drills={sampleDrills}
+    selectedDrillId="DRL-MTH-T02-C01-U01-03"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.doesNotMatch(sidebarTreeHtml, />Expand all|>Collapse all|>View</);
+assert.doesNotMatch(sidebarTreeHtml, /border-l/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
+assert.match(sidebarTreeHtml, /aria-current="true"/);
+assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
+assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
+assert.ok(
+  (sidebarTreeHtml.match(/h-8/g) ?? []).length >= 10,
+  "sidebar branch and leaf rows use fixed 32px classes"
+);
+
+const workspaceSwitchHtml = renderToStaticMarkup(
+  <WorkspaceSwitch
+    variant="sidebar"
+    workspace="math"
+    pillWorkspace="math"
+    onSelectWorkspace={noop}
+    mathHref="/math/DRL-MTH-T01-C04-01"
+    codeHref="/code/DRL-PRG-T01-C01-U02-01"
+  />
+);
+assert.match(workspaceSwitchHtml, /aria-label="Math"[^>]*href="\/math\/DRL-MTH-T01-C04-01"/);
+assert.match(workspaceSwitchHtml, /aria-label="Programming"[^>]*href="\/code\/DRL-PRG-T01-C01-U02-01"/);
 
 // Cross-unit bridge drills (MTH-BRIDGE) appear in the Math drill picker under a clean Bridge group
 const bridgeDrills: DrillListItem[] = [
