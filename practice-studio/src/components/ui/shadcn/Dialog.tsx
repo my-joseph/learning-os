@@ -7,8 +7,16 @@ import { cn } from "@/lib/cn";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogPortal = DialogPrimitive.Portal;
 export const DialogClose = DialogPrimitive.Close;
+
+export const DialogPortal: React.FC<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>
+> = ({ children, ...props }) => {
+  if (typeof document === "undefined") {
+    return <>{children}</>;
+  }
+  return <DialogPrimitive.Portal {...props}>{children}</DialogPrimitive.Portal>;
+};
 
 export const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,

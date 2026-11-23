@@ -1,9 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AnimatePresence, m } from "motion/react";
-import { drawer, fade } from "@/lib/motion";
-import { X } from "lucide-react";
+import React, { useState, useEffect, useId, useRef, useCallback } from "react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { SyncState } from "@/hooks/useProgressSync";
 import type { LabListItem } from "@/lib/labModel";
@@ -12,6 +9,12 @@ import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { ToastStack } from "@/components/ui/ToastStack";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/shadcn/Drawer";
 import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidePanel } from "./StudioSidePanel";
@@ -99,10 +102,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const lastScrollYRef = useRef(0);
   const headerRef = useRef<HTMLElement | null>(null);
   const switcherRef = useRef<HTMLDivElement | null>(null);
-  const drawerCardRef = useRef<HTMLDivElement | null>(null);
-  const drawerCloseBtnRef = useRef<HTMLButtonElement | null>(null);
   const drawerPrevFocusRef = useRef<HTMLElement | null>(null);
-  const drawerWasOpenRef = useRef(false);
+  const drawerDescId = useId();
 
   const handleClearStatus = useCallback(() => {
     onStatusChange(null);
@@ -147,61 +148,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     setIsSideDrawerOpen(false);
   }, [selectedDrillId, viewMode]);
 
-  // Capture trigger focus on drawer open, focus close button, and restore focus on close.
   const drawerActive = viewMode === "quiz" && isSideDrawerOpen;
-  useEffect(() => {
-    if (drawerActive && !drawerWasOpenRef.current) {
-      drawerPrevFocusRef.current =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      drawerWasOpenRef.current = true;
-      const rafId = requestAnimationFrame(() => drawerCloseBtnRef.current?.focus());
-      return () => cancelAnimationFrame(rafId);
-    }
-
-    if (!drawerActive && drawerWasOpenRef.current) {
-      drawerWasOpenRef.current = false;
-      const prev = drawerPrevFocusRef.current;
-      drawerPrevFocusRef.current = null;
-      if (prev && prev.isConnected) {
-        prev.focus();
-      }
-    }
-  }, [drawerActive]);
-
-  // Escape closes mobile drawer; Tab wraps within drawer controls while open.
-  useEffect(() => {
-    if (!drawerActive) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsSideDrawerOpen(false);
-        return;
-      }
-
-      if (e.key === "Tab" && drawerCardRef.current) {
-        const focusable = Array.from(
-          drawerCardRef.current.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-          )
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [drawerActive]);
 
   // Auto-hide sticky header on scroll down, reveal on scroll up
   useEffect(() => {
@@ -371,64 +318,61 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         onStatusChange={onStatusChange}
       />
 
-      <AnimatePresence>
-      {drawerActive && (
-        <m.div
-          key="side-drawer"
-          initial="hidden"
-          animate="shown"
-          exit="hidden"
-          className="fixed inset-0 z-50 lg:hidden flex justify-end pl-4 overflow-hidden"
-          role="dialog"
+      <Drawer
+        open={drawerActive}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setIsSideDrawerOpen(false);
+          }
+        }}
+      >
+        <DrawerContent
+          overlayClassName="lg:hidden"
           aria-modal="true"
           aria-label="Due today & weak spots"
+          aria-describedby={drawerDescId}
+          onOpenAutoFocus={() => {
+            drawerPrevFocusRef.current =
+              document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          }}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            const prev = drawerPrevFocusRef.current;
+            drawerPrevFocusRef.current = null;
+            if (prev && prev.isConnected) {
+              prev.focus();
+            }
+          }}
+          className="lg:hidden overflow-x-hidden bg-white p-4 space-y-4 dark:bg-zinc-900"
         >
-          <m.div
-            variants={fade}
-            className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
-            onClick={() => setIsSideDrawerOpen(false)}
+          <div className="flex items-center justify-between gap-2 min-w-0 pb-2 pr-11 border-b border-zinc-200 dark:border-zinc-800">
+            <DrawerTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+              Due today &amp; weak spots
+            </DrawerTitle>
+            <DrawerDescription id={drawerDescId} className="sr-only">
+              Review queue and open weak spots for the current workspace and unit.
+            </DrawerDescription>
+          </div>
+          <StudioSidePanel
+            workspace={workspace}
+            currentUnitCode={currentDrill?.unitCode}
+            drillLoading={isLoadingDrill}
+            dueReviewCount={dueReviewCount}
+            reviewSessionSize={reviewSessionSize}
+            otherWorkspaceDueCount={otherWorkspaceDueCount}
+            estimatedMinutes={estimatedMinutes}
+            nextDueDate={nextDueDate}
+            currentUnitMastery={currentUnitMastery}
+            dueLoading={dueLoading}
+            dueError={dueError}
+            weakSpotUnits={weakSpotUnits}
+            weakLoading={weakLoading}
+            weakError={weakError}
+            embedded
+            onNavigate={() => setIsSideDrawerOpen(false)}
           />
-          <m.div
-            ref={drawerCardRef}
-            variants={drawer}
-            className="relative z-10 w-full max-w-[360px] min-w-0 h-full overflow-y-auto overflow-x-hidden bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-4 shadow-xl"
-          >
-            <div className="flex items-center justify-between gap-2 min-w-0 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                Due today &amp; weak spots
-              </span>
-              <button
-                ref={drawerCloseBtnRef}
-                type="button"
-                onClick={() => setIsSideDrawerOpen(false)}
-                aria-label="Close side panel"
-                className="inline-flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <StudioSidePanel
-              workspace={workspace}
-              currentUnitCode={currentDrill?.unitCode}
-              drillLoading={isLoadingDrill}
-              dueReviewCount={dueReviewCount}
-              reviewSessionSize={reviewSessionSize}
-              otherWorkspaceDueCount={otherWorkspaceDueCount}
-              estimatedMinutes={estimatedMinutes}
-              nextDueDate={nextDueDate}
-              currentUnitMastery={currentUnitMastery}
-              dueLoading={dueLoading}
-              dueError={dueError}
-              weakSpotUnits={weakSpotUnits}
-              weakLoading={weakLoading}
-              weakError={weakError}
-              embedded
-              onNavigate={() => setIsSideDrawerOpen(false)}
-            />
-          </m.div>
-        </m.div>
-      )}
-      </AnimatePresence>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

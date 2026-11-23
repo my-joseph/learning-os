@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useId, useMemo, useRef } from "react";
-import { AnimatePresence, m } from "motion/react";
-import { dialogCard, fade, presence } from "@/lib/motion";
-import { Plus, RefreshCw, X } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/shadcn/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/shadcn/Dialog";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import { StatusMessage } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
@@ -34,6 +39,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   onStatusChange,
 }) => {
   const titleId = useId();
+  const descriptionId = useId();
   const unitFieldId = useId();
   const countFieldId = useId();
   const levelFieldId = useId();
@@ -54,10 +60,8 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   const [cfgDifficulty, setCfgDifficulty] = useState("ALL");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const cardRef = useRef<HTMLDivElement | null>(null);
   const unitSelectRef = useRef<HTMLSelectElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const wasOpenRef = useRef(false);
 
   // Keep selected unit synced to currentDrill or first available workspace unit.
   useEffect(() => {
@@ -82,61 +86,6 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     const loadedDiff = String(currentDrill.config.difficulty || "ALL").toUpperCase();
     setCfgDifficulty(allowedDiffs.includes(loadedDiff) ? loadedDiff : "ALL");
   }, [currentDrill]);
-
-  // Capture trigger focus on open, focus Unit select, and restore focus on close.
-  useEffect(() => {
-    if (isOpen && !wasOpenRef.current) {
-      previousFocusRef.current =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      wasOpenRef.current = true;
-      const rafId = requestAnimationFrame(() => unitSelectRef.current?.focus());
-      return () => cancelAnimationFrame(rafId);
-    }
-
-    if (!isOpen && wasOpenRef.current) {
-      wasOpenRef.current = false;
-      const prev = previousFocusRef.current;
-      previousFocusRef.current = null;
-      if (prev && prev.isConnected) {
-        prev.focus();
-      }
-    }
-  }, [isOpen]);
-
-  // Escape closes; Tab wraps within dialog controls while open.
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-        return;
-      }
-
-      if (e.key === "Tab" && cardRef.current) {
-        const focusable = Array.from(
-          cardRef.current.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-          )
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [isOpen, onClose]);
 
   const handleGenerateDrill = async () => {
     if (!cfgUnit) return;
@@ -187,141 +136,144 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     workspace === "code" || cfgUnit.startsWith("PRG-") ? "problems" : "questions";
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <m.div
-          key="generate-drill-dialog"
-          {...presence}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <m.div
-            variants={fade}
-            aria-hidden="true"
-            onClick={onClose}
-            className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
-          />
-          <m.div
-            ref={cardRef}
-            variants={dialogCard}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            className="relative z-10 w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-lg p-5 space-y-4 text-xs"
+    <Dialog
+      open={isOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose();
+        }
+      }}
+    >
+      <DialogContent
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        onOpenAutoFocus={(e) => {
+          previousFocusRef.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          if (unitSelectRef.current) {
+            e.preventDefault();
+            unitSelectRef.current.focus();
+          }
+        }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          const prev = previousFocusRef.current;
+          previousFocusRef.current = null;
+          if (prev && prev.isConnected) {
+            prev.focus();
+          }
+        }}
+        className="max-w-sm space-y-4 rounded-2xl bg-white p-5 text-xs shadow-lg dark:bg-zinc-900"
+      >
+        <div className="pr-10">
+          <DialogTitle
+            id={titleId}
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
           >
-            <div className="flex items-center justify-between">
-              <h2
-                id={titleId}
-                className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-              >
-                Generate drill set
-              </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close generator"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+            Generate drill set
+          </DialogTitle>
+          <DialogDescription id={descriptionId} className="sr-only">
+            Choose a unit, item count, and difficulty level to generate a drill set.
+          </DialogDescription>
+        </div>
 
-            <div>
-              <label
-                htmlFor={unitFieldId}
-                className="block text-zinc-500 dark:text-zinc-400 mb-1"
-              >
-                Unit
-              </label>
-              <select
-                ref={unitSelectRef}
-                id={unitFieldId}
-                value={cfgUnit}
-                onChange={(e) => setCfgUnit(e.target.value)}
-                disabled={unitOptions.length === 0}
-                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
-              >
-                {unitOptions.length === 0 ? (
-                  <option value="">No units available</option>
-                ) : (
-                  unitGroups.map((group) => (
-                    <optgroup key={group.groupCode} label={group.groupCode}>
-                      {group.items.map((u) => {
-                        const cleanTitle = plainTitle(u.unitTitle);
-                        return (
-                          <option key={u.unitCode} value={u.unitCode}>
-                            {cleanTitle && cleanTitle !== u.unitCode
-                              ? `${u.unitCode} · ${cleanTitle}`
-                              : u.unitCode}
-                          </option>
-                        );
-                      })}
-                    </optgroup>
-                  ))
-                )}
-              </select>
-            </div>
+        <div>
+          <label
+            htmlFor={unitFieldId}
+            className="block text-zinc-500 dark:text-zinc-400 mb-1"
+          >
+            Unit
+          </label>
+          <select
+            ref={unitSelectRef}
+            id={unitFieldId}
+            value={cfgUnit}
+            onChange={(e) => setCfgUnit(e.target.value)}
+            disabled={unitOptions.length === 0}
+            className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
+          >
+            {unitOptions.length === 0 ? (
+              <option value="">No units available</option>
+            ) : (
+              unitGroups.map((group) => (
+                <optgroup key={group.groupCode} label={group.groupCode}>
+                  {group.items.map((u) => {
+                    const cleanTitle = plainTitle(u.unitTitle);
+                    return (
+                      <option key={u.unitCode} value={u.unitCode}>
+                        {cleanTitle && cleanTitle !== u.unitCode
+                          ? `${u.unitCode} · ${cleanTitle}`
+                          : u.unitCode}
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              ))
+            )}
+          </select>
+        </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <div>
-                <label
-                  htmlFor={countFieldId}
-                  className="block text-zinc-500 dark:text-zinc-400 mb-1"
-                >
-                  Count
-                </label>
-                <select
-                  id={countFieldId}
-                  value={cfgCount}
-                  onChange={(e) => setCfgCount(Number(e.target.value))}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
-                >
-                  {[5, 8, 10, 15, 20].map((n) => (
-                    <option key={n} value={n}>
-                      {n} {countNoun}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor={levelFieldId}
-                  className="block text-zinc-500 dark:text-zinc-400 mb-1"
-                >
-                  Level
-                </label>
-                <select
-                  id={levelFieldId}
-                  value={cfgDifficulty}
-                  onChange={(e) => setCfgDifficulty(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
-                >
-                  <option value="ALL">Mixed</option>
-                  <option value="1">Level 1</option>
-                  <option value="2">Level 2</option>
-                  <option value="3">Level 3</option>
-                  <option value="4">Level 4</option>
-                  <option value="5">Level 5</option>
-                </select>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleGenerateDrill}
-              disabled={isGenerating || !cfgUnit}
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold h-9 rounded-xl transition-colors"
+        <div className="grid grid-cols-2 gap-2.5">
+          <div>
+            <label
+              htmlFor={countFieldId}
+              className="block text-zinc-500 dark:text-zinc-400 mb-1"
             >
-              {isGenerating ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Plus className="w-3.5 h-3.5" />
-              )}
-              <span>{isGenerating ? "Generating..." : "Generate set"}</span>
-            </button>
-          </m.div>
-        </m.div>
-      )}
-    </AnimatePresence>
+              Count
+            </label>
+            <select
+              id={countFieldId}
+              value={cfgCount}
+              onChange={(e) => setCfgCount(Number(e.target.value))}
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
+            >
+              {[5, 8, 10, 15, 20].map((n) => (
+                <option key={n} value={n}>
+                  {n} {countNoun}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor={levelFieldId}
+              className="block text-zinc-500 dark:text-zinc-400 mb-1"
+            >
+              Level
+            </label>
+            <select
+              id={levelFieldId}
+              value={cfgDifficulty}
+              onChange={(e) => setCfgDifficulty(e.target.value)}
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
+            >
+              <option value="ALL">Mixed</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
+              <option value="4">Level 4</option>
+              <option value="5">Level 5</option>
+            </select>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="primary"
+          onClick={handleGenerateDrill}
+          disabled={isGenerating || !cfgUnit}
+          className="w-full rounded-xl text-xs"
+        >
+          {isGenerating ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+          ) : (
+            <Plus className="w-3.5 h-3.5" />
+          )}
+          <span>{isGenerating ? "Generating..." : "Generate set"}</span>
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 };
