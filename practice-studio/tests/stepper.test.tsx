@@ -613,6 +613,11 @@ assert.doesNotMatch(stepperSrc, /role="tablist"/);
 assert.doesNotMatch(stepperSrc, /scrollIntoView/);
 assert.doesNotMatch(paginationSrc, /scrollIntoView/);
 assert.match(stepperSrc, /scroller\.scrollTo\(/);
+assert.match(stepperSrc, /from "@\/components\/ui\/shadcn\/Tooltip"/);
+assert.match(stepperSrc, /<TooltipTrigger asChild>/);
+assert.match(stepperSrc, /<TooltipContent side="bottom">\{fullLabel\}<\/TooltipContent>/);
+assert.match(stepperSrc, /<TooltipContent side="bottom">\{review\.ariaLabel\}<\/TooltipContent>/);
+assert.doesNotMatch(stepperSrc, /focus-visible:ring-2|group-focus-visible:outline/);
 
 // ---------------------------------------------------------------------------
 // 6. 12 problems render 13 <li> with min-w-[72px] and Q1..Q12 labels

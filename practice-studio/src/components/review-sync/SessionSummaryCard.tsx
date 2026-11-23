@@ -16,6 +16,11 @@ import { scoreProblem } from "@/lib/scoring";
 import { formatSyncTimestamp } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
 import { Button } from "@/components/ui/shadcn/Button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/shadcn/Tooltip";
 import { plainTitle } from "@/lib/titleText";
 
 export type EffectiveSyncPhase =
@@ -255,16 +260,21 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
             const qLabel = getQuestionLabel(prob.id, idx, isLab);
             const tooltip = `${qLabel} · ${meta.label.toLowerCase()}`;
             return (
-              <button
-                key={prob.id}
-                type="button"
-                onClick={() => onJumpToRow(prob.id, outcome === "correct_first")}
-                title={tooltip}
-                aria-label={tooltip}
-                className={`min-w-[44px] sm:min-w-[36px] min-h-[44px] sm:min-h-[32px] px-2 rounded-lg border font-display text-xs font-semibold tabular-nums inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${TILE_COLORS[outcome]}`}
-              >
-                {qLabel}
-              </button>
+              <Tooltip key={prob.id}>
+                {/* Native title stays as SSR/no-JS fallback; TooltipTrigger strips it after hydration. */}
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => onJumpToRow(prob.id, outcome === "correct_first")}
+                    title={tooltip}
+                    aria-label={tooltip}
+                    className={`min-w-[44px] sm:min-w-[36px] min-h-[44px] sm:min-h-[32px] px-2 rounded-lg border font-display text-xs font-semibold tabular-nums inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${TILE_COLORS[outcome]}`}
+                  >
+                    {qLabel}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{tooltip}</TooltipContent>
+              </Tooltip>
             );
           })}
         </div>

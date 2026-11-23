@@ -6,6 +6,11 @@ import { Check, ClipboardCheck, Minus, X } from "lucide-react";
 import type { ReviewStepMeta, StepItem, StepResult } from "@/lib/stepperModel";
 import { statusTone } from "@/lib/statusTone";
 import { quick, settle } from "@/lib/motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/shadcn/Tooltip";
 
 export interface StepperProps {
   navLabel: string;
@@ -219,71 +224,81 @@ export const Stepper: React.FC<StepperProps> = ({
                     />
                   </span>
 
+                  {/* Native title stays as SSR/no-JS fallback; TooltipTrigger strips it after hydration. */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        ref={(el) => {
+                          stepBtnRefs.current[idx] = el;
+                        }}
+                        type="button"
+                        onClick={() => onSelect(idx)}
+                        aria-label={fullLabel}
+                        title={fullLabel}
+                        aria-current={isCurrent ? "step" : undefined}
+                        className={BUTTON_CLS}
+                      >
+                        <m.span
+                          aria-hidden="true"
+                          initial={false}
+                          animate={{ scale: isCurrent ? 1 : 0.92 }}
+                          transition={quick}
+                          className={`${CIRCLE_BASE_CLS} ${getCircleClass(step.result, isCurrent)}`}
+                        >
+                          {renderCircleContent(step.result, step.circleLabel)}
+                        </m.span>
+
+                        <span
+                          aria-hidden="true"
+                          className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
+                        >
+                          {step.title}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{fullLabel}</TooltipContent>
+                  </Tooltip>
+                </li>
+              );
+            })}
+
+            <li className={STEP_LI_CLS}>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <button
-                    ref={(el) => {
-                      stepBtnRefs.current[idx] = el;
-                    }}
+                    ref={reviewBtnRef}
                     type="button"
-                    onClick={() => onSelect(idx)}
-                    aria-label={fullLabel}
-                    title={fullLabel}
-                    aria-current={isCurrent ? "step" : undefined}
+                    onClick={onToggleReview}
+                    aria-label={review.ariaLabel}
+                    aria-pressed={isReview}
+                    aria-current={isReview ? "step" : undefined}
+                    title={review.ariaLabel}
                     className={BUTTON_CLS}
                   >
                     <m.span
                       aria-hidden="true"
                       initial={false}
-                      animate={{ scale: isCurrent ? 1 : 0.92 }}
+                      animate={{ scale: isReview ? 1 : 0.92 }}
                       transition={quick}
-                      className={`${CIRCLE_BASE_CLS} ${getCircleClass(step.result, isCurrent)}`}
+                      className={`${CIRCLE_BASE_CLS} ${reviewCircleCls}`}
                     >
-                      {renderCircleContent(step.result, step.circleLabel)}
+                      <ClipboardCheck
+                        className="w-3 h-3 shrink-0"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      />
                     </m.span>
 
                     <span
                       aria-hidden="true"
                       className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
                     >
-                      {step.title}
+                      Review
                     </span>
-
                   </button>
-                </li>
-              );
-            })}
-
-            <li className={STEP_LI_CLS}>
-              <button
-                ref={reviewBtnRef}
-                type="button"
-                onClick={onToggleReview}
-                aria-label={review.ariaLabel}
-                aria-pressed={isReview}
-                aria-current={isReview ? "step" : undefined}
-                title={review.ariaLabel}
-                className={BUTTON_CLS}
-              >
-                <m.span
-                  aria-hidden="true"
-                  initial={false}
-                  animate={{ scale: isReview ? 1 : 0.92 }}
-                  transition={quick}
-                  className={`${CIRCLE_BASE_CLS} ${reviewCircleCls}`}
-                >
-                  <ClipboardCheck
-                    className="w-3 h-3 shrink-0"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
-                </m.span>
-
-                <span
-                  aria-hidden="true"
-                  className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
-                >
-                  Review
-                </span>
-              </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{review.ariaLabel}</TooltipContent>
+              </Tooltip>
             </li>
           </ol>
         </div>

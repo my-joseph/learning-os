@@ -11,6 +11,14 @@ import { QuestionTimer } from "../src/components/QuestionTimer";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
+import { CopyButton } from "../src/components/ui/CopyButton";
+import { ThemeToggleButton } from "../src/components/ui/ThemeToggleButton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../src/components/ui/shadcn/Tooltip";
 import { warningTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem } from "../src/types/drill";
 
@@ -245,7 +253,85 @@ assert.match(useDrillSrc, /e\.key\.toLowerCase\(\)\s*===\s*"p"/);
 assert.match(useDrillSrc, /\[role="alertdialog"\],\s*\[role="dialog"\]/);
 
 const questionTimerSrc = readFileSync("src/components/QuestionTimer.tsx", "utf8");
-assert.match(questionTimerSrc, /\btop-full\b[^\n]*\bmt-2\b/, "Total tooltip must render below clock to clear sticky header");
-assert.doesNotMatch(questionTimerSrc, /\bbottom-full\b/);
+assert.match(
+  questionTimerSrc,
+  /<TooltipContent[\s\S]*?side="bottom"/,
+  "Total tooltip must render below clock via Radix TooltipContent to clear sticky header"
+);
+assert.doesNotMatch(questionTimerSrc, /\bbottom-full\b|side="top"/);
+assert.doesNotMatch(
+  questionTimerSrc,
+  /\btitle=/,
+  "QuestionTimer must use shadcn Tooltip instead of native title attribute"
+);
+
+// 6. Wave 4 shadcn Tooltip SSR-safe portal, global provider, icon triggers, and ToastStack touch target
+const closedTooltipHtml = renderToStaticMarkup(
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button type="button" aria-label="Show hint">
+        Hint
+      </button>
+    </TooltipTrigger>
+    <TooltipContent>Hidden while closed</TooltipContent>
+  </Tooltip>
+);
+assert.match(closedTooltipHtml, /aria-label="Show hint"/);
+assert.doesNotMatch(closedTooltipHtml, /Hidden while closed/);
+
+const openTooltipHtml = renderToStaticMarkup(
+  <TooltipProvider delayDuration={300}>
+    <Tooltip defaultOpen>
+      <TooltipTrigger asChild>
+        <button type="button" aria-label="Timer total">
+          Total
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">Total 03:15</TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+assert.match(openTooltipHtml, /role="tooltip"/);
+assert.match(openTooltipHtml, /Total 03:15/);
+assert.match(openTooltipHtml, /border-zinc-200/);
+assert.match(openTooltipHtml, /motion-reduce:transition-none/);
+
+const themeToggleHtml = renderToStaticMarkup(
+  <ThemeToggleButton theme="light" onToggle={noop} className="w-8 h-8" />
+);
+assert.match(themeToggleHtml, /aria-label="Switch to dark mode"/);
+assert.doesNotMatch(themeToggleHtml, /\btitle=/);
+
+const copyWithTooltipHtml = renderToStaticMarkup(
+  <CopyButton
+    text="const x = 1;"
+    className="w-8 h-8"
+    title="Copy snippet"
+    copiedContent={<span>Copied</span>}
+  >
+    <span>Copy</span>
+  </CopyButton>
+);
+assert.match(copyWithTooltipHtml, /aria-label="Copy snippet"/);
+assert.doesNotMatch(copyWithTooltipHtml, /\btitle=/);
+
+const motionProviderSrc = readFileSync("src/components/motion/MotionProvider.tsx", "utf8");
+assert.match(motionProviderSrc, /<TooltipProvider delayDuration=\{300\}>/);
+
+const tooltipSrc = readFileSync("src/components/ui/shadcn/Tooltip.tsx", "utf8");
+assert.match(tooltipSrc, /typeof document === "undefined"/);
+assert.match(tooltipSrc, /motion-reduce:transition-none/);
+
+const studioHeaderSrc = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
+assert.match(studioHeaderSrc, /from "@\/components\/ui\/shadcn\/Tooltip"/);
+assert.doesNotMatch(studioHeaderSrc, /\btitle=/);
+
+const toastStackSrc = readFileSync("src/components/ui/ToastStack.tsx", "utf8");
+assert.match(toastStackSrc, /min-h-\[44px\] min-w-\[44px\] sm:min-h-0 sm:min-w-0/);
+assert.match(toastStackSrc, /statusTone\.correct\.text/);
+assert.match(toastStackSrc, /statusTone\.wrong\.text/);
+assert.match(toastStackSrc, /warningTone\.text/);
+assert.match(toastStackSrc, /onMouseEnter=\{\(\) => setPaused\(true\)\}/);
+assert.match(toastStackSrc, /onFocus=\{\(\) => setPaused\(true\)\}/);
 
 console.log("questionTimer render and shortcut tests passed");
