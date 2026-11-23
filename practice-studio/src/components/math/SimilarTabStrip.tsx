@@ -187,6 +187,7 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
       >
         <TabsList
           ref={listRef}
+          variant="underline"
           aria-label={`Question ${questionNumber} and similar questions`}
           onBlur={handleListBlur}
           className="flex h-auto min-h-0 items-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden rounded-none bg-transparent p-0 dark:bg-transparent [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mb-px"
