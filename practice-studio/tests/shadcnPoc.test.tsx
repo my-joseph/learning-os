@@ -10,6 +10,12 @@ import { Drawer, DrawerTrigger } from "../src/components/ui/shadcn/Drawer";
 import { Popover, PopoverTrigger } from "../src/components/ui/shadcn/Popover";
 import { Tabs, TabsList, TabsTrigger } from "../src/components/ui/shadcn/Tabs";
 import { Tooltip, TooltipProvider, TooltipTrigger } from "../src/components/ui/shadcn/Tooltip";
+import { AlertDialog, AlertDialogTrigger } from "../src/components/ui/shadcn/AlertDialog";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../src/components/ui/shadcn/Collapsible";
+import { HoverCard, HoverCardTrigger } from "../src/components/ui/shadcn/HoverCard";
+import { Input } from "../src/components/ui/shadcn/Input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../src/components/ui/shadcn/Card";
+import { Skeleton } from "../src/components/ui/shadcn/Skeleton";
 
 const html = renderToStaticMarkup(<ShadcnPocShowcase />);
 assert.match(html, /shadcn\/ui \+ Radix/);
@@ -21,6 +27,16 @@ assert.match(html, /aria-label="Switch to (?:dark|light) mode"/);
 assert.match(html, /min-h-\[44px\]/);
 assert.match(html, /focus-visible:ring-2/);
 assert.match(html, /Complete/);
+assert.match(html, /Correct/);
+assert.match(html, /Incorrect/);
+assert.match(html, /bg-status-correct-soft/);
+assert.match(html, /bg-status-wrong-soft/);
+assert.match(html, /Alert dialog/);
+assert.match(html, /Collapsible details/);
+assert.match(html, /Hover card/);
+assert.match(html, /Input states/);
+assert.match(html, /Skeleton loading/);
+assert.match(html, /aria-expanded="false"/);
 
 const badgeMarkup = renderToStaticMarkup(
   <div>
@@ -58,11 +74,18 @@ const primitiveMarkup = renderToStaticMarkup(
     <Popover><PopoverTrigger>Open popover</PopoverTrigger></Popover>
     <Tooltip><TooltipTrigger>Tooltip trigger</TooltipTrigger></Tooltip>
     <Drawer><DrawerTrigger>Open drawer</DrawerTrigger></Drawer>
+    <AlertDialog><AlertDialogTrigger>Open alert dialog</AlertDialogTrigger></AlertDialog>
+    <Collapsible><CollapsibleTrigger>Open collapsible</CollapsibleTrigger><CollapsibleContent>Closed details</CollapsibleContent></Collapsible>
+    <HoverCard><HoverCardTrigger>Open hover card</HoverCardTrigger></HoverCard>
+    <Input aria-label="Search" />
+    <Card><CardHeader><CardTitle>Card title</CardTitle><CardDescription>Card description</CardDescription></CardHeader><CardContent>Card content</CardContent><CardFooter>Card footer</CardFooter></Card>
+    <Skeleton aria-label="Loading" />
   </TooltipProvider>
 );
-for (const expected of ["Accessible button", "Compact button", "aria-label=\"Compact icon action\"", "role=\"tablist\"", "role=\"tab\"", "Open dialog", "Open popover", "Tooltip trigger", "Open drawer"]) {
+for (const expected of ["Accessible button", "Compact button", "aria-label=\"Compact icon action\"", "role=\"tablist\"", "role=\"tab\"", "Open dialog", "Open popover", "Tooltip trigger", "Open drawer", "Open alert dialog", "Open collapsible", "Open hover card", "Card title", "Card description", "Card content", "Card footer"]) {
   assert.ok(primitiveMarkup.includes(expected), `SSR primitive markup must include ${expected}`);
 }
+assert.doesNotMatch(primitiveMarkup, /Closed details/, "Closed collapsible content must remain unmounted");
 const compactButtonAttrs = primitiveMarkup.match(/<button\b([^>]*)>Compact button<\/button>/)?.[1] ?? "";
 assert.match(compactButtonAttrs, /\btype="button"/);
 assert.match(compactButtonAttrs, /min-h-\[44px\]/);
@@ -81,6 +104,12 @@ const componentFiles = [
   "src/components/ui/shadcn/Popover.tsx",
   "src/components/ui/shadcn/Tooltip.tsx",
   "src/components/ui/shadcn/Drawer.tsx",
+  "src/components/ui/shadcn/AlertDialog.tsx",
+  "src/components/ui/shadcn/Collapsible.tsx",
+  "src/components/ui/shadcn/HoverCard.tsx",
+  "src/components/ui/shadcn/Input.tsx",
+  "src/components/ui/shadcn/Card.tsx",
+  "src/components/ui/shadcn/Skeleton.tsx",
   "src/components/ui-poc/ShadcnPocShowcase.tsx",
 ];
 const source = componentFiles.map((file) => readFileSync(file, "utf8")).join("\n");
@@ -90,6 +119,15 @@ assert.match(source, /DialogTitle/);
 assert.match(source, /DialogDescription/);
 assert.match(source, /DrawerTitle/);
 assert.match(source, /DrawerDescription/);
+assert.match(source, /AlertDialogTitle/);
+assert.match(source, /AlertDialogDescription/);
+assert.match(source, /AlertDialogCancel/);
+assert.match(source, /AlertDialogAction/);
+assert.match(source, /CollapsibleContent/);
+assert.doesNotMatch(source, /forceMount/);
+assert.match(source, /HoverCardContent/);
+assert.match(source, /focus-visible:ring-indigo-600/);
+assert.match(source, /animate-pulse motion-reduce:animate-none/);
 assert.match(source, /statusTone/);
 assert.match(source, /warningTone/);
 assert.match(source, /dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500/);
