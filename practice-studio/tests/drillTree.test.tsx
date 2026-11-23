@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -19,6 +20,7 @@ import {
   resolveTreeKeyAction,
 } from "../src/lib/drillGrouping";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
+import { WorkspaceSwitch } from "../src/components/workspace/WorkspaceSwitch";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
 
@@ -404,6 +406,102 @@ const labTreeHtml = renderToStaticMarkup(
 assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>LAB-02</);
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
+assert.doesNotMatch(labTreeHtml, /aria-label="Actions for LAB-/);
+
+const sidebarTreeHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="math"
+    currentDrill={null}
+    drills={sampleDrills}
+    selectedDrillId="DRL-MTH-T02-C01-U01-03"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.doesNotMatch(sidebarTreeHtml, />Expand all|>Collapse all|>View</);
+assert.doesNotMatch(sidebarTreeHtml, /border-l/);
+assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
+assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
+assert.match(sidebarTreeHtml, /h-11 w-11/);
+assert.match(sidebarTreeHtml, /lg:h-7 lg:w-7/);
+const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
+assert.match(sidebarActionSource, /data-menu-open=\{openActionNodeId === item\.id/);
+assert.match(sidebarActionSource, /isCurrent \|\| openActionNodeId === item\.id/);
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Copy ID/);
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Reset/);
+assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Delete/);
+assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
+assert.match(sidebarTreeHtml, /aria-current="true"/);
+const selectedLeafMarkup = sidebarTreeHtml.match(
+  /<div[^>]*data-sidebar-leaf="DRL-MTH-T02-C01-U01-03"[\s\S]*?<\/div>/
+)?.[0];
+assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
+const sidebarRows = [...sidebarTreeHtml.matchAll(/data-sidebar-row="([^"]+)"[^>]*class="([^"]+)"/g)];
+assert.ok(sidebarRows.length > 4, "sidebar renders folder and leaf surfaces");
+for (const [, row, classes] of sidebarRows) {
+  assert.match(classes, /\bh-8 rounded-md\b/, `${row} uses the shared 32 px surface and radius`);
+  assert.doesNotMatch(classes, /focus-within:|ring-indigo/, `${row} has no pointer-focus ring`);
+}
+const sidebarCodes = [...sidebarTreeHtml.matchAll(/data-sidebar-row-code="true" aria-hidden="true" class="([^"]+)"[^>]*>([^<]+)/g)];
+for (const code of ["MTH-T02", "C01", "U01", "U01-03", "U01-04"]) {
+  assert.ok(sidebarCodes.some(([, , label]) => label === code), `sidebar has a row-owned badge for ${code}`);
+}
+assert.ok(sidebarCodes.every(([, classes]) => !classes.includes("group-hover")));
+assert.match(selectedLeafMarkup, /bg-zinc-200\/70/);
+assert.match(selectedLeafMarkup, /aria-current="true"/);
+assert.match(selectedLeafMarkup, /h-11 w-11/);
+assert.match(selectedLeafMarkup, /lg:h-7 lg:w-7/);
+assert.match(
+  selectedLeafMarkup,
+  /<\/button><button[^>]*aria-label="Actions for DRL-MTH-T02-C01-U01-03"/,
+  "drill selection and action targets are sibling buttons, never nested"
+);
+assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="topic"[^>]*class="[^"]*w-full h-8[^"]*px-1\.5/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="chapter"[^>]*class="[^"]*w-full h-8[^"]*pl-4/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="unit"[^>]*class="[^"]*w-full h-8[^"]*pl-\[26px\]/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"[^>]*class="[^"]*w-full[^\"]*h-8/);
+assert.match(sidebarTreeHtml, /pl-\[36px\]/, "deep drill contents indent independently of the full-width row");
+assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-3/, "sidebar branches keep a shared left edge");
+assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
+assert.ok(
+  (sidebarTreeHtml.match(/h-8/g) ?? []).length >= 10,
+  "sidebar branch and leaf rows use fixed 32px classes"
+);
+
+for (const workspace of ["math", "code"] as const) {
+  const workspaceSwitchHtml = renderToStaticMarkup(
+    <WorkspaceSwitch
+      variant="sidebar"
+      workspace={workspace}
+      pillWorkspace={workspace}
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C04-01"
+      codeHref="/code/DRL-PRG-T01-C01-U02-01"
+    />
+  );
+  assert.match(workspaceSwitchHtml, /aria-label="Math"[^>]*href="\/math\/DRL-MTH-T01-C04-01"/);
+  assert.match(workspaceSwitchHtml, /aria-label="Programming"[^>]*href="\/code\/DRL-PRG-T01-C01-U02-01"/);
+  const tabs = [...workspaceSwitchHtml.matchAll(/<a aria-label="(Math|Programming)"([^>]*)>/g)];
+  assert.equal(tabs.length, 2);
+  for (const [, name, attributes] of tabs) {
+    assert.match(attributes, /\bsize-11 lg:size-8\b/);
+    assert.equal(attributes.includes('aria-current="page"'), name === (workspace === "math" ? "Math" : "Programming"));
+  }
+  const track = workspaceSwitchHtml.match(/<nav aria-label="Workspace" class="([^"]+)"/)?.[1];
+  assert.match(track ?? "", /grid-cols-2.*p-0\.5/);
+  assert.doesNotMatch(track ?? "", /\b(?:min-h-|h-)/, "cell size and padding determine track height");
+}
 
 // Cross-unit bridge drills (MTH-BRIDGE) appear in the Math drill picker under a clean Bridge group
 const bridgeDrills: DrillListItem[] = [

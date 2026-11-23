@@ -88,6 +88,14 @@ export function isSafeId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(value);
 }
 
+/** Validates a canonical local MTH, PHY, or PRG drill ID (never a LAB or path ID). */
+export function isCanonicalDrillId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^DRL-(?:MTH|PHY|PRG)-[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(value)
+  );
+}
+
 /** True when LEARNINGOS_PILOT is enabled ('1', 'true', 'yes'); mirrors progress_store.pilot_mode(). */
 export function isPilotMode(): boolean {
   const pilot = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
@@ -256,9 +264,8 @@ export function getProgressDir(): string {
 }
 
 /** Locate a drill JSON file under getDrillsDataDir() by drillId. */
-function findDrillFilePath(drillId: string): string | null {
+function findDrillFilePath(drillId: string, dataDir = getDrillsDataDir()): string | null {
   if (!isSafeId(drillId)) return null;
-  const dataDir = getDrillsDataDir();
   if (!fs.existsSync(dataDir)) return null;
 
   for (const entry of fs.readdirSync(dataDir, { withFileTypes: true })) {
@@ -282,6 +289,38 @@ function findDrillFilePath(drillId: string): string | null {
     return null;
   };
   return visit(dataDir);
+}
+
+/** Locate the canonical content file for one validated local drill ID. */
+export function findCanonicalDrillFilePath(drillId: string): string | null {
+  if (!isCanonicalDrillId(drillId)) return null;
+  const dataDir = getDrillsDataDir();
+  if (!fs.existsSync(dataDir)) return null;
+
+  const matches: string[] = [];
+  for (const entry of fs.readdirSync(dataDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const candidate = path.join(dataDir, entry.name, `${drillId}.json`);
+    if (!fs.existsSync(candidate)) continue;
+    try {
+      if (!fs.lstatSync(candidate).isFile()) continue;
+      const doc = JSON.parse(fs.readFileSync(candidate, "utf-8")) as Record<string, unknown>;
+      const domain = drillId.split("-")[1];
+      if (
+        doc &&
+        typeof doc === "object" &&
+        doc.drillId === drillId &&
+        typeof doc.unitCode === "string" &&
+        doc.unitCode.startsWith(`${domain}-`) &&
+        entry.name === doc.unitCode
+      ) {
+        matches.push(candidate);
+      }
+    } catch {
+      // A malformed document is not a canonical target and must not be deleted.
+    }
+  }
+  return matches.length === 1 ? matches[0] : null;
 }
 
 /** Load an unredacted canonical drill document from drills/data on the server. */

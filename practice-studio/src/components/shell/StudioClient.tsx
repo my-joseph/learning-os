@@ -44,7 +44,7 @@ import {
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
-import { resetAnswerForReviewRetry } from "@/lib/applyCheckResult";
+import { resetAnswerForReviewRetry, resetDrillForRetry } from "@/lib/applyCheckResult";
 import { getPersistedStatusOverride } from "@/lib/sessionSummary";
 
 interface StudioClientProps {
@@ -66,7 +66,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
 
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [showGenPopover, setShowGenPopover] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetTargetId, setResetTargetId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isSidebarActionPending, setIsSidebarActionPending] = useState(false);
   const [resetAllVersion, setResetAllVersion] = useState(0);
   const [lastMathId, setLastMathId] = useState<string | null>(null);
   const [lastCodeId, setLastCodeId] = useState<string | null>(null);
@@ -177,7 +180,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   useEffect(() => {
     setStatus(null);
     setReviewRetryStarted(false);
-    setShowResetConfirm(false);
+    setResetTargetId(null);
+    setDeleteTargetId(null);
+    setDeleteError(null);
     pendingReplacedQsRef.current = [];
     loadDrill(drillId, initialQuestionIdRef.current);
   }, [drillId, loadDrill]);
@@ -261,6 +266,69 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     router.push(drillHref(nextDrillId));
   };
 
+  const handleResetTarget = async () => {
+    if (!resetTargetId || isSidebarActionPending) return;
+    const targetId = resetTargetId;
+    setIsSidebarActionPending(true);
+    try {
+      if (currentDrill?.drillId === targetId) {
+        setResetTargetId(null);
+        await handleResetAll();
+        setResetAllVersion((version) => version + 1);
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("similar") || url.searchParams.has("tab")) {
+          url.searchParams.delete("similar");
+          url.searchParams.delete("tab");
+          window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+        }
+      } else {
+        await flushAutoSave();
+        const response = await fetch(`/api/drill?id=${encodeURIComponent(targetId)}`);
+        if (!response.ok) throw new Error("Drill could not be loaded.");
+        const targetDoc = (await response.json()) as DrillDocument;
+        if (targetDoc.drillId !== targetId) throw new Error("Drill could not be loaded.");
+        const resetDoc = resetDrillForRetry(targetDoc);
+        if (!(await saveNow(resetDoc))) throw new Error("Reset could not be saved. Try again.");
+        setStatus({ text: "Drill reset to initial state.", type: "pass" });
+        setResetTargetId(null);
+        await loadDrillsList();
+      }
+    } catch (error) {
+      setStatus({
+        text: error instanceof Error ? error.message : "Reset failed. Try again.",
+        type: "fail",
+      });
+    } finally {
+      setIsSidebarActionPending(false);
+    }
+  };
+
+  const handleDeleteTarget = async () => {
+    if (!deleteTargetId || isSidebarActionPending) return;
+    const targetId = deleteTargetId;
+    const isCurrent = currentDrill?.drillId === targetId;
+    setIsSidebarActionPending(true);
+    setDeleteError(null);
+    try {
+      if (isCurrent) await flushAutoSave();
+      const response = await fetch(`/api/drill?id=${encodeURIComponent(targetId)}`, { method: "DELETE" });
+      const result = (await response.json().catch(() => null)) as { error?: string; deleted?: boolean } | null;
+      if (!response.ok || !result?.deleted) {
+        throw new Error(result?.error || "Delete failed. Try again.");
+      }
+      setDeleteTargetId(null);
+      await loadDrillsList();
+      if (isCurrent) {
+        const nextId = workspaceDrills.find((drill) => drill.drillId !== targetId)?.drillId;
+        router.replace(nextId ? drillHref(nextId) : "/");
+      }
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Delete failed. Try again.");
+    } finally {
+      setIsSidebarActionPending(false);
+    }
+  };
+
   const handleReviewRetry = () => {
     const problem = currentDrill?.problems[currentProblemIndex];
     if (!currentDrill || !problem) return;
@@ -326,7 +394,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       theme={theme}
       onToggleTheme={handleToggleTheme}
       onResetAll={() => {
-        if (currentDrill) setShowResetConfirm(true);
+        if (currentDrill) {
+          setResetTargetId(currentDrill.drillId);
+        }
       }}
       drills={workspaceDrills}
       allWorkspaceDrills={workspaceDrills}
@@ -337,6 +407,13 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       drillFilter={drillFilter}
       onFilterChange={setDrillFilter}
       onSelectDrill={handleSelectDrill}
+      onResetDrill={(targetId) => {
+        setResetTargetId(targetId);
+      }}
+      onDeleteDrill={(targetId) => {
+        setDeleteError(null);
+        setDeleteTargetId(targetId);
+      }}
       showGenPopover={showGenPopover}
       onShowGenPopoverChange={setShowGenPopover}
       onGenerated={handleGenerated}
@@ -523,35 +600,37 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
           : "";
         return (
+          <>
           <ConfirmDialog
-            open={showResetConfirm && Boolean(currentDrill)}
-            title={`Reset all ${itemPlural}?`}
-            description={
-              currentDrill
-                ? `Reset all ${itemPlural} in ${drillLabel} to start over.`
-                : ""
-            }
-            confirmLabel="Reset all"
+            open={Boolean(resetTargetId)}
+            title={`Reset all ${resetTargetId && isLabId(resetTargetId) ? "milestones" : resetTargetId?.startsWith("DRL-PRG-") ? "problems" : "questions"}?`}
+            description={resetTargetId === currentDrill?.drillId
+              ? `Reset all ${itemPlural} in ${drillLabel} to start over.`
+              : `Reset all items in ${resetTargetId || "this drill"} to start over.`}
+            confirmLabel={isSidebarActionPending ? "Resetting…" : "Reset all"}
             cancelLabel="Cancel"
             destructive
-            onCancel={() => setShowResetConfirm(false)}
-            onConfirm={() => {
-              setShowResetConfirm(false);
-              void handleResetAll().then(() => {
-                setResetAllVersion((version) => version + 1);
-                const url = new URL(window.location.href);
-                if (url.searchParams.has("similar") || url.searchParams.has("tab")) {
-                  url.searchParams.delete("similar");
-                  url.searchParams.delete("tab");
-                  window.history.replaceState(
-                    window.history.state,
-                    "",
-                    url.pathname + url.search + url.hash
-                  );
-                }
-              });
+            onCancel={() => {
+              setResetTargetId(null);
             }}
+            onConfirm={() => void handleResetTarget()}
           />
+          <ConfirmDialog
+            open={Boolean(deleteTargetId)}
+            title="Delete this drill?"
+            description={deleteError
+              ? `${deleteTargetId}: ${deleteError}`
+              : `Delete drill ${deleteTargetId || ""}? This removes its local drill content. Saved progress and workspace files are retained.`}
+            confirmLabel={isSidebarActionPending ? "Deleting…" : "Delete drill"}
+            cancelLabel="Cancel"
+            destructive
+            onCancel={() => {
+              setDeleteTargetId(null);
+              setDeleteError(null);
+            }}
+            onConfirm={() => void handleDeleteTarget()}
+          />
+          </>
         );
       })()}
     </StudioShell>
