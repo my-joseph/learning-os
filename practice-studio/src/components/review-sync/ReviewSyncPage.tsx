@@ -344,7 +344,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
 
       {/* B. To review */}
       {allCorrect ? (
-        <section className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3.5 sm:px-6 text-sm text-zinc-600 dark:text-zinc-300">
+        <section className="bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3.5 sm:px-6 text-sm text-zinc-600 dark:text-zinc-300">
           Nothing to fix. Add a revisit note below if you want.
         </section>
       ) : (
@@ -352,7 +352,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
           aria-labelledby="to-review-heading"
           className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden"
         >
-          <div className="px-4 py-3 sm:px-6 bg-zinc-50/70 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          <div className="px-4 py-3 sm:px-6 bg-surface-panel/70 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <h2
               id="to-review-heading"
               className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
@@ -413,7 +413,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
             onClick={() => setShowCorrect((prev) => !prev)}
             aria-expanded={showCorrect}
             aria-controls="got-right-list"
-            className="w-full min-h-[48px] px-4 py-3 sm:px-6 bg-zinc-50/70 dark:bg-zinc-950/50 hover:bg-zinc-100/70 dark:hover:bg-zinc-900 flex items-center justify-between text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+            className="w-full min-h-[48px] px-4 py-3 sm:px-6 bg-surface-panel/70 hover:bg-zinc-100/70 dark:hover:bg-zinc-900 flex items-center justify-between text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
           >
             <span className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               <ChevronDown

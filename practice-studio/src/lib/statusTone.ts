@@ -70,7 +70,7 @@ export const statusTone: StatusToneRecipes = {
     text: "text-status-correct-text",
     dot: "bg-status-correct",
     selfScoreActive:
-      "border-status-correct-text text-status-correct-text font-semibold bg-zinc-50 dark:bg-zinc-950",
+      "border-status-correct-text text-status-correct-text font-semibold bg-surface-panel",
     tile: "bg-status-correct text-status-on-correct border-status-correct hover:brightness-95 dark:hover:brightness-110",
     border: "border-status-correct-text",
   },
@@ -87,7 +87,7 @@ export const statusTone: StatusToneRecipes = {
     text: "text-status-on-assisted",
     dot: "bg-transparent ring-[1.5px] ring-inset ring-status-assisted",
     selfScoreActive:
-      "border-status-assisted text-status-on-assisted font-semibold bg-zinc-50 dark:bg-zinc-950",
+      "border-status-assisted text-status-on-assisted font-semibold bg-surface-panel",
     tile: "bg-transparent text-status-on-assisted border-status-assisted hover:bg-status-assisted/10",
   },
 
@@ -102,7 +102,7 @@ export const statusTone: StatusToneRecipes = {
     text: "text-status-wrong",
     dot: "bg-status-wrong",
     selfScoreActive:
-      "border-status-wrong text-status-wrong font-semibold bg-zinc-50 dark:bg-zinc-950",
+      "border-status-wrong text-status-wrong font-semibold bg-surface-panel",
     tile: "bg-status-wrong text-status-on-wrong border-status-wrong hover:brightness-95 dark:hover:brightness-110",
     border: "border-status-wrong",
     borderSoft: "border-status-wrong/40",
@@ -123,11 +123,11 @@ export const statusTone: StatusToneRecipes = {
     solidCircle:
       "border-status-neutral bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
     tabMark: "border-[1.5px] border-status-skipped",
-    softCard: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+    softCard: "bg-surface-panel border border-zinc-200 dark:border-zinc-800",
     iconCircle: "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
     text: "text-zinc-500 dark:text-zinc-400",
     dot: "bg-status-neutral",
-    tile: "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
+    tile: "bg-surface-panel hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
   },
 };
 

@@ -442,9 +442,9 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {problem.display && (
-                    <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
+                    <div className="min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-sm text-zinc-900 dark:text-zinc-100">
                       <MathBlock latex={problem.display} />
                     </div>
                   )}
@@ -457,12 +457,12 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                           : ""
                       }`}
                     >
-                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
+                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
                         {problem.plainText}
                       </code>
                       <CopyButton
                         text={problem.plainText}
-                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
+                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 bg-surface-panel transition-colors shrink-0"
                         copiedContent={
                           <>
                             <Check className="w-3.5 h-3.5" />

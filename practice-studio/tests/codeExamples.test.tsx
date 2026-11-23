@@ -97,7 +97,7 @@ assert.match(drillHtml, />Example 1<\/h4><p[^>]*>[\s\S]*?5 is already at index 2
 assert.match(drillHtml, /0 &lt;= nums\.length &lt;= 10\^4/);
 assert.match(drillHtml, /<code[^>]*>nums<\/code> is sorted ascending/);
 // Quiet zinc rounded block with no left accent border
-assert.match(drillHtml, /bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3\.5 py-2\.5 font-mono/);
+assert.match(drillHtml, /bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl px-3\.5 py-2\.5 font-mono/);
 assert.doesNotMatch(drillHtml, /aria-label="Examples"[\s\S]*border-l-2/);
 
 // Visible test names with code are collapsed Radix Collapsible disclosures by default.

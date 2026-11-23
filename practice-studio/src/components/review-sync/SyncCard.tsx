@@ -142,7 +142,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3.5 py-3 overflow-x-auto">
+        <div className="flex items-center gap-2.5 rounded-xl bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-3.5 py-3 overflow-x-auto">
           <Terminal className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" aria-hidden="true" />
           <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
             {submitCommand}
@@ -306,7 +306,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 {showLines && preview.logLines.length > 0 && (
                   <ul
                     id="sync-preview-log-lines"
-                    className="rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 space-y-1 text-xs text-zinc-700 dark:text-zinc-300"
+                    className="rounded-xl bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 space-y-1 text-xs text-zinc-700 dark:text-zinc-300"
                   >
                     {preview.logLines.map((line, i) => (
                       <li key={i} className="flex items-start gap-2 break-words">
@@ -407,7 +407,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
       <div aria-live="polite" className="space-y-3">
         {/* Changed since sync banner */}
         {effectiveSyncPhase === "changed" && (
-          <div className="rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3.5 py-2.5 text-xs text-zinc-700 dark:text-zinc-300">
+          <div className="rounded-xl bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-3.5 py-2.5 text-xs text-zinc-700 dark:text-zinc-300">
             You changed{" "}
             <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
               {changedCount}
@@ -546,7 +546,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                 <Reveal show={showErrorDetails}>
                   {showErrorDetails && (
-                    <pre className={`font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
+                    <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
                       {errorFullText}
                     </pre>
                   )}
@@ -630,7 +630,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                     <Reveal show={showErrorDetails}>
                       {showErrorDetails && (
-                        <pre className={`font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border ${statusTone.wrong.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
+                        <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${statusTone.wrong.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
                           {errorFullText}
                         </pre>
                       )}

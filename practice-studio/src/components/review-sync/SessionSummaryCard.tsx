@@ -55,7 +55,7 @@ const TILE_COLORS: Record<ReviewOutcome, string> = {
   wrong: statusTone.wrong.tile,
   skipped: statusTone.skipped.tile,
   awaiting_review:
-    "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500",
+    "bg-surface-panel hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500",
   unanswered: statusTone.notTried.tile,
 };
 

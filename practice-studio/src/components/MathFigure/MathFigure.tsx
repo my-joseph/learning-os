@@ -21,7 +21,7 @@ export const MathFigure: React.FC<MathFigureProps> = ({
   if ("kind" in figure) {
     return (
       <div
-        className={`w-full p-4 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center ${className}`}
+        className={`w-full p-4 bg-surface-panel rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center ${className}`}
       >
         {figure.title && (
           <div className="w-full flex items-center justify-start mb-2 px-1">

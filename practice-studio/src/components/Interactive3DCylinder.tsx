@@ -32,7 +32,7 @@ export const Interactive3DCylinder: React.FC<Interactive3DCylinderProps> = ({
   return (
     <div className="flex flex-col items-center w-full my-2">
       {/* 3D WebGL Canvas */}
-      <div className="relative w-full h-[280px] bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-inner">
+      <div className="relative w-full h-[280px] bg-surface-panel rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-inner">
         <Canvas camera={{ position: [5, 4, 6], fov: 45 }}>
           {/* Ambient & Directional Lights */}
           <ambientLight intensity={0.7} />

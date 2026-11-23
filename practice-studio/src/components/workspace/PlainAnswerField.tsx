@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/shadcn/Input";
 import { cn } from "@/lib/cn";
 
 export const ANSWER_FIELD_CONTAINER_CLASS =
-  "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
+  "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
 
 export interface InlineCheckButtonProps {
   onClick: () => void;

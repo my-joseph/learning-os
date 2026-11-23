@@ -13,6 +13,9 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        surface: {
+          panel: "rgb(var(--surface-panel) / <alpha-value>)",
+        },
         accent: "rgb(var(--accent) / <alpha-value>)",
         warning: {
           DEFAULT: "rgb(var(--warning) / <alpha-value>)",

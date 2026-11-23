@@ -185,7 +185,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
           return (
             <pre
               key={block.lineIdx}
-              className="px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
+              className="px-3.5 py-2.5 bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
             >
               <code>
                 {supportedLang ? (

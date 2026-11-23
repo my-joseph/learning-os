@@ -62,7 +62,7 @@ async function main() {
       ),
       `expected dual-theme Shiki highlighting for \`\`\`${sample.fence}`
     );
-    assert.match(html, /bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl/);
+    assert.match(html, /bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl/);
   }
 
   // 3. Unknown or missing fence language falls back to plain text inside the same frame

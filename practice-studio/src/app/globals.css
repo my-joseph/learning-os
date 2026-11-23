@@ -20,14 +20,16 @@
 }
 
 :root {
-  --background: #09090b;
+  --background: #18181b;
   --foreground: #f4f4f5;
+  --surface-panel: 32 32 35;
   color-scheme: dark;
 }
 
 html.light {
   --background: #fafafa;
   --foreground: #18181b;
+  --surface-panel: 250 250 250;
   color-scheme: light;
 }
 
@@ -66,6 +68,8 @@ html.light {
 
 html.dark,
 .dark {
+  --surface-panel: 32 32 35;
+
   /* Answer & progress status */
   --status-correct: 16 185 129;        /* emerald-500 (#10b981) — filled circles/tiles */
   --status-correct-text: 52 211 153;   /* emerald-400 (#34d399) — AA text on dark */

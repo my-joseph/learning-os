@@ -77,7 +77,7 @@ export const VisualRenderer: React.FC<VisualRendererProps> = ({
   };
 
   return (
-    <div className={`w-full flex flex-col items-center p-4 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all ${className}`}>
+    <div className={`w-full flex flex-col items-center p-4 bg-surface-panel rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all ${className}`}>
       {hasInteractive && (
         <div className="w-full flex justify-end mb-2">
           <button

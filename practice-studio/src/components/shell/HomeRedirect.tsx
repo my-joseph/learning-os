@@ -40,7 +40,7 @@ export const HomeRedirect: React.FC = () => {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center">
         {emptyState ? (
           <p className="text-sm text-zinc-600 dark:text-zinc-400">{emptyState}</p>

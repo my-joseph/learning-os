@@ -7,6 +7,9 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
+import { StudioHeader } from "../src/components/shell/StudioHeader";
+import { StudioShell } from "../src/components/shell/StudioShell";
+import { StudioSidebar } from "../src/components/shell/StudioSidebar";
 import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import {
@@ -65,6 +68,53 @@ assert.equal(resolveTheme(null, false), "light");
 assert.equal(resolveTheme(null, true), "dark");
 assert.equal(resolveTheme("light", true), "light", "saved preference must override system preference");
 assert.match(THEME_INIT_SCRIPT, /matchMedia/);
+assert.match(THEME_INIT_SCRIPT, /practice_studio_theme_sync_v1/);
+
+// Verify THEME_INIT_SCRIPT clears any legacy override once and then preserves explicit overrides until OS change
+{
+  const store = new Map<string, string>([["practice_studio_theme", "light"]]);
+  const classes = new Set<string>();
+  const mockLocalStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => {
+      store.set(k, String(v));
+    },
+    removeItem: (k: string) => {
+      store.delete(k);
+    },
+  };
+  const mockWindow = {
+    matchMedia: () => ({ matches: true }),
+  };
+  const mockDocument = {
+    documentElement: {
+      classList: {
+        toggle: (cls: string, force?: boolean) => {
+          if (force) classes.add(cls);
+          else classes.delete(cls);
+          return Boolean(force);
+        },
+      },
+    },
+  };
+  const runInit = new Function("localStorage", "window", "document", THEME_INIT_SCRIPT);
+  runInit(mockLocalStorage, mockWindow, mockDocument);
+  assert.equal(store.get("practice_studio_theme_sync_v1"), "1");
+  assert.equal(store.has("practice_studio_theme"), false, "stale theme override cleared once on migration");
+  assert.equal(classes.has("dark"), true);
+  assert.equal(classes.has("light"), false);
+
+  // Subsequent explicit override after migration still applies before hydration until toggled/OS changed
+  store.set("practice_studio_theme", "light");
+  runInit(mockLocalStorage, mockWindow, mockDocument);
+  assert.equal(classes.has("light"), true);
+  assert.equal(classes.has("dark"), false);
+}
+
+const useThemeSrc = readFileSync("src/hooks/useTheme.ts", "utf8");
+assert.match(useThemeSrc, /practice_studio_theme_sync_v1/);
+assert.match(useThemeSrc, /handleMediaChange[\s\S]*localStorage\.removeItem\(STORAGE_KEY\)/);
+assert.match(useThemeSrc, /next === systemTheme[\s\S]*localStorage\.removeItem\(STORAGE_KEY\)/);
 
 const codeDashboard = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
 const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
@@ -76,6 +126,7 @@ const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "ut
 const stepper = readFileSync("src/components/Stepper.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
+const studioSidebar = readFileSync("src/components/shell/StudioSidebar.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*(?:\(\s*)?(?:<CollapsibleTrigger\s+asChild>\s*)?<button/);
@@ -119,19 +170,51 @@ assert.match(stepper, /text-\[10px\] sm:text-\[11px\]/);
 assert.doesNotMatch(stepper, /group-focus-visible:outline/);
 assert.doesNotMatch(stepper, /focus-visible:ring-2/);
 assert.match(studioShell, /<h1 className="sr-only"/);
-assert.match(studioShell, /fixed left-3 top-1\/2/);
+assert.doesNotMatch(studioShell, /fixed left-3 top-1\/2/);
+assert.match(studioShell, /<StudioSidebar/);
 assert.match(studioShell, /Due today &amp; weak spots/);
 assert.doesNotMatch(studioShell, /Study queue/);
+assert.match(studioShell, /border-b border-zinc-200/);
+assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*\?[\s\S]{0,600}StudioSidePanel/);
+assert.doesNotMatch(studioShell, /viewMode === "quiz"\s*&&[\s\S]{0,200}(?:onToggleRightPanel|isSideDrawerOpen|StudioSidePanel)/);
+assert.match(studioShell, /showPaginationBar = false/);
+assert.match(studioShell, /showPaginationBar && hasPagination && currentDrill/);
+assert.match(studioShell, /<QuizPaginationBar[\s\S]*\bcompact\b/);
+assert.match(studioShell, /dark:bg-zinc-900/);
+assert.doesNotMatch(studioShell, /dark:bg-zinc-950/);
 assert.match(studioHeader, /lg:hidden/);
 assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(studioHeader, /Score:/);
 assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
+assert.doesNotMatch(studioHeader, /DrillSwitcher/);
+assert.match(studioHeader, /Open navigation sidebar/);
+assert.match(studioHeader, /Expand sidebar/);
 assert.match(studioHeader, /Generate drill set/);
 assert.match(studioHeader, /Reset all questions/);
 assert.match(studioHeader, /Reset all problems/);
 assert.match(studioHeader, /Reset all milestones/);
 assert.match(studioHeader, /Due today & weak spots/);
+assert.match(studioHeader, /<List\b/);
+assert.match(studioHeader, /dark:bg-zinc-900/);
+assert.doesNotMatch(studioHeader, /dark:bg-zinc-950/);
+assert.match(studioSidebar, /Collapse sidebar/);
+assert.match(studioSidebar, /isOpen \? 287 : 0/);
+assert.match(studioSidebar, /w-\[287px\]/);
+assert.match(studioSidebar, /bg-surface-panel/);
+assert.match(studioSidebar, /<WorkspaceSwitch/);
+assert.match(studioSidebar, /<DrillSwitcher/);
+assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
+assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8"), /bg-white dark:bg-zinc-900/);
+{
+  const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
+  assert.match(mathPaletteSrc, /<m\.span/);
+  assert.match(mathPaletteSrc, /dark:bg-zinc-700\/80/);
+  assert.match(mathPaletteSrc, /bg-surface-panel/);
+}
+assert.match(problemAssistSection, /bg-surface-panel/);
+assert.match(mathItemView, /bg-surface-panel/);
+assert.match(mathItemView, /bg-white dark:bg-zinc-900/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -442,6 +525,7 @@ assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
 
 // Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewSyncPage
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
+assert.match(globalsCss, /--background:\s*#18181b;/);
 assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /\.dark ::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.3\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /:focus:not\(:focus-visible\)\s*\{\s*outline:\s*none;/s);
@@ -614,7 +698,7 @@ assert.match(codeGenerateHtml, />Level 5<\/option>/);
 // no CAS copy row on choice questions (their plain text is only the prompt).
 const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
 const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8");
-assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-zinc-100/);
+assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-700\/70/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
 assert.match(mathItemView, /problem\.plainText && !isChoice/);
@@ -643,6 +727,276 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.doesNotMatch(packageJson, /@fontsource\/source-sans-pro/);
   assert.match(tw, /sans: \[\s*"var\(--font-geist-sans\)",\s*'"Geist"',\s*'"Geist Fallback"'/);
   assert.match(tw, /display: \['"Roboto Slab Variable"'/);
+}
+
+// Rev 2 Flat 3-pane Sidebar + Header + Frameless workspace SSR & invariant checks
+{
+  const openSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      isOpen={true}
+      onToggle={noop}
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      drills={[
+        {
+          drillId: "DRL-MTH-T01-C01-01",
+          subject: "MATH",
+          unitCode: "MTH-T01-C01-U01",
+          unitTitle: "Linear Equations",
+          createdAt: "2026-11-17",
+          questionCount: 5,
+          difficultyMode: "Mixed",
+          practiceStatus: "Ready",
+          score: 0,
+          maxScore: 5,
+          localFilePath: "",
+        },
+      ]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+    />
+  );
+  assert.match(openSidebarHtml, /role="tree"/);
+  assert.match(openSidebarHtml, /aria-label="Math"/);
+  assert.match(openSidebarHtml, /aria-label="Programming"/);
+  assert.doesNotMatch(openSidebarHtml, />MTH</);
+  assert.doesNotMatch(openSidebarHtml, />PRG</);
+  assert.match(openSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.doesNotMatch(openSidebarHtml, /aria-label="Generate drill set"/);
+  assert.doesNotMatch(openSidebarHtml, /aria-label="Reset all/);
+
+  const closedSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      isOpen={false}
+      onToggle={noop}
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      drills={[]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+    />
+  );
+  assert.match(closedSidebarHtml, /aria-hidden="true"/);
+  assert.match(closedSidebarHtml, /pointer-events-none/);
+  assert.match(closedSidebarHtml, /invisible/);
+
+  const embeddedSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      embedded={true}
+      isOpen={false}
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      drills={[]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+    />
+  );
+  assert.doesNotMatch(embeddedSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.match(embeddedSidebarHtml, /aria-label="Math"/);
+  assert.doesNotMatch(embeddedSidebarHtml, />MTH</);
+
+  const headerOpenHtml = renderToStaticMarkup(
+    <StudioHeader
+      workspace="math"
+      currentDrill={sampleDrillDoc}
+      selectedDrillId={sampleDrillDoc.drillId}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      onOpenGenPopover={noop}
+      isSidebarOpen={true}
+      onOpenDesktopSidebar={noop}
+      onOpenSidebarDrawer={noop}
+      isRightPanelOpen={true}
+      onToggleRightPanel={noop}
+      onOpenSideDrawer={noop}
+      sidePanelCount={2}
+    />
+  );
+  assert.match(headerOpenHtml, /aria-label="Open navigation sidebar"/);
+  assert.doesNotMatch(headerOpenHtml, /aria-label="Expand sidebar"/);
+  assert.match(headerOpenHtml, /aria-label="Generate drill set"/);
+  assert.match(headerOpenHtml, /aria-label="Reset all questions"/);
+  assert.match(headerOpenHtml, /aria-label="Due today &amp; weak spots"/);
+  assert.match(headerOpenHtml, /lucide-list/);
+  assert.match(headerOpenHtml, /aria-pressed="true"/);
+  assert.match(headerOpenHtml, /Linear Equations/);
+
+  const compactTilesHtml = renderToStaticMarkup(
+    <QuizPaginationBar
+      compact
+      currentIndex={0}
+      problems={[sampleMathProblem]}
+      viewMode="quiz"
+      onSelectQuestion={noop}
+      onToggleViewMode={noop}
+    />
+  );
+  assert.doesNotMatch(compactTilesHtml, /border-t border-zinc-200/);
+  assert.match(compactTilesHtml, /w-\[18px\] h-\[18px\] sm:w-5 sm:h-5/);
+
+  const headerClosedHtml = renderToStaticMarkup(
+    <StudioHeader
+      workspace="math"
+      currentDrill={sampleDrillDoc}
+      selectedDrillId={sampleDrillDoc.drillId}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      onOpenGenPopover={noop}
+      isSidebarOpen={false}
+      onOpenDesktopSidebar={noop}
+      onOpenSidebarDrawer={noop}
+      isRightPanelOpen={false}
+      onToggleRightPanel={noop}
+      onOpenSideDrawer={noop}
+      sidePanelCount={2}
+    />
+  );
+  assert.match(headerClosedHtml, /aria-label="Expand sidebar"/);
+  assert.match(headerClosedHtml, /aria-pressed="false"/);
+
+  const framelessMathHtml = renderToStaticMarkup(
+    <MathWorkspace
+      frameless
+      problem={sampleMathProblem}
+      index={0}
+      totalQuestions={5}
+      drillTitle="Linear Equations"
+      mistakeTags={[]}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(framelessMathHtml, /<article[^>]*rounded-2xl/);
+
+  const framelessCodeHtml = renderToStaticMarkup(
+    <CodeDashboard
+      frameless
+      problem={sampleCodeProblem}
+      drillId="DRL-PRG-T00-C03-02"
+      index={0}
+      totalQuestions={5}
+      drillTitle="JavaScript & TypeScript Baseline"
+      mistakeTags={[]}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(framelessCodeHtml, /<article[^>]*rounded-2xl/);
+  assert.match(framelessCodeHtml, /bg-surface-panel/);
+
+  const baseShellProps = {
+    workspace: "math" as const,
+    mathHref: "/math/DRL-MTH-T01-C01-01",
+    codeHref: "/code/DRL-PRG-T01-C01-01",
+    viewMode: "quiz" as const,
+    currentDrill: sampleDrillDoc,
+    currentProblemIndex: 0,
+    theme: "dark" as const,
+    onToggleTheme: noop,
+    onResetAll: noop,
+    drills: [],
+    selectedDrillId: "DRL-MTH-T01-C01-01",
+    drillSearch: "",
+    onSearchChange: noop,
+    drillFilter: "ALL" as const,
+    onFilterChange: noop,
+    onSelectDrill: noop,
+    showGenPopover: false,
+    onShowGenPopoverChange: noop,
+    onGenerated: async () => {},
+    onSelectQuestion: noop,
+    onToggleViewMode: noop,
+    status: null,
+    onStatusChange: noop,
+  };
+  const shellHiddenPaginationHtml = renderToStaticMarkup(
+    <StudioShell {...baseShellProps}>
+      <div>Canvas</div>
+    </StudioShell>
+  );
+  assert.doesNotMatch(shellHiddenPaginationHtml, /aria-label="Questions"/);
+  assert.match(shellHiddenPaginationHtml, /bg-surface-panel/);
+  assert.match(shellHiddenPaginationHtml, /dark:bg-zinc-900/);
+
+  const shellShownPaginationHtml = renderToStaticMarkup(
+    <StudioShell {...baseShellProps} showPaginationBar={true}>
+      <div>Canvas</div>
+    </StudioShell>
+  );
+  assert.match(shellShownPaginationHtml, /aria-label="Questions"/);
+
+  for (const [label, src] of [
+    ["StudioSidebar.tsx", studioSidebar],
+    ["StudioHeader.tsx", studioHeader],
+    ["StudioShell.tsx", studioShell],
+    ["WorkspaceSwitch.tsx", readFileSync("src/components/workspace/WorkspaceSwitch.tsx", "utf8")],
+    ["MathPalette.tsx", readFileSync("src/components/math/MathPalette.tsx", "utf8")],
+  ] as const) {
+    assert.doesNotMatch(src, /\b(?:amber|yellow|emerald|rose)-\d/, `${label} must not use raw palette classes`);
+    assert.doesNotMatch(src, /forceMount/, `${label} must not use forceMount`);
+    assert.doesNotMatch(src, /\bimport\s+(?:type\s+)?\{[^}]*\bmotion\b/, `${label} must not import motion`);
+    assert.doesNotMatch(src, /<motion\./, `${label} must not render <motion.*>`);
+    assert.doesNotMatch(src, /\blayout(?:Id)?\b/, `${label} must not use layout or layoutId`);
+    assert.doesNotMatch(src, /[\u0E00-\u0E7F]/, `${label} must stay 100% English`);
+    assert.doesNotMatch(src, /\p{Extended_Pictographic}/u, `${label} must use Lucide icons only`);
+  }
+
+  // Enforce zero dark:bg-zinc-950 regressions across practice-studio/src/
+  const walkAllSrc = (dir: string): string[] =>
+    readdirSync(dir).flatMap((f) => {
+      const p = `${dir}/${f}`;
+      return statSync(p).isDirectory()
+        ? walkAllSrc(p)
+        : /\.(?:ts|tsx|css)$/.test(p)
+        ? [p]
+        : [];
+    });
+  for (const file of walkAllSrc("src")) {
+    assert.doesNotMatch(
+      readFileSync(file, "utf8"),
+      /dark:bg-zinc-950/,
+      `${file} must not regress to dark:bg-zinc-950 (use dark:bg-zinc-900 or bg-surface-panel)`
+    );
+  }
 }
 
 console.log("studio rules tests passed");

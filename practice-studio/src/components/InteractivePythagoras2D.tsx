@@ -82,7 +82,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
   return (
     <div className="flex flex-col items-center w-full select-none">
       {/* SVG Interactive Canvas */}
-      <div className="relative w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-2 flex flex-col justify-center items-center overflow-hidden">
+      <div className="relative w-full bg-white dark:bg-surface-panel rounded-xl border border-zinc-200 dark:border-zinc-800 p-2 flex flex-col justify-center items-center overflow-hidden">
         
         {/* Dynamic Tooltip / Parameter Inspector Bar */}
         <div className="w-full mb-1.5 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 backdrop-blur border border-indigo-500/25 rounded-lg text-xs flex justify-between items-center transition-all min-h-[36px]">
