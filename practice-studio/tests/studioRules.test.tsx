@@ -7,6 +7,8 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
+import { StudioHeader } from "../src/components/shell/StudioHeader";
+import { StudioSidebar } from "../src/components/shell/StudioSidebar";
 import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import {
@@ -76,6 +78,7 @@ const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "ut
 const stepper = readFileSync("src/components/Stepper.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
+const studioSidebar = readFileSync("src/components/shell/StudioSidebar.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*(?:\(\s*)?(?:<CollapsibleTrigger\s+asChild>\s*)?<button/);
@@ -119,7 +122,8 @@ assert.match(stepper, /text-\[10px\] sm:text-\[11px\]/);
 assert.doesNotMatch(stepper, /group-focus-visible:outline/);
 assert.doesNotMatch(stepper, /focus-visible:ring-2/);
 assert.match(studioShell, /<h1 className="sr-only"/);
-assert.match(studioShell, /fixed left-3 top-1\/2/);
+assert.doesNotMatch(studioShell, /fixed left-3 top-1\/2/);
+assert.match(studioShell, /<StudioSidebar/);
 assert.match(studioShell, /Due today &amp; weak spots/);
 assert.doesNotMatch(studioShell, /Study queue/);
 assert.match(studioHeader, /lg:hidden/);
@@ -127,11 +131,13 @@ assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(studioHeader, /Score:/);
 assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
-assert.match(studioHeader, /Generate drill set/);
-assert.match(studioHeader, /Reset all questions/);
-assert.match(studioHeader, /Reset all problems/);
-assert.match(studioHeader, /Reset all milestones/);
+assert.doesNotMatch(studioHeader, /DrillSwitcher|Generate drill set|Reset all/);
+assert.match(studioHeader, /Open navigation sidebar/);
 assert.match(studioHeader, /Due today & weak spots/);
+assert.match(studioSidebar, /Generate drill set/);
+assert.match(studioSidebar, /Reset all questions/);
+assert.match(studioSidebar, /Reset all problems/);
+assert.match(studioSidebar, /Reset all milestones/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -643,6 +649,136 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.doesNotMatch(packageJson, /@fontsource\/source-sans-pro/);
   assert.match(tw, /sans: \[\s*"var\(--font-geist-sans\)",\s*'"Geist"',\s*'"Geist Fallback"'/);
   assert.match(tw, /display: \['"Roboto Slab Variable"'/);
+}
+
+// Left Sidebar prototype SSR + invariant checks
+{
+  const expandedSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      drills={[
+        {
+          drillId: "DRL-MTH-T01-C01-01",
+          subject: "MATH",
+          unitCode: "MTH-T01-C01-U01",
+          unitTitle: "Linear Equations",
+          createdAt: "2026-11-17",
+          questionCount: 5,
+          difficultyMode: "Mixed",
+          practiceStatus: "Ready",
+          score: 0,
+          maxScore: 5,
+          localFilePath: "",
+        },
+      ]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+      onOpenGenPopover={noop}
+    />
+  );
+  assert.match(expandedSidebarHtml, /role="tree"/);
+  assert.match(expandedSidebarHtml, />MTH</);
+  assert.match(expandedSidebarHtml, />PRG</);
+  assert.match(expandedSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.match(expandedSidebarHtml, /aria-label="Generate drill set"/);
+  assert.match(expandedSidebarHtml, /aria-label="Reset all questions"/);
+
+  const collapsedSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      drills={[]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+      onOpenGenPopover={noop}
+      initialCollapsed={true}
+    />
+  );
+  assert.match(collapsedSidebarHtml, /aria-label="Expand sidebar"/);
+  assert.match(collapsedSidebarHtml, /aria-label="Browse drills"/);
+  assert.doesNotMatch(collapsedSidebarHtml, /role="tree"/);
+
+  const embeddedSidebarHtml = renderToStaticMarkup(
+    <StudioSidebar
+      workspace="math"
+      pillWorkspace="math"
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C01-01"
+      codeHref="/code/DRL-PRG-T01-C01-01"
+      currentDrill={sampleDrillDoc}
+      theme="light"
+      onToggleTheme={noop}
+      onResetAll={noop}
+      drills={[]}
+      labs={[]}
+      selectedDrillId="DRL-MTH-T01-C01-01"
+      drillSearch=""
+      onSearchChange={noop}
+      drillFilter="ALL"
+      onFilterChange={noop}
+      onSelectDrill={noop}
+      onOpenGenPopover={noop}
+      embedded={true}
+      initialCollapsed={true}
+    />
+  );
+  assert.doesNotMatch(embeddedSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.match(embeddedSidebarHtml, /aria-label="Generate drill set"/);
+
+  const headerHtml = renderToStaticMarkup(
+    <StudioHeader
+      showHeader={true}
+      currentDrill={sampleDrillDoc}
+      onOpenSidebarDrawer={noop}
+      onOpenSideDrawer={noop}
+      sidePanelCount={2}
+      tiles={<div data-testid="tiles" />}
+    />
+  );
+  assert.match(headerHtml, /aria-label="Open navigation sidebar"/);
+  assert.match(headerHtml, /aria-label="Due today &amp; weak spots"/);
+  assert.match(headerHtml, /Linear Equations/);
+  assert.doesNotMatch(headerHtml, /Generate drill set|Reset all/);
+
+  for (const [label, src] of [
+    ["StudioSidebar.tsx", studioSidebar],
+    ["StudioHeader.tsx", studioHeader],
+    ["StudioShell.tsx", studioShell],
+    ["WorkspaceSwitch.tsx", readFileSync("src/components/workspace/WorkspaceSwitch.tsx", "utf8")],
+  ] as const) {
+    assert.doesNotMatch(src, /\b(?:amber|yellow|emerald|rose)-\d/, `${label} must not use raw palette classes`);
+    assert.doesNotMatch(src, /forceMount/, `${label} must not use forceMount`);
+    assert.doesNotMatch(src, /\bimport\s+(?:type\s+)?\{[^}]*\bmotion\b/, `${label} must not import motion`);
+    assert.doesNotMatch(src, /<motion\./, `${label} must not render <motion.*>`);
+    assert.doesNotMatch(src, /\blayout(?:Id)?\b/, `${label} must not use layout or layoutId`);
+    assert.doesNotMatch(src, /[\u0E00-\u0E7F]/, `${label} must stay 100% English`);
+    assert.doesNotMatch(src, /\p{Extended_Pictographic}/u, `${label} must use Lucide icons only`);
+  }
 }
 
 console.log("studio rules tests passed");

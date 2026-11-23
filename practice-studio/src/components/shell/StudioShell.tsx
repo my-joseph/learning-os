@@ -15,8 +15,8 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/shadcn/Drawer";
-import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { StudioHeader } from "./StudioHeader";
+import { StudioSidebar } from "./StudioSidebar";
 import { StudioSidePanel } from "./StudioSidePanel";
 import { GeneratePopover } from "./GeneratePopover";
 
@@ -58,7 +58,7 @@ interface StudioShellProps {
   children: React.ReactNode;
 }
 
-/** Page shell composing the fixed left workspace rail, sticky header, tiles bar, status toasts, sticky side panel, and main workspace. */
+/** Page shell composing the docked left navigation sidebar, sticky pagination header, status toasts, sticky side panel, and main workspace. */
 export const StudioShell: React.FC<StudioShellProps> = ({
   workspace,
   mathHref,
@@ -92,18 +92,19 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onStatusChange,
   children,
 }) => {
-  const [showDrillSwitcher, setShowDrillSwitcher] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
-  const [headerHeight, setHeaderHeight] = useState(108);
+  const [headerHeight, setHeaderHeight] = useState(72);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
   const [pillWorkspace, setPillWorkspace] = useState<Workspace>(workspace);
   useEffect(() => setPillWorkspace(workspace), [workspace]);
 
   const lastScrollYRef = useRef(0);
   const headerRef = useRef<HTMLElement | null>(null);
-  const switcherRef = useRef<HTMLDivElement | null>(null);
   const drawerPrevFocusRef = useRef<HTMLElement | null>(null);
+  const sidebarDrawerPrevFocusRef = useRef<HTMLElement | null>(null);
   const drawerDescId = useId();
+  const sidebarDrawerDescId = useId();
 
   const handleClearStatus = useCallback(() => {
     onStatusChange(null);
@@ -143,9 +144,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
   const sidePanelCount = dueReviewCount + openWeakCount;
 
-  // Close mobile drawer when switching drills or leaving quiz view
+  // Close mobile drawers when switching drills or changing viewMode
   useEffect(() => {
     setIsSideDrawerOpen(false);
+    setIsSidebarDrawerOpen(false);
   }, [selectedDrillId, viewMode]);
 
   const drawerActive = viewMode === "quiz" && isSideDrawerOpen;
@@ -161,7 +163,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         setShowHeader(true);
       } else if (diff > 8) {
         setShowHeader(false);
-        setShowDrillSwitcher(false);
       } else if (diff < -8) {
         setShowHeader(true);
       }
@@ -173,26 +174,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close DrillSwitcher on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        e.target instanceof Element &&
-        e.target.closest("[data-picker-popover='true']")
-      ) {
-        return;
-      }
-      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
-        setShowDrillSwitcher(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const tiles =
     currentDrill && currentDrill.problems.length > 0 ? (
-      <div className="mt-2">
+      <div className="mt-2 lg:mt-0 [&>div]:lg:border-t-0 [&>div]:lg:pt-0">
         <QuizPaginationBar
           currentIndex={currentProblemIndex}
           problems={currentDrill.problems}
@@ -209,33 +193,14 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       </div>
     ) : null;
 
-  // Same width in every view so the header/tiles never jump when switching to Review.
-  const containerMaxWidth = "max-w-[720px] lg:max-w-[1016px]";
   // Sticky header sits at top-2 (8 px); add 12 px breathing room when visible.
-  const asideTopPx = showHeader ? headerHeight + 20 : 16;
+  const asideTopPx = showHeader && headerHeight > 0 ? headerHeight + 20 : 16;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
-      {/* >=1024px: Fixed icon-only workspace rail at the left-middle edge */}
-      <WorkspaceSwitch
-        variant="rail"
-        workspace={workspace}
-        pillWorkspace={pillWorkspace}
-        onSelectWorkspace={setPillWorkspace}
-        mathHref={mathHref}
-        codeHref={codeHref}
-        className="hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
-      />
-
-      <div className={`mx-auto ${containerMaxWidth}`}>
-        {/* Provide sr-only h1 when no active drill or not-found card renders a visible h1 */}
-        {viewMode === "quiz" && !currentDrill && !drillNotFound && (
-          <h1 className="sr-only">Practice Studio</h1>
-        )}
-
-        <StudioHeader
-          headerRef={headerRef}
-          showHeader={showHeader}
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-6 py-4 sm:py-6 transition-colors">
+      <div className="mx-auto max-w-[1440px] flex items-start gap-4 lg:gap-5">
+        {/* >=1024px: Docked left navigation sidebar (expanded 272px / collapsed 56px rail) */}
+        <StudioSidebar
           workspace={workspace}
           pillWorkspace={pillWorkspace}
           onSelectWorkspace={setPillWorkspace}
@@ -245,10 +210,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           theme={theme}
           onToggleTheme={onToggleTheme}
           onResetAll={onResetAll}
-          showDrillSwitcher={showDrillSwitcher}
-          onToggleDrillSwitcher={() => setShowDrillSwitcher((prev) => !prev)}
-          onCloseDrillSwitcher={() => setShowDrillSwitcher(false)}
-          switcherRef={switcherRef}
           drills={drills}
           labs={labs}
           dueUnitCodes={dueUnitCodes}
@@ -259,51 +220,64 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           onFilterChange={onFilterChange}
           onSelectDrill={onSelectDrill}
           onOpenGenPopover={() => onShowGenPopoverChange(true)}
-          onOpenSideDrawer={
-            viewMode === "quiz" ? () => setIsSideDrawerOpen(true) : undefined
-          }
-          sidePanelCount={sidePanelCount}
-          tiles={tiles}
         />
 
-        {viewMode === "quiz" ? (
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-6 lg:items-start">
-            <div className="min-w-0">
-              <main>{children}</main>
-            </div>
+        {/* Right workspace column */}
+        <div className="flex-1 min-w-0">
+          {/* Provide sr-only h1 when no active drill or not-found card renders a visible h1 */}
+          {viewMode === "quiz" && !currentDrill && !drillNotFound && (
+            <h1 className="sr-only">Practice Studio</h1>
+          )}
 
-            <aside
-              aria-label="Due today and weak spots"
-              style={
-                {
-                  "--aside-top": `${asideTopPx}px`,
-                  "--aside-max-h": `calc(100vh - ${asideTopPx + 16}px)`,
-                } as React.CSSProperties
-              }
-              className="hidden lg:block lg:sticky lg:top-[var(--aside-top)] lg:max-h-[var(--aside-max-h)] lg:overflow-y-auto lg:overscroll-contain transition-[top] duration-150"
-            >
-              <StudioSidePanel
-                workspace={workspace}
-                currentUnitCode={currentDrill?.unitCode}
-                drillLoading={isLoadingDrill}
-                dueReviewCount={dueReviewCount}
-                reviewSessionSize={reviewSessionSize}
-                otherWorkspaceDueCount={otherWorkspaceDueCount}
-                estimatedMinutes={estimatedMinutes}
-                nextDueDate={nextDueDate}
-                currentUnitMastery={currentUnitMastery}
-                dueLoading={dueLoading}
-                dueError={dueError}
-                weakSpotUnits={weakSpotUnits}
-                weakLoading={weakLoading}
-                weakError={weakError}
-                onNavigate={() => setIsSideDrawerOpen(false)}
-              />
-            </aside>
-          </div>
-        ) : (
-          <main>{children}</main>
-        )}
+          <StudioHeader
+            headerRef={headerRef}
+            showHeader={showHeader}
+            currentDrill={currentDrill}
+            onOpenSidebarDrawer={() => setIsSidebarDrawerOpen(true)}
+            onOpenSideDrawer={
+              viewMode === "quiz" ? () => setIsSideDrawerOpen(true) : undefined
+            }
+            sidePanelCount={sidePanelCount}
+            tiles={tiles}
+          />
+
+          {viewMode === "quiz" ? (
+            <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_248px] xl:grid-cols-[minmax(0,1fr)_272px] lg:gap-5 xl:gap-6 lg:items-start">
+              <main className="min-w-0">{children}</main>
+
+              <aside
+                aria-label="Due today and weak spots"
+                style={
+                  {
+                    "--aside-top": `${asideTopPx}px`,
+                    "--aside-max-h": `calc(100vh - ${asideTopPx + 16}px)`,
+                  } as React.CSSProperties
+                }
+                className="hidden lg:block lg:sticky lg:top-[var(--aside-top)] lg:max-h-[var(--aside-max-h)] lg:overflow-y-auto lg:overscroll-contain transition-[top] duration-150"
+              >
+                <StudioSidePanel
+                  workspace={workspace}
+                  currentUnitCode={currentDrill?.unitCode}
+                  drillLoading={isLoadingDrill}
+                  dueReviewCount={dueReviewCount}
+                  reviewSessionSize={reviewSessionSize}
+                  otherWorkspaceDueCount={otherWorkspaceDueCount}
+                  estimatedMinutes={estimatedMinutes}
+                  nextDueDate={nextDueDate}
+                  currentUnitMastery={currentUnitMastery}
+                  dueLoading={dueLoading}
+                  dueError={dueError}
+                  weakSpotUnits={weakSpotUnits}
+                  weakLoading={weakLoading}
+                  weakError={weakError}
+                  onNavigate={() => setIsSideDrawerOpen(false)}
+                />
+              </aside>
+            </div>
+          ) : (
+            <main className="min-w-0">{children}</main>
+          )}
+        </div>
       </div>
 
       <ToastStack status={status} onClearStatus={handleClearStatus} />
@@ -318,6 +292,75 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         onStatusChange={onStatusChange}
       />
 
+      {/* Mobile / Tablet (<1024px): Left navigation sidebar Drawer */}
+      <Drawer
+        open={isSidebarDrawerOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setIsSidebarDrawerOpen(false);
+          }
+        }}
+      >
+        <DrawerContent
+          side="left"
+          overlayClassName="lg:hidden"
+          aria-modal="true"
+          aria-label="Practice navigation"
+          aria-describedby={sidebarDrawerDescId}
+          onOpenAutoFocus={() => {
+            sidebarDrawerPrevFocusRef.current =
+              document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          }}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            const prev = sidebarDrawerPrevFocusRef.current;
+            sidebarDrawerPrevFocusRef.current = null;
+            if (prev && prev.isConnected) {
+              prev.focus();
+            }
+          }}
+          className="lg:hidden p-0 overflow-hidden bg-white dark:bg-zinc-900 flex flex-col"
+        >
+          <DrawerTitle className="sr-only">Practice navigation</DrawerTitle>
+          <DrawerDescription id={sidebarDrawerDescId} className="sr-only">
+            Switch workspace, browse drills and labs, generate sets, or adjust studio controls.
+          </DrawerDescription>
+          <StudioSidebar
+            embedded
+            workspace={workspace}
+            pillWorkspace={pillWorkspace}
+            onSelectWorkspace={setPillWorkspace}
+            mathHref={mathHref}
+            codeHref={codeHref}
+            currentDrill={currentDrill}
+            theme={theme}
+            onToggleTheme={onToggleTheme}
+            onResetAll={() => {
+              setIsSidebarDrawerOpen(false);
+              onResetAll();
+            }}
+            drills={drills}
+            labs={labs}
+            dueUnitCodes={dueUnitCodes}
+            selectedDrillId={selectedDrillId}
+            drillSearch={drillSearch}
+            onSearchChange={onSearchChange}
+            drillFilter={drillFilter}
+            onFilterChange={onFilterChange}
+            onSelectDrill={(id) => {
+              setIsSidebarDrawerOpen(false);
+              onSelectDrill(id);
+            }}
+            onOpenGenPopover={() => {
+              setIsSidebarDrawerOpen(false);
+              onShowGenPopoverChange(true);
+            }}
+            onCloseDrawer={() => setIsSidebarDrawerOpen(false)}
+          />
+        </DrawerContent>
+      </Drawer>
+
+      {/* Mobile / Tablet (<1024px): Right Due today & weak spots Drawer */}
       <Drawer
         open={drawerActive}
         onOpenChange={(nextOpen) => {

@@ -56,6 +56,19 @@ export const drawerBottom: Variants = {
   shown: { y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
 };
 
+/** Left navigation drawer: slides in from left edge. */
+export const drawerLeft: Variants = {
+  hidden: { x: "-100%", transition: { duration: 0.2, ease: EASE_OUT } },
+  shown: { x: 0, transition: { duration: 0.24, ease: EASE_OUT } },
+};
+
+/** Sidebar expanded/collapsed inner content transition inside AnimatePresence mode="wait". */
+export const sidebarContent: Variants = {
+  hidden: { opacity: 0, x: -6 },
+  shown: { opacity: 1, x: 0, transition: quick },
+  exit: { opacity: 0, x: -6, transition: { duration: 0.12, ease: EASE_OUT } },
+};
+
 /** Compact tooltip pop-in. */
 export const tooltipPop: Variants = {
   hidden: { opacity: 0, scale: 0.96, y: 2 },
