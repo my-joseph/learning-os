@@ -146,12 +146,16 @@ function NoteBadge({
   return null;
 }
 
-function HoverRowCode({ code }: { code: string }) {
+function HoverRowCode({ code, isSidebar = false }: { code: string; isSidebar?: boolean }) {
   // Zero-width anchor: the code floats over the end of the title on hover, so the row never
   // changes width (no jitter) and nothing is reserved when not hovered.
   return (
     <span className="relative w-0 shrink-0 self-stretch">
-      <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden group-hover:block group-focus-visible:block whitespace-nowrap rounded px-1 bg-zinc-100 dark:bg-zinc-800 font-display text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
+      <span
+        data-sidebar-row-code={isSidebar || undefined}
+        aria-hidden={isSidebar || undefined}
+        className={`pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden ${isSidebar ? "" : "group-hover:block group-focus-visible:block "}whitespace-nowrap rounded px-1 bg-zinc-100 dark:bg-zinc-800 font-display text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums`}
+      >
         {code}
       </span>
     </span>
@@ -174,8 +178,10 @@ function CountPill({ count, isSidebar = false }: { count: number; isSidebar?: bo
 const BRANCH_ROW_CLASS =
   "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
+const SIDEBAR_ROW_SURFACE = "h-8 rounded-md transition-colors";
+
 const SIDEBAR_BRANCH_ROW_CLASS =
-  "group min-w-0 w-full h-8 flex items-center gap-1.5 rounded-md text-left text-sm transition-colors focus:outline-none hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 focus-visible:bg-zinc-200/60 dark:focus-visible:bg-zinc-700/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
+  `min-w-0 w-full ${SIDEBAR_ROW_SURFACE} flex items-center gap-1.5 text-left text-sm focus:outline-none hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40`;
 
 function TreeNodeActions({
   nodeId,
@@ -210,7 +216,7 @@ function TreeNodeActions({
           title="More actions"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
-          className="group/action relative mr-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-500 opacity-100 transition-colors hover:text-zinc-900 focus:outline-none dark:text-zinc-400 dark:hover:text-zinc-100 before:content-[''] before:absolute before:inset-2 before:rounded-full before:transition-colors hover:before:bg-zinc-300/70 dark:hover:before:bg-zinc-600/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-indigo-600 dark:focus-visible:before:ring-indigo-400 lg:h-7 lg:w-7 lg:before:hidden lg:opacity-0 lg:group-hover/leaf:opacity-100 lg:focus-visible:opacity-100"
+          className="relative mr-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-500 opacity-100 transition-colors hover:text-zinc-900 focus:outline-none dark:text-zinc-400 dark:hover:text-zinc-100 before:content-[''] before:absolute before:inset-2 before:rounded-full before:transition-colors hover:before:bg-zinc-300/70 dark:hover:before:bg-zinc-600/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-zinc-500 dark:focus-visible:before:ring-zinc-400 lg:h-7 lg:w-7 lg:before:inset-0 lg:before:hidden lg:focus-visible:before:block lg:opacity-0 lg:group-hover/leaf:opacity-100 lg:focus-visible:opacity-100"
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -695,13 +701,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         data-menu-open={openActionNodeId === item.id || undefined}
         className={`group/leaf flex min-w-0 ${isSidebar ? "w-full " : ""}items-center ${
           isSidebar
-          ? `h-8 overflow-visible rounded-full transition-colors ${
+          ? `${SIDEBAR_ROW_SURFACE} overflow-visible ${
                 isCurrent || openActionNodeId === item.id
                   ? "bg-zinc-200/70 dark:bg-zinc-700/60"
                   : isSearchTarget
-                    ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-                    : "hover:bg-zinc-200/50 focus-within:bg-zinc-200/60 dark:hover:bg-zinc-700/40 dark:focus-within:bg-zinc-700/50"
-              } focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600/70 dark:focus-within:ring-indigo-400/70`
+                    ? "bg-zinc-100 dark:bg-zinc-800/80"
+                    : "hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40"
+              }`
             : "gap-0.5"
         }`}
       >
@@ -722,8 +728,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`group min-w-0 ${isSidebar ? "h-8 flex-1 rounded-l-full" : "w-full rounded-md"} overflow-hidden text-left ${isSidebar ? (level === 4 ? "pl-[36px] pr-1.5" : "pl-[26px] pr-1.5") : "px-1.5"} py-1.5 transition-colors flex items-center gap-1.5 focus:outline-none ${
-          isSidebar ? "focus-visible:ring-0" : "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70"
+        className={`min-w-0 ${isSidebar ? "h-8 flex-1 rounded-md" : "group w-full rounded-md"} overflow-hidden text-left ${isSidebar ? (level === 4 ? "pl-[36px] pr-1.5" : "pl-[26px] pr-1.5") : "px-1.5"} py-1.5 transition-colors flex items-center gap-1.5 focus:outline-none ${
+          isSidebar ? "" : "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70"
         } ${
           isCurrent
             ? isSidebar
@@ -749,7 +755,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         >
           {plainTitle(label)}
         </span>
-        <HoverRowCode code={hoverCode} />
+        <HoverRowCode code={hoverCode} isSidebar={isSidebar} />
       </button>
       {isSidebar && item.kind === "drill" && (
         <TreeNodeActions
@@ -1061,6 +1067,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 <div
                   role="tree"
                   aria-label="Practice curriculum"
+                  data-sidebar-tree={isSidebar || undefined}
                   className="space-y-0.5 py-0.5"
                 >
                   {sections.topicGroups.map((topic) => {
@@ -1069,8 +1076,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     const showTopicCode = topic.topicTitle !== topic.topicCode;
 
                     return (
-                      <div key={topic.topicCode} className={`group flex ${isSidebar ? "w-full " : ""}flex-col`}>
-                        <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
+                      <div key={topic.topicCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                        <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
                         <button
                           ref={(el) => registerNodeRef(topicNodeId, el)}
                           type="button"
@@ -1099,7 +1106,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1`}>
                             {plainTitle(topic.topicTitle)}
                           </span>
-                          {showTopicCode && <HoverRowCode code={topic.topicCode} />}
+                          {showTopicCode && <HoverRowCode code={topic.topicCode} isSidebar={isSidebar} />}
                         </button>
                         </div>
 
@@ -1120,8 +1127,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                 chapter.chapterTitle !== chapterShortCode;
 
                               return (
-                                <div key={chapter.chapterCode} className={`group flex ${isSidebar ? "w-full " : ""}flex-col`}>
-                                  <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
+                                <div key={chapter.chapterCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                                  <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
                                   <button
                                     ref={(el) => registerNodeRef(chapterNodeId, el)}
                                     type="button"
@@ -1151,7 +1158,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                       {plainTitle(chapter.chapterTitle)}
                                     </span>
                                     {showChapterCode && (
-                                      <HoverRowCode code={chapterShortCode} />
+                                      <HoverRowCode code={chapterShortCode} isSidebar={isSidebar} />
                                     )}
                                     <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
                                   </button>
@@ -1194,8 +1201,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                         });
 
                                         return (
-                                          <div key={entry.key} className={`group flex ${isSidebar ? "w-full " : ""}flex-col`}>
-                                            <div className={`group flex items-center gap-0.5 ${isSidebar ? "h-8" : ""}`}>
+                                          <div key={entry.key} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                                            <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
                                             <button
                                               ref={(el) =>
                                                 registerNodeRef(unitNodeId, el)
@@ -1226,7 +1233,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                               <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
                                                 {plainTitle(entry.unitTitle)}
                                               </span>
-                                              <HoverRowCode code={unitShortCode} />
+                                              <HoverRowCode code={unitShortCode} isSidebar={isSidebar} />
                                               <CountPill count={entry.items.length} isSidebar={isSidebar} />
                                             </button>
                                             </div>

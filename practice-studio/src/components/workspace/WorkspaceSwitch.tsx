@@ -48,7 +48,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const defaultNavClassName = isRail
     ? "hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
     : isSidebar
-    ? "relative grid min-h-[44px] grid-cols-2 items-center rounded-lg bg-zinc-200/70 dark:bg-zinc-900/75 p-0.5 shrink-0 lg:h-9"
+    ? "relative grid grid-cols-2 shrink-0 rounded-lg bg-zinc-200/70 dark:bg-zinc-900/75 p-0.5"
     : "relative grid lg:hidden grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0";
 
   const pillClassName = isRail
@@ -64,7 +64,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
   const itemSizeCls = isRail
     ? "w-8 h-8 rounded-lg"
     : isSidebar
-    ? "min-h-[44px] min-w-[44px] lg:min-h-9 lg:min-w-9 lg:w-9 lg:h-9 rounded-md"
+    ? "size-11 lg:size-8 rounded-md"
     : "w-7 h-7 sm:w-8 sm:h-8 rounded-md";
 
   const tooltipSide = isRail ? "right" : "bottom";
@@ -82,7 +82,7 @@ export const WorkspaceSwitch: React.FC<WorkspaceSwitchProps> = ({
         const isActive = workspace === opt.id;
         const isShown = pillWorkspace === opt.id;
         const Icon = opt.icon;
-        const cls = `relative z-10 inline-flex items-center justify-center ${itemSizeCls} transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
+        const cls = `relative z-10 inline-flex items-center justify-center ${itemSizeCls} transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${isSidebar ? "focus-visible:ring-inset " : ""}${
           isShown
             ? "text-zinc-900 dark:text-zinc-100"
             : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"

@@ -445,7 +445,17 @@ const selectedLeafMarkup = sidebarTreeHtml.match(
   /<div[^>]*data-sidebar-leaf="DRL-MTH-T02-C01-U01-03"[\s\S]*?<\/div>/
 )?.[0];
 assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
-assert.match(selectedLeafMarkup, /rounded-full[^>]*h-8|h-8[^>]*rounded-full/);
+const sidebarRows = [...sidebarTreeHtml.matchAll(/data-sidebar-row="([^"]+)"[^>]*class="([^"]+)"/g)];
+assert.ok(sidebarRows.length > 4, "sidebar renders folder and leaf surfaces");
+for (const [, row, classes] of sidebarRows) {
+  assert.match(classes, /\bh-8 rounded-md\b/, `${row} uses the shared 32 px surface and radius`);
+  assert.doesNotMatch(classes, /focus-within:|ring-indigo/, `${row} has no pointer-focus ring`);
+}
+const sidebarCodes = [...sidebarTreeHtml.matchAll(/data-sidebar-row-code="true" aria-hidden="true" class="([^"]+)"[^>]*>([^<]+)/g)];
+for (const code of ["MTH-T02", "C01", "U01", "U01-03", "U01-04"]) {
+  assert.ok(sidebarCodes.some(([, , label]) => label === code), `sidebar has a row-owned badge for ${code}`);
+}
+assert.ok(sidebarCodes.every(([, classes]) => !classes.includes("group-hover")));
 assert.match(selectedLeafMarkup, /bg-zinc-200\/70/);
 assert.match(selectedLeafMarkup, /aria-current="true"/);
 assert.match(selectedLeafMarkup, /h-11 w-11/);
@@ -469,18 +479,29 @@ assert.ok(
   "sidebar branch and leaf rows use fixed 32px classes"
 );
 
-const workspaceSwitchHtml = renderToStaticMarkup(
-  <WorkspaceSwitch
-    variant="sidebar"
-    workspace="math"
-    pillWorkspace="math"
-    onSelectWorkspace={noop}
-    mathHref="/math/DRL-MTH-T01-C04-01"
-    codeHref="/code/DRL-PRG-T01-C01-U02-01"
-  />
-);
-assert.match(workspaceSwitchHtml, /aria-label="Math"[^>]*href="\/math\/DRL-MTH-T01-C04-01"/);
-assert.match(workspaceSwitchHtml, /aria-label="Programming"[^>]*href="\/code\/DRL-PRG-T01-C01-U02-01"/);
+for (const workspace of ["math", "code"] as const) {
+  const workspaceSwitchHtml = renderToStaticMarkup(
+    <WorkspaceSwitch
+      variant="sidebar"
+      workspace={workspace}
+      pillWorkspace={workspace}
+      onSelectWorkspace={noop}
+      mathHref="/math/DRL-MTH-T01-C04-01"
+      codeHref="/code/DRL-PRG-T01-C01-U02-01"
+    />
+  );
+  assert.match(workspaceSwitchHtml, /aria-label="Math"[^>]*href="\/math\/DRL-MTH-T01-C04-01"/);
+  assert.match(workspaceSwitchHtml, /aria-label="Programming"[^>]*href="\/code\/DRL-PRG-T01-C01-U02-01"/);
+  const tabs = [...workspaceSwitchHtml.matchAll(/<a aria-label="(Math|Programming)"([^>]*)>/g)];
+  assert.equal(tabs.length, 2);
+  for (const [, name, attributes] of tabs) {
+    assert.match(attributes, /\bsize-11 lg:size-8\b/);
+    assert.equal(attributes.includes('aria-current="page"'), name === (workspace === "math" ? "Math" : "Programming"));
+  }
+  const track = workspaceSwitchHtml.match(/<nav aria-label="Workspace" class="([^"]+)"/)?.[1];
+  assert.match(track ?? "", /grid-cols-2.*p-0\.5/);
+  assert.doesNotMatch(track ?? "", /\b(?:min-h-|h-)/, "cell size and padding determine track height");
+}
 
 // Cross-unit bridge drills (MTH-BRIDGE) appear in the Math drill picker under a clean Bridge group
 const bridgeDrills: DrillListItem[] = [
