@@ -2,8 +2,10 @@
 
 import React from "react";
 import { Check, Loader2, X } from "lucide-react";
+import { m } from "motion/react";
 import { FormattedText } from "@/components/FormattedText";
 import { ChoiceResultStatus } from "@/lib/answerFeedback";
+import { choiceTapPress, quick } from "@/lib/motion";
 import { statusTone } from "@/lib/statusTone";
 import { ChoiceOption } from "@/types/drill";
 
@@ -80,12 +82,14 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
             : "";
 
         return (
-          <button
+          <m.button
             key={opt.id}
             type="button"
             role="radio"
             aria-checked={isSelected}
             disabled={disabled}
+            whileTap={disabled ? undefined : choiceTapPress}
+            transition={quick}
             onClick={() => onSelect(opt.id)}
             className={
               layout === "stack"
@@ -111,24 +115,45 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
               />
             )}
             {isCorrectChosen && (
-              <Check
-                className={`w-4 h-4 ${statusTone.correct.text} shrink-0`}
-                aria-hidden="true"
-              />
+              <m.span
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={quick}
+                className="inline-flex shrink-0"
+              >
+                <Check
+                  className={`w-4 h-4 ${statusTone.correct.text} shrink-0`}
+                  aria-hidden="true"
+                />
+              </m.span>
             )}
             {isAssistedChosen && (
-              <Check
-                className={`w-4 h-4 ${statusTone.assisted.text} shrink-0`}
-                aria-hidden="true"
-              />
+              <m.span
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={quick}
+                className="inline-flex shrink-0"
+              >
+                <Check
+                  className={`w-4 h-4 ${statusTone.assisted.text} shrink-0`}
+                  aria-hidden="true"
+                />
+              </m.span>
             )}
             {isWrongChosen && (
-              <X
-                className={`w-4 h-4 ${statusTone.wrong.text} shrink-0`}
-                aria-hidden="true"
-              />
+              <m.span
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={quick}
+                className="inline-flex shrink-0"
+              >
+                <X
+                  className={`w-4 h-4 ${statusTone.wrong.text} shrink-0`}
+                  aria-hidden="true"
+                />
+              </m.span>
             )}
-          </button>
+          </m.button>
         );
       })}
     </div>

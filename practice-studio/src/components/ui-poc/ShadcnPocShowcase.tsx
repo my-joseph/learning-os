@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import { Check, CircleHelp, LoaderCircle, Sparkles, TriangleAlert } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
 import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
+import { tabPanel } from "@/lib/motion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/shadcn/AlertDialog";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { Button } from "@/components/ui/shadcn/Button";
@@ -136,10 +138,14 @@ export function ShadcnPocShowcase() {
           <CardContent>
             <div className="flex min-w-0 flex-wrap gap-2">{(["empty", "loading", "error", "success"] as const).map((value) => <Button key={value} size="sm" variant={state === value ? "primary" : "outline"} onClick={() => setState(value)}>{value[0].toUpperCase() + value.slice(1)}</Button>)}</div>
             <div className="mt-4 min-h-16" aria-live="polite">
-              {state === "empty" && <div className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">No items to show yet.</div>}
-              {state === "loading" && <div role="status" className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />Loading sample data.</div>}
-              {state === "error" && <div role="alert" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.wrong.softCard} ${statusTone.wrong.text}`}><TriangleAlert aria-hidden="true" className="h-4 w-4" />The sample data could not be loaded.</div>}
-              {state === "success" && <div role="status" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.correct.softCard} ${statusTone.correct.text}`}><Check aria-hidden="true" className="h-4 w-4" />Sample data is ready.</div>}
+              <AnimatePresence mode="wait" initial={false}>
+                <m.div key={state} variants={tabPanel} initial="hidden" animate="shown" exit="exit">
+                  {state === "empty" && <div className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">No items to show yet.</div>}
+                  {state === "loading" && <div role="status" className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />Loading sample data.</div>}
+                  {state === "error" && <div role="alert" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.wrong.softCard} ${statusTone.wrong.text}`}><TriangleAlert aria-hidden="true" className="h-4 w-4" />The sample data could not be loaded.</div>}
+                  {state === "success" && <div role="status" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.correct.softCard} ${statusTone.correct.text}`}><Check aria-hidden="true" className="h-4 w-4" />Sample data is ready.</div>}
+                </m.div>
+              </AnimatePresence>
             </div>
             <div className={`mt-3 rounded-lg p-3 text-sm ${warningTone.softCard} ${warningTone.text}`} role="note">A warning tone is reserved for operational notices.</div>
           </CardContent>

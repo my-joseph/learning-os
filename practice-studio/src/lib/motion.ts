@@ -49,3 +49,36 @@ export const toastVariants: Variants = {
 
 /** Spread on an `m.*` element inside <AnimatePresence>. */
 export const presence = { initial: "hidden", animate: "shown", exit: "hidden" } as const;
+
+/** Mobile bottom-sheet drawer: slides up from bottom edge. */
+export const drawerBottom: Variants = {
+  hidden: { y: "100%", transition: { duration: 0.2, ease: EASE_OUT } },
+  shown: { y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
+};
+
+/** Compact tooltip pop-in. */
+export const tooltipPop: Variants = {
+  hidden: { opacity: 0, scale: 0.96, y: 2 },
+  shown: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.12, ease: EASE_OUT } },
+};
+
+/** Tab and state panel transitions inside AnimatePresence mode="wait". */
+export const tabPanel: Variants = {
+  hidden: { opacity: 0, y: 4 },
+  shown: { opacity: 1, y: 0, transition: quick },
+  exit: { opacity: 0, y: -2, transition: { duration: 0.1, ease: EASE_OUT } },
+};
+
+/** Collapsible disclosure reveal: height 0 -> auto + fade, restoring overflow on end so focus rings stay unclipped. */
+export const collapsibleReveal: Variants = {
+  hidden: { opacity: 0, height: 0, overflow: "hidden" },
+  shown: {
+    opacity: 1,
+    height: "auto",
+    transition: { duration: 0.22, ease: EASE_OUT },
+    transitionEnd: { overflow: "visible" },
+  },
+};
+
+export const tapPress = { scale: 0.98 } as const;
+export const choiceTapPress = { scale: 0.99 } as const;

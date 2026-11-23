@@ -60,7 +60,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Spacing and motion
 - 8 px rhythm (`gap-2/4/6/8`), generous padding inside the question card (`p-6`, `p-4` on mobile).
 - Status toasts stack bottom-right (`>=640 px`) / bottom-centre (`<640 px`).
-- Calm ease-out motion via `practice-studio/src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
+- Calm ease-out `motion/react` (`m.*` under `<LazyMotion features={domAnimation} strict>` and `<MotionConfig reducedMotion="user">`) via `practice-studio/src/lib/motion.ts` and `<Reveal>` across overlays (`Dialog`, `AlertDialog`, `Drawer`, `Popover`, `Tooltip`, `HoverCard`), `Collapsible` disclosures, `MathWorkspace` tab switches, and tactile `Button` / `ChoiceOptionGroup` press states, while static containers, badges, and inputs stay calm without extra Motion wrappers; respect `prefers-reduced-motion`.
 
 ## Workspaces
 - **Math**: similar-question tab strip at the top of the card (always shown when variants exist, with locked muted ghost tabs until the first substantive attempt on the real question in the current cycle) → prompt → figure → answer input with `=` inside the field → feedback → Hint / equation set-up / steps available before answering on both real and similar questions (revealing before an answer marks that item as used help). Self-score buttons only after an attempt on the real question.

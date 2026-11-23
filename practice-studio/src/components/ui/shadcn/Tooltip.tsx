@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { m } from "motion/react";
 import { cn } from "@/lib/cn";
+import { tooltipPop } from "@/lib/motion";
 
 interface TooltipProviderContextValue {
   hasProvider: boolean;
@@ -96,18 +98,27 @@ export const TooltipPortal: React.FC<
 export const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 6, collisionPadding = 8, ...props }, ref) => (
+>(({ className, sideOffset = 6, collisionPadding = 8, children, ...props }, ref) => (
   <TooltipPortal>
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
       collisionPadding={collisionPadding}
-      className={cn(
-        "z-[60] max-w-xs rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 shadow-md transition-opacity duration-150 motion-reduce:transition-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
-        className
-      )}
+      asChild
       {...props}
-    />
+    >
+      <m.div
+        variants={tooltipPop}
+        initial="hidden"
+        animate="shown"
+        className={cn(
+          "z-[60] max-w-xs rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 shadow-md motion-reduce:transition-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+          className
+        )}
+      >
+        {children}
+      </m.div>
+    </TooltipPrimitive.Content>
   </TooltipPortal>
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
