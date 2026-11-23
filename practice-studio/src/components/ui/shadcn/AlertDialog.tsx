@@ -2,12 +2,20 @@
 
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
-import { Button } from "@/components/ui/shadcn/Button";
+import { Button, type ButtonProps } from "@/components/ui/shadcn/Button";
 import { cn } from "@/lib/cn";
 
 export const AlertDialog = AlertDialogPrimitive.Root;
 export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
-export const AlertDialogPortal = AlertDialogPrimitive.Portal;
+
+export const AlertDialogPortal: React.FC<
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Portal>
+> = ({ children, ...props }) => {
+  if (typeof document === "undefined") {
+    return <>{children}</>;
+  }
+  return <AlertDialogPrimitive.Portal {...props}>{children}</AlertDialogPrimitive.Portal>;
+};
 
 export const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
@@ -56,20 +64,26 @@ AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayNam
 
 export const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+    variant?: ButtonProps["variant"];
+    size?: ButtonProps["size"];
+  }
+>(({ className, variant = "destructive", size, ...props }, ref) => (
   <AlertDialogPrimitive.Action ref={ref} asChild>
-    <Button variant="destructive" className={className} {...props} />
+    <Button variant={variant} size={size} className={className} {...props} />
   </AlertDialogPrimitive.Action>
 ));
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 export const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
+    variant?: ButtonProps["variant"];
+    size?: ButtonProps["size"];
+  }
+>(({ className, variant = "secondary", size, ...props }, ref) => (
   <AlertDialogPrimitive.Cancel ref={ref} asChild>
-    <Button variant="secondary" className={className} {...props} />
+    <Button variant={variant} size={size} className={className} {...props} />
   </AlertDialogPrimitive.Cancel>
 ));
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;

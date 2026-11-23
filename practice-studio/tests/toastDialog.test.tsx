@@ -4,6 +4,13 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ConfirmDialog } from "../src/components/ui/ConfirmDialog";
+import { GeneratePopover } from "../src/components/shell/GeneratePopover";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "../src/components/ui/shadcn/Drawer";
 import { DESTRUCTIVE_BUTTON_CLS } from "../src/lib/statusTone";
 import { formatSyncToast } from "../src/hooks/useProgressSync";
 import {
@@ -93,6 +100,96 @@ assert.ok(
   openHtml.includes(DESTRUCTIVE_BUTTON_CLS) && />Reset all<\/button>/.test(openHtml),
   "destructive confirm button uses DESTRUCTIVE_BUTTON_CLS"
 );
+assert.match(openHtml, /min-h-\[44px\]/, "ConfirmDialog buttons must preserve 44px touch targets");
+
+const nonDestructiveHtml = renderToStaticMarkup(
+  <ConfirmDialog
+    open={true}
+    title="Continue?"
+    description="Proceed with this action."
+    confirmLabel="Continue"
+    destructive={false}
+    onConfirm={() => {}}
+    onCancel={() => {}}
+  />
+);
+assert.match(nonDestructiveHtml, /bg-indigo-600/);
+assert.doesNotMatch(nonDestructiveHtml, new RegExp(DESTRUCTIVE_BUTTON_CLS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.match(nonDestructiveHtml, />Continue<\/button>/);
+
+// 3b. GeneratePopover SSR markup & Dialog parity
+const closedGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={false}
+    onClose={() => {}}
+    workspace="math"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={() => {}}
+  />
+);
+assert.equal(closedGenerateHtml, "");
+
+const openGenerateHtml = renderToStaticMarkup(
+  <GeneratePopover
+    isOpen={true}
+    onClose={() => {}}
+    workspace="math"
+    drills={[]}
+    currentDrill={null}
+    onGenerated={async () => {}}
+    onStatusChange={() => {}}
+  />
+);
+assert.match(openGenerateHtml, /role="dialog"/);
+assert.match(openGenerateHtml, /aria-modal="true"/);
+assert.match(openGenerateHtml, /aria-labelledby="/);
+assert.match(openGenerateHtml, /aria-describedby="/);
+assert.match(openGenerateHtml, /aria-label="Close dialog"/);
+assert.match(openGenerateHtml, />Generate drill set<\/h2>/);
+assert.match(openGenerateHtml, />Generate set<\/span>/);
+assert.match(openGenerateHtml, /min-h-\[44px\]/);
+
+// 3c. Drawer SSR markup & accessibility attributes
+const closedDrawerHtml = renderToStaticMarkup(
+  <Drawer open={false}>
+    <DrawerContent>
+      <DrawerTitle>Side panel</DrawerTitle>
+      <DrawerDescription>Panel body</DrawerDescription>
+    </DrawerContent>
+  </Drawer>
+);
+assert.equal(closedDrawerHtml, "");
+
+const openDrawerHtml = renderToStaticMarkup(
+  <Drawer open={true}>
+    <DrawerContent aria-modal="true" aria-label="Due today & weak spots">
+      <DrawerTitle>Due today &amp; weak spots</DrawerTitle>
+      <DrawerDescription className="sr-only">Queue and weak spots</DrawerDescription>
+    </DrawerContent>
+  </Drawer>
+);
+assert.match(openDrawerHtml, /role="dialog"/);
+assert.match(openDrawerHtml, /aria-modal="true"/);
+assert.match(openDrawerHtml, /aria-label="Close drawer"/);
+assert.match(openDrawerHtml, />Due today &amp; weak spots<\/h2>/);
+assert.match(openDrawerHtml, /min-h-\[44px\]/);
+
+// 3d. ConfirmDialog, GeneratePopover, and StudioShell delegate focus-trap/Escape to Radix primitives
+for (const [label, filePath, expectedImport] of [
+  ["ConfirmDialog", "src/components/ui/ConfirmDialog.tsx", /@\/components\/ui\/shadcn\/AlertDialog/],
+  ["GeneratePopover", "src/components/shell/GeneratePopover.tsx", /@\/components\/ui\/shadcn\/Dialog/],
+  ["StudioShell", "src/components/shell/StudioShell.tsx", /@\/components\/ui\/shadcn\/Drawer/],
+] as const) {
+  const src = readFileSync(filePath, "utf8");
+  assert.match(src, expectedImport, `${label} must use shadcn primitive`);
+  assert.doesNotMatch(
+    src,
+    /window\.addEventListener\("keydown"/,
+    `${label} must not keep hand-rolled keydown/Tab-trap listeners`
+  );
+}
 
 // 4. Source invariants: no window.confirm / window.alert anywhere in src/, toast styling, sticky aside
 function walkTsFiles(dir: string): string[] {

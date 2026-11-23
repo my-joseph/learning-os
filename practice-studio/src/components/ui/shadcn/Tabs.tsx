@@ -9,7 +9,7 @@ export const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.List ref={ref} className={cn("inline-flex min-h-[44px] items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900", className)} {...props} />
+  <TabsPrimitive.List ref={ref} className={cn("inline-flex min-h-[44px] items-center gap-1 rounded-none bg-zinc-100 p-1 dark:bg-zinc-900", className)} {...props} />
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
@@ -17,7 +17,7 @@ export const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger ref={ref} className={cn("min-h-[44px] rounded-md px-3 text-sm font-medium text-zinc-600 transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-300 dark:focus-visible:ring-indigo-400 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm", className)} {...props} />
+  <TabsPrimitive.Trigger ref={ref} className={cn("min-h-[44px] rounded-none px-3 text-sm font-medium text-zinc-600 transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-300 dark:focus-visible:ring-indigo-400 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm", className)} {...props} />
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
