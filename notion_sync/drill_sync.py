@@ -395,10 +395,19 @@ def _sync_drill_to_notion_with_deadline(
         else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
     )
 
-    skipped_count = int(summary.get("skippedCount", sum(1 for p in problems if p.get("state", {}).get("skipped"))))
+    skipped_count = int(
+        summary.get(
+            "skippedCount",
+            sum(1 for p in problems if _notion_attempt_evidence(p.get("state"), is_prg=is_prg)[1]),
+        )
+    )
     skipped_problems = summary.get(
         "skippedProblems",
-        [f"{p['id']} ({p.get('category')})" for p in problems if p.get("state", {}).get("skipped")],
+        [
+            f"{p['id']} ({p.get('category')})"
+            for p in problems
+            if _notion_attempt_evidence(p.get("state"), is_prg=is_prg)[1]
+        ],
     )
 
     skipped_str = f" | **Concept Gaps (Skipped):** `{skipped_count}`" if skipped_count > 0 else ""
