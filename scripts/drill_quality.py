@@ -81,6 +81,37 @@ def _empty_stats() -> dict[str, Any]:
     }
 
 
+def _similar_slots_opened(state: dict[str, Any]) -> bool:
+    """Read Similar slot tokens through their variant records, scoped to the active cycle."""
+    slots = state.get("similarSlots")
+    variants = state.get("variants")
+    if not isinstance(slots, list):
+        return False
+    cycle_start = state.get("cycleStartedAt")
+    cycle_start = cycle_start if isinstance(cycle_start, str) and cycle_start else None
+
+    def current(timestamp: Any) -> bool:
+        return isinstance(timestamp, str) and bool(timestamp) and (cycle_start is None or timestamp >= cycle_start)
+
+    for slot in slots:
+        # Current schema stores opaque token strings with activity in state.variants[token].
+        record = variants.get(slot) if isinstance(slot, str) and isinstance(variants, dict) else None
+        # Keep reading pre-token records for existing historical progress files.
+        if record is None and isinstance(slot, dict):
+            record = slot
+        if not isinstance(record, dict) or record.get("role", "try") != "try":
+            continue
+        if current(record.get("servedAt")):
+            return True
+        attempts = record.get("attempts")
+        if isinstance(attempts, list):
+            if cycle_start is None and attempts:
+                return True
+            if any(isinstance(attempt, dict) and current(attempt.get("ts")) for attempt in attempts):
+                return True
+    return False
+
+
 def _add_state(stats: dict[str, Any], problem: dict[str, Any], state: dict[str, Any], is_prg: bool) -> None:
     stats["items"] += 1
     evidence = cycle_evidence(state)
@@ -194,10 +225,7 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
                 "unit": problem.get("unitCode") or drill.get("unitCode"),
                 "subject": "PRG" if is_prg else "MTH",
             }
-            slots = state.get("similarSlots")
-            opened = isinstance(slots, list) and any(
-                isinstance(slot, dict) and (bool(slot.get("servedAt")) or bool(slot.get("attempts"))) for slot in slots
-            )
+            opened = _similar_slots_opened(state)
             if key in similar_keys and opened:
                 similar_opened.add(key)
             if isinstance(level, int):
