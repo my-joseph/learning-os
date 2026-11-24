@@ -46,6 +46,7 @@ import os
 import re
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -466,43 +467,67 @@ def _is_within(base: Path, target: Path) -> bool:
         return False
 
 
+SOURCE_SUFFIXES = frozenset({".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"})
+JSON_SUFFIXES = frozenset({".json"})
+
+
 def assert_safe_contained_path(
-    path: Path,
+    path: Path | str,
     root: Path,
     *,
     expect_file: bool = True,
     label: str = "path",
+    relative: bool = False,
+    allow_missing: bool = False,
+    suffixes: frozenset[str] | None = None,
 ) -> Path:
-    """Verify `path` is non-symlink, has no symlink components under `root`, and resolves inside `root`."""
-    root_p = Path(root)
-    target_p = Path(path)
-    if root_p.is_symlink():
-        raise ValueError(f"Refusing symlinked root directory for {label}: {root_p}")
-    if target_p.is_symlink():
-        raise ValueError(f"Refusing symlinked {label}: {target_p}")
+    """Resolve a regular file or directory without traversing symlinks under the trusted root.
 
-    root_abs = Path(os.path.abspath(root_p))
-    target_abs = Path(os.path.abspath(target_p))
-    if _is_within(root_abs, target_abs):
-        cur = root_abs
-        for part in target_abs.relative_to(root_abs).parts:
-            cur = cur / part
-            if cur.is_symlink():
-                raise ValueError(f"Refusing symlink component in {label}: {cur}")
+    Pass relative=True for untrusted path strings, before joining or normalizing them.
+    """
+    raw = os.fspath(path)
+    raw_path = Path(raw)
+    if (
+        not raw
+        or any(char in raw for char in ("\\", "%", ":", "\0"))
+        or ".." in raw.split("/")
+        or (relative and (raw_path.is_absolute() or any(part in ("", ".") for part in raw.split("/"))))
+    ):
+        raise ValueError(f"Refusing unsafe {label}: {raw!r}")
 
-    try:
-        root_real = root_p.resolve(strict=True)
-        target_real = target_p.resolve(strict=True)
-    except OSError as exc:
-        raise FileNotFoundError(f"Missing {label}: {target_p}") from exc
+    root_abs = Path(os.path.abspath(root))
+    target_abs = root_abs / raw_path if relative else Path(os.path.abspath(raw_path))
+    if not _is_within(root_abs, target_abs):
+        raise ValueError(f"Refusing {label} outside allowed root {root_abs}: {target_abs}")
+    parts = target_abs.relative_to(root_abs).parts
+    if expect_file and (not parts or (suffixes is not None and target_abs.suffix not in suffixes)):
+        raise ValueError(f"Unexpected file type for {label}: {target_abs}")
+    if any(part.startswith(".env") for part in parts):
+        raise ValueError(f"Refusing unsafe {label}: {target_abs}")
 
-    if not _is_within(root_real, target_real):
-        raise ValueError(f"Refusing {label} outside allowed root {root_real}: {target_p}")
-    if expect_file and not target_real.is_file():
-        raise ValueError(f"Expected regular file for {label}: {target_p}")
-    if not expect_file and not target_real.is_dir():
-        raise ValueError(f"Expected directory for {label}: {target_p}")
-    return target_real
+    resolved = root_abs
+    missing = False
+    for index, part in enumerate(("", *parts)):
+        resolved /= part
+        if missing:
+            continue
+        try:
+            mode = resolved.lstat().st_mode
+        except FileNotFoundError:
+            if not allow_missing:
+                raise
+            missing = True
+            continue
+        if stat.S_ISLNK(mode):
+            raise ValueError(f"Refusing symlink component in {label}: {resolved}")
+        if expect_file and index == len(parts):
+            if not stat.S_ISREG(mode):
+                raise ValueError(f"Expected regular file for {label}: {resolved}")
+        elif not stat.S_ISDIR(mode):
+            raise ValueError(f"Expected directory for {label}: {resolved}")
+        if index == 0:
+            resolved = resolved.resolve(strict=True)
+    return resolved
 
 
 def stage_workspace_copy(

@@ -15,6 +15,7 @@ import os
 import re
 import sys
 from collections.abc import Sequence
+from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +41,8 @@ from code_engine.quality_checks import (  # noqa: E402
 from code_engine.sandbox import (  # noqa: E402
     DEFAULT_TIMEOUT_SEC,
     DEFAULT_TOOL_TIMEOUT_SEC,
+    JSON_SUFFIXES,
+    SOURCE_SUFFIXES,
     assert_safe_contained_path,
     create_sandbox_dir,
     run_isolated,
@@ -48,7 +51,7 @@ from code_engine.sandbox import (  # noqa: E402
     stage_workspace_copy,
 )
 from code_engine.submit import _parse_completed_junit_run, _run_vitest_junit, run_tests_junit  # noqa: E402
-from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name  # noqa: E402
+from code_engine.workspace import ENVIRONMENT_PRESETS, find_drill_json, resolve_workspace_source  # noqa: E402
 from progress_store import labs_root as default_labs_root  # noqa: E402
 from progress_store import pilot_mode  # noqa: E402
 from progress_store import workspace_root as default_workspace_root  # noqa: E402
@@ -111,23 +114,16 @@ def sanitize_tests_summary(tests: dict[str, Any]) -> dict[str, Any]:
 
 def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[str, Any], Path]:
     """Locate and load the drill JSON document for `drill_id`."""
-    if data_root is not None:
-        root = Path(data_root)
-    elif os.environ.get("DRILLS_DATA_DIR"):
-        root = Path(os.environ["DRILLS_DATA_DIR"])
-    elif os.environ.get("LEARNINGOS_ROOT"):
-        root = Path(os.environ["LEARNINGOS_ROOT"]) / "drills" / "data"
-    else:
-        root = Path("drills/data")
-    matches = sorted(root.glob(f"*/{drill_id}.json"))
-    if not matches:
-        matches = sorted(root.glob(f"**/{drill_id}.json"))
-    if not matches:
-        raise FileNotFoundError(f"Drill '{drill_id}' not found under {root}")
-    path = matches[0]
+    repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd()).absolute()
+    configured = data_root or os.environ.get("DRILLS_DATA_DIR")
+    root = Path(configured) if configured else repo / "drills" / "data"
+    boundary = repo if root.absolute().is_relative_to(repo) else root
+    root = assert_safe_contained_path(root, boundary, expect_file=False)
+    path = find_drill_json(drill_id, root)
     doc = json.loads(path.read_text(encoding="utf-8"))
-    if not doc.get("drillId"):
-        doc["drillId"] = path.stem
+    if doc.get("drillId") not in (None, "", drill_id):
+        raise ValueError("Drill ID does not match its filename")
+    doc["drillId"] = drill_id
     return doc, path
 
 
@@ -178,24 +174,6 @@ def find_problem(drill_doc: dict[str, Any], qid: str) -> dict[str, Any]:
             return prob
     available = [p.get("id", "?") for p in drill_doc.get("problems", [])]
     raise KeyError(f"Problem '{qid}' not found in {drill_doc.get('drillId')}. Available: {available}")
-
-
-def find_problem_source(ws_dir: Path, prob: dict[str, Any], preset_ext: str) -> Path:
-    """Locate and validate the learner's non-symlink source file for `prob` inside `ws_dir`."""
-    if ws_dir.is_symlink():
-        raise ValueError(f"Refusing symlinked workspace directory: {ws_dir}")
-    pid = str(prob.get("id", "Q01"))
-    entry = get_entry_name(prob)
-    expected = ws_dir / f"{pid}_{entry}.{preset_ext}"
-    if expected.exists() or expected.is_symlink():
-        assert_safe_contained_path(expected, ws_dir, expect_file=True, label="source file")
-        return expected
-
-    for cand in sorted(ws_dir.glob(f"{pid}_*.*")):
-        if ".test." not in cand.name and ".hidden." not in cand.name:
-            assert_safe_contained_path(cand, ws_dir, expect_file=True, label="source file")
-            return cand
-    raise FileNotFoundError(f"Source file for {pid} not found in {ws_dir} (expected {expected.name})")
 
 
 def lint_workspace_file(
@@ -306,16 +284,19 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
 
 
 def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
-    env_root = os.environ.get("LEARNINGOS_ROOT")
-    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root(env_root))
-    lab_dir = lroot / lab_id
-    if lab_dir.is_symlink():
-        raise ValueError(f"Refusing symlinked lab directory: {lab_dir}")
-    cfg_path = lab_dir / "lab.config.json"
-    if not cfg_path.exists():
-        raise FileNotFoundError(f"Lab '{lab_id}' not found at {cfg_path}")
-    assert_safe_contained_path(cfg_path, lab_dir, expect_file=True, label="lab.config.json")
-    return json.loads(cfg_path.read_text(encoding="utf-8")), lab_dir
+    if not re.fullmatch(r"LAB-[A-Za-z0-9_-]{1,124}", lab_id):
+        raise ValueError("Invalid lab ID")
+    repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd())
+    if labs_root is not None or os.environ.get("LABS_DIR"):
+        lroot = Path(labs_root) if labs_root is not None else Path(os.environ["LABS_DIR"])
+    else:
+        lroot = assert_safe_contained_path(default_labs_root(str(repo)), repo, expect_file=False)
+    lab_dir = assert_safe_contained_path(lab_id, lroot, expect_file=False, relative=True, label="lab directory")
+    cfg_path = assert_safe_contained_path("lab.config.json", lab_dir, relative=True, suffixes=JSON_SUFFIXES)
+    config = json.loads(cfg_path.read_text(encoding="utf-8"))
+    if config.get("labId") not in (None, "", lab_id):
+        raise ValueError("Lab ID does not match its directory")
+    return config, lab_dir
 
 
 def _load_qc_by_id(vault_dir: Path | None = None) -> dict[str, dict[str, Any]]:
@@ -389,8 +370,9 @@ def _collect_safe_lab_sources(src_dir: Path) -> list[Path]:
             if cand_file.is_symlink():
                 raise ValueError(f"Refusing symlinked file inside lab src: {cand_file}")
             if cand_file.suffix in (".tsx", ".ts", ".js"):
-                assert_safe_contained_path(cand_file, src_real, expect_file=True, label="lab source file")
-                collected.append(cand_file)
+                collected.append(
+                    assert_safe_contained_path(cand_file, src_real, label="lab source file", suffixes=SOURCE_SUFFIXES)
+                )
     return sorted(collected)
 
 
@@ -598,27 +580,51 @@ def _run_lab_review_with_source(
     src_text = "\n".join(f"// === {f.relative_to(lab_real)} ===\n{f.read_text(encoding='utf-8')}" for f in src_files)
     code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
 
-    lab_tests_dir = lab_dir / "tests"
-    if lab_tests_dir.is_symlink():
-        raise ValueError(f"Refusing symlinked lab tests directory: {lab_tests_dir}")
-
+    lab_tests_dir = assert_safe_contained_path(
+        "tests", lab_dir, expect_file=False, relative=True, allow_missing=True, label="lab tests directory"
+    )
     vis_pattern = ms.get("visibleTests")
+    test_pattern = ms.get("testPattern")
     if isinstance(vis_pattern, str) and vis_pattern.strip():
-        if Path(vis_pattern).is_absolute() or ".." in Path(vis_pattern).parts:
-            raise ValueError(f"Refusing unsafe visibleTests pattern outside tests/: {vis_pattern!r}")
-        vis_files = sorted(lab_dir.glob(vis_pattern))
-    elif isinstance(ms.get("testPattern"), str) and ms["testPattern"].strip():
-        vis_files = sorted(lab_dir.glob(f"tests/*{ms['testPattern']}*.test.*"))
+        if not vis_pattern.startswith("tests/"):
+            raise ValueError("Visible tests must be selected from tests/")
+        pattern = vis_pattern.removeprefix("tests/")
+    elif isinstance(test_pattern, str) and test_pattern.strip():
+        pattern = f"*{test_pattern}*.test.*"
     else:
-        vis_files = []
-    for vf in vis_files:
-        assert_safe_contained_path(vf, lab_tests_dir, expect_file=True, label="visible test file")
+        pattern = ""
+    if not re.fullmatch(r"[A-Za-z0-9_.*?\[\]-]*", pattern) or ".." in pattern:
+        raise ValueError("Invalid visible test pattern")
+    vis_files = []
+    if pattern and lab_tests_dir.is_dir():
+        for candidate in sorted(lab_tests_dir.iterdir()):
+            if (
+                ".test." in candidate.name
+                and "hidden" not in candidate.name.lower()
+                and fnmatchcase(candidate.name, pattern)
+            ):
+                vis_files.append(
+                    assert_safe_contained_path(
+                        candidate, lab_tests_dir, label="visible test file", suffixes=SOURCE_SUFFIXES
+                    )
+                )
 
-    ref_hidden = lab_dir.parent / "_reference" / lab_id / "hidden"
+    ref_root = lab_dir.parent
+    hidden_rel = f"_reference/{lab_id}/hidden"
+    ref_hidden = assert_safe_contained_path(
+        hidden_rel, ref_root, expect_file=False, relative=True, allow_missing=True, label="hidden tests directory"
+    )
     if not ref_hidden.is_dir() and pilot_mode():
-        ref_hidden = Path(os.environ.get("LABS_DIR", "labs")) / "_reference" / lab_id / "hidden"
-    if ref_hidden.is_symlink():
-        raise ValueError(f"Refusing symlinked hidden tests directory: {ref_hidden}")
+        configured_labs = os.environ.get("LABS_DIR")
+        repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd())
+        ref_hidden = assert_safe_contained_path(
+            hidden_rel if configured_labs else f"labs/{hidden_rel}",
+            Path(configured_labs) if configured_labs else repo,
+            expect_file=False,
+            relative=True,
+            allow_missing=True,
+            label="hidden tests directory",
+        )
     all_hidden = sorted(
         list(ref_hidden.glob("*.test.tsx")) + list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js"))
     )
@@ -626,8 +632,10 @@ def _run_lab_review_with_source(
     hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)]
     if not hid_files and not any(_MILESTONE_TEST_PREFIX_RE.match(f.name) for f in all_hidden):
         hid_files = all_hidden  # Older labs can use one shared hidden suite.
-    for hf in hid_files:
-        assert_safe_contained_path(hf, ref_hidden, expect_file=True, label="hidden test file")
+    hid_files = [
+        assert_safe_contained_path(hf, ref_hidden, label="hidden test file", suffixes=SOURCE_SUFFIXES)
+        for hf in hid_files
+    ]
 
     cases = []
     for files, cwd, hidden, allowed_roots in (
@@ -707,18 +715,19 @@ def run_review_with_source(
     prob = find_problem(drill_doc, qid)
     pid = str(prob["id"])
 
-    env_root = os.environ.get("LEARNINGOS_ROOT")
-    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root(env_root))
-    ws_dir = ws_root / drill_id
-    if ws_dir.is_symlink():
-        raise ValueError(f"Refusing symlinked workspace directory: {ws_dir}")
-    if not ws_dir.is_dir():
-        raise FileNotFoundError(f"Workspace directory not found: {ws_dir}")
-    assert_safe_contained_path(ws_dir, ws_root, expect_file=False, label="workspace directory")
+    repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd())
+    ws_root = (
+        Path(workspace_root)
+        if workspace_root is not None
+        else assert_safe_contained_path(default_workspace_root(str(repo)), repo, expect_file=False)
+    )
+    ws_dir = assert_safe_contained_path(
+        drill_id, ws_root, expect_file=False, relative=True, label="workspace directory"
+    )
 
     env_key = drill_doc.get("environment", "node-vanilla")
     preset = ENVIRONMENT_PRESETS.get(env_key, ENVIRONMENT_PRESETS["node-vanilla"])
-    src_file = find_problem_source(ws_dir, prob, preset.get("defaultExt", "js"))
+    src_file = resolve_workspace_source(ws_dir, drill_id, prob, preset.get("defaultExt", "js"))
     src_text = src_file.read_text(encoding="utf-8")
     code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
 

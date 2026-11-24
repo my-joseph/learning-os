@@ -94,6 +94,12 @@ async function main() {
     fs.symlinkSync(externalTarget, linkedPath);
     assert.equal((await drillDELETE(deleteReq(linkedId))).status, 404);
     assert.equal(fs.existsSync(linkedPath), true);
+    assert.equal((await drillGET(new NextRequest(
+      `http://127.0.0.1:3000/api/drill?id=${linkedId}`
+    ))).status, 404);
+    assert.deepEqual((await (await drillsGET()).json()).drills.map(
+      (drill: { drillId: string }) => drill.drillId
+    ), [siblingId]);
     assert.equal(fs.existsSync(externalTarget), true);
 
     // Refuse to choose between duplicate canonical IDs in separate unit folders.
@@ -132,13 +138,13 @@ async function main() {
     }
     assert.equal((await drillDELETE(deleteReq())).status, 400);
 
-    // A data root that is a regular file exercises filesystem error handling.
+    // A regular file cannot serve as a drill data root.
     const invalidRoot = path.join(tmpRoot, "not-a-directory");
     fs.writeFileSync(invalidRoot, "fixture");
     process.env.DRILLS_DATA_DIR = invalidRoot;
     const failed = await drillDELETE(deleteReq(siblingId));
-    assert.equal(failed.status, 500);
-    assert.deepEqual(await failed.json(), { ok: false, error: "Failed to delete drill" });
+    assert.equal(failed.status, 404);
+    assert.deepEqual(await failed.json(), { ok: false, error: "Drill not found" });
     assert.equal(fs.existsSync(siblingPath), true);
   } finally {
     setNotionDrillSyncSpawnerForTests(null);

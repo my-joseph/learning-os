@@ -19,6 +19,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from code_engine.sandbox import (  # noqa: E402
     DEFAULT_REACT_TIMEOUT_SEC,
+    JSON_SUFFIXES,
     assert_safe_contained_path,
     create_sandbox_dir,
     run_node_isolated,
@@ -519,19 +520,19 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
 def main():
     lab_dir = Path.cwd()
     if len(sys.argv) > 1 and sys.argv[1].startswith("--lab-dir="):
-        lab_dir = Path(sys.argv[1].split("=", 1)[1]).resolve()
+        lab_dir = Path(sys.argv[1].split("=", 1)[1]).absolute()
     elif len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
-        lab_dir = Path(sys.argv[1]).resolve()
-
-    config_file = lab_dir / "lab.config.json"
-    if not config_file.exists():
-        print(f"{RED}Error: Cannot find lab.config.json in {lab_dir}{RESET}")
-        sys.exit(1)
-
-    with open(config_file, "r", encoding="utf-8") as f:
-        config = json.load(f)
+        lab_dir = Path(sys.argv[1]).absolute()
 
     repo_root = find_repo_root(lab_dir)
+    boundary = repo_root if lab_dir.is_relative_to(repo_root) else lab_dir
+    try:
+        config_file = assert_safe_contained_path(lab_dir / "lab.config.json", boundary, suffixes=JSON_SUFFIXES)
+        config = json.loads(config_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit("Could not read a contained lab.config.json") from exc
+    lab_dir = config_file.parent
+
     env_file = repo_root / ".env"
     env = load_env(str(env_file))
     if not env:

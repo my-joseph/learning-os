@@ -24,6 +24,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
+
 PROGRESS_FIELDS_DOC = ("sessionSummary",)
 PROGRESS_FIELDS_PROBLEM = ("state",)
 _ISO_DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
@@ -83,10 +85,11 @@ def find_repo_root(start: str | os.PathLike[str] | None = None) -> str:
 
 def progress_root(repo_root: str | None = None) -> str:
     """PROGRESS_DIR, else `pilot/progress/` in pilot mode, else `progress/` relative to `repo_root`."""
-    if os.environ.get("PROGRESS_DIR"):
-        return os.environ["PROGRESS_DIR"]
-    sub = os.path.join("pilot", "progress") if pilot_mode() else "progress"
-    return os.path.join(repo_root or find_repo_root(), sub)
+    configured = os.environ.get("PROGRESS_DIR")
+    root = Path(repo_root or find_repo_root()).absolute()
+    directory = Path(configured) if configured else root / ("pilot/progress" if pilot_mode() else "progress")
+    boundary = root if directory.absolute().is_relative_to(root) else directory
+    return str(assert_safe_contained_path(directory, boundary, expect_file=False, allow_missing=True))
 
 
 def workspace_root(repo_root: str | None = None) -> str:
@@ -103,26 +106,35 @@ def labs_root(repo_root: str | None = None) -> str:
     return os.path.join(repo_root or find_repo_root(), sub)
 
 
+def contained_progress_path(filename: str, repo_root: str | None = None) -> str:
+    """Resolve a JSON record at the active progress storage boundary."""
+    return str(
+        assert_safe_contained_path(
+            filename, Path(progress_root(repo_root)), relative=True, allow_missing=True, suffixes=JSON_SUFFIXES
+        )
+    )
+
+
 def progress_path(drill_id: str, repo_root: str | None = None) -> str:
-    return os.path.join(progress_root(repo_root), f"{drill_id}.json")
+    if not isinstance(drill_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", drill_id):
+        raise ValueError("Invalid drillId")
+    return contained_progress_path(f"{drill_id}.json", repo_root)
 
 
 def review_schedule_path(repo_root: str | None = None) -> str:
-    """Path to `_review_schedule.json` inside the active progress directory (respects LEARNINGOS_PILOT)."""
-    return os.path.join(progress_root(repo_root), "_review_schedule.json")
+    """Path to `_review_schedule.json` inside the active progress directory."""
+    return contained_progress_path("_review_schedule.json", repo_root)
 
 
 def review_items_path(repo_root: str | None = None) -> str:
-    """Path to `review_items.json` inside the active progress directory (respects LEARNINGOS_PILOT)."""
-    return os.path.join(progress_root(repo_root), "review_items.json")
+    """Path to `review_items.json` inside the active progress directory."""
+    return contained_progress_path("review_items.json", repo_root)
 
 
 def load_review_schedule(repo_root: str | None = None) -> dict[str, dict[str, Any]]:
     """Read the local unit review-schedule cache, or `{}` if missing or invalid."""
-    path = review_schedule_path(repo_root)
-    if not os.path.exists(path):
-        return {}
     try:
+        path = review_schedule_path(repo_root)
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except (OSError, ValueError):
@@ -234,11 +246,15 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
 
 
 def load_progress(drill_id: str, repo_root: str | None = None) -> dict[str, Any] | None:
-    path = progress_path(drill_id, repo_root)
-    if not os.path.exists(path):
+    try:
+        path = progress_path(drill_id, repo_root)
+    except (OSError, ValueError):
         return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return None
 
 
 def apply_progress(drill_doc: dict[str, Any], progress: dict[str, Any] | None) -> dict[str, Any]:

@@ -15,9 +15,10 @@ from code_engine.ai_drill_ingest import (
     run_problem_in_workspace,
     visible_edge_case_warnings,
 )
+from code_engine.sandbox import SOURCE_SUFFIXES, assert_safe_contained_path
 from code_engine.submit import run_tests_junit
 from code_engine.verify import run_node
-from code_engine.workspace import materialize_drill_workspace
+from code_engine.workspace import materialize_drill_workspace, materialize_pilot_lab
 from notion_sync.drill_sync import missing_sync_fields
 
 
@@ -595,6 +596,41 @@ def test_test_runner_raw_output_never_leaks_hidden_tests_on_crash_or_vitest_fail
     assert "SECRET_REACT_HIDDEN_NAME" not in react_err_serialized
     assert "SECRET_REACT_HIDDEN_BODY" not in react_err_serialized
     assert "[HIDDEN-" not in react_err_serialized
+
+
+@pytest.mark.parametrize("name", ["/source.js", "src/../source.js", "%73ource.js", "source.json"])
+def test_containment_rejects_invalid_relative_sources(tmp_path, name):
+    with pytest.raises(ValueError):
+        assert_safe_contained_path(name, tmp_path, relative=True, allow_missing=True, suffixes=SOURCE_SUFFIXES)
+
+
+@pytest.mark.parametrize("leaf", ["Q01_addNums.js", "Q01_addNums.test.js", "package.json", "README.md"])
+def test_materializer_rejects_linked_files(tmp_path, leaf):
+    doc = _sample_prg_drill()
+    root = tmp_path / "repo"
+    workspace = root / "drills" / "workspace" / doc["drillId"]
+    workspace.mkdir(parents=True)
+    outside = tmp_path / "outside.txt"
+    outside.write_text("unchanged", encoding="utf-8")
+    (workspace / leaf).symlink_to(outside)
+
+    with pytest.raises(ValueError, match="symlink"):
+        materialize_drill_workspace(doc, str(root))
+    assert outside.read_text(encoding="utf-8") == "unchanged"
+
+
+def test_pilot_lab_materializer_rejects_linked_output_directory(tmp_path):
+    lab_id = "LAB-PRG-T01-C01-01"
+    lab = tmp_path / "labs" / lab_id
+    lab.mkdir(parents=True)
+    (lab / "lab.config.json").write_text("{}", encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (tmp_path / "pilot").symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symlink"):
+        materialize_pilot_lab(lab_id, str(tmp_path))
+    assert list(outside.iterdir()) == []
 
 
 def test_test_runner_ignores_stdout_spoofing_and_prototype_tampering():

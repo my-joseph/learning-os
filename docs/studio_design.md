@@ -79,11 +79,14 @@ Review & Sync shows an amber **Synced with problems** banner when a Notion write
 ## Workspaces
 - **Math**: similar-question tab strip at the top of the card (always shown when variants exist, with locked muted ghost tabs until the first substantive attempt on the real question in the current cycle) → prompt → figure → answer input with `=` inside the field → feedback → Hint and equation set-up are available before answering and count as help. A substantive check or Skip unlocks the original question's steps. After Skip in Daily Review, **Show steps** opens the solution. Similar questions retain their own help controls and scoring. Self-score buttons only after an attempt on the real question.
 - **Programming** (dashboard, no editor): brief → visible tests → status line `Tests  Lint  Types  Review` (✓ / ✗ / –) → primary action (Open in VS Code, or Copy `ตรวจโค้ด <ID> <QID>` once tests pass) → review history and explain question in collapsible sections → reference locked until review = pass.
+- Studio opens and saves only source files listed for the drill in its server-side manifest. **Run Tests** reads the saved file from the current problem's manifest. An inline exercise can still submit its answer as code. Absolute, parent-relative, percent-encoded, and symlinked workspace selections are rejected. A missing valid source can still be materialized on open.
 - **Labs**: same as Programming; the horizontal stepper shows each milestone's name, with a filled emerald check once every layer passes.
 
 ## Practice evidence
 
 Studio autosave accepts problem drafts, mistake and revisit notes, the marked step, and the manual status preference for the canonical drill or lab. Explicit learner actions record help, skip, retry, mistake tags, and capped self-scores on the server. The answer checker and test runners persist their own results. The PRG rubric verdict still comes from the review-record workflow.
+
+Studio resolves drill JSON, variant banks, lab configs, READMEs, visible tests, and progress files within their configured storage roots. A linked or non-regular record is unavailable to the reader. Progress saves reject unsafe destinations.
 
 Practice Reset starts a new cycle through `POST /api/reveal` and keeps attempt history and the existing item schedule. `POST /api/variant` acts on individual variant sessions. Daily Review uses `start-review` to resume an unfinished server cycle and `reset-review` to start a retry while carrying forward any hint or equation set-up opened in the unfinished cycle. The item stays due until its first substantive check or explicit Skip is submitted for completion. The server keeps the first scheduled outcome for that day. The due list and completion response share the same public fields.
 

@@ -23,8 +23,10 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from pathlib import Path
 
 from code_engine.quality_checks import load_universal
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.bridge import BRIDGE_SCOPE, problem_unit_codes
 from progress_store import (
     compare_iso_timestamps,
@@ -165,6 +167,21 @@ def prior_review_evidence(state: dict, cycle: str) -> dict:
     }
 
 
+def _load_contained_records(directory: Path, pattern: str, checkout: Path):
+    boundary = checkout if directory.absolute().is_relative_to(checkout) else directory
+    try:
+        root = assert_safe_contained_path(directory, boundary, expect_file=False)
+    except (OSError, ValueError):
+        return
+    for candidate in sorted(root.glob(pattern)):
+        try:
+            file = assert_safe_contained_path(candidate, root, suffixes=JSON_SUFFIXES)
+        except (OSError, ValueError):
+            continue
+        with file.open(encoding="utf-8") as handle:
+            yield json.load(handle)
+
+
 def load_items(
     data_root: str | None = None,
     progress_dir: str | None = None,
@@ -173,19 +190,18 @@ def load_items(
     for_review_schedule: bool = False,
 ) -> list[Item]:
     repo_root = find_repo_root()
-    data_root = data_root or os.environ.get("DRILLS_DATA_DIR", os.path.join(repo_root, "drills", "data"))
-    progress_dir = progress_dir or progress_root(repo_root)
-    labs_root = labs_root or default_labs_root(repo_root)
+    repo = Path(repo_root)
+    configured_data = data_root or os.environ.get("DRILLS_DATA_DIR")
+    configured_labs = labs_root or os.environ.get("LABS_DIR")
+    data_dir = Path(configured_data) if configured_data else repo / "drills" / "data"
+    lab_dir = Path(configured_labs or default_labs_root(repo_root))
+    progress_dir = Path(progress_dir or progress_root(repo_root))
     drills = {}
-    for pattern in ("MTH-*", "PRG-*"):
-        for path in glob.glob(os.path.join(data_root, pattern, "*.json")):
-            with open(path, encoding="utf-8") as f:
-                doc = json.load(f)
+    for pattern in ("MTH-*/*.json", "PRG-*/*.json"):
+        for doc in _load_contained_records(data_dir, pattern, repo):
             if doc.get("drillId"):
                 drills[doc["drillId"]] = doc
-    for path in glob.glob(os.path.join(labs_root, "LAB-*", "lab.config.json")):
-        with open(path, encoding="utf-8") as f:
-            cfg = json.load(f)
+    for cfg in _load_contained_records(lab_dir, "LAB-*/lab.config.json", repo):
         lab_id = cfg.get("labId")
         if not lab_id:
             continue
@@ -227,9 +243,7 @@ def load_items(
     universal_ids = {c["id"] for c in load_universal() if isinstance(c, dict) and c.get("id")}
 
     items: list[Item] = []
-    for path in sorted(glob.glob(os.path.join(progress_dir, "*.json"))):
-        with open(path, encoding="utf-8") as f:
-            prog = json.load(f)
+    for prog in _load_contained_records(progress_dir, "*.json", repo):
         if not isinstance(prog, dict):
             continue
         doc = drills.get(prog.get("drillId"))

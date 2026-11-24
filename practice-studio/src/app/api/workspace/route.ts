@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import {
-  getDrillWorkspaceDir,
   getPythonBin,
   getWorkspaceRoot,
   isSafeId,
@@ -11,54 +10,11 @@ import {
 } from "@/lib/paths";
 import { spawn } from "child_process";
 
-function extractRelativeWorkspaceFile(rawWorkspaceFile: string, drillId: string): string | null {
-  const normalized = rawWorkspaceFile.replace(/\\/g, "/").replace(/^\/+/, "");
-  const prefixes = [
-    `drills/workspace/${drillId}/`,
-    `pilot/workspace/${drillId}/`,
-  ];
-  for (const prefix of prefixes) {
-    if (normalized.startsWith(prefix)) {
-      const rel = normalized.slice(prefix.length);
-      if (!rel || rel.includes("\0")) return null;
-      const segments = rel.split("/").filter(Boolean);
-      if (segments.length === 0 || segments.some((s) => s === "." || s === "..")) {
-        return null;
-      }
-      return path.join(...segments);
-    }
-  }
-  return null;
-}
-
-function getAllowedWorkspaceFilePaths(
-  drillDoc: Record<string, unknown>,
-  drillId: string,
-  rootDir: string
-): Set<string> {
-  const allowed = new Set<string>();
-  const wsDir = getDrillWorkspaceDir(drillId, rootDir);
-  if (!wsDir || !Array.isArray(drillDoc.problems)) return allowed;
-
-  const root = path.resolve(rootDir);
-  const realRoot = fs.existsSync(root) ? fs.realpathSync(root) : root;
-  const canonicalWsDir = fs.existsSync(wsDir)
-    ? fs.realpathSync(wsDir)
-    : path.join(realRoot, path.relative(root, wsDir));
-
-  for (const prob of drillDoc.problems) {
-    if (!prob || typeof prob !== "object") continue;
-    const raw = (prob as { workspaceFile?: unknown }).workspaceFile;
-    if (typeof raw !== "string") continue;
-    const rel = extractRelativeWorkspaceFile(raw, drillId);
-    if (!rel) continue;
-    const target = path.resolve(canonicalWsDir, rel);
-    const check = path.relative(canonicalWsDir, target);
-    if (check && !check.startsWith("..") && !path.isAbsolute(check)) {
-      allowed.add(target);
-    }
-  }
-  return allowed;
+function isManifestFile(doc: Record<string, unknown>, drillId: string, rootDir: string, file: string): boolean {
+  return Array.isArray(doc.problems) && doc.problems.some(
+    (problem) => typeof problem?.workspaceFile === "string" &&
+      resolveInsideDrillWorkspace(problem.workspaceFile, drillId, rootDir) === file
+  );
 }
 
 async function materializeWorkspace(
@@ -81,20 +37,20 @@ async function materializeWorkspace(
 import json, sys
 from code_engine.workspace import materialize_drill_workspace
 drill_doc = json.loads(sys.stdin.read() or "{}")
-print(json.dumps(materialize_drill_workspace(drill_doc, root_dir=${JSON.stringify(rootDir)})))
+print(json.dumps(materialize_drill_workspace(drill_doc, root_dir=sys.argv[1])))
 `;
   return new Promise((resolve) => {
-    const proc = spawn(pythonBin, ["-c", pyCode], {
+    const proc = spawn(pythonBin, ["-c", pyCode, rootDir], {
       cwd: rootDir,
       env: { ...process.env, PYTHONPATH: pythonPath },
     });
     let stdout = "";
-    let stderr = "";
     proc.stdout.on("data", (data) => (stdout += data.toString()));
-    proc.stderr.on("data", (data) => (stderr += data.toString()));
+    proc.stderr.resume();
+    proc.on("error", () => resolve({ ok: false, error: "Could not start workspace materialization" }));
     proc.on("close", (code) => {
       if (code !== 0) {
-        resolve({ ok: false, error: stderr || `Exited with code ${code}` });
+        resolve({ ok: false, error: "Workspace materialization failed" });
         return;
       }
       try {
@@ -132,8 +88,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Drill not found" }, { status: 404 });
     }
 
-    const allowedPaths = getAllowedWorkspaceFilePaths(drillDoc, drillId, rootDir);
-    if (!allowedPaths.has(fullPath)) {
+    if (!isManifestFile(drillDoc, drillId, rootDir, fullPath)) {
       return NextResponse.json(
         { error: "File is not an allowed workspace file for this drill" },
         { status: 403 }
@@ -152,10 +107,6 @@ export async function GET(req: NextRequest) {
       if (!fs.existsSync(fullPath)) {
         return NextResponse.json({ error: "Workspace file not found in drill manifest" }, { status: 404 });
       }
-    }
-
-    if (!fs.statSync(fullPath).isFile()) {
-      return NextResponse.json({ error: "Workspace path must be a regular file" }, { status: 403 });
     }
 
     const content = fs.readFileSync(fullPath, "utf-8");
@@ -206,8 +157,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Drill not found" }, { status: 404 });
     }
 
-    const allowedPaths = getAllowedWorkspaceFilePaths(drillDoc, drillId, rootDir);
-    if (!allowedPaths.has(fullPath)) {
+    if (!isManifestFile(drillDoc, drillId, rootDir, fullPath)) {
       return NextResponse.json(
         { error: "File is not an allowed workspace file for this drill" },
         { status: 403 }
@@ -221,11 +171,17 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    if (fs.existsSync(fullPath) && !fs.statSync(fullPath).isFile()) {
-      return NextResponse.json({ error: "Workspace path must be a regular file" }, { status: 403 });
+    const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK;
+    const fd = fs.openSync(fullPath, flags);
+    try {
+      if (!fs.fstatSync(fd).isFile()) {
+        return NextResponse.json({ error: "Workspace path must be a regular file" }, { status: 403 });
+      }
+      fs.ftruncateSync(fd);
+      fs.writeFileSync(fd, content ?? "", "utf-8");
+    } finally {
+      fs.closeSync(fd);
     }
-
-    fs.writeFileSync(fullPath, content ?? "", "utf-8");
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);

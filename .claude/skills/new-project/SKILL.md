@@ -75,6 +75,7 @@ In `labs/<LAB_ID>/`:
 - Include a concise `scenario` field in `lab.config.json`; derive `README.md` scenario and its milestone list from `scenario` and `milestones` in the config. Keep README free of implementation hints.
 - `eslint.config.js` (`import { prgConfig } from "../../tools/lint/base.js"; export default prgConfig();`) and `tsconfig.json` (`strict: true`, `noEmit: true`, `allowImportingTsExtensions: true`).
 - `src/` stubs: exported types/interfaces + function/class signatures with `_`-prefixed unused params and `throw new Error("TODO [M1]: …");` bodies. Must be ESLint-clean and `tsc`-clean, and fail every milestone's visible tests.
+- Keep lab content as regular files. For every milestone, use a relative pattern directly under `tests/` for `visibleTests` so Studio and the review runner can resolve the same visible suite.
 - `tests/` visible acceptance tests per milestone (`tests/m1_*.test.ts`, etc.), importing from `process.env.LAB_SRC_DIR || "../src"`. Test names and assertions must not leak the implementation.
 
 In `labs/_reference/<LAB_ID>/` (excluded from learner's VS Code via `.vscode/settings.json`):

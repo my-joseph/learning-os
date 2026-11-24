@@ -65,22 +65,66 @@ export function getPythonBin(rootDir: string): string {
   return "python3";
 }
 
+export const JSON_EXTENSIONS = [".json"];
+export const SOURCE_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"];
+
+type ContainmentOptions =
+  | { directory: true; allowMissing?: boolean }
+  | { extensions: readonly string[]; allowMissing?: boolean };
+
 /**
- * Resolves a user-supplied file path and guarantees it stays inside the
- * project root. Returns null for anything outside (e.g. `/etc/passwd`,
- * `../../.ssh/id_rsa`, or the `.env` file that holds the Notion token).
+ * Resolve a relative path at its storage boundary. Existing components must
+ * be real directories or regular files. A configured external root is an
+ * explicit boundary, while roots inside the checkout are checked from its root.
  */
-export function resolveInsideRoot(relOrAbs: string, rootDir: string = getWorkspaceRoot()): string | null {
-  if (typeof relOrAbs !== "string" || !relOrAbs.trim()) return null;
-  const root = path.resolve(rootDir);
-  const full = path.resolve(root, relOrAbs);
-  const rel = path.relative(root, full);
-  if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) return null;
-  const segments = rel.split(/[\\/]+/);
-  if (segments.includes("_reference") || segments.includes(".canonical")) return null;
-  const base = path.basename(full);
-  if (base.startsWith(".env") || base.includes(".hidden.")) return null;
-  return full;
+export function resolveContainedPath(
+  rootDir: string,
+  relativePath: string,
+  options: ContainmentOptions
+): string | null {
+  const directory = "directory" in options;
+  const parts = relativePath === "." && directory ? [] : relativePath.split("/");
+  if (
+    /[\\%:\0]/.test(relativePath) ||
+    parts.some((part) =>
+      !part || part === "." || part === ".." || part === "_reference" ||
+      part === ".canonical" || part.startsWith(".env") || part.includes(".hidden.")
+    ) ||
+    (!directory && !options.extensions.includes(path.extname(relativePath)))
+  ) {
+    return null;
+  }
+
+  const boundary = path.resolve(rootDir);
+  const checkout = getWorkspaceRoot();
+  const withinCheckout = path.relative(checkout, boundary);
+  const nested = withinCheckout && withinCheckout !== ".." &&
+    !withinCheckout.startsWith(`..${path.sep}`) && !path.isAbsolute(withinCheckout);
+  const anchor = nested ? checkout : boundary;
+  const segments = nested ? [...withinCheckout.split(path.sep), ...parts] : parts;
+  let resolved = anchor;
+  let missing = false;
+
+  try {
+    for (let i = -1; i < segments.length; i++) {
+      if (i >= 0) resolved = path.join(resolved, segments[i]);
+      if (missing) continue;
+      try {
+        const info = fs.lstatSync(resolved);
+        const isDirectory = directory || i < segments.length - 1;
+        if (isDirectory ? !info.isDirectory() : !info.isFile()) return null;
+        if (i === -1) resolved = fs.realpathSync(resolved);
+      } catch (err) {
+        if (!options.allowMissing || (err as NodeJS.ErrnoException).code !== "ENOENT") {
+          return null;
+        }
+        missing = true;
+      }
+    }
+    return resolved;
+  } catch {
+    return null;
+  }
 }
 
 /** Validates an ID used as a path segment (drillId, unitCode). */
@@ -164,92 +208,21 @@ export function remapWorkspaceFileForMode(
   return relOrAbs;
 }
 
-function isStrictlyInsideDir(baseDir: string, targetPath: string): boolean {
-  const rel = path.relative(baseDir, targetPath);
-  return rel !== "" && !rel.startsWith("..") && !path.isAbsolute(rel);
-}
-
-/**
- * Resolves a file path and guarantees it stays strictly inside the given drill's
- * workspace directory (`<root>/drills/workspace/<drillId>/` or
- * `<root>/pilot/workspace/<drillId>/` in pilot mode), rejecting `..` traversal,
- * hidden/reference paths, and symlink escapes (including dangling symlinks).
- */
+/** Resolve a manifest or request path inside the active workspace for this drill. */
 export function resolveInsideDrillWorkspace(
-  relOrAbs: string,
+  workspaceFile: string,
   drillId: string,
   rootDir: string = getWorkspaceRoot()
 ): string | null {
-  if (typeof relOrAbs !== "string" || !relOrAbs.trim() || relOrAbs.includes("\0")) {
-    return null;
-  }
   const wsDir = getDrillWorkspaceDir(drillId, rootDir);
-  if (!wsDir) return null;
-
-  const root = path.resolve(rootDir);
-  const mappedRelOrAbs = remapWorkspaceFileForMode(relOrAbs, drillId);
-  const candidate = path.resolve(root, mappedRelOrAbs);
-  if (!isStrictlyInsideDir(wsDir, candidate)) return null;
-
-  const rel = path.relative(wsDir, candidate);
-  const segments = rel.split(/[\\/]+/);
-  if (segments.includes("_reference") || segments.includes(".canonical")) return null;
-  const base = path.basename(candidate);
-  if (base.startsWith(".env") || base.includes(".hidden.")) return null;
-
-  const realRoot = fs.existsSync(root) ? fs.realpathSync(root) : root;
-  const wsRelFromRoot = path.relative(root, wsDir);
-  const expectedRealWsDir = path.join(realRoot, wsRelFromRoot);
-
-  // Verify no existing ancestor between root and wsDir is a symlink redirecting outside its canonical path.
-  let ancestorCursor = root;
-  for (const seg of wsRelFromRoot.split(/[\\/]+/)) {
-    ancestorCursor = path.join(ancestorCursor, seg);
-    let st: fs.Stats;
-    try {
-      st = fs.lstatSync(ancestorCursor);
-    } catch {
-      break;
-    }
-    if (st.isSymbolicLink()) {
-      return null;
-    }
-  }
-
-  if (!fs.existsSync(wsDir)) {
-    return path.join(expectedRealWsDir, rel);
-  }
-
-  const realWsDir = fs.realpathSync(wsDir);
-  if (realWsDir !== expectedRealWsDir) return null;
-
-  // Walk every segment inside wsDir to reject symlink escapes and dangling symlinks.
-  let segCursor = wsDir;
-  for (const seg of segments) {
-    segCursor = path.join(segCursor, seg);
-    let st: fs.Stats;
-    try {
-      st = fs.lstatSync(segCursor);
-    } catch {
-      break;
-    }
-    if (st.isSymbolicLink()) {
-      try {
-        const realSeg = fs.realpathSync(segCursor);
-        if (!isStrictlyInsideDir(realWsDir, realSeg)) return null;
-      } catch {
-        return null;
-      }
-    }
-  }
-
-  if (fs.existsSync(candidate)) {
-    const realTarget = fs.realpathSync(candidate);
-    if (!isStrictlyInsideDir(realWsDir, realTarget)) return null;
-    return realTarget;
-  }
-
-  return path.join(realWsDir, rel);
+  if (!wsDir || typeof workspaceFile !== "string") return null;
+  const mapped = remapWorkspaceFileForMode(workspaceFile, drillId).replace(/\\/g, "/");
+  const prefix = path.relative(rootDir, wsDir).split(path.sep).join("/") + "/";
+  if (!mapped.startsWith(prefix)) return null;
+  return resolveContainedPath(wsDir, mapped.slice(prefix.length), {
+    extensions: SOURCE_EXTENSIONS,
+    allowMissing: true,
+  });
 }
 
 /** Where learner progress lives (progress/<DRILL_ID>.json); mirrors progress_store.py. */
@@ -263,47 +236,58 @@ export function getProgressDir(): string {
   return path.join(getWorkspaceRoot(), "progress");
 }
 
-/** Locate a drill JSON file under getDrillsDataDir() by drillId. */
-function findDrillFilePath(drillId: string, dataDir = getDrillsDataDir()): string | null {
-  if (!isSafeId(drillId)) return null;
-  if (!fs.existsSync(dataDir)) return null;
+/** Enumerate regular JSON files below the drill data root, without following symlinks. */
+export function listDrillFiles(
+  dataDir = getDrillsDataDir(),
+  recursive = false
+): string[] {
+  const files: string[] = [];
 
-  for (const entry of fs.readdirSync(dataDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const candidate = path.join(dataDir, entry.name, `${drillId}.json`);
-    if (fs.existsSync(candidate)) {
-      return candidate;
+  function visit(relativeDir: string, depth: number): void {
+    const dir = resolveContainedPath(dataDir, relativeDir || ".", { directory: true });
+    if (!dir) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const relativeFile = relativeDir ? `${relativeDir}/${entry.name}` : entry.name;
+      if (entry.isDirectory() && (depth === 0 || recursive)) {
+        visit(relativeFile, depth + 1);
+      } else if (entry.isFile() && (depth === 1 || recursive)) {
+        const candidate = resolveContainedPath(dataDir, relativeFile, { extensions: JSON_EXTENSIONS });
+        if (candidate) files.push(candidate);
+      }
     }
   }
 
-  const visit = (dir: string): string | null => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        const match = visit(fullPath);
-        if (match) return match;
-      } else if (entry.isFile() && entry.name === `${drillId}.json`) {
-        return fullPath;
-      }
-    }
-    return null;
-  };
-  return visit(dataDir);
+  visit("", 0);
+  return files;
+}
+
+function findDirectDrillFiles(drillId: string, dataDir: string): string[] {
+  const root = resolveContainedPath(dataDir, ".", { directory: true });
+  if (!root) return [];
+  const matches: string[] = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const candidate = resolveContainedPath(dataDir, `${entry.name}/${drillId}.json`, {
+      extensions: JSON_EXTENSIONS,
+    });
+    if (candidate) matches.push(candidate);
+  }
+  return matches;
+}
+
+function findDrillFilePath(drillId: string, dataDir = getDrillsDataDir()): string | null {
+  if (!isSafeId(drillId)) return null;
+  return findDirectDrillFiles(drillId, dataDir)[0] ??
+    listDrillFiles(dataDir, true).find((candidate) => path.basename(candidate) === `${drillId}.json`) ??
+    null;
 }
 
 /** Locate the canonical content file for one validated local drill ID. */
 export function findCanonicalDrillFilePath(drillId: string): string | null {
   if (!isCanonicalDrillId(drillId)) return null;
-  const dataDir = getDrillsDataDir();
-  if (!fs.existsSync(dataDir)) return null;
-
   const matches: string[] = [];
-  for (const entry of fs.readdirSync(dataDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const candidate = path.join(dataDir, entry.name, `${drillId}.json`);
-    if (!fs.existsSync(candidate)) continue;
+  for (const candidate of findDirectDrillFiles(drillId, getDrillsDataDir())) {
     try {
-      if (!fs.lstatSync(candidate).isFile()) continue;
       const doc = JSON.parse(fs.readFileSync(candidate, "utf-8")) as Record<string, unknown>;
       const domain = drillId.split("-")[1];
       if (
@@ -312,7 +296,7 @@ export function findCanonicalDrillFilePath(drillId: string): string | null {
         doc.drillId === drillId &&
         typeof doc.unitCode === "string" &&
         doc.unitCode.startsWith(`${domain}-`) &&
-        entry.name === doc.unitCode
+        path.basename(path.dirname(candidate)) === doc.unitCode
       ) {
         matches.push(candidate);
       }
@@ -328,7 +312,10 @@ export function loadDrillFromDisk(drillId: string): Record<string, unknown> | nu
   const filePath = findDrillFilePath(drillId);
   if (!filePath) return null;
   try {
-    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
+    const doc = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
+    if (!doc || typeof doc !== "object" || Array.isArray(doc)) return null;
+    if (doc.drillId && doc.drillId !== drillId) return null;
+    return { ...doc, drillId };
   } catch {
     return null;
   }
@@ -354,8 +341,10 @@ export function loadVariantBankFromDisk(
   unitCode: string
 ): { unitCode: string; variants: Array<Record<string, unknown>> } | null {
   if (!isSafeId(unitCode)) return null;
-  const filePath = path.join(getVariantsDir(), `${unitCode}.json`);
-  if (!fs.existsSync(filePath)) return null;
+  const filePath = resolveContainedPath(getVariantsDir(), `${unitCode}.json`, {
+    extensions: JSON_EXTENSIONS,
+  });
+  if (!filePath) return null;
   try {
     const raw = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
     if (!raw || typeof raw !== "object" || !Array.isArray(raw.variants)) return null;
@@ -375,8 +364,8 @@ export function loadVariantFromDisk(
   variantId: string
 ): { unitCode: string; variant: Record<string, unknown> } | null {
   if (!isSafeId(variantId)) return null;
-  const dir = getVariantsDir();
-  if (!fs.existsSync(dir)) return null;
+  const dir = resolveContainedPath(getVariantsDir(), ".", { directory: true });
+  if (!dir) return null;
 
   const files = fs
     .readdirSync(dir)
@@ -408,8 +397,8 @@ export function loadVariantFromDisk(
 /** Load curriculum code -> title mappings from `id_map.json` at the workspace root. */
 export function loadIdMapTitles(rootDir: string = getWorkspaceRoot()): Map<string, string> {
   const titles = new Map<string, string>();
-  const idMapPath = path.join(rootDir, "id_map.json");
-  if (!fs.existsSync(idMapPath)) return titles;
+  const idMapPath = resolveContainedPath(rootDir, "id_map.json", { extensions: JSON_EXTENSIONS });
+  if (!idMapPath) return titles;
   try {
     const raw = JSON.parse(fs.readFileSync(idMapPath, "utf-8")) as Record<string, unknown>;
     for (const [key, val] of Object.entries(raw)) {

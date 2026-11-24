@@ -7,6 +7,8 @@ import {
   getDrillWorkspacesDir,
   getLabWorkspaceDir,
   getLabsDir,
+  JSON_EXTENSIONS,
+  resolveContainedPath,
   getPythonBin,
   getWorkspaceRoot,
   isPilotMode,
@@ -173,8 +175,8 @@ export async function POST(req: NextRequest) {
     ].join(path.delimiter);
 
     if (drillId.startsWith("LAB-")) {
-      const labCfgPath = path.join(getLabsDir(), drillId, "lab.config.json");
-      if (!fs.existsSync(labCfgPath)) {
+      const labCfgPath = resolveContainedPath(getLabsDir(), `${drillId}/lab.config.json`, { extensions: JSON_EXTENSIONS });
+      if (!labCfgPath) {
         return NextResponse.json(
           { error: "Lab not found" },
           { status: 404 }
@@ -184,8 +186,8 @@ export async function POST(req: NextRequest) {
         const pilotLabDir =
           getLabWorkspaceDir(drillId, rootDir) ??
           path.join(rootDir, "pilot", "labs", drillId);
-        const pilotCfg = path.join(pilotLabDir, "lab.config.json");
-        if (!fs.existsSync(pilotCfg)) {
+        const pilotCfg = resolveContainedPath(pilotLabDir, "lab.config.json", { extensions: JSON_EXTENSIONS });
+        if (!pilotCfg) {
           const materialized = await ensurePilotLabMaterialized(
             drillId,
             rootDir,

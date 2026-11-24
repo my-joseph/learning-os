@@ -8,6 +8,9 @@ import {
   getWorkspaceRoot,
   isSafeId,
   loadIdMapTitles,
+  resolveContainedPath,
+  JSON_EXTENSIONS,
+  SOURCE_EXTENSIONS,
 } from "@/lib/paths";
 import { cleanCurriculumTitle } from "@/lib/drillGrouping";
 import { readProgress } from "@/lib/progress";
@@ -54,8 +57,8 @@ function resolveMilestoneVisibleTestFiles(
   labDir: string,
   ms: Record<string, unknown>
 ): string[] {
-  const testsDir = path.join(labDir, "tests");
-  if (!fs.existsSync(testsDir) || !fs.statSync(testsDir).isDirectory()) {
+  const testsDir = resolveContainedPath(labDir, "tests", { directory: true });
+  if (!testsDir) {
     return [];
   }
 
@@ -97,10 +100,8 @@ function extractVisibleTestCases(
   const cases: TestCase[] = [];
   for (const relFile of relTestFiles) {
     if (FORBIDDEN_LAB_LINE_RE.test(relFile)) continue;
-    const absFile = path.resolve(labDir, relFile);
-    const relCheck = path.relative(labDir, absFile);
-    if (relCheck.startsWith("..") || path.isAbsolute(relCheck)) continue;
-    if (!fs.existsSync(absFile)) continue;
+    const absFile = resolveContainedPath(labDir, relFile, { extensions: SOURCE_EXTENSIONS });
+    if (!absFile) continue;
 
     try {
       const content = fs.readFileSync(absFile, "utf-8");
@@ -152,23 +153,14 @@ function resolveMilestoneMainFile(
   if (typeof rawMain !== "string" || !rawMain.trim()) {
     return { mainFile: null, vscodeUrl: null };
   }
-  const candidate = rawMain.trim().replace(/^\/+/, "");
-  if (FORBIDDEN_LAB_LINE_RE.test(candidate)) {
+  const cleanRel = rawMain.trim();
+  const options = { extensions: SOURCE_EXTENSIONS, allowMissing: true };
+  if (FORBIDDEN_LAB_LINE_RE.test(cleanRel) ||
+      !resolveContainedPath(labDir, cleanRel, options) ||
+      !resolveContainedPath(workspaceLabDir, cleanRel, options)) {
     return { mainFile: null, vscodeUrl: null };
   }
-  const absTarget = path.resolve(labDir, candidate);
-  const relToLab = path.relative(labDir, absTarget);
-  if (
-    !relToLab ||
-    relToLab.startsWith("..") ||
-    path.isAbsolute(relToLab) ||
-    relToLab.split(/[\\/]+/).includes("_reference") ||
-    relToLab.split(/[\\/]+/).includes(".canonical")
-  ) {
-    return { mainFile: null, vscodeUrl: null };
-  }
-  const cleanRel = relToLab.replace(/\\/g, "/");
-  const absWsTarget = path.resolve(workspaceLabDir, cleanRel);
+  const absWsTarget = path.join(workspaceLabDir, cleanRel);
   const absNormalized = absWsTarget.startsWith("/") ? absWsTarget : `/${absWsTarget}`;
   return {
     mainFile: cleanRel,
@@ -182,8 +174,8 @@ function resolveNotionUrlForLab(
   chapterCode: string
 ): string | null {
   try {
-    const idMapPath = path.join(getWorkspaceRoot(), "id_map.json");
-    if (!fs.existsSync(idMapPath)) return null;
+    const idMapPath = resolveContainedPath(getWorkspaceRoot(), "id_map.json", { extensions: JSON_EXTENSIONS });
+    if (!idMapPath) return null;
     const idMap = JSON.parse(fs.readFileSync(idMapPath, "utf-8")) as Record<
       string,
       string | { id?: string }
@@ -207,10 +199,11 @@ function resolveNotionUrlForLab(
  * Never reads or returns anything under `labs/_reference/`.
  */
 export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] {
-  if (!fs.existsSync(labsDir)) return [];
+  const root = resolveContainedPath(labsDir, ".", { directory: true });
+  if (!root) return [];
 
   const idMapTitles = loadIdMapTitles();
-  const entries = fs.readdirSync(labsDir, { withFileTypes: true });
+  const entries = fs.readdirSync(root, { withFileTypes: true });
   const items: LabListItem[] = [];
 
   for (const entry of entries) {
@@ -218,15 +211,15 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
     if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
     if (!isLabId(entry.name) || !isSafeId(entry.name)) continue;
 
-    const labDir = path.join(labsDir, entry.name);
-    const configPath = path.join(labDir, "lab.config.json");
-    if (!fs.existsSync(configPath)) continue;
+    const configPath = resolveContainedPath(labsDir, `${entry.name}/lab.config.json`, { extensions: JSON_EXTENSIONS });
+    if (!configPath) continue;
 
     try {
       const raw = JSON.parse(fs.readFileSync(configPath, "utf-8")) as Record<
         string,
         unknown
       >;
+      if (raw.labId && raw.labId !== entry.name) continue;
       const labId =
         typeof raw.labId === "string" && isLabId(raw.labId)
           ? raw.labId.trim()
@@ -317,19 +310,9 @@ export function loadLabDetailFromDisk(
   const trimmedId = labId.trim();
   if (trimmedId.startsWith("_") || trimmedId.includes("_reference")) return null;
 
+  const configPath = resolveContainedPath(labsDir, `${trimmedId}/lab.config.json`, { extensions: JSON_EXTENSIONS });
+  if (!configPath) return null;
   const labDir = path.resolve(labsDir, trimmedId);
-  const relToLabs = path.relative(path.resolve(labsDir), labDir);
-  if (
-    !relToLabs ||
-    relToLabs.startsWith("..") ||
-    path.isAbsolute(relToLabs) ||
-    relToLabs.split(/[\\/]+/).includes("_reference")
-  ) {
-    return null;
-  }
-
-  const configPath = path.join(labDir, "lab.config.json");
-  if (!fs.existsSync(configPath)) return null;
 
   let rawConfig: Record<string, unknown>;
   try {
@@ -341,8 +324,10 @@ export function loadLabDetailFromDisk(
     return null;
   }
 
-  const readmePath = path.join(labDir, "README.md");
-  const rawReadme = fs.existsSync(readmePath)
+  if (rawConfig.labId && rawConfig.labId !== trimmedId) return null;
+
+  const readmePath = resolveContainedPath(labDir, "README.md", { extensions: [".md"] });
+  const rawReadme = readmePath
     ? fs.readFileSync(readmePath, "utf-8")
     : "";
   const readme = sanitizeLabReadme(rawReadme);
@@ -383,6 +368,7 @@ export function loadLabDetailFromDisk(
   const workspaceLabDir = useDefaultLabsDir
     ? getLabWorkspaceDir(canonicalId) ?? labDir
     : labDir;
+  if (!resolveContainedPath(workspaceLabDir, ".", { directory: true, allowMissing: true })) return null;
   const absLabDir = workspaceLabDir.startsWith("/")
     ? workspaceLabDir
     : `/${workspaceLabDir}`;

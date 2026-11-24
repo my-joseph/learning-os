@@ -26,6 +26,7 @@ authorize an extra review attempt.
 
 If the drill/lab or problem/milestone is missing, say so and stop. If the workspace file is missing, the learner has not started:
 tell them to open the workspace from the Studio (or `labs/<LAB_ID>/` in VS Code).
+Review loads the source declared by the drill manifest. For an older drill without a manifest entry, review uses the exact generated source filename. Unsafe source paths should be treated as unavailable.
 
 For labs, both test suites must produce complete passing reports before a pass can be recorded. Report hidden failures in aggregate only.
 
