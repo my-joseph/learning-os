@@ -24,6 +24,18 @@ For a lab milestone, the visible and hidden suites each need a complete passing 
 failure blocks the verdict, and hidden failures appear only in aggregate. When any layer fails, the verdict is
 **revise**. Each submission is one attempt.
 
+## Runner isolation (`code_engine/sandbox.py`)
+
+Automated Layer 1 and Layer 2 execution (`code_engine.test_runner`, `code_engine.submit`, `code_engine.review_run`, `code_engine.lab_ingest`, `code_engine.verify`, `labs/common/submit_lab.py`) runs through one shared isolation helper (`code_engine/sandbox.py`), and Studio's `/api/run-tests` and `/api/review-run` routes scrub their child Python environment and enforce process-group timeouts and output bounds via `practice-studio/src/lib/runnerEnv.ts`:
+
+- **Scrubbed environment:** Allowlist only (`PATH`, `HOME`/`TMPDIR` inside the per-run temp directory, locale, `TZ`, `CI`, `NO_COLOR`, plus explicit non-secret vars such as `LAB_SRC_DIR`). Never inherits `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `NODE_OPTIONS`, or other credentials.
+- **Ephemeral workspace copy:** Drill workspaces and lab `src` + test files are staged into a per-run temp directory outside the repository. `cwd` lives in that temp copy; the repo, `progress/`, `sources/`, `labs/`, and `tools/lint/` are never written to during evaluation.
+- **Resource, timeout, and output bounds:** POSIX `resource.setrlimit` (`RLIMIT_CPU`, `RLIMIT_FSIZE`, `RLIMIT_NOFILE`, `RLIMIT_CORE`), V8 `--max-old-space-size`, wall-time timeouts that kill the entire POSIX process group (`SIGTERM` then `SIGKILL`), and hard byte caps on stdout/stderr.
+- **OS/runtime confinement & platform limits:**
+  - Direct Node runs (`node`, `node --test --test-isolation=none`) use Node 24 `--permission` with `--allow-fs-read` and `--allow-fs-write` restricted to the per-run sandbox (blocking outside reads/writes, `child_process`, and `worker_threads` on both macOS and Linux CI).
+  - On macOS, `/usr/bin/sandbox-exec` (Seatbelt) wraps all runners (including Vitest, ESLint, and `tsc`) to confine all writes to the per-run sandbox, deny reads of `.env`, `progress/`, and `sources/`, and deny network access (while permitting local Unix sockets for IPC).
+  - On Linux, `unshare -r -n` removes network access when unprivileged user namespaces are allowed by the host kernel. Where unprivileged user namespaces are restricted without root (for example under Ubuntu AppArmor in CI), OS-level network blocking and Vitest-level OS write confinement cannot be enforced without root/containers; direct Node runs still enforce `--permission`, and all runners still enforce scrubbed env, ephemeral temp-copy `cwd`, `setrlimit`, output caps, and process-group kill.
+
 ## Layer 2 — lint rule set (one config, repo root)
 
 Shared rules in `tools/lint/base.js`; each drill workspace gets `eslint.config.mjs` (`.mjs` because drill code may be CommonJS) and each lab an `eslint.config.js`, so VS Code shows the same warnings
