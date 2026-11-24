@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         if (!retry || typeof retry !== "object") throw new Error("Partial sync result has no retry plan");
         writePendingNotionSync(drillId, {
           fingerprint: checkpointFingerprint,
-          attemptDate: sessionSummary.attemptDate,
+          attemptDate: sessionSummary.attemptDate ?? undefined,
           retry: retry as NotionSyncRetry,
         });
       }
