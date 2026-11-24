@@ -25,7 +25,7 @@ from code_engine.review_run import (
     run_review_with_source,
     sanitize_tests_summary,
 )
-from progress_store import apply_progress, load_progress, save_progress, score_problem
+from progress_store import apply_progress, is_timestamp_in_cycle, load_progress, save_progress, score_problem
 from scripts.issues import add_issue
 
 
@@ -131,7 +131,7 @@ def add_record(
     state = prob.setdefault("state", {})
     reviews = state.setdefault("reviews", [])
 
-    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     tests_res = sanitize_tests_summary(review_res["tests"])
     tests_total = int(tests_res.get("total", 0) or 0)
     tests_passed = int(tests_res.get("passed", 0) or 0)
@@ -146,7 +146,7 @@ def add_record(
         already_recorded = any(
             isinstance(tr, dict)
             and tr.get("allPassed") is False
-            and (not cycle_start or (isinstance(tr.get("ts"), str) and tr["ts"] >= cycle_start))
+            and is_timestamp_in_cycle(tr.get("ts"), cycle_start if isinstance(cycle_start, str) else None)
             for tr in test_runs
         )
         if not already_recorded:

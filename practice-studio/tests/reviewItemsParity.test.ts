@@ -1156,6 +1156,125 @@ async function runTests() {
       "Bridge item must match second unit scope"
     );
 
+    // 9. A7 parity: reviewHintRevealedAt / reviewSetupRevealedAt / reviewStepsRevealedAt
+    //    on historical records without attempt.hintsUsed, plus successive clean/hinted cycles.
+    const a7ProgressPath = path.join(progressDir, "DRL-MTH-T01-C04-U01-01.json");
+    fs.writeFileSync(
+      a7ProgressPath,
+      JSON.stringify({
+        drillId: "DRL-MTH-T01-C04-U01-01",
+        updatedAt: "2026-11-22T12:00:00Z",
+        problems: {
+          // Q01: historical reviewHintRevealedAt without attempt.hintsUsed -> assisted, stays L1
+          Q01: {
+            cycleStartedAt: "2026-11-20T12:00:00.000Z",
+            reviewHintRevealedAt: "2026-11-20T12:01:00.000Z",
+            hintsRevealed: 0,
+            score: 0.5,
+            attempts: [{ verdict: "correct", ts: "2026-11-20T12:05:00.000Z" }],
+          },
+          // Q02: successive cycles: Cycle 1 clean (L1->L2), Cycle 2 reviewHintRevealedAt (stays L2), Cycle 3 clean (L2->L3)
+          Q02: {
+            cycleStartedAt: "2026-11-22T12:00:00.000Z",
+            reviewHintRevealedAt: "2026-11-21T12:01:00.000Z",
+            hintsRevealed: 1,
+            score: 1,
+            attempts: [
+              { verdict: "correct", ts: "2026-11-20T10:00:00.000Z" },
+              { verdict: "correct", ts: "2026-11-21T12:05:00.000Z", hintsUsed: true },
+              { verdict: "correct", ts: "2026-11-22T12:05:00.000Z", hintsUsed: false },
+            ],
+          },
+          // Q03: Cycle 1 clean without hintsUsed field, Cycle 2 opened hint (sets hintsRevealed=1 + reviewHintRevealedAt in Cycle 2)
+          Q03: {
+            cycleStartedAt: "2026-11-21T12:00:00.000Z",
+            reviewHintRevealedAt: "2026-11-21T12:01:00.000Z",
+            hintsRevealed: 1,
+            score: 0.5,
+            attempts: [
+              { verdict: "correct", ts: "2026-11-20T10:00:00.000Z" },
+              { verdict: "correct", ts: "2026-11-21T12:05:00.000Z" },
+            ],
+          },
+        },
+      }),
+      "utf-8"
+    );
+    fs.writeFileSync(
+      path.join(progressDir, "DRL-PRG-T01-C01-U01-01.json"),
+      JSON.stringify({
+        drillId: "DRL-PRG-T01-C01-U01-01",
+        updatedAt: "2026-11-21T12:00:00Z",
+        problems: {
+          Q01: {
+            cycleStartedAt: "2026-11-20T12:00:00.000Z",
+            reviewHintRevealedAt: "2026-11-20T12:01:00.000Z",
+            hintsRevealed: 0,
+            reviews: [
+              {
+                at: "2026-11-20T12:05:00.000Z",
+                verdict: "pass",
+                findings: [],
+                lint: [],
+              },
+            ],
+          },
+        },
+      }),
+      "utf-8"
+    );
+    const tsA7Schedule = buildScheduleFromProgress({
+      dataDir,
+      progressDir,
+      labsDir,
+      rootDir: root,
+    });
+    const pyA7Proc = spawnSync(
+      python,
+      [
+        "-m",
+        "scripts.review_items",
+        "--today",
+        "2026-11-23",
+        "--data-root",
+        dataDir,
+        "--progress-dir",
+        progressDir,
+        "--json",
+      ],
+      {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, PROGRESS_DIR: progressDir, DRILLS_DATA_DIR: dataDir, LABS_DIR: labsDir },
+      }
+    );
+    assert.equal(pyA7Proc.status, 0, pyA7Proc.stderr);
+    const pyA7Map: Record<string, ReviewItem> = {};
+    for (const it of (JSON.parse(pyA7Proc.stdout) as { items: ReviewItem[] }).items) {
+      pyA7Map[`${it.drillId}/${it.qid}`] = it;
+    }
+    assert.deepEqual(tsA7Schedule, pyA7Map, "TS and Python must match on A7 reviewHintRevealedAt replay");
+    assert.equal(
+      tsA7Schedule["DRL-MTH-T01-C04-U01-01/Q01"].level,
+      1,
+      "historical reviewHintRevealedAt without attempt.hintsUsed must replay as assisted (stay L1)"
+    );
+    assert.equal(
+      tsA7Schedule["DRL-MTH-T01-C04-U01-01/Q02"].level,
+      3,
+      "successive cycles clean -> hinted -> clean must replay L1 -> L2 -> L2 -> L3"
+    );
+    assert.equal(
+      tsA7Schedule["DRL-MTH-T01-C04-U01-01/Q03"].level,
+      2,
+      "Cycle 1 clean -> Cycle 2 hinted (with reviewHintRevealedAt) must replay L1 -> L2 -> L2"
+    );
+    assert.equal(
+      tsA7Schedule["DRL-PRG-T01-C01-U01-01/Q01"].level,
+      1,
+      "PRG pass review after reviewHintRevealedAt must replay as assisted (stay L1)"
+    );
+
     console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, variants, and /api/review-items routes match");
   } finally {
     if (prevProgressDir === undefined) delete process.env.PROGRESS_DIR;

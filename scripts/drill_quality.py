@@ -15,7 +15,7 @@ import os
 from collections import Counter, defaultdict
 from typing import Any
 
-from progress_store import cycle_evidence, find_repo_root, progress_root, score_problem
+from progress_store import cycle_evidence, find_repo_root, is_timestamp_in_cycle, progress_root, score_problem
 from scripts.weak_spots import _collect_matched_traps, _is_prg
 
 
@@ -91,7 +91,7 @@ def _similar_slots_opened(state: dict[str, Any]) -> bool:
     cycle_start = cycle_start if isinstance(cycle_start, str) and cycle_start else None
 
     def current(timestamp: Any) -> bool:
-        return isinstance(timestamp, str) and bool(timestamp) and (cycle_start is None or timestamp >= cycle_start)
+        return isinstance(timestamp, str) and bool(timestamp) and is_timestamp_in_cycle(timestamp, cycle_start)
 
     for slot in slots:
         # Current schema stores opaque token strings with activity in state.variants[token].

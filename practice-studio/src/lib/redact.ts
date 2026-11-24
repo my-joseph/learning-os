@@ -20,6 +20,7 @@ import {
   canRevealVerifiedAnswer,
   canShowReferenceSolution,
   isSubstantiveVerdict,
+  isTimestampInCycle,
 } from "./reviewGuard";
 import { cycleAttempts, cycleOriginalAttempts, isInCycle } from "./similarTabs";
 import { hasCheckpointHint } from "./studioRules";
@@ -201,8 +202,7 @@ export function canRevealVariantSteps(
     return true;
   }
   if (record.stepsRevealed) {
-    if (!cycleStartedAt) return true;
-    if (record.servedAt && record.servedAt >= cycleStartedAt) return true;
+    if (isTimestampInCycle(record.servedAt, cycleStartedAt)) return true;
   }
   return false;
 }

@@ -608,6 +608,94 @@
         ]
       },
       "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-mixed-precision-prior-review-excluded",
+      "opts": { "isPrg": true },
+      "state": {
+        "cycleStartedAt": "2026-11-20T10:00:00.900Z",
+        "reviews": [
+          { "at": "2026-11-20T10:00:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-mixed-precision-prior-attempt-excluded",
+      "state": {
+        "cycleStartedAt": "2026-11-20T10:00:00.900Z",
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-second-vs-millisecond-equal-instant-included",
+      "state": {
+        "cycleStartedAt": "2026-11-20T10:00:00.000Z",
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-timezone-offset-earlier-instant-excluded",
+      "state": {
+        "cycleStartedAt": "2026-11-20T04:00:00Z",
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T10:00:00+07:00", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-timezone-offset-equal-instant-included",
+      "state": {
+        "cycleStartedAt": "2026-11-20T10:00:00.000Z",
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T17:00:00+07:00", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-timezone-offset-prior-help-excluded",
+      "state": {
+        "cycleStartedAt": "2026-11-20T04:00:00Z",
+        "reviewHintRevealedAt": "2026-11-20T10:00:00+07:00",
+        "attempts": [
+          { "input": "4", "ts": "2026-11-20T03:30:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T04:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-mixed-precision-older-pass-review-does-not-supersede-failing-report",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": false, "passedCount": 1, "totalCount": 3, "ts": "2026-11-20T10:00:00.900Z" },
+        "reviews": [
+          { "at": "2026-11-20T10:00:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "a8-variant-timezone-offset-prior-help-excluded",
+      "kind": "variant",
+      "cycleStartedAt": "2026-11-20T04:00:00Z",
+      "record": {
+        "role": "try",
+        "servedAt": "2026-11-20T10:00:00+07:00",
+        "hintsRevealed": 1,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T04:05:00Z", "verdict": "correct", "kind": "variant" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false }
     }
   ]
 }

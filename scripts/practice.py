@@ -22,6 +22,7 @@ from math_engine.figure_svg import figure_to_svg
 from progress_store import (
     apply_progress,
     is_locked_after_correct,
+    is_timestamp_in_cycle,
     progress_root,
     save_progress,
     score_problem,
@@ -214,10 +215,7 @@ def _has_cycle_original_check(state: dict[str, Any]) -> bool:
     raw_attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
     orig_attempts = [a for a in raw_attempts if isinstance(a, dict) and a.get("kind") != "variant"]
     if orig_attempts:
-        return any(
-            not cycle_start or (isinstance(a.get("ts"), str) and bool(a["ts"]) and a["ts"] >= cycle_start)
-            for a in orig_attempts
-        )
+        return any(is_timestamp_in_cycle(a.get("ts"), cycle_start) for a in orig_attempts)
     return not cycle_start and bool(state.get("lastCheck"))
 
 

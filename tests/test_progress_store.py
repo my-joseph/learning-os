@@ -577,3 +577,12 @@ def test_save_progress_merges_session_summary_and_preserves_sync_stamps():
     assert after_newer["syncedToNotionAt"] == "2026-11-21T16:45:00.000Z"
     assert after_newer["notionPageId"] == "page-456"
     assert after_newer["syncedFingerprint"] == "fp-v2"
+
+
+def test_is_timestamp_in_cycle_handles_mixed_precision_and_zones():
+    assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00Z", "2026-11-20T10:00:00.900Z") is False
+    assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00Z", "2026-11-20T10:00:00.000Z") is True
+    assert ps.is_timestamp_in_cycle("2026-11-20T17:00:00+07:00", "2026-11-20T10:00:00.000Z") is True
+    assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00+07:00", "2026-11-20T04:00:00Z") is False
+    assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00.123Z", "2026-11-20T10:00:00.123456Z") is True
+    assert ps.is_timestamp_in_cycle("not-a-timestamp", "2026-11-20T10:00:00Z") is False

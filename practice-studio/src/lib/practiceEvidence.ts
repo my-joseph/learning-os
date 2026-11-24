@@ -4,7 +4,12 @@ import { labToDrillDocument } from "@/lib/labModel";
 import { loadLabDetailFromDisk } from "@/lib/labs";
 import { loadDrillFromDisk } from "@/lib/paths";
 import { mutateProblemState, mutateProblemStates, readProgress } from "@/lib/progress";
-import { hasSubstantiveAttempt, isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
+import {
+  compareIsoTimestamps,
+  hasSubstantiveAttempt,
+  isSubstantiveVerdict,
+  isTimestampInCycle,
+} from "@/lib/reviewGuard";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { isLabId } from "@/lib/routes";
 import { MAX_ATTEMPT_DURATION_MS } from "@/lib/telemetryTimer";
@@ -72,7 +77,11 @@ export function recordOriginalCheck(
 
 function practiceTimestamp(cycle: string | null): string {
   const now = new Date().toISOString();
-  return cycle && cycle > now && Date.parse(cycle) - Date.parse(now) <= 3 ? cycle : now;
+  if (!cycle) return now;
+  const cmp = compareIsoTimestamps(cycle, now);
+  return (cmp !== null ? cmp > 0 : cycle > now) && Date.parse(cycle) - Date.parse(now) <= 3
+    ? cycle
+    : now;
 }
 
 export function recordTestReport(

@@ -27,6 +27,42 @@ from typing import Any
 PROGRESS_FIELDS_DOC = ("sessionSummary",)
 PROGRESS_FIELDS_PROBLEM = ("state",)
 _ISO_DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
+_ISO_TIMESTAMP_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$",
+    re.IGNORECASE,
+)
+_EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+
+
+def parse_iso_timestamp_ms(ts: Any) -> int | None:
+    """Parse an ISO-8601 date or timestamp into UTC epoch milliseconds (matching JS Date.parse)."""
+    if not isinstance(ts, str):
+        return None
+    trimmed = ts.strip()
+    if not trimmed or not _ISO_TIMESTAMP_RE.match(trimmed):
+        return None
+    try:
+        if "T" not in trimmed and "t" not in trimmed and " " not in trimmed:
+            dt = datetime.datetime.fromisoformat(trimmed).replace(tzinfo=datetime.timezone.utc)
+        else:
+            normalized = trimmed[:-1] + "+00:00" if trimmed.endswith(("Z", "z")) else trimmed
+            dt = datetime.datetime.fromisoformat(normalized)
+            if dt.tzinfo is None:
+                dt = dt.astimezone()
+    except ValueError:
+        return None
+    dt = dt.replace(microsecond=(dt.microsecond // 1000) * 1000)
+    delta = dt.astimezone(datetime.timezone.utc) - _EPOCH_UTC
+    return (delta.days * 86_400 + delta.seconds) * 1000 + (delta.microseconds // 1000)
+
+
+def compare_iso_timestamps(a: Any, b: Any) -> int | None:
+    """Compare two ISO timestamps by instant (-1, 0, 1), or None when either fails to parse."""
+    ta = parse_iso_timestamp_ms(a)
+    tb = parse_iso_timestamp_ms(b)
+    if ta is None or tb is None:
+        return None
+    return -1 if ta < tb else (1 if ta > tb else 0)
 
 
 def pilot_mode() -> bool:
@@ -145,7 +181,9 @@ def extract_progress(drill_doc: dict[str, Any]) -> dict[str, Any]:
     return {
         "drillId": drill_doc.get("drillId"),
         "unitCode": drill_doc.get("unitCode"),
-        "updatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "updatedAt": datetime.datetime.now(datetime.timezone.utc)
+        .isoformat(timespec="milliseconds")
+        .replace("+00:00", "Z"),
         "sessionSummary": drill_doc.get("sessionSummary") or {},
         "problems": {p["id"]: p["state"] for p in drill_doc.get("problems", []) if p.get("id") and p.get("state")},
     }
@@ -224,6 +262,9 @@ def _max_iso_timestamp(a: Any, b: Any) -> str | None:
     sa = a.strip() if isinstance(a, str) and a.strip() else None
     sb = b.strip() if isinstance(b, str) and b.strip() else None
     if sa and sb:
+        cmp_val = compare_iso_timestamps(sa, sb)
+        if cmp_val is not None:
+            return sa if cmp_val >= 0 else sb
         return sa if sa > sb else sb
     return sa or sb
 
@@ -264,7 +305,7 @@ def _merge_attempts(prev_raw: Any, next_raw: Any) -> list[dict[str, Any]] | None
         and prev
         and all(isinstance(a.get("ts"), str) and _ISO_DATE_PREFIX_RE.match(a["ts"]) for a in merged)
     ):
-        merged.sort(key=lambda a: str(a["ts"]))
+        merged.sort(key=lambda a: (parse_iso_timestamp_ms(a["ts"]) or 0, str(a["ts"])))
     return merged
 
 
@@ -443,7 +484,11 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
 
         prev_report = prev.get("lastTestReport")
         if isinstance(prev_report, dict):
-            is_newer_cycle = bool(incoming_cycle and (not prev_cycle or incoming_cycle > prev_cycle))
+            cmp_cycle = compare_iso_timestamps(incoming_cycle, prev_cycle) if (incoming_cycle and prev_cycle) else None
+            is_newer_cycle = bool(
+                incoming_cycle
+                and (not prev_cycle or (cmp_cycle > 0 if cmp_cycle is not None else incoming_cycle > prev_cycle))
+            )
             next_report = st.get("lastTestReport")
             if next_report is None:
                 if not is_newer_cycle:
@@ -451,8 +496,10 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
             elif isinstance(next_report, dict):
                 prev_ts = prev_report.get("ts")
                 next_ts = next_report.get("ts")
-                if isinstance(prev_ts, str) and prev_ts and isinstance(next_ts, str) and next_ts and prev_ts > next_ts:
-                    st["lastTestReport"] = prev_report
+                if isinstance(prev_ts, str) and prev_ts and isinstance(next_ts, str) and next_ts:
+                    cmp_rep = compare_iso_timestamps(prev_ts, next_ts)
+                    if cmp_rep > 0 if cmp_rep is not None else prev_ts > next_ts:
+                        st["lastTestReport"] = prev_report
 
         for key in ("mistakes", "mistakeNote", "revisitNote"):
             if _is_empty_value(st.get(key)) and not _is_empty_value(prev.get(key)):
@@ -494,9 +541,17 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
     )
     if max_cycle:
         st["cycleStartedAt"] = max_cycle
-    if isinstance(prev, dict) and max_cycle == prev_cycle and "reviewBaseLevel" in prev:
+    same_prev_cycle = (
+        compare_iso_timestamps(max_cycle, prev_cycle) == 0 if (max_cycle and prev_cycle) else max_cycle == prev_cycle
+    )
+    same_inc_cycle = (
+        compare_iso_timestamps(incoming_cycle, max_cycle) == 0
+        if (incoming_cycle and max_cycle)
+        else incoming_cycle == max_cycle
+    )
+    if isinstance(prev, dict) and same_prev_cycle and "reviewBaseLevel" in prev:
         st["reviewBaseLevel"] = prev["reviewBaseLevel"]
-    elif incoming_cycle != max_cycle:
+    elif not same_inc_cycle:
         st.pop("reviewBaseLevel", None)
 
     prev_seen = (
@@ -551,7 +606,11 @@ def _merge_session_summary(existing_summary: Any, incoming_summary: Any) -> dict
     prev_fp = _non_empty_str(prev.get("syncedFingerprint"))
     next_fp = _non_empty_str(nxt.get("syncedFingerprint"))
 
-    is_newer_stamp = bool(next_synced_at and (not prev_synced_at or next_synced_at > prev_synced_at))
+    cmp_sync = compare_iso_timestamps(next_synced_at, prev_synced_at) if (next_synced_at and prev_synced_at) else None
+    is_newer_stamp = bool(
+        next_synced_at
+        and (not prev_synced_at or (cmp_sync > 0 if cmp_sync is not None else next_synced_at > prev_synced_at))
+    )
 
     if is_newer_stamp:
         merged["syncedToNotionAt"] = next_synced_at
@@ -658,9 +717,14 @@ _NON_SUBSTANTIVE_VERDICTS = ("invalid input", "parse_error")
 
 def _is_in_cycle(ts: Any, cycle_started_at: str | None) -> bool:
     """Return True when `ts` falls at or after `cycle_started_at` (absent boundary includes all history)."""
-    if not cycle_started_at:
+    if not cycle_started_at or not isinstance(cycle_started_at, str) or not cycle_started_at.strip():
         return True
-    return isinstance(ts, str) and len(ts) > 0 and ts >= cycle_started_at
+    ts_ms = parse_iso_timestamp_ms(ts)
+    cycle_ms = parse_iso_timestamp_ms(cycle_started_at)
+    return ts_ms is not None and cycle_ms is not None and ts_ms >= cycle_ms
+
+
+is_timestamp_in_cycle = _is_in_cycle
 
 
 def _is_substantive_verdict(verdict: Any) -> bool:
@@ -813,7 +877,11 @@ def _resolve_prg_latest_tests_status(
     rev_test_pass = _review_tests_pass(latest_rev) if latest_rev else None
 
     if report_info["hasData"] and latest_rev:
-        if report_info["ts"] and latest_rev_at and latest_rev_at > report_info["ts"] and rev_test_pass is not None:
+        cmp_rev = (
+            compare_iso_timestamps(latest_rev_at, report_info["ts"]) if (report_info["ts"] and latest_rev_at) else None
+        )
+        is_newer_rev = (cmp_rev > 0) if cmp_rev is not None else (latest_rev_at > (report_info["ts"] or ""))
+        if report_info["ts"] and latest_rev_at and is_newer_rev and rev_test_pass is not None:
             return "pass" if rev_test_pass else "fail"
         return "pass" if report_info["allPassed"] else "fail"
     if report_info["hasData"]:
@@ -1008,9 +1076,7 @@ def score_variant(record: dict[str, Any] | None, cycle_started_at: str | None = 
     if not isinstance(record, dict):
         return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": False}
     served_at = record.get("servedAt")
-    in_current_cycle = not cycle_started_at or (
-        isinstance(served_at, str) and len(served_at) > 0 and served_at >= cycle_started_at
-    )
+    in_current_cycle = _is_in_cycle(served_at, cycle_started_at)
     adapted: dict[str, Any] = {
         "attempts": record.get("attempts") if isinstance(record.get("attempts"), list) else [],
         "hintsRevealed": record.get("hintsRevealed", 0) if in_current_cycle else 0,

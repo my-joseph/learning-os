@@ -2,13 +2,36 @@ import { ProblemState, ReviewRecord, TestRunRecord } from "../types/drill";
 
 export const NON_SUBSTANTIVE_VERDICTS = new Set(["invalid input", "parse_error"]);
 
+const ISO_TIMESTAMP_RE =
+  /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/i;
+
+/** Parse an ISO-8601 date or timestamp to UTC epoch milliseconds, or null when invalid. */
+export function parseIsoTimestampMs(ts?: unknown): number | null {
+  if (typeof ts !== "string") return null;
+  const trimmed = ts.trim();
+  if (!trimmed || !ISO_TIMESTAMP_RE.test(trimmed)) return null;
+  const normalized = trimmed.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+  const ms = Date.parse(normalized);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+/** Compare two ISO timestamps by instant (-1, 0, 1), or null when either fails to parse. */
+export function compareIsoTimestamps(a?: unknown, b?: unknown): number | null {
+  const ta = parseIsoTimestampMs(a);
+  const tb = parseIsoTimestampMs(b);
+  if (ta === null || tb === null) return null;
+  return ta < tb ? -1 : ta > tb ? 1 : 0;
+}
+
 /** Return true when `ts` falls at or after `cycleStartedAt` (absent `cycleStartedAt` counts all history). */
 export function isTimestampInCycle(
   ts?: string | null,
   cycleStartedAt?: string | null
 ): boolean {
-  if (!cycleStartedAt) return true;
-  return typeof ts === "string" && ts.length > 0 && ts >= cycleStartedAt;
+  if (!cycleStartedAt || !cycleStartedAt.trim()) return true;
+  const tsMs = parseIsoTimestampMs(ts);
+  const cycleMs = parseIsoTimestampMs(cycleStartedAt);
+  return tsMs !== null && cycleMs !== null && tsMs >= cycleMs;
 }
 
 /** Return PRG/lab review records belonging to the current cycle (all reviews when `cycleStartedAt` is absent). */
@@ -147,8 +170,7 @@ const NOTION_CHECK_VERDICTS = new Set(["correct", "incorrect", "partial", "equiv
  * an executed test run, or a code review in the current cycle. */
 export function getNotionAttemptEvidence(state: ProblemState | undefined, isPrg: boolean) {
   const cycleStartedAt = state?.cycleStartedAt;
-  const inCycle = (ts?: string | null) =>
-    !cycleStartedAt || (typeof ts === "string" && Date.parse(ts) >= Date.parse(cycleStartedAt));
+  const inCycle = (ts?: string | null) => isTimestampInCycle(ts, cycleStartedAt);
   const attempts = Array.isArray(state?.attempts) ? state.attempts : [];
   const current = attempts.filter((a) => a && a.kind !== "variant" && inCycle(a.ts));
   const legacyVerdict = cycleStartedAt ? undefined : state?.lastCheck?.verdict;

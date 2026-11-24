@@ -22,7 +22,7 @@ import {
   reviewItemKey,
   writeReviewItemsStore,
 } from "@/lib/reviewItems";
-import { isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
 import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
 
@@ -121,10 +121,10 @@ export async function GET(req: NextRequest) {
         { status: 403 }
       );
     }
-    const recordInCycle =
-      !resolved.state.cycleStartedAt ||
-      (Boolean(resolved.record.servedAt) &&
-        resolved.record.servedAt >= resolved.state.cycleStartedAt);
+    const recordInCycle = isTimestampInCycle(
+      resolved.record.servedAt,
+      resolved.state.cycleStartedAt
+    );
     if (!hasCorrectInCycle && !(recordInCycle && resolved.record.stepsRevealed)) {
       updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
         stepsRevealed: true,

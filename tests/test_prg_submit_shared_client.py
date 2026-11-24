@@ -237,6 +237,7 @@ def test_drill_submit_cli_syncs_failure_after_same_second_review(tmp_path, monke
     assert "NEEDS RETRY" in capsys.readouterr().out
     assert synced[0]["sessionSummary"]["practiceStatus"] == "Needs Retry"
     assert synced[0]["sessionSummary"]["score"] == 0
+    assert synced[0]["problems"][0]["state"]["lastTestReport"]["ts"] == "2026-11-24T12:00:00.500Z"
 
 
 def test_junit_qid_grouping_handles_brackets_underscores_and_files():

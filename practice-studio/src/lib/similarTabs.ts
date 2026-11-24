@@ -3,7 +3,7 @@ import type {
   ProblemState,
   VariantSessionRecord,
 } from "../types/drill";
-import { isSubstantiveVerdict, isWrongAttemptVerdict } from "./reviewGuard";
+import { isSubstantiveVerdict, isTimestampInCycle, isWrongAttemptVerdict } from "./reviewGuard";
 import { scoreProblem, scoreVariant } from "./scoring";
 
 export type SimilarTabStatus =
@@ -52,8 +52,7 @@ export function isInCycle(
   ts?: string | null,
   cycleStartedAt?: string | null
 ): boolean {
-  if (!cycleStartedAt) return true;
-  return typeof ts === "string" && ts.length > 0 && ts >= cycleStartedAt;
+  return isTimestampInCycle(ts, cycleStartedAt);
 }
 
 /** Return attempts made at or after `cycleStartedAt` (all attempts when `cycleStartedAt` is absent). */
