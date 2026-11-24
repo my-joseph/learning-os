@@ -16,6 +16,12 @@ import {
 import { currentPracticeCycle, recordTestReport } from "@/lib/practiceEvidence";
 import { loadLabDetailFromDisk } from "@/lib/labs";
 import { maskHiddenTestFailures, sanitizeCodeCheckError } from "@/lib/codeStatus";
+import {
+  appendBoundedOutput,
+  buildPrgPythonEnv,
+  killProcessTree,
+  REVIEW_RUN_TIMEOUT_MS,
+} from "@/lib/runnerEnv";
 
 function formatServerCheckError(raw: string, rootDir: string): string {
   const withoutRoot = rootDir
@@ -29,8 +35,6 @@ function formatServerCheckError(raw: string, rootDir: string): string {
     : raw;
   return sanitizeCodeCheckError(withoutRoot);
 }
-
-const REVIEW_RUN_TIMEOUT_MS = 30_000;
 
 function getExpectedWorkspaceDir(drillId: string, rootDir: string): string {
   return (
@@ -55,24 +59,35 @@ async function ensureWorkspaceMaterialized(
   return new Promise((resolve) => {
     const proc = spawn(pythonBin, ["-c", pyCode], {
       cwd: rootDir,
-      env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
+      env: buildPrgPythonEnv(rootDir, pythonPath, { includeWorkspaceHints: true }),
+      detached: process.platform !== "win32",
     });
     let stderr = "";
+    let settled = false;
+    const finish = (res: { ok: boolean; error?: string }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(res);
+    };
     const timer = setTimeout(() => {
-      proc.kill("SIGKILL");
-      resolve({ ok: false, error: "Workspace materialization timed out" });
+      killProcessTree(proc);
+      finish({ ok: false, error: "Workspace materialization timed out" });
     }, REVIEW_RUN_TIMEOUT_MS);
 
     proc.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
+      stderr = appendBoundedOutput(stderr, chunk).value;
+    });
+
+    proc.on("error", (err) => {
+      finish({ ok: false, error: err.message });
     });
 
     proc.on("close", (code) => {
-      clearTimeout(timer);
       if (code !== 0) {
-        resolve({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
+        finish({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
       } else {
-        resolve({ ok: true });
+        finish({ ok: true });
       }
     });
 
@@ -94,24 +109,35 @@ async function ensurePilotLabMaterialized(
   return new Promise((resolve) => {
     const proc = spawn(pythonBin, ["-c", pyCode], {
       cwd: rootDir,
-      env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
+      env: buildPrgPythonEnv(rootDir, pythonPath, { includeWorkspaceHints: true }),
+      detached: process.platform !== "win32",
     });
     let stderr = "";
+    let settled = false;
+    const finish = (res: { ok: boolean; error?: string }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(res);
+    };
     const timer = setTimeout(() => {
-      proc.kill("SIGKILL");
-      resolve({ ok: false, error: "Pilot lab materialization timed out" });
+      killProcessTree(proc);
+      finish({ ok: false, error: "Pilot lab materialization timed out" });
     }, REVIEW_RUN_TIMEOUT_MS);
 
     proc.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
+      stderr = appendBoundedOutput(stderr, chunk).value;
+    });
+
+    proc.on("error", (err) => {
+      finish({ ok: false, error: err.message });
     });
 
     proc.on("close", (code) => {
-      clearTimeout(timer);
       if (code !== 0) {
-        resolve({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
+        finish({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
       } else {
-        resolve({ ok: true });
+        finish({ ok: true });
       }
     });
   });
@@ -220,18 +246,26 @@ export async function POST(req: NextRequest) {
         ["-m", "code_engine.review_run", drillId, problemId, "--json"],
         {
           cwd: rootDir,
-          env: { ...process.env, LEARNINGOS_ROOT: rootDir, PYTHONPATH: pythonPath },
+          env: buildPrgPythonEnv(rootDir, pythonPath, { includeWorkspaceHints: true }),
+          detached: process.platform !== "win32",
         }
       );
 
       let stdout = "";
       let stderr = "";
-      let timedOut = false;
+      let settled = false;
+      let outputExceeded = false;
+
+      const finish = (response: NextResponse) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(response);
+      };
 
       const timer = setTimeout(() => {
-        timedOut = true;
-        proc.kill("SIGKILL");
-        resolve(
+        killProcessTree(proc);
+        finish(
           NextResponse.json(
             { error: "Review check timed out" },
             { status: 504 }
@@ -240,21 +274,48 @@ export async function POST(req: NextRequest) {
       }, REVIEW_RUN_TIMEOUT_MS);
 
       proc.stdout.on("data", (data) => {
-        stdout += data.toString();
+        const next = appendBoundedOutput(stdout, data);
+        stdout = next.value;
+        if (next.exceeded && !outputExceeded) {
+          outputExceeded = true;
+          killProcessTree(proc);
+        }
       });
 
       proc.stderr.on("data", (data) => {
-        stderr += data.toString();
+        const next = appendBoundedOutput(stderr, data);
+        stderr = next.value;
+        if (next.exceeded && !outputExceeded) {
+          outputExceeded = true;
+          killProcessTree(proc);
+        }
+      });
+
+      proc.on("error", (err) => {
+        finish(
+          NextResponse.json(
+            { error: formatServerCheckError(err.message, rootDir) },
+            { status: 500 }
+          )
+        );
       });
 
       proc.on("close", (code) => {
-        clearTimeout(timer);
-        if (timedOut) return;
+        if (settled) return;
+        if (outputExceeded) {
+          finish(
+            NextResponse.json(
+              { error: "Review check exceeded output size limit" },
+              { status: 500 }
+            )
+          );
+          return;
+        }
 
         if (code !== 0) {
           const rawErr =
             stderr.trim() || stdout.trim() || `review_run exited with code ${code}`;
-          resolve(
+          finish(
             NextResponse.json(
               {
                 error: formatServerCheckError(rawErr, rootDir),
@@ -289,10 +350,10 @@ export async function POST(req: NextRequest) {
             }
           ) : undefined;
           if (testReport === null) {
-            resolve(NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
+            finish(NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
             return;
           }
-          resolve(
+          finish(
             NextResponse.json({
               ...parsed,
               ...(testReport ? { testReport } : {}),
@@ -302,7 +363,7 @@ export async function POST(req: NextRequest) {
           );
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : String(err);
-          resolve(
+          finish(
             NextResponse.json(
               { error: `Could not parse review_run output: ${errMsg}` },
               { status: 500 }

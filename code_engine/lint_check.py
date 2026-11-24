@@ -2,9 +2,10 @@
 """
 Lint checker for PRG drill reference solutions (Layer 2).
 
-Writes each problem's `solutionCode` into a temporary directory alongside an
-`eslint.config.mjs` using `tools/lint/base.js` and the drill's `lintOverrides`,
-then runs ESLint and reports any rule violations as `file:line rule message`.
+Writes each problem's `solutionCode` into an isolated per-run sandbox alongside a
+trusted `eslint.config.mjs` using `tools/lint/base.js` and the drill's `lintOverrides`,
+then runs ESLint / `tsc` through `code_engine.sandbox.run_isolated` and reports any
+rule violations as `file:line rule message`.
 
 Usage:
     python -m code_engine.lint_check --all
@@ -15,19 +16,38 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
-import subprocess
 import sys
-import tempfile
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Optional
 
+from code_engine.sandbox import DEFAULT_TOOL_TIMEOUT_SEC, create_sandbox_dir, run_isolated
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_LINT_DIR = REPO_ROOT / "tools" / "lint"
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
+
+UNTRUSTED_TOOL_CONFIG_NAMES = frozenset(
+    {
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+        ".eslintrc",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.json",
+        ".eslintrc.yml",
+        ".eslintrc.yaml",
+        "tsconfig.json",
+        "vitest.config.ts",
+        "vitest.config.mjs",
+        "vitest.config.js",
+    }
+)
 
 
 class LintToolsMissingError(RuntimeError):
@@ -45,51 +65,77 @@ def get_lint_binaries() -> tuple[Path, Path]:
     return base_js, eslint_bin
 
 
+def build_trusted_eslint_config(
+    base_js: Path,
+    overrides: Sequence[dict[str, Any]] | None = None,
+) -> str:
+    """Generate a canonical ESLint 9 flat config referencing trusted `tools/lint/base.js`."""
+    active_overrides = list(overrides or [])
+    return (
+        f"import {{ prgConfig }} from {json.dumps(base_js.resolve().as_uri())};\n\n"
+        f"export default prgConfig({{ overrides: {json.dumps(active_overrides)} }});\n"
+    )
+
+
+def build_trusted_tsconfig(
+    *,
+    include: Sequence[str],
+    jsx: bool = False,
+) -> dict[str, Any]:
+    """Generate a canonical strict TypeScript configuration for sandboxed Layer 2 checks."""
+    compiler_options: dict[str, Any] = {
+        "target": "ES2024",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "strict": True,
+        "noEmit": True,
+        "allowImportingTsExtensions": True,
+        "skipLibCheck": True,
+    }
+    if jsx:
+        compiler_options["jsx"] = "react-jsx"
+    return {
+        "compilerOptions": compiler_options,
+        "include": list(include),
+    }
+
+
 def lint_code_snippet(
     code: str,
     ext: str = "js",
     overrides: Optional[list[dict[str, str]]] = None,
     filename: str = "solution",
 ) -> list[dict[str, Any]]:
-    """Lint a single code string in a temp directory and return structured findings."""
+    """Lint a single code string inside an isolated sandbox and return structured findings."""
     base_js, eslint_bin = get_lint_binaries()
-    active_overrides = overrides or []
+    shared_modules = (TOOLS_LINT_DIR / "node_modules").resolve()
 
-    with tempfile.TemporaryDirectory(prefix="prg_lint_") as tmp:
-        tmp_path = Path(tmp)
-        cfg_path = tmp_path / "eslint.config.mjs"
-        cfg_content = (
-            f"import {{ prgConfig }} from {json.dumps(base_js.as_uri())};\n\n"
-            f"export default prgConfig({{ overrides: {json.dumps(active_overrides)} }});\n"
-        )
-        cfg_path.write_text(cfg_content, encoding="utf-8")
+    with create_sandbox_dir(prefix="prg_lint_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = sbx_root / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
+
+        cfg_path = work_dir / "eslint.config.mjs"
+        cfg_path.write_text(build_trusted_eslint_config(base_js, overrides), encoding="utf-8")
 
         target_name = f"{filename}.{ext}"
-        target_path = tmp_path / target_name
-        target_path.write_text(code.rstrip() + "\n", encoding="utf-8")
+        (work_dir / target_name).write_text(code.rstrip() + "\n", encoding="utf-8")
         if ext in ("ts", "tsx"):
-            tsconfig_data: dict[str, Any] = {
-                "compilerOptions": {
-                    "target": "ES2024",
-                    "module": "NodeNext",
-                    "moduleResolution": "NodeNext",
-                    "strict": True,
-                    "noEmit": True,
-                    "skipLibCheck": True,
-                },
-                "include": ["*.ts", "*.tsx"],
-            }
-            if ext == "tsx":
-                tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
-            (tmp_path / "tsconfig.json").write_text(json.dumps(tsconfig_data), encoding="utf-8")
+            tsconfig_data = build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=(ext == "tsx"))
+            (work_dir / "tsconfig.json").write_text(json.dumps(tsconfig_data), encoding="utf-8")
+            if ext == "tsx" and shared_modules.is_dir():
+                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
 
-        proc = subprocess.run(
-            [str(eslint_bin), "--format", "json", target_name],
-            cwd=str(tmp_path),
-            capture_output=True,
-            text=True,
+        proc = run_isolated(
+            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", target_name],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
         )
 
+        if proc.timed_out:
+            raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
         if proc.returncode not in (0, 1):
             raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
 
@@ -140,43 +186,37 @@ def typecheck_code_snippet(
     ext: str = "ts",
     filename: str = "solution",
 ) -> list[dict[str, Any]]:
-    """Run `tsc --noEmit` on a single TypeScript snippet in a temp directory."""
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
+    """Run `tsc --noEmit` on a single TypeScript snippet inside an isolated sandbox."""
+    shared_modules = (TOOLS_LINT_DIR / "node_modules").resolve()
+    tsc_bin = shared_modules / ".bin" / "tsc"
     if not tsc_bin.exists():
         raise LintToolsMissingError(
             f"TypeScript compiler not installed. Expected {tsc_bin}. Run `npm ci` in tools/lint."
         )
 
-    with tempfile.TemporaryDirectory(prefix="prg_tsc_") as tmp:
-        tmp_path = Path(tmp)
-        tsconfig_data: dict[str, Any] = {
-            "compilerOptions": {
-                "target": "ES2024",
-                "module": "NodeNext",
-                "moduleResolution": "NodeNext",
-                "strict": True,
-                "noEmit": True,
-                "allowImportingTsExtensions": True,
-                "skipLibCheck": True,
-            },
-            "include": ["*.ts", "*.tsx"],
-        }
-        if ext == "tsx":
-            tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
-            modules = TOOLS_LINT_DIR / "node_modules"
-            if modules.is_dir():
-                (tmp_path / "node_modules").symlink_to(modules, target_is_directory=True)
-        (tmp_path / "tsconfig.json").write_text(json.dumps(tsconfig_data, indent=2) + "\n", encoding="utf-8")
+    with create_sandbox_dir(prefix="prg_tsc_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = sbx_root / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
+
+        tsconfig_data = build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=(ext == "tsx"))
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+        tsconfig_path = work_dir / "tsconfig.json"
+        tsconfig_path.write_text(json.dumps(tsconfig_data, indent=2) + "\n", encoding="utf-8")
 
         target_name = f"{filename}.{ext}"
-        (tmp_path / target_name).write_text(code.rstrip() + "\n", encoding="utf-8")
+        (work_dir / target_name).write_text(code.rstrip() + "\n", encoding="utf-8")
 
-        proc = subprocess.run(
-            [str(tsc_bin), "--noEmit", "--pretty", "false"],
-            cwd=str(tmp_path),
-            capture_output=True,
-            text=True,
+        proc = run_isolated(
+            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path)],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
         )
+        if proc.timed_out:
+            return [{"file": target_name, "line": 0, "message": f"tsc timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"}]
         if proc.returncode == 0:
             return []
 

@@ -93,6 +93,8 @@ def test_external_workspace_root_exposes_shared_lint_toolkit(tmp_path):
 
 
 def test_hidden_tests_run_from_temp_dir_and_cleanup(tmp_path, monkeypatch):
+    from code_engine.sandbox import SandboxResult
+
     monkeypatch.chdir(tmp_path)
     drill_doc = _sample_prg_drill()
     materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
@@ -100,6 +102,7 @@ def test_hidden_tests_run_from_temp_dir_and_cleanup(tmp_path, monkeypatch):
     ws_dir = tmp_path / "drills" / "workspace" / "DRL-PRG-SAFE-01"
     observed_cwds: list[Path] = []
     observed_hidden_files: list[Path] = []
+    observed_sandboxes: list[Path] = []
 
     sample_xml = """<?xml version="1.0" encoding="utf-8"?>
 <testsuites>
@@ -108,23 +111,30 @@ def test_hidden_tests_run_from_temp_dir_and_cleanup(tmp_path, monkeypatch):
   </testsuite>
 </testsuites>"""
 
-    def fake_run(cmd, cwd=None, capture_output=True, text=True):
-        observed_cwds.append(Path(cwd))
-        for arg in cmd:
+    def fake_run_node_isolated(args, *, cwd, sandbox_root, **kwargs):
+        cwd_path = Path(cwd)
+        observed_cwds.append(cwd_path)
+        observed_sandboxes.append(Path(sandbox_root))
+        for arg in args:
             if isinstance(arg, str) and ".hidden.test." in arg:
-                observed_hidden_files.append(Path(arg))
-                assert Path(arg).exists(), "hidden test file must exist during execution"
-        return subprocess.CompletedProcess(cmd, 0, stdout=sample_xml, stderr="")
+                hf = cwd_path / arg
+                observed_hidden_files.append(hf)
+                assert hf.exists(), "hidden test file must exist during execution"
+        return SandboxResult(returncode=0, stdout=sample_xml, stderr="")
 
-    with patch("code_engine.submit.subprocess.run", side_effect=fake_run):
+    with patch("code_engine.submit.run_node_isolated", side_effect=fake_run_node_isolated):
         cases = run_tests_junit(ws_dir, drill_doc)
 
     assert any(c.get("is_hidden") for c in cases), "hidden test cases must be reported as is_hidden=True"
     assert observed_hidden_files, "hidden test file must have been written to a temp dir"
+    for cwd_seen in observed_cwds:
+        assert not str(cwd_seen).startswith(str(ws_dir.resolve())), "runner cwd must be a temp copy, never ws_dir"
     for hf in observed_hidden_files:
-        assert not str(hf).startswith(str(ws_dir)), "hidden test must be outside workspace"
+        assert not str(hf).startswith(str(ws_dir.resolve())), "hidden test must be outside workspace"
         assert not hf.exists(), "hidden test temp file must be deleted after execution"
         assert not hf.parent.exists(), "hidden test temp dir must be deleted after execution"
+    for sbx in observed_sandboxes:
+        assert not sbx.exists(), "per-run sandbox dir must be cleaned up after execution"
 
 
 def test_drill_sync_preflight_allows_prg_steps_without_latex():

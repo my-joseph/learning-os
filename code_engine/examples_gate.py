@@ -273,6 +273,7 @@ def _build_lab_example_test_source(
     symbol_to_file: dict[str, Path],
     *,
     is_tsx: bool,
+    ref_src: Path | None = None,
 ) -> str:
     all_calls = "\n".join(ex["call"] for _, ex in batch)
     by_file: dict[Path, list[str]] = {}
@@ -284,8 +285,17 @@ def _build_lab_example_test_source(
         "import { test } from 'vitest';" if is_tsx else "import test from 'node:test';",
         "import assert from 'node:assert';",
     ]
+    ref_src_resolved = ref_src.resolve() if ref_src is not None else None
     for src_path, syms in by_file.items():
-        specifier = src_path.resolve().as_posix() if is_tsx else src_path.resolve().as_uri()
+        src_resolved = src_path.resolve()
+        if ref_src_resolved is not None:
+            try:
+                rel_posix = src_resolved.relative_to(ref_src_resolved).as_posix()
+                specifier = f"../src/{rel_posix}"
+            except ValueError:
+                specifier = src_resolved.as_posix() if is_tsx else src_resolved.as_uri()
+        else:
+            specifier = src_resolved.as_posix() if is_tsx else src_resolved.as_uri()
         lines.append(f"import {{ {', '.join(syms)} }} from {json.dumps(specifier)};")
     lines.append("")
 
@@ -327,14 +337,18 @@ def evaluate_lab_milestone_examples(
     is_ts = is_tsx or ".ts" in vis_pattern or any(p.suffix == ".ts" for p in symbol_to_file.values())
     ext = "test.tsx" if is_tsx else ("test.ts" if is_ts else "test.js")
 
-    tmp_parent = str(tools_lint_dir) if is_tsx and tools_lint_dir and tools_lint_dir.is_dir() else None
-
     def _run_batch(batch: list[tuple[int, dict[str, Any]]]) -> list[dict[str, Any]]:
-        content = _build_lab_example_test_source(batch, symbol_to_file, is_tsx=is_tsx)
-        with tempfile.TemporaryDirectory(prefix=f"lab_ex_{mid}_", dir=tmp_parent) as tmp:
-            test_path = Path(tmp) / f"{mid.lower()}_examples.{ext}"
+        content = _build_lab_example_test_source(batch, symbol_to_file, is_tsx=is_tsx, ref_src=ref_src)
+        with tempfile.TemporaryDirectory(prefix=f"lab_ex_{mid}_") as tmp:
+            tmp_root = Path(tmp)
+            tmp_tests = tmp_root / "tests"
+            tmp_tests.mkdir(parents=True, exist_ok=True)
+            pkg_src = lab_dir / "package.json"
+            if pkg_src.is_file() and not pkg_src.is_symlink():
+                shutil.copy2(pkg_src, tmp_root / "package.json")
+            test_path = tmp_tests / f"{mid.lower()}_examples.{ext}"
             test_path.write_text(content, encoding="utf-8")
-            return run_node_tests_fn([test_path], lab_dir, ref_src)
+            return run_node_tests_fn([test_path], tmp_root, ref_src)
 
     indexed = list(enumerate(examples, 1))
     cases = _run_batch(indexed)

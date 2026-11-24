@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
+import { killProcessTree } from "../src/lib/runnerEnv";
 import {
   choosePrimaryAction,
   deriveCodeStatus,
@@ -603,6 +605,83 @@ async function runReviewRunRouteChecks() {
     assert.equal(tsRevBody.tests.total, 2);
     assert.deepEqual(tsRevBody.lint, []);
     assert.deepEqual(tsRevBody.types, []);
+
+    // C02: /api/run-tests and /api/review-run scrub NOTION_TOKEN and block writes outside the temp sandbox
+    const prevNotionToken = process.env.NOTION_TOKEN;
+    const prevCustomSecret = process.env.ANTHROPIC_API_KEY;
+    const escapeSentinel = path.join(tmpRoot, "studio_escape_sentinel.txt");
+    try {
+      process.env.NOTION_TOKEN = "secret_studio_notion_token";
+      process.env.ANTHROPIC_API_KEY = "secret_studio_anthropic_key";
+
+      const isoRes = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId: tsDrillId,
+            problemId: "Q01",
+            userCode: [
+              'import fs from "node:fs";',
+              "export class BoundedBuffer<T> {",
+              "  private val: T | undefined;",
+              "  enqueue(value: T): void {",
+              "    if (process.env.NOTION_TOKEN || process.env.ANTHROPIC_API_KEY) {",
+              '      throw new Error("SECRET_LEAKED");',
+              "    }",
+              `    try { fs.writeFileSync(${JSON.stringify(escapeSentinel)}, "pwned"); } catch {}`,
+              "    this.val = value;",
+              "  }",
+              "  peek(): T | undefined { return this.val; }",
+              "}",
+            ].join("\n"),
+          }),
+        })
+      );
+      assert.equal(isoRes.status, 200);
+      const isoBody = (await isoRes.json()) as Record<string, unknown>;
+      assert.equal(isoBody.allPassed, true, `Expected scrubbed isolated run to pass, got: ${JSON.stringify(isoBody)}`);
+      assert.equal(fs.existsSync(escapeSentinel), false, "Learner code must not write outside its temp dir");
+
+      // Also verify /api/review-run scrubs NOTION_TOKEN and isolates workspace writes
+      const jsWsFile = path.join(tmpRoot, "drills", "workspace", jsDrillId, "Q01_clampPort.js");
+      fs.writeFileSync(
+        jsWsFile,
+        [
+          'const fs = require("fs");',
+          "function clampPort(port) {",
+          '  if (process.env.NOTION_TOKEN || process.env.ANTHROPIC_API_KEY) throw new Error("SECRET_LEAKED");',
+          '  fs.writeFileSync("ephemeral_review_write.txt", "temp");',
+          `  try { fs.writeFileSync(${JSON.stringify(escapeSentinel)}, "pwned"); } catch {}`,
+          '  return typeof port === "number" ? port : null;',
+          "}",
+          "module.exports = { clampPort };",
+        ].join("\n"),
+        "utf-8"
+      );
+      const isoRevRes = await reviewRunPOST(
+        new NextRequest("http://127.0.0.1:3000/api/review-run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId: jsDrillId, problemId: "Q01" }),
+        })
+      );
+      assert.equal(isoRevRes.status, 200);
+      const isoRevBody = (await isoRevRes.json()) as ReviewRunResult;
+      assert.equal(isoRevBody.tests.passed, 2);
+      assert.equal(isoRevBody.tests.total, 2);
+      assert.equal(fs.existsSync(escapeSentinel), false);
+      assert.equal(
+        fs.existsSync(path.join(tmpRoot, "drills", "workspace", jsDrillId, "ephemeral_review_write.txt")),
+        false,
+        "Relative writes during review_run must not appear in the real drill workspace"
+      );
+    } finally {
+      if (prevNotionToken === undefined) delete process.env.NOTION_TOKEN;
+      else process.env.NOTION_TOKEN = prevNotionToken;
+      if (prevCustomSecret === undefined) delete process.env.ANTHROPIC_API_KEY;
+      else process.env.ANTHROPIC_API_KEY = prevCustomSecret;
+    }
   } finally {
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
@@ -668,7 +747,7 @@ async function runReviewRunRouteChecks() {
   assert.equal(html.includes("Q01-HIDDEN-T01"), false);
 }
 
-runReviewRunRouteChecks().then(() => {
+runReviewRunRouteChecks().then(async () => {
   // 11. Code check error sanitization strips absolute paths and gives setup hint when tools/lint is missing
   const missingLintErr =
     "Error: Lint toolkit not installed. Expected /Users/Joseph/Documents/antigravity/LearningOS/.claude/worktrees/fix1/tools/lint/base.js and /Users/Joseph/Documents/antigravity/LearningOS/.claude/worktrees/fix1/tools/lint/node_modules/.bin/eslint. Run `npm ci` in tools/lint.";
@@ -682,6 +761,58 @@ runReviewRunRouteChecks().then(() => {
   const sanitizedPath = sanitizeCodeCheckError(absPathErr);
   assert.doesNotMatch(sanitizedPath, /\/Users\//);
   assert.match(sanitizedPath, /drills\/workspace\/DRL-PRG-01/);
+
+  // 12. B04: killProcessTree sweeps surviving grandchildren in -pid even when the group leader exits immediately on SIGTERM
+  if (process.platform !== "win32") {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "studio-killpg-b04-"));
+    const gcPidFile = path.join(tmpDir, "gc.pid");
+    try {
+      const proc = spawn(
+        "/bin/sh",
+        [
+          "-c",
+          `sh -c 'trap "" TERM; sleep 60' & echo $! > ${JSON.stringify(gcPidFile)}; trap 'exit 0' TERM; sleep 60`,
+        ],
+        { detached: true, stdio: "ignore" }
+      );
+      const start = Date.now();
+      let gcPid: number | null = null;
+      while (Date.now() - start < 3000) {
+        if (fs.existsSync(gcPidFile)) {
+          const raw = fs.readFileSync(gcPidFile, "utf-8").trim();
+          if (raw) {
+            gcPid = Number.parseInt(raw, 10);
+            break;
+          }
+        }
+        await new Promise((r) => setTimeout(r, 30));
+      }
+      assert.ok(gcPid && Number.isFinite(gcPid), "Grandchild PID must be recorded");
+      killProcessTree(proc);
+      // Wait past the 250ms SIGKILL escalation window
+      const killDeadline = Date.now() + 2000;
+      let alive = true;
+      while (Date.now() < killDeadline) {
+        try {
+          process.kill(gcPid!, 0);
+        } catch {
+          alive = false;
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      if (alive) {
+        try {
+          process.kill(gcPid!, "SIGKILL");
+        } catch {
+          // already gone
+        }
+      }
+      assert.equal(alive, false, "Grandchild ignoring SIGTERM must be killed by killProcessTree SIGKILL sweep");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
 
   console.log("codeStatus tests passed");
 });

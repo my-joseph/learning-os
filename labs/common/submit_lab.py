@@ -9,7 +9,6 @@ to the Notion database 'Learning Practice & Drills' (Format: "Code Test Suite").
 import datetime
 import json
 import os
-import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,6 +17,14 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from code_engine.sandbox import (  # noqa: E402
+    DEFAULT_REACT_TIMEOUT_SEC,
+    assert_safe_contained_path,
+    create_sandbox_dir,
+    run_node_isolated,
+    run_vitest_isolated,
+    stage_lab_copy,
+)
 from notion_sync.blocks import bullet, callout_block, code_block, divider_block, h2, toggle_block  # noqa: E402
 from notion_sync.client import (  # noqa: E402
     MissingNotionToken,
@@ -51,51 +58,15 @@ def find_repo_root(start_dir: str = ".") -> Path:
     return _REPO_ROOT
 
 
-def run_tests_and_parse(lab_dir: Path, config: dict):
-    """Executes the test command and parses JUnit XML test results."""
-    test_cmd = config.get("testCommand", "node --experimental-strip-types --test --test-reporter=junit tests/*.test.ts")
-
-    print(f"{CYAN}▶ Executing Test Suite:{RESET} {test_cmd}")
-    shared_modules = _REPO_ROOT / "tools" / "lint" / "node_modules"
-    uses_react = "vitest" in test_cmd or any(lab_dir.glob("tests/**/*.test.tsx"))
-    modules_link = lab_dir / "node_modules"
-    created_link = False
-    env = dict(os.environ)
-    if uses_react and shared_modules.is_dir():
-        env["PATH"] = str(shared_modules / ".bin") + os.pathsep + env.get("PATH", "")
-        if not modules_link.exists() and not modules_link.is_symlink():
-            modules_link.symlink_to(shared_modules, target_is_directory=True)
-            created_link = True
-    try:
-        proc = subprocess.run(
-            test_cmd,
-            shell=True,
-            cwd=lab_dir,
-            env=env,
-            capture_output=True,
-            text=True,
-        )
-    finally:
-        if created_link:
-            modules_link.unlink(missing_ok=True)
-    raw_output = proc.stdout + "\n" + proc.stderr
-
-    # Locate XML content
+def _parse_junit_testcases(raw_output: str, *, default_file: str = "") -> tuple[list[dict], str | None]:
+    """Parse JUnit XML testcases from `raw_output`. Returns `(testcases, error_msg)`."""
     xml_start = raw_output.find("<?xml")
     if xml_start == -1:
         xml_start = raw_output.find("<testsuites")
-
     if xml_start == -1:
-        # Fallback if no XML found
-        return {
-            "success": False,
-            "error": "No JUnit XML output detected from test command.\n" + raw_output[:1000],
-            "testcases": [],
-            "raw_output": raw_output,
-        }
+        return [], "No JUnit XML output detected from test runner.\n" + raw_output[:1000]
 
     xml_text = raw_output[xml_start:].strip()
-    # If trailing non-xml text exists, trim to closing </testsuites>
     end_tag = "</testsuites>"
     end_idx = xml_text.rfind(end_tag)
     if end_idx != -1:
@@ -104,18 +75,13 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError as e:
-        return {
-            "success": False,
-            "error": f"Failed to parse JUnit XML: {e}\nRaw Output snippet:\n{xml_text[:500]}",
-            "testcases": [],
-            "raw_output": raw_output,
-        }
+        return [], f"Failed to parse JUnit XML: {e}\nRaw Output snippet:\n{xml_text[:500]}"
 
-    testcases = []
+    testcases: list[dict] = []
     for tc in root.findall(".//testcase"):
         tc_name = tc.attrib.get("name", "Unnamed Test")
-        tc_file = tc.attrib.get("file", "")
-        tc_time = float(tc.attrib.get("time", 0.0))
+        tc_file = tc.attrib.get("file") or tc.attrib.get("classname") or default_file
+        tc_time = float(tc.attrib.get("time", 0.0) or 0.0)
         failure_elem = tc.find("failure")
         error_elem = tc.find("error")
 
@@ -139,11 +105,181 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
                 "failure_trace": fail_trace.strip(),
             }
         )
+    return testcases, None
+
+
+def _discover_lab_test_files(lab_dir: Path) -> tuple[list[Path], list[Path]]:
+    """Safely discover `(node_tests, tsx_tests)` under `lab_dir / 'tests'`, rejecting symlinks."""
+    if lab_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked lab directory: {lab_dir}")
+    tests_dir = lab_dir / "tests"
+    if tests_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked lab tests directory: {tests_dir}")
+    if not tests_dir.is_dir():
+        return [], []
+
+    node_tests: list[Path] = []
+    tsx_tests: list[Path] = []
+    for pattern, bucket in (
+        ("*.test.ts", node_tests),
+        ("*.test.js", node_tests),
+        ("*.test.tsx", tsx_tests),
+    ):
+        for cand in sorted(tests_dir.glob(pattern)):
+            assert_safe_contained_path(cand, tests_dir, expect_file=True, label="lab test file")
+            bucket.append(cand)
+    return node_tests, tsx_tests
+
+
+def run_tests_and_parse(lab_dir: Path, config: dict, *, timeout_sec: float = DEFAULT_REACT_TIMEOUT_SEC):
+    """Execute discovered lab `.test.ts`/`.test.js` (Node) and `.test.tsx` (Vitest) suites in an isolated sandbox."""
+    del config  # Never execute learner-editable `testCommand` via /bin/sh -c.
+    lab_path = Path(lab_dir)
+    if lab_path.is_symlink():
+        raise ValueError(f"Refusing symlinked lab directory: {lab_path}")
+    src_dir = lab_path / "src"
+    assert_safe_contained_path(src_dir, lab_path, expect_file=False, label="lab src directory")
+
+    node_tests, tsx_tests = _discover_lab_test_files(lab_path)
+    all_tests = [*node_tests, *tsx_tests]
+    if not all_tests:
+        return {
+            "success": False,
+            "error": f"No lab test files (*.test.ts, *.test.js, *.test.tsx) found under {lab_path / 'tests'}.",
+            "testcases": [],
+            "raw_output": "",
+        }
+
+    print(
+        f"{CYAN}▶ Executing Isolated Test Suites:{RESET} "
+        f"{len(node_tests)} Node test file(s), {len(tsx_tests)} React/Vitest test file(s)"
+    )
+    tools_dir = (_REPO_ROOT / "tools" / "lint").resolve()
+    shared_modules = (tools_dir / "node_modules").resolve()
+
+    combined_testcases: list[dict] = []
+    raw_chunks: list[str] = []
+
+    with create_sandbox_dir(prefix="prg_submit_lab_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir, staged_src, staged_tests = stage_lab_copy(
+            lab_path,
+            src_dir,
+            all_tests,
+            sbx_root / "work",
+            allowed_test_roots=(lab_path / "tests",),
+        )
+        staged_node = [f for f in staged_tests if f.suffix in (".ts", ".js")]
+        staged_tsx = [f for f in staged_tests if f.suffix == ".tsx"]
+        env_extra = {"LAB_SRC_DIR": str(staged_src.resolve())}
+
+        # 1. Run each Node test file in its own isolated Node --permission process.
+        for tf in staged_node:
+            node_args: list[str] = []
+            if tf.suffix == ".ts":
+                node_args.append("--experimental-strip-types")
+            node_args.extend(["--test", "--test-reporter=junit", str(tf.relative_to(work_dir))])
+            proc = run_node_isolated(
+                node_args,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=timeout_sec,
+                env_extra=env_extra,
+            )
+            if proc.timed_out:
+                return {
+                    "success": False,
+                    "error": f"Lab test execution exceeded {timeout_sec}s limit.",
+                    "testcases": [],
+                    "raw_output": "",
+                }
+            if proc.output_truncated:
+                return {
+                    "success": False,
+                    "error": "Lab test execution exceeded output size limit.",
+                    "testcases": [],
+                    "raw_output": proc.stdout[:1000],
+                }
+            chunk = proc.stdout + "\n" + proc.stderr
+            raw_chunks.append(chunk)
+            parsed, err = _parse_junit_testcases(chunk, default_file=tf.name)
+            if err:
+                return {
+                    "success": False,
+                    "error": err,
+                    "testcases": [],
+                    "raw_output": "\n".join(raw_chunks),
+                }
+            combined_testcases.extend(parsed)
+
+        # 2. Run TSX tests via Vitest in jsdom inside the same isolated sandbox.
+        if staged_tsx:
+            vitest_bin = shared_modules / ".bin" / "vitest"
+            if not vitest_bin.is_file():
+                return {
+                    "success": False,
+                    "error": f"Vitest is missing at {vitest_bin}; run `npm ci` in tools/lint.",
+                    "testcases": [],
+                    "raw_output": "\n".join(raw_chunks),
+                }
+            if shared_modules.is_dir():
+                (sbx_root / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+            test_root = staged_tsx[0].parent
+            allowed_dirs = list(
+                dict.fromkeys(str(d) for d in (sbx_root, work_dir, staged_src, test_root, shared_modules, tools_dir))
+            )
+            config_path = sbx_root / "vitest.config.ts"
+            report_path = sbx_root / "vitest-junit.xml"
+            allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
+            config_path.write_text(
+                "import { defineConfig } from 'vitest/config';\n"
+                f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
+                encoding="utf-8",
+            )
+            proc = run_vitest_isolated(
+                staged_tsx,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                config_path=config_path,
+                report_path=report_path,
+                reporter="junit",
+                timeout_sec=timeout_sec,
+                env_extra=env_extra,
+                tools_lint_dir=tools_dir,
+            )
+            if proc.timed_out:
+                return {
+                    "success": False,
+                    "error": f"React lab test execution exceeded {timeout_sec}s limit.",
+                    "testcases": [],
+                    "raw_output": "\n".join(raw_chunks),
+                }
+            if proc.output_truncated:
+                return {
+                    "success": False,
+                    "error": "React lab test execution exceeded output size limit.",
+                    "testcases": [],
+                    "raw_output": proc.stdout[:1000],
+                }
+            raw_xml = (
+                report_path.read_text(encoding="utf-8") if report_path.is_file() else (proc.stdout + "\n" + proc.stderr)
+            )
+            raw_chunks.append(raw_xml)
+            parsed, err = _parse_junit_testcases(raw_xml)
+            if err:
+                return {
+                    "success": False,
+                    "error": err,
+                    "testcases": [],
+                    "raw_output": "\n".join(raw_chunks),
+                }
+            combined_testcases.extend(parsed)
 
     return {
         "success": True,
-        "testcases": testcases,
-        "raw_output": raw_output,
+        "testcases": combined_testcases,
+        "raw_output": "\n".join(raw_chunks),
     }
 
 

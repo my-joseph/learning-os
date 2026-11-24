@@ -21,12 +21,12 @@ Checks per problem:
     - All commonTrapTag values must exist in the Unit's declared MISTAKE_TAGS.
 """
 
+import os
 import re
-import subprocess
-import tempfile
 from pathlib import Path
 
 from code_engine.answer_check import check_answer, parse_tokens
+from code_engine.sandbox import create_sandbox_dir, run_node_isolated
 from quality_rules import QUALITY_RULES, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
@@ -117,25 +117,33 @@ def check_archetype_contract(pid, prob: dict):
 
 
 def run_node(code: str, timeout: float = 3.0, files: dict[str, str] | None = None):
-    """Executes JS in Node.js and returns (stdout, stderr, exit_code)."""
+    """Executes JS in an isolated Node.js sandbox and returns (stdout, stderr, exit_code)."""
     try:
-        if files:
-            with tempfile.TemporaryDirectory(prefix="learningos-predict-") as tmp:
-                root = Path(tmp).resolve()
+        with create_sandbox_dir(prefix="learningos-predict-") as sbx_str:
+            sbx_root = Path(os.path.realpath(sbx_str))
+            work_dir = sbx_root / "work"
+            work_dir.mkdir(parents=True, exist_ok=True)
+            if files:
                 for name, content in files.items():
-                    target = (root / name).resolve()
-                    if root not in target.parents:
+                    target = (work_dir / name).resolve()
+                    if work_dir not in target.parents:
                         raise VerificationError(f"Invalid files map path: {name}")
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_text(content, encoding="utf-8")
-                entry = root / "entry.mjs"
+                entry = work_dir / "entry.mjs"
                 entry.write_text(code, encoding="utf-8")
-                proc = subprocess.run(["node", str(entry)], capture_output=True, text=True, timeout=timeout)
-        else:
-            proc = subprocess.run(["node", "-e", code], capture_output=True, text=True, timeout=timeout)
-        return proc.stdout.strip(), proc.stderr.strip(), proc.returncode
-    except subprocess.TimeoutExpired:
-        raise VerificationError(f"Node execution timed out ({timeout}s). Code snippet may contain an infinite loop.")
+                proc = run_node_isolated(["entry.mjs"], cwd=work_dir, sandbox_root=sbx_root, timeout_sec=timeout)
+            else:
+                proc = run_node_isolated(["-e", code], cwd=work_dir, sandbox_root=sbx_root, timeout_sec=timeout)
+            if proc.timed_out:
+                raise VerificationError(
+                    f"Node execution timed out ({timeout}s). Code snippet may contain an infinite loop."
+                )
+            if proc.output_truncated:
+                raise VerificationError("Node execution exceeded output size limit.")
+            return proc.stdout.strip(), proc.stderr.strip(), proc.returncode
+    except VerificationError:
+        raise
     except Exception as ex:
         raise VerificationError(f"Node execution failed to start: {ex}")
 

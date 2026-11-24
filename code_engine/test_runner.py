@@ -8,10 +8,14 @@ Produces structured JSON reports with test statuses, durations, errors, and scor
 import json
 import os
 import re
-import subprocess
 import sys
-import tempfile
 from pathlib import Path
+
+from code_engine.sandbox import (
+    create_sandbox_dir,
+    run_node_isolated,
+    run_vitest_isolated,
+)
 
 _HIDDEN_TAG_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]", re.IGNORECASE)
 _HIDDEN_FILE_LINE_RE = re.compile(r"^.*hidden\.test\.[jt]sx?.*$", re.IGNORECASE | re.MULTILINE)
@@ -161,62 +165,96 @@ def run_tests(
     entry_point: str = "",
 ) -> dict:
     """
-    Runs the assembled test suite in Node.js subprocess and returns the parsed report dict.
+    Runs the assembled test suite in an isolated Node.js subprocess and returns the parsed report dict.
     """
     if environment == "react-dom":
         return _run_react_tests(user_code, visible_tests, hidden_tests, timeout_sec, entry_point=entry_point)
 
     is_ts = environment in ("typescript-strict", "backend-sqlite")
-    tmp_dir_obj = None
-    temp_path = ""
-
-    if is_ts:
-        from code_engine.workspace import extract_exports
-
-        tmp_dir_obj = tempfile.TemporaryDirectory(prefix="prg_ts_run_")
-        src_path = os.path.join(tmp_dir_obj.name, "solution.ts")
-        with open(src_path, "w", encoding="utf-8") as sf:
-            sf.write(user_code)
-        all_test_code = "\n".join(str(case.get("testCode", "")) for case in (*visible_tests, *hidden_tests))
-        import_names = [
-            name for name in extract_exports(user_code) if re.search(rf"\b{re.escape(name)}\b", all_test_code)
-        ]
-        if entry_point and entry_point not in import_names:
-            import_names.insert(0, entry_point)
-        ts_import = (
-            f"import {{ {', '.join(import_names)} }} from './solution.ts';"
-            if import_names
-            else "import './solution.ts';"
-        )
-        script = assemble_harness(user_code, visible_tests, hidden_tests, ts_import_line=ts_import)
-        temp_path = os.path.join(tmp_dir_obj.name, "harness.ts")
-        with open(temp_path, "w", encoding="utf-8") as hf:
-            hf.write(script)
-        cmd = ["node", "--experimental-strip-types", temp_path]
-    else:
-        script = assemble_harness(user_code, visible_tests, hidden_tests)
-        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
-            f.write(script)
-            temp_path = f.name
-        cmd = ["node", temp_path]
 
     try:
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout_sec,
-        )
-        stdout = proc.stdout
-        stderr = proc.stderr
+        with create_sandbox_dir(prefix="prg_ts_run_" if is_ts else "prg_js_run_") as sbx_str:
+            sbx_root = Path(os.path.realpath(sbx_str))
+            work_dir = sbx_root / "work"
+            work_dir.mkdir(parents=True, exist_ok=True)
 
-        if "__TEST_REPORT_JSON_START__" in stdout:
-            parts = stdout.split("__TEST_REPORT_JSON_START__")[1].split("__TEST_REPORT_JSON_END__")
-            report = json.loads(parts[0].strip())
-            pre_marker = stdout.split("__TEST_REPORT_JSON_START__", 1)[0]
-            report["rawOutput"] = _sanitize_runner_output(pre_marker, hidden_tests)
-            return report
-        else:
+            if is_ts:
+                from code_engine.workspace import extract_exports
+
+                (work_dir / "solution.ts").write_text(user_code, encoding="utf-8")
+                all_test_code = "\n".join(str(case.get("testCode", "")) for case in (*visible_tests, *hidden_tests))
+                import_names = [
+                    name for name in extract_exports(user_code) if re.search(rf"\b{re.escape(name)}\b", all_test_code)
+                ]
+                if entry_point and entry_point not in import_names:
+                    import_names.insert(0, entry_point)
+                ts_import = (
+                    f"import {{ {', '.join(import_names)} }} from './solution.ts';"
+                    if import_names
+                    else "import './solution.ts';"
+                )
+                script = assemble_harness(user_code, visible_tests, hidden_tests, ts_import_line=ts_import)
+                (work_dir / "harness.ts").write_text(script, encoding="utf-8")
+                node_args = ["--experimental-strip-types", "harness.ts"]
+            else:
+                script = assemble_harness(user_code, visible_tests, hidden_tests)
+                (work_dir / "harness.js").write_text(script, encoding="utf-8")
+                node_args = ["harness.js"]
+
+            proc = run_node_isolated(
+                node_args,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=timeout_sec,
+            )
+
+            if proc.timed_out:
+                return {
+                    "allPassed": False,
+                    "score": 0,
+                    "passedCount": 0,
+                    "totalCount": len(visible_tests) + len(hidden_tests),
+                    "visibleResults": [
+                        {
+                            "name": "Timeout",
+                            "passed": False,
+                            "error": f"Execution exceeded {timeout_sec}s limit (possible infinite loop)",
+                        }
+                    ],
+                    "hiddenPassed": 0,
+                    "hiddenTotal": len(hidden_tests),
+                    "executionTimeMs": int(timeout_sec * 1000),
+                    "rawOutput": "Timeout error",
+                }
+
+            if proc.output_truncated:
+                return {
+                    "allPassed": False,
+                    "score": 0,
+                    "passedCount": 0,
+                    "totalCount": len(visible_tests) + len(hidden_tests),
+                    "visibleResults": [
+                        {
+                            "name": "Output limit exceeded",
+                            "passed": False,
+                            "error": "Execution exceeded output size limit",
+                        }
+                    ],
+                    "hiddenPassed": 0,
+                    "hiddenTotal": len(hidden_tests),
+                    "executionTimeMs": 0,
+                    "rawOutput": _sanitize_runner_output(proc.stdout[:2000], hidden_tests),
+                }
+
+            stdout = proc.stdout
+            stderr = proc.stderr
+
+            if "__TEST_REPORT_JSON_START__" in stdout:
+                parts = stdout.split("__TEST_REPORT_JSON_START__")[1].split("__TEST_REPORT_JSON_END__")
+                report = json.loads(parts[0].strip())
+                pre_marker = stdout.split("__TEST_REPORT_JSON_START__", 1)[0]
+                report["rawOutput"] = _sanitize_runner_output(pre_marker, hidden_tests)
+                return report
             raw_err = stderr or stdout or "Script exited unexpectedly"
             return {
                 "allPassed": False,
@@ -235,24 +273,6 @@ def run_tests(
                 "executionTimeMs": 0,
                 "rawOutput": _sanitize_runner_output(stdout + "\n" + stderr, hidden_tests),
             }
-    except subprocess.TimeoutExpired:
-        return {
-            "allPassed": False,
-            "score": 0,
-            "passedCount": 0,
-            "totalCount": len(visible_tests) + len(hidden_tests),
-            "visibleResults": [
-                {
-                    "name": "Timeout",
-                    "passed": False,
-                    "error": f"Execution exceeded {timeout_sec}s limit (possible infinite loop)",
-                }
-            ],
-            "hiddenPassed": 0,
-            "hiddenTotal": len(hidden_tests),
-            "executionTimeMs": int(timeout_sec * 1000),
-            "rawOutput": "Timeout error",
-        }
     except Exception as ex:
         return {
             "allPassed": False,
@@ -265,14 +285,6 @@ def run_tests(
             "executionTimeMs": 0,
             "rawOutput": str(ex),
         }
-    finally:
-        if tmp_dir_obj is not None:
-            tmp_dir_obj.cleanup()
-        elif temp_path:
-            try:
-                os.remove(temp_path)
-            except OSError:
-                pass
 
 
 def _run_react_tests(
@@ -283,23 +295,27 @@ def _run_react_tests(
     *,
     entry_point: str,
 ) -> dict:
-    """Run a React/TSX drill in jsdom using the shared tools/lint installation."""
-    tools_dir = Path(__file__).resolve().parents[1] / "tools" / "lint"
-    vitest = tools_dir / "node_modules" / ".bin" / "vitest"
+    """Run a React/TSX drill in jsdom using the shared tools/lint installation inside an isolated temp sandbox."""
+    tools_dir = (Path(__file__).resolve().parents[1] / "tools" / "lint").resolve()
+    shared_modules = (tools_dir / "node_modules").resolve()
+    vitest = shared_modules / ".bin" / "vitest"
     if not vitest.is_file():
         return _react_failure(
             f"React drill runner is not installed at {vitest}; run `npm ci` in tools/lint.", visible_tests, hidden_tests
         )
 
-    # Put the temporary project under tools/lint so Vite resolves the shared modules without a per-workspace install.
     try:
-        with tempfile.TemporaryDirectory(prefix=".react_drill_", dir=tools_dir) as tmp:
-            tmp_dir = Path(tmp)
-            (tmp_dir / "solution.tsx").write_text(user_code.rstrip() + "\n", encoding="utf-8")
-            visible_test_file = tmp_dir / "visible.test.tsx"
-            hidden_test_file = tmp_dir / "hidden.test.tsx"
-            config_file = tmp_dir / "vitest.config.ts"
-            report_file = tmp_dir / "vitest-report.json"
+        with create_sandbox_dir(prefix="prg_react_drill_") as sbx_str:
+            sbx_root = Path(os.path.realpath(sbx_str))
+            (sbx_root / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+            work_dir = sbx_root / "work"
+            work_dir.mkdir(parents=True, exist_ok=True)
+
+            (work_dir / "solution.tsx").write_text(user_code.rstrip() + "\n", encoding="utf-8")
+            visible_test_file = work_dir / "visible.test.tsx"
+            hidden_test_file = work_dir / "hidden.test.tsx"
+            config_file = sbx_root / "vitest.config.ts"
+            report_file = sbx_root / "vitest-report.json"
 
             from code_engine.workspace import build_react_test_header, extract_exports
 
@@ -332,26 +348,26 @@ def _run_react_tests(
                 hidden_test_file.write_text(hidden_header + "\n".join(hidden_blocks), encoding="utf-8")
                 test_files.append(str(hidden_test_file))
 
+            allow_js = ", ".join(json.dumps(str(d)) for d in dict.fromkeys((sbx_root, shared_modules, tools_dir)))
             config_file.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
-                "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+                f"export default defineConfig({{ root: {json.dumps(str(work_dir))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
                 encoding="utf-8",
             )
-            proc = subprocess.run(
-                [
-                    str(vitest),
-                    "run",
-                    *test_files,
-                    "--config",
-                    str(config_file),
-                    "--reporter=json",
-                    f"--outputFile={report_file}",
-                ],
-                cwd=tmp_dir,
-                capture_output=True,
-                text=True,
-                timeout=timeout_sec,
+            proc = run_vitest_isolated(
+                test_files,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                config_path=config_file,
+                report_path=report_file,
+                reporter="json",
+                timeout_sec=timeout_sec,
+                tools_lint_dir=tools_dir,
             )
+            if proc.timed_out:
+                return _react_failure(f"Execution exceeded {timeout_sec}s limit", visible_tests, hidden_tests)
+            if proc.output_truncated:
+                return _react_failure("Execution exceeded output size limit", visible_tests, hidden_tests)
             if not report_file.is_file():
                 return _react_failure(
                     _sanitize_runner_output(
@@ -400,8 +416,6 @@ def _run_react_tests(
                 if proc.returncode == 0
                 else _sanitize_runner_output(proc.stdout + proc.stderr, hidden_tests),
             }
-    except subprocess.TimeoutExpired:
-        return _react_failure(f"Execution exceeded {timeout_sec}s limit", visible_tests, hidden_tests)
     except Exception as exc:
         return _react_failure(
             _sanitize_runner_output(f"React runner error: {exc}", hidden_tests), visible_tests, hidden_tests
