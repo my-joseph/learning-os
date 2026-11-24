@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSafeId, loadProblemFromDisk, loadVariantFromDisk } from "@/lib/paths";
-import { readProgress, resolveVariantToken, updateVariantSession } from "@/lib/progress";
+import { mutateProblemState, readProgress, resolveVariantToken, updateVariantSession } from "@/lib/progress";
 import {
   canRevealVariantSteps,
   extractRevealedPart,
@@ -16,6 +16,7 @@ import {
   recordSelfScore,
   resetPractice,
 } from "@/lib/practiceEvidence";
+import { getReviewItemsSchedule, reviewItemKey } from "@/lib/reviewItems";
 import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
@@ -183,12 +184,25 @@ export async function POST(req: NextRequest) {
     if (!doc || (!problem && action !== "reset-all")) {
       return NextResponse.json({ error: "Drill or problem not found" }, { status: 404 });
     }
-    if (action === "reset-all" || action === "reset") {
-      return NextResponse.json({
-        cycleStartedAt: resetPractice(doc, problem ? [problem] : doc.problems),
-      });
+    if (action === "reset-all") {
+      return NextResponse.json({ cycleStartedAt: resetPractice(doc, doc.problems, { resetSummary: true }) });
     }
     if (!problem) return NextResponse.json({ error: "Problem not found" }, { status: 404 });
+    if (action === "reset") {
+      return NextResponse.json({ cycleStartedAt: resetPractice(doc, [problem]) });
+    }
+    if (action === "start-review") {
+      const item = getReviewItemsSchedule()[reviewItemKey(drillId, qid)];
+      const previous = readProgress(drillId)?.problems?.[qid] as ProblemState | undefined;
+      if (!item && !previous?.reviewBaseLevel) {
+        return NextResponse.json({ error: "Review item is unavailable" }, { status: 409 });
+      }
+      return NextResponse.json({
+        cycleStartedAt: resetPractice(doc, [problem], {
+          reviewBaseLevel: item?.level ?? previous?.reviewBaseLevel,
+        }),
+      });
+    }
     const cycle = currentPracticeCycle(drillId, qid);
     if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== cycle) {
       return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
@@ -205,6 +219,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "This problem is already complete" }, { status: 409 });
       }
       return NextResponse.json(event);
+    }
+    if (action === "toggle-mistake" && body.tag !== "concept-gap" &&
+        doc.mistakeTags?.some((tag) => tag.id === body.tag)) {
+      mutateProblemState(drillId, doc.unitCode, qid, (state) => {
+        const tags = new Set(state.mistakes);
+        if (tags.has(body.tag)) tags.delete(body.tag);
+        else tags.add(body.tag);
+        state.mistakes = [...tags];
+      });
+      return NextResponse.json({ ok: true });
     }
     if (action === "self-score" && (
       body.score === null || (typeof body.score === "number" && Number.isFinite(body.score))

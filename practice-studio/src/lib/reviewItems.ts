@@ -1654,7 +1654,7 @@ export function completeReviewItem(
   const existing = previous && (!prior || previous.lastReviewed >= prior.lastReviewed)
     ? previous
     : prior;
-  const step = stepReviewSchedule(existing?.level ?? MIN_REVIEW_LEVEL, {
+  const step = stepReviewSchedule(state.reviewBaseLevel ?? existing?.level ?? MIN_REVIEW_LEVEL, {
     correct: event.verdict === "correct",
     hintsUsed: event.hintsUsed,
     date: normalizeReviewDate(event.ts),

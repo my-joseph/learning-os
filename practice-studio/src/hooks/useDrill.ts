@@ -7,6 +7,7 @@ import { plainTitle } from "@/lib/titleText";
 import {
   applyCheckResult,
   applySkip,
+  applyTestReport,
   applyDivergedStep,
   resetDrillForRetry,
   resetProblemForRetry,
@@ -20,7 +21,6 @@ import {
 import {
   applySelfScore,
   isLockedAfterCorrect,
-  scoreProblem,
 } from "@/lib/scoring";
 import {
   createTelemetryTimerState,
@@ -133,44 +133,11 @@ export function computeTestRunTransition(
 ): DrillDocument | null {
   const exists = currentDrill.problems.some((p) => p.id === probId);
   if (!exists) return null;
-  const runTs = report.ts || nowIso;
-  const stampedReport: TestRunReport = { ...report, ts: runTs };
-  const allPassed = Boolean(
-    stampedReport.allPassed &&
-      (typeof stampedReport.totalCount !== "number" || stampedReport.totalCount > 0)
-  );
   return {
     ...currentDrill,
-    problems: currentDrill.problems.map((p) => {
-      if (p.id !== probId) return p;
-      const prevRuns = Array.isArray(p.state?.testRuns) ? p.state.testRuns : [];
-      const nextRuns = [
-        ...prevRuns,
-        {
-          ts: runTs,
-          allPassed,
-          passedCount: stampedReport.passedCount,
-          totalCount: stampedReport.totalCount,
-        },
-      ];
-      const candidateState = {
-        ...p.state,
-        lastTestReport: stampedReport,
-        testRuns: nextRuns,
-        skipped: false,
-      };
-      const computedScore = scoreProblem(candidateState, {
-        isPrg: true,
-        ignoreStateScore: true,
-      }).score;
-      return {
-        ...p,
-        state: {
-          ...candidateState,
-          score: computedScore,
-        },
-      };
-    }),
+    problems: currentDrill.problems.map((p) => p.id === probId
+      ? { ...p, state: applyTestReport(p.state, report, report.ts || nowIso) }
+      : p),
   };
 }
 
@@ -998,6 +965,10 @@ export function useDrill({
 
   const handleToggleMistakeTag = useCallback(
     (probId: string, tagId: string) => {
+      const doc = drillRef.current;
+      const target = doc?.problems.find((p) => p.id === probId);
+      if (!doc || !target || tagId === "concept-gap") return;
+      void sendPracticeAction(doc.drillId, probId, { action: "toggle-mistake", tag: tagId }, target.state.cycleStartedAt ?? null);
       updateProblem(probId, (p) => {
         const list = p.state.mistakes || [];
         const next = list.includes(tagId) ? list.filter((t) => t !== tagId) : [...list, tagId];

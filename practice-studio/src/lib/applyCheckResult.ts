@@ -5,6 +5,7 @@ import {
   CheckResult,
   MistakeTag,
   AttemptRecord,
+  TestRunReport,
 } from "../types/drill";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
 import { isLockedAfterCorrect, scoreProblem } from "./scoring";
@@ -189,6 +190,26 @@ export function applySkip(
     diagnostics: [],
   };
   return applyCheckResult(prob, prob.state?.userInput || "(Skipped)", skipResult, [], options);
+}
+
+/** Apply a test report produced by an actual test runner. */
+export function applyTestReport(state: ProblemState, report: TestRunReport, ts: string): ProblemState {
+  const next = {
+    ...state,
+    lastTestReport: { ...report, ts },
+    testRuns: [
+      ...(state.testRuns || []),
+      {
+        ts,
+        allPassed: Boolean(report.allPassed &&
+          (typeof report.totalCount !== "number" || report.totalCount > 0)),
+        passedCount: report.passedCount,
+        totalCount: report.totalCount,
+      },
+    ],
+    skipped: false,
+  };
+  return { ...next, score: scoreProblem(next, { isPrg: true, ignoreStateScore: true }).score };
 }
 
 /**

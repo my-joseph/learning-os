@@ -334,6 +334,8 @@ export interface ProblemState {
   exampleViewedAt?: string | null;
   /** ISO timestamp marking the start of the current review cycle (set on reset or review retry). */
   cycleStartedAt?: string | null;
+  /** Server-side level when this Daily Review cycle started. */
+  reviewBaseLevel?: number;
   /** ISO timestamp when a checkpoint hint was revealed during a Daily Review or retry cycle (does not modify original drill flags). */
   reviewHintRevealedAt?: string | null;
   /** ISO timestamp when equation set-up was revealed during a Daily Review cycle (does not modify original drill flags). */

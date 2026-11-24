@@ -422,30 +422,46 @@ async function runTests() {
     );
     assert.equal(updatedQ1?.revisitNote, "Updated note: invert the second fraction immediately.");
 
-    // 5. Test /api/review-items POST records outcome and updates review_items.json store
-    const postRes = await reviewItemsPOST(
+    // 5. Complete a canonical current-cycle event, idempotently, with the GET projection.
+    const targetId = "DRL-MTH-T01-C04-U01-01";
+    const targetPath = path.join(progressDir, `${targetId}.json`);
+    const progress = JSON.parse(fs.readFileSync(targetPath, "utf8"));
+    const target = progress.problems.Q01;
+    const eventId = "test-event-q01";
+    const complete = (qid: string) => reviewItemsPOST(
       new NextRequest("http://127.0.0.1:3000/api/review-items", {
         method: "POST",
-        body: JSON.stringify({
-          drillId: "DRL-MTH-T01-C04-U01-01",
-          qid: "Q01",
-          correct: true,
-          hintsUsed: false,
-          date: "2026-11-19",
-        }),
+        body: JSON.stringify({ drillId: targetId, qid, eventId }),
       })
     );
+    assert.equal((await complete("Q01")).status, 409, "No check event exists yet");
+    target.cycleStartedAt = "2026-11-19T10:00:00.000Z";
+    target.attempts.push({
+      eventId, input: "4", ts: "2026-11-19T10:01:00.000Z", verdict: "correct", hintsUsed: false,
+    });
+    fs.writeFileSync(targetPath, JSON.stringify(progress));
+    assert.equal((await complete("Q02")).status, 409, "The event belongs to Q01");
+    assert.equal((await complete("Q99")).status, 409, "Only canonical problems are accepted");
+
+    const postRes = await complete("Q01");
     assert.equal(postRes.status, 200);
     const postJson = (await postRes.json()) as { ok: boolean; item: ReviewItem };
     assert.equal(postJson.ok, true);
-    // Q01 was at level 2 -> correct without hint -> level 3 (due in 7 days = 2026-11-26)
     assert.equal(postJson.item.level, 3);
     assert.equal(postJson.item.lastReviewed, "2026-11-19");
     assert.equal(postJson.item.dueDate, "2026-11-26");
+    assert.equal(postJson.item.commonTrapTag, null);
+    assert.equal(postJson.item.archetypeKey, null);
+    assert.equal(postJson.item.lastWrong, undefined);
+    assert.equal(postJson.item.completedCycle, undefined);
 
-    // Store file on disk was created and updated
     const storeFile = path.join(progressDir, "review_items.json");
-    assert.ok(fs.existsSync(storeFile));
+    const completedStore = fs.readFileSync(storeFile, "utf8");
+    assert.deepEqual(await (await complete("Q01")).json(), postJson);
+    assert.equal(fs.readFileSync(storeFile, "utf8"), completedStore);
+    target.cycleStartedAt = "2026-11-20T10:00:00.000Z";
+    fs.writeFileSync(targetPath, JSON.stringify(progress));
+    assert.equal((await complete("Q01")).status, 409, "Reset invalidates the previous event");
 
     // POST validation rejects unsafe drillId
     const badPost = await reviewItemsPOST(

@@ -291,8 +291,7 @@ export function summarizeReviewSession(
 }
 
 /**
- * Save a single reviewed problem's state (including `revisitNote` or attempt telemetry)
- * into `progress/<DRILL_ID>.json` via `/api/save-state` with `reviewMerge: true`.
+ * Save a reviewed problem's learner-owned notes without replacing its drill draft.
  */
 export async function saveReviewProblemState(
   drillId: string,
@@ -309,7 +308,15 @@ export async function saveReviewProblemState(
         drillId,
         unitCode,
         reviewMerge: true,
-        problems: [{ id: qid, state }],
+        problems: [{
+          id: qid,
+          state: {
+            cycleStartedAt: state.cycleStartedAt,
+            ...(state.mistakeNote?.trim() ? { mistakeNote: state.mistakeNote } : {}),
+            revisitNote: state.revisitNote,
+            divergedStep: state.divergedStep,
+          },
+        }],
       }),
     });
     return res.ok;
@@ -482,14 +489,6 @@ export async function executeReviewItemCheck(params: {
     outcome = { ...existingOutcome, correctOnRetry: true };
   }
 
-  await saveReviewProblemState(
-    drillDoc.drillId,
-    item.unitCode || drillDoc.unitCode,
-    item.qid,
-    updatedProb.state,
-    fetchFn
-  );
-
   if (transition.partsToReveal.length > 0) {
     const patch = await fetchRevealedParts(
       drillDoc.drillId,
@@ -559,7 +558,6 @@ export async function executeReviewItemSkip(params: {
   if (!transition) return null;
 
   const updatedDoc = transition.updatedDoc;
-  const updatedProb = updatedDoc.problems.find((p) => p.id === item.qid);
 
   let outcome = existingOutcome;
   if (!outcome) {
@@ -610,16 +608,6 @@ export async function executeReviewItemSkip(params: {
       commonTrapTag,
       skipped: true,
     };
-  }
-
-  if (updatedProb) {
-    await saveReviewProblemState(
-      drillDoc.drillId,
-      item.unitCode || drillDoc.unitCode,
-      item.qid,
-      updatedProb.state,
-      fetchFn
-    );
   }
 
   return {

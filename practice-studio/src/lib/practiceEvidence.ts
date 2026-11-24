@@ -1,12 +1,13 @@
 import { randomUUID } from "crypto";
-import { applyCheckResult, applySkip, resetProblemForRetry } from "@/lib/applyCheckResult";
+import { applyCheckResult, applySkip, applyTestReport, resetProblemForRetry } from "@/lib/applyCheckResult";
 import { labToDrillDocument } from "@/lib/labModel";
 import { loadLabDetailFromDisk } from "@/lib/labs";
-import { loadDrillFromDisk, loadProblemFromDisk } from "@/lib/paths";
-import { mutateProblemState, readProgress } from "@/lib/progress";
+import { loadDrillFromDisk } from "@/lib/paths";
+import { mutateProblemState, readProgress, writeProgress } from "@/lib/progress";
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { hasCheckpointHint } from "@/lib/studioRules";
 import { isLabId } from "@/lib/routes";
-import { applySelfScore, isLockedAfterCorrect, scoreProblem } from "@/lib/scoring";
+import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import type { CheckResult, DrillDocument, Problem, ProblemState, TestRunReport } from "@/types/drill";
 
 export function loadPracticeDocument(drillId: string): DrillDocument | null {
@@ -40,7 +41,7 @@ export function recordOriginalCheck(
   let event: { eventId?: string; ts?: string } = {};
   mutateProblemState(doc.drillId, doc.unitCode, problem.id, (state) => {
     if ((state.cycleStartedAt ?? null) !== cycle || isLockedAfterCorrect(state)) return;
-    const ts = new Date().toISOString();
+    const ts = practiceTimestamp(cycle);
     const target = { ...problem, state };
     const next = result.verdict === "skipped"
       ? applySkip({ ...target, state: { ...state, userInput: input } }, { ts, durationMs })
@@ -58,23 +59,9 @@ export function recordOriginalCheck(
   return event;
 }
 
-export function applyTestReport(state: ProblemState, report: TestRunReport, ts: string): ProblemState {
-  const next = {
-    ...state,
-    lastTestReport: { ...report, ts },
-    testRuns: [
-      ...(state.testRuns || []),
-      {
-        ts,
-        allPassed: Boolean(report.allPassed &&
-          (typeof report.totalCount !== "number" || report.totalCount > 0)),
-        passedCount: report.passedCount,
-        totalCount: report.totalCount,
-      },
-    ],
-    skipped: false,
-  };
-  return { ...next, score: scoreProblem(next, { isPrg: true, ignoreStateScore: true }).score };
+function practiceTimestamp(cycle: string | null): string {
+  const now = new Date().toISOString();
+  return cycle && cycle > now && Date.parse(cycle) - Date.parse(now) <= 3 ? cycle : now;
 }
 
 export function recordTestReport(
@@ -82,26 +69,54 @@ export function recordTestReport(
   report: TestRunReport
 ): TestRunReport | null {
   if (currentPracticeCycle(drillId, qid) !== cycle) return null;
-  const ts = new Date().toISOString();
+  if (!Number.isFinite(report.totalCount) || report.totalCount <= 0) return report;
+  const ts = practiceTimestamp(cycle);
   mutateProblemState(drillId, unitCode, qid, (state) => applyTestReport(state, report, ts));
   return { ...report, ts };
 }
 
-export function resetPractice(doc: DrillDocument, problems: Problem[]): string {
+export function resetPractice(
+  doc: DrillDocument,
+  problems: Problem[],
+  options: { resetSummary?: boolean; reviewBaseLevel?: number } = {}
+): string {
   const now = Date.now();
-  const cycle = new Date(Math.max(now, ...problems.map((p) => {
-    const state = readProgress(doc.drillId)?.problems?.[p.id] as ProblemState | undefined;
+  const saved = readProgress(doc.drillId);
+  let nextCycle = now;
+  for (const problem of problems) {
+    const state = saved?.problems?.[problem.id] as ProblemState | undefined;
     const latest = Math.max(
       ...[state?.cycleStartedAt, state?.attempts?.at(-1)?.ts, state?.lastTestReport?.ts,
         state?.reviews?.at(-1)?.at].map((ts) => Date.parse(ts ?? "") || 0)
     );
-    // A reset and the last event can arrive in the same millisecond.
-    return latest === now ? now + 1 : now;
-  }))).toISOString();
+    // The new cycle must come after a server event written in the same millisecond.
+    if (latest >= now && latest <= now + 2) nextCycle = Math.max(nextCycle, latest + 1);
+  }
+  const cycle = new Date(nextCycle).toISOString();
   for (const problem of problems) {
-    mutateProblemState(doc.drillId, doc.unitCode, problem.id, (state) =>
-      resetProblemForRetry({ ...problem, state }, cycle).state
-    );
+    mutateProblemState(doc.drillId, doc.unitCode, problem.id, (state) => {
+      const next = resetProblemForRetry({ ...problem, state }, cycle).state;
+      delete next.reviewBaseLevel;
+      if (options.reviewBaseLevel !== undefined) next.reviewBaseLevel = options.reviewBaseLevel;
+      return next;
+    });
+  }
+  if (options.resetSummary) {
+    writeProgress({
+      drillId: doc.drillId,
+      unitCode: doc.unitCode,
+      sessionSummary: {
+        practiceStatus: "Ready",
+        score: 0,
+        accuracyPct: 0,
+        skippedCount: 0,
+        skippedProblems: [],
+        mistakeCategories: [],
+        divergedStepsSummary: "",
+        attemptDate: null,
+        statusOverride: null,
+      },
+    });
   }
   return cycle;
 }
@@ -109,11 +124,12 @@ export function resetPractice(doc: DrillDocument, problems: Problem[]): string {
 export function recordPracticeHelp(
   doc: DrillDocument, qid: string, action: "hint" | "setup" | "steps"
 ): boolean {
-  const loaded = isLabId(doc.drillId) ? null : loadProblemFromDisk(doc.drillId, qid);
-  if (action !== "hint" && !loaded) return false;
+  const problem = doc.problems.find((p) => p.id === qid);
+  if (!problem || (action === "hint" && !hasCheckpointHint(problem.checkpointHint))) return false;
+  if (action === "setup" && !problem.display && !problem.plainText) return false;
   let allowed = true;
   mutateProblemState(doc.drillId, doc.unitCode, qid, (state) => {
-    const ts = new Date().toISOString();
+    const ts = practiceTimestamp(state.cycleStartedAt ?? null);
     if (action === "steps" && !hasSubstantiveAttempt(state)) {
       allowed = false;
       return;
@@ -134,6 +150,8 @@ export function recordPracticeHelp(
 
 export function recordSelfScore(doc: DrillDocument, qid: string, score: number | null): void {
   mutateProblemState(doc.drillId, doc.unitCode, qid, (state) =>
-    applySelfScore(state, score, { isPrg: doc.subject === "PRG" })
+    hasSubstantiveAttempt(state)
+      ? applySelfScore(state, score, { isPrg: doc.subject === "PRG" })
+      : state
   );
 }

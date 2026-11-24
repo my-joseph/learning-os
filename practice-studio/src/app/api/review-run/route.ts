@@ -130,6 +130,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cycle = currentPracticeCycle(drillId, problemId);
+    if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== cycle) {
+      return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+    }
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
     const repoParent = path.resolve(process.cwd(), "..");
@@ -205,7 +209,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const cycle = currentPracticeCycle(drillId, problemId);
     const lab = drillId.startsWith("LAB-") ? loadLabDetailFromDisk(drillId) : null;
     if (drillId.startsWith("LAB-") && !lab?.milestones.some((m) => m.id === problemId)) {
       return NextResponse.json({ error: "Milestone not found" }, { status: 404 });

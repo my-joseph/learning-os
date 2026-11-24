@@ -301,7 +301,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         const revRes = await fetch("/api/review-run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ drillId, problemId: problem.id }),
+          body: JSON.stringify({ drillId, problemId: problem.id, cycleStartedAt: problem.state.cycleStartedAt ?? null }),
         });
         const revJson = await revRes.json();
         if (!revRes.ok) {
@@ -320,6 +320,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             problemId: problem.id,
             userCode: problem.workspaceFile ? undefined : latestCode,
             workspaceFile: problem.workspaceFile,
+            cycleStartedAt: problem.state.cycleStartedAt ?? null,
           }),
         });
 
@@ -1265,6 +1266,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 setShowSolution(!showSolution);
               }}
               stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+              hideShowStepsButton={!hasAttempt}
               stepsRef={stepsRef}
               showStepsHeader={false}
               onMarkDivergedStep={onMarkDivergedStep}

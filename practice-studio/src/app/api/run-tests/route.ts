@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
 
     const { doc, problem } = loaded;
     const cycle = currentPracticeCycle(drillId, problemId);
+    if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== cycle) {
+      return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+    }
     const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
     const persist = (report: TestRunReport) => recordTestReport(drillId, problemId, unitCode, cycle, report);
     // Server copy wins: load visibleTests, hiddenTests, environment, entryPoint, and workspaceFile from drills/data.
@@ -68,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!userCode.trim()) {
-      const report = persist({
+      return NextResponse.json({
           allPassed: false,
           score: 0,
           passedCount: 0,
@@ -84,8 +87,6 @@ export async function POST(req: NextRequest) {
           hiddenTotal: hiddenTests.length,
           executionTimeMs: 0,
       });
-      return report ? NextResponse.json(report) :
-        NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
     }
 
     const repoParent = path.resolve(process.cwd(), "..");

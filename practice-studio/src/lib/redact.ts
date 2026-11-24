@@ -217,6 +217,7 @@ export function redactProblemStateForClient(
 ): ProblemState | undefined {
   if (!state || typeof state !== "object") return undefined;
   const copy: ProblemState = { ...state };
+  delete copy.reviewBaseLevel;
   delete copy.variantsSeen;
   delete copy.variantsAttempted;
   delete (copy as unknown as Record<string, unknown>).activeVariant;

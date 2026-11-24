@@ -59,7 +59,8 @@ function isEmptyValue(v: unknown): boolean {
 
 function attemptKey(a: unknown): string {
   if (a && typeof a === "object") {
-    const ts = (a as Record<string, unknown>).ts;
+    const { eventId, ts } = a as Record<string, unknown>;
+    if (typeof eventId === "string" && eventId) return `event:${eventId}`;
     if (typeof ts === "string" && ts.length > 0) {
       return `ts:${ts}`;
     }
