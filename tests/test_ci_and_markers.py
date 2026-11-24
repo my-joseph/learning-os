@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from tests import conftest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +33,31 @@ def test_conftest_scrubs_pilot_and_dry_run_env_for_subprocesses():
         text=True,
     )
     assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
+
+
+@pytest.mark.parametrize("source", ["--basetemp", "PYTEST_DEBUG_TEMPROOT", "TMPDIR"])
+def test_conftest_rejects_temp_paths_in_a_checkout(tmp_path, source):
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    (checkout / "id_map.json").write_text("{}", encoding="utf-8")
+    # The path supplied to pytest is outside the checkout lexically.
+    alias = tmp_path / "alias"
+    alias.symlink_to(checkout, target_is_directory=True)
+    base = alias / "audit-tmp"
+    base.mkdir()
+
+    env = os.environ.copy()
+    env.pop("PYTEST_DEBUG_TEMPROOT", None)
+    cmd = [sys.executable, "-m", "pytest", "--collect-only", "-q", "tests/test_zero_leak.py"]
+    if source == "--basetemp":
+        cmd += [source, str(base)]
+    else:
+        env[source] = str(base)
+
+    proc = subprocess.run(cmd, cwd=ROOT, env=env, capture_output=True, text=True)
+    assert proc.returncode == pytest.ExitCode.USAGE_ERROR, proc.stdout + "\n" + proc.stderr
+    assert f"{source} must point outside repository checkouts" in proc.stderr
+    assert list(base.iterdir()) == []
 
 
 def test_prg_marker_does_not_swallow_non_prg_file_tests():

@@ -190,7 +190,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <ThemeToggleButton
           theme={theme}
           onToggle={onToggleTheme}
-          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
+          className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
         />
 
         {showRightPanelToggle && (
