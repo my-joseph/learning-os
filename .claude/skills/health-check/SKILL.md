@@ -30,7 +30,7 @@ Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local depende
 11. Compare drill/lab IDs and active references against `id_map.json` using read-only inspection. Report missing/orphaned IDs, invalid unit/chapter/reference keys, duplicate Notion page IDs, and active references to `RETIRED-*`. Never edit `id_map.json`.
 12. Read-only git hygiene: check `core.hooksPath`, tracked `.env*`, `progress/`, `pilot/`, `scratch/`, and `sources/` files; list worktrees and merged-branch candidates without removing anything.
 13. Run `.venv/bin/python -m scripts.doc_refs` to verify paths, module commands, CLI flags, npm scripts, and skill references across skills, rules, and docs.
-14. Run `.venv/bin/python -m scripts.self_review --json` (read-only) to collect ranked auto-signals from the issue log, `pilot/agent-usage.jsonl`, merged PR rework, drill quality, and `doc_refs`.
+14. Run `.venv/bin/python -m scripts.self_review --compare-at <YYYY-MM-DD> --json` (read-only) to collect ranked auto-signals and the before/after delta table from the issue log, `pilot/agent-usage.jsonl`, merged PR rework, drill quality, and `doc_refs`. Use the latest `since` date in `docs/self_review_addressed.json` as the default comparison boundary when no date is supplied. Include the comparison table in the Thai report, and list post-boundary runs with fewer than five runs as insufficient data.
 
 ## 3. Launch read-only worker audits
 
@@ -45,7 +45,7 @@ Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local depende
 ## 4. Verify and merge findings into a plan
 
 - Recheck surprising failures and every worker finding against its cited current source. Separate **confirmed** findings (reproduced or directly evidenced) from **plausible** risks (credible but unverified); keep new issues separate from prior-audit carryovers. Drop history/timestamp noise.
-- Write `$MAIN/pilot/health-<date>/report.md` in polite Thai. Include `AUDIT_SHA`, date, concise automated-check totals with only failing/warning items, ranked findings with evidence and impact, top `scripts.self_review` improvement proposals, skipped checks, and missing evidence.
+- Write `$MAIN/pilot/health-<date>/report.md` in polite Thai. Include `AUDIT_SHA`, date, concise automated-check totals with only failing/warning items, the self-review before/after delta table, ranked findings with evidence and impact, top `scripts.self_review` improvement proposals, skipped checks, and missing evidence.
 - Map every finding to one bounded proposed fix PR (or explicitly state why no fix PR is proposed). Group only independent findings with non-overlapping scope; identify learner-owned decisions and the decision needed. Keep confirmed findings distinct from plausible risks and cleanup.
 - Do not fix findings unless the learner explicitly says to fix them. After writing the report, remove only temporary audit worktrees created for this run; preserve all other worktrees and branches.
 

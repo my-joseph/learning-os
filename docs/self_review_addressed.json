@@ -1,0 +1,32 @@
+{
+  "job:feat|usage-rework": {
+    "since": "2026-11-21",
+    "pr": 293,
+    "note": "Worker spec acceptance and pre-PR process rules"
+  },
+  "job:feat|usage-cost": {
+    "since": "2026-11-25",
+    "pr": 335,
+    "note": "Targeted worker test guidance; builds on worker spec rules in #293"
+  },
+  "job:fix|usage-rework": {
+    "since": "2026-11-21",
+    "pr": 293,
+    "note": "Worker spec acceptance and pre-PR process rules"
+  },
+  "job:fix|usage-cost": {
+    "since": "2026-11-25",
+    "pr": 335,
+    "note": "Targeted worker test guidance; builds on worker spec rules in #293"
+  },
+  "model:gemini-4-neon-high|usage-fallback": {
+    "since": "2026-11-24",
+    "pr": 332,
+    "note": "Routing and quota-pool guidance; see #331 and #332"
+  },
+  "content|gate-gap": {
+    "since": "2026-11-21",
+    "pr": 295,
+    "note": "Content gate coverage"
+  }
+}
