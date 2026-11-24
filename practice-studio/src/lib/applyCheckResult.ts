@@ -319,6 +319,7 @@ export function resetDrillForRetry(
       mistakeCategories: [],
       divergedStepsSummary: "",
       attemptDate: null,
+      statusOverride: null,
       syncedToNotionAt: null,
       syncedFingerprint: null,
     },

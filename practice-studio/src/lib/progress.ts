@@ -271,9 +271,7 @@ function deriveVariantLists(
 
 export interface WriteProgressOptions {
   /**
-   * When false (used by client-facing `/api/save-state` and pre-sync writes),
-   * existing sync stamps on disk are always preserved and incoming client stamps
-   * can never clear or forge them. Defaults to true for server/test callers.
+   * When false, preserve existing sync stamps while replacing the computed summary.
    */
   allowSyncStampUpdate?: boolean;
 }
@@ -730,53 +728,65 @@ export function mutateProblemState(
   qid: string,
   mutator: (state: ProblemState) => void | ProblemState
 ): ProblemState {
-  if (!isSafeId(drillId) || !isSafeId(qid)) {
+  return mutateProblemStates(drillId, unitCode, [qid], mutator)[qid];
+}
+
+export function mutateProblemStates(
+  drillId: string,
+  unitCode: string | undefined,
+  qids: string[],
+  mutator: (state: ProblemState, qid: string) => void | ProblemState,
+  summary?: unknown
+): Record<string, ProblemState> {
+  if (!isSafeId(drillId) || !qids.every(isSafeId)) {
     throw new Error("Invalid drillId or qid");
   }
   const existing = readProgress(drillId);
   const problems = {
     ...((existing?.problems || {}) as Record<string, Partial<ProblemState>>),
   };
-  let nextState: ProblemState = {
-    userInput: "",
-    score: null,
-    divergedStep: null,
-    mistakes: [],
-    ...(problems[qid] || {}),
-  };
-  if (nextState.variants) {
-    nextState.variants = { ...nextState.variants };
-  }
-  nextState = mutator(nextState) ?? nextState;
+  const changed: Record<string, ProblemState> = {};
+  for (const qid of qids) {
+    let nextState: ProblemState = {
+      userInput: "",
+      score: null,
+      divergedStep: null,
+      mistakes: [],
+      ...(problems[qid] || {}),
+    };
+    if (nextState.variants) {
+      nextState.variants = { ...nextState.variants };
+    }
+    nextState = mutator(nextState, qid) ?? nextState;
 
-  const derived = deriveVariantLists(
-    nextState.variants,
-    nextState.variantsSeen,
-    nextState.variantsAttempted
-  );
-  if (derived.variantsSeen.length > 0) {
-    nextState.variantsSeen = derived.variantsSeen;
-  } else {
-    delete nextState.variantsSeen;
-  }
-  if (derived.variantsAttempted.length > 0) {
-    nextState.variantsAttempted = derived.variantsAttempted;
-  } else {
-    delete nextState.variantsAttempted;
+    const derived = deriveVariantLists(
+      nextState.variants,
+      nextState.variantsSeen,
+      nextState.variantsAttempted
+    );
+    if (derived.variantsSeen.length > 0) {
+      nextState.variantsSeen = derived.variantsSeen;
+    } else {
+      delete nextState.variantsSeen;
+    }
+    if (derived.variantsAttempted.length > 0) {
+      nextState.variantsAttempted = derived.variantsAttempted;
+    } else {
+      delete nextState.variantsAttempted;
+    }
+
+    problems[qid] = nextState;
+    changed[qid] = nextState;
   }
 
-  problems[qid] = nextState;
-
-  const data: ProgressFile = {
+  writeJsonAtomic(progressFile(drillId), {
     drillId,
     unitCode: unitCode || existing?.unitCode,
     updatedAt: new Date().toISOString(),
-    sessionSummary: existing?.sessionSummary || {},
+    sessionSummary: mergeSessionSummary(existing?.sessionSummary, summary),
     problems,
-  };
-  const file = progressFile(drillId);
-  writeJsonAtomic(file, data);
-  return nextState;
+  } satisfies ProgressFile);
+  return changed;
 }
 
 /**

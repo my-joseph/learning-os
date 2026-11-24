@@ -428,7 +428,7 @@ async function runTests() {
       /sendPracticeAction|ensureReviewCycle/,
       "/review load effect must not persist cycleStartedAt on mount/navigation"
     );
-    // Bug #3 + #4: handleHintRevealed must stamp reviewHintRevealedAt and autoSave via reviewMerge
+    // Opening a hint records cycle-scoped assistance.
     const hintHandlerMatch = reviewSource.match(/const handleHintRevealed = useCallback\([\s\S]*?\n\s*\}, \[[^\]]+\]\);/);
     assert.ok(hintHandlerMatch, "Expected handleHintRevealed in DailyReviewPage.tsx");
     assert.match(hintHandlerMatch[0], /reviewHintRevealedAt/, "handleHintRevealed must stamp cycle-scoped reviewHintRevealedAt");
@@ -881,7 +881,7 @@ async function runTests() {
     );
     assert.equal(progressAfterLoad.problems.Q01.score, 0);
 
-    // 2c. API wiring test: executeReviewItemCheck wires check-answer, save-state (reviewMerge),
+    // 2c. API wiring test: executeReviewItemCheck wires check-answer,
     //     reveal, and review-items POST
     const calls: Array<{ url: string; method: string; body?: Record<string, unknown> }> = [];
     const customFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -1052,7 +1052,7 @@ async function runTests() {
       "Review check and revisitNote save must never modify drills/data"
     );
 
-    // 2e. Verify skip / wrong wiring records correct: false and hintsUsed count
+    // 2e. Verify an explicit skip schedules a missed review item.
     const skipOutcome = await executeReviewItemSkip({
       drillDoc: await reset(),
       item: { ...dueJson.items[0], level: 4 },

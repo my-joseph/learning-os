@@ -1005,8 +1005,8 @@ async function main() {
       );
       assert.equal(
         diskStamp.sessionSummary.divergedStepsSummary,
-        "Q01 (Note: added after sync)",
-        "non-stamp summary fields must still update"
+        "No diverged steps logged.",
+        "Autosave leaves server-computed summary fields intact"
       );
 
       // Client attempting to forge a newer stamp via /api/save-state must be ignored

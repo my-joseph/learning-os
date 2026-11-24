@@ -3,7 +3,7 @@ import { applyCheckResult, applySkip, applyTestReport, resetProblemForRetry } fr
 import { labToDrillDocument } from "@/lib/labModel";
 import { loadLabDetailFromDisk } from "@/lib/labs";
 import { loadDrillFromDisk } from "@/lib/paths";
-import { mutateProblemState, readProgress, writeProgress } from "@/lib/progress";
+import { mutateProblemState, mutateProblemStates, readProgress } from "@/lib/progress";
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { isLabId } from "@/lib/routes";
@@ -36,12 +36,17 @@ export function recordOriginalCheck(
   cycle: string | null,
   input: string,
   result: CheckResult,
-  durationMs?: number
+  durationMs?: number,
+  skipOpensHint = false
 ): { eventId?: string; ts?: string } {
   let event: { eventId?: string; ts?: string } = {};
   mutateProblemState(doc.drillId, doc.unitCode, problem.id, (state) => {
     if ((state.cycleStartedAt ?? null) !== cycle || isLockedAfterCorrect(state)) return;
     const ts = practiceTimestamp(cycle);
+    if (result.verdict === "skipped" && skipOpensHint && hasCheckpointHint(problem.checkpointHint)) {
+      state.hintsRevealed = (state.hintsRevealed || 0) + 1;
+      state.reviewHintRevealedAt = ts;
+    }
     const target = { ...problem, state };
     const next = result.verdict === "skipped"
       ? applySkip({ ...target, state: { ...state, userInput: input } }, { ts, durationMs })
@@ -93,31 +98,25 @@ export function resetPractice(
     if (latest >= now && latest <= now + 2) nextCycle = Math.max(nextCycle, latest + 1);
   }
   const cycle = new Date(nextCycle).toISOString();
-  for (const problem of problems) {
-    mutateProblemState(doc.drillId, doc.unitCode, problem.id, (state) => {
-      const next = resetProblemForRetry({ ...problem, state }, cycle).state;
-      delete next.reviewBaseLevel;
-      if (options.reviewBaseLevel !== undefined) next.reviewBaseLevel = options.reviewBaseLevel;
-      return next;
-    });
-  }
-  if (options.resetSummary) {
-    writeProgress({
-      drillId: doc.drillId,
-      unitCode: doc.unitCode,
-      sessionSummary: {
-        practiceStatus: "Ready",
-        score: 0,
-        accuracyPct: 0,
-        skippedCount: 0,
-        skippedProblems: [],
-        mistakeCategories: [],
-        divergedStepsSummary: "",
-        attemptDate: null,
-        statusOverride: null,
-      },
-    });
-  }
+  const targets = new Map(problems.map((problem) => [problem.id, problem]));
+  const summary = options.resetSummary ? {
+    practiceStatus: "Ready",
+    score: 0,
+    accuracyPct: 0,
+    skippedCount: 0,
+    skippedProblems: [],
+    mistakeCategories: [],
+    divergedStepsSummary: "",
+    attemptDate: null,
+    statusOverride: null,
+  } : undefined;
+  mutateProblemStates(doc.drillId, doc.unitCode, [...targets.keys()], (state, qid) => {
+    const problem = targets.get(qid)!;
+    const next = resetProblemForRetry({ ...problem, state }, cycle).state;
+    delete next.reviewBaseLevel;
+    if (options.reviewBaseLevel !== undefined) next.reviewBaseLevel = options.reviewBaseLevel;
+    return next;
+  }, summary);
   return cycle;
 }
 

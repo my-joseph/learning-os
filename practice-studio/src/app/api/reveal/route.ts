@@ -208,12 +208,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
     }
     if (action === "skip") {
-      if (body.countHint === true) recordPracticeHelp(doc, qid, "hint");
       const input = typeof body.input === "string" ? body.input : "";
       const event = recordOriginalCheck(
         doc, problem, cycle, input,
         { verdict: "skipped", message: "", components: [], diagnostics: [] },
-        practiceDuration(body.durationMs)
+        practiceDuration(body.durationMs),
+        body.countHint === true
       );
       if (!event.eventId) {
         return NextResponse.json({ error: "This problem is already complete" }, { status: 409 });

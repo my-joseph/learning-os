@@ -274,6 +274,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       if (currentDrill?.drillId === targetId) {
         setResetTargetId(null);
         if (!(await handleResetAll())) return;
+        setStatusOverride(null);
         setResetAllVersion((version) => version + 1);
         const url = new URL(window.location.href);
         if (url.searchParams.has("similar") || url.searchParams.has("tab")) {

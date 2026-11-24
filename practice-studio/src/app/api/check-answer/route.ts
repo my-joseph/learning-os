@@ -11,6 +11,7 @@ import {
 } from "@/lib/paths";
 import { readProgress, recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
 import { similarUnlock } from "@/lib/similarTabs";
+import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { currentPracticeCycle, practiceDuration, recordOriginalCheck } from "@/lib/practiceEvidence";
 import type { CheckResult, DrillDocument, Problem, ProblemState } from "@/types/drill";
 
@@ -310,6 +311,10 @@ export async function POST(req: NextRequest) {
               original.doc, original.problem, original.cycle, userInput, result,
               practiceDuration(durationMs)
             );
+            if (!event.eventId && userInput.trim() && isSubstantiveVerdict(result.verdict)) {
+              resolve(NextResponse.json({ error: "This problem is already complete" }, { status: 409 }));
+              return;
+            }
             resolve(NextResponse.json({ ...result, ...event }));
             return;
           }
