@@ -5,10 +5,10 @@ import path from "node:path";
 import { NextRequest } from "next/server";
 import { POST as saveStatePOST } from "../src/app/api/save-state/route";
 import { POST as syncNotionPOST } from "../src/app/api/sync-notion/route";
+import { GET as drillGET } from "../src/app/api/drill/route";
 import {
   NotionDrillSyncSpawnArgs,
   setNotionDrillSyncSpawnerForTests,
-  setNotionDrillSyncTimeoutForTests,
   spawnNotionDrillSync,
 } from "../src/lib/notionSyncRunner";
 import { redactProblemStateForClient } from "../src/lib/redact";
@@ -1062,6 +1062,9 @@ async function main() {
       assert.deepEqual(partialBody.failedSteps, failedSteps);
       assert.equal(partialBody.retry, undefined, "internal block IDs must stay on the server");
       assert.equal(partialBody.syncedToNotionAt, undefined);
+      const drillRequest = new NextRequest(`http://localhost/api/drill?id=${stampDrillId}`);
+      const pendingDrill = await (await drillGET(drillRequest)).json();
+      assert.deepEqual(pendingDrill.notionSyncProblems, failedSteps);
       diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
       assert.equal(diskStamp.sessionSummary.syncedToNotionAt, secondSuccessBody.syncedToNotionAt);
 
@@ -1073,6 +1076,8 @@ async function main() {
       const retried = await (await syncNotionPOST(makePostReq("http://localhost/api/sync-notion", syncPayload))).json();
       assert.deepEqual(retryInput, retry);
       assert.ok(retried.syncedToNotionAt > secondSuccessBody.syncedToNotionAt);
+      const syncedDrill = await (await drillGET(drillRequest)).json();
+      assert.equal(syncedDrill.notionSyncProblems, undefined);
 
       // The parent can exit on SIGTERM while a descendant without inherited pipes ignores it.
       const startMs = Date.now();
@@ -1102,7 +1107,6 @@ async function main() {
     console.log("save-state and sync-notion route tests passed");
   } finally {
     setNotionDrillSyncSpawnerForTests(null);
-    setNotionDrillSyncTimeoutForTests(null);
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
     if (prevDrillsDir === undefined) delete process.env.DRILLS_DATA_DIR;

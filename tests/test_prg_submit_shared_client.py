@@ -6,8 +6,6 @@ import json
 from pathlib import Path
 from unittest import mock
 
-import pytest
-
 from code_engine import submit as drill_submit
 from labs.common import submit_lab
 from notion_sync import client as notion_client
@@ -77,8 +75,8 @@ def test_submit_lab_appends_before_deleting_and_preserves_content_on_append_fail
     monkeypatch.setattr(submit_lab, "notion_request", fake_notion_request)
     monkeypatch.setattr(notion_client, "notion_request", fake_notion_request)
 
-    with pytest.raises(RuntimeError, match="simulated append failure"):
-        submit_lab.sync_to_notion(repo_root, lab_dir, config, eval_result, {"NOTION_TOKEN": "tok-test"})
+    result = submit_lab.sync_to_notion(repo_root, lab_dir, config, eval_result, {"NOTION_TOKEN": "tok-test"})
+    assert result == {"pageUrl": "https://notion.so/page123", "partial": True, "failedSteps": ["pageContent"]}
 
     assert not any(m == "DELETE" for m, _ in calls)
 

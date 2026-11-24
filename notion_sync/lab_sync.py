@@ -156,7 +156,6 @@ def sync_lab_to_notion(
 
         id_map[lab_id] = {"id": page_id, "title": title}
         save_id_map(id_map, im_path)
-
     except Exception as exc:  # noqa: BLE001
         return {"synced": False, "degraded": True, "labId": lab_id, "error": str(exc)}
 

@@ -226,8 +226,8 @@ def evaluate_milestones(milestones: list, testcases: list):
     }
 
 
-def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict):
-    """Syncs lab grading results into Notion 'Learning Practice & Drills' database."""
+def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict) -> str | dict | None:
+    """Sync lab grading results and return the page URL or a partial write result."""
     if pilot_mode():
         print(f"[PILOT] skipped Notion write: lab result sync ({config.get('labId')})")
         return None
@@ -293,7 +293,7 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
             f"{YELLOW}[DRY RUN]{RESET} Skipping Notion write for {lab_id} "
             f"({len(blocks)} blocks prepared; uses replace_page_content append-before-delete)."
         )
-        return {"pageUrl": f"https://notion.so/mock-{lab_id}", "dryRun": True}
+        return f"https://notion.so/mock-{lab_id}"
 
     raw_token = env.get("NOTION_TOKEN") or os.environ.get("NOTION_TOKEN")
     try:
@@ -377,7 +377,7 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
         failed_step = "pageContent"
     if failed_step:
         return {"pageUrl": page_url, "partial": True, "failedSteps": [failed_step]}
-    return {"pageUrl": page_url}
+    return page_url
 
 
 def main():
@@ -445,15 +445,15 @@ def main():
     partial_sync = False
     try:
         notion_result = sync_to_notion(repo_root, lab_dir, config, eval_res, env)
-        if notion_result and not notion_result.get("dryRun"):
-            partial_sync = notion_result.get("partial", False)
-            if partial_sync:
-                failed_step = notion_result["failedSteps"][0]
-                label = "remove outdated blocks" if failed_step == "blockCleanup" else "write page content"
-                print(f"{YELLOW}Synced with problems. Could not {label}.{RESET}")
-            else:
-                print(f"{GREEN}✔ Successfully synced to Notion!{RESET}")
+        if isinstance(notion_result, dict):
+            partial_sync = True
+            failed_step = notion_result["failedSteps"][0]
+            label = "remove outdated blocks" if failed_step == "blockCleanup" else "write page content"
+            print(f"{YELLOW}Synced with problems. Could not {label}.{RESET}")
             print(f"  {BOLD}Notion Page:{RESET} {CYAN}{notion_result['pageUrl']}{RESET}\n")
+        elif notion_result and not notion_result.startswith("https://notion.so/mock-"):
+            print(f"{GREEN}✔ Successfully synced to Notion!{RESET}")
+            print(f"  {BOLD}Notion Page:{RESET} {CYAN}{notion_result}{RESET}\n")
     except Exception as e:
         print(f"{RED}✗ Notion sync encountered an error: {e}{RESET}\n")
 

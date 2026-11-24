@@ -150,6 +150,7 @@ export async function POST(req: NextRequest) {
 
       const isRealSync = !isDryRun && !res.dryRun && !res.pilotSkipped && !res.degraded;
       if (isRealSync && res.partial === true) {
+        if (!retry || typeof retry !== "object") throw new Error("Partial sync result has no retry plan");
         writePendingNotionSync(drillId, {
           fingerprint: checkpointFingerprint,
           attemptDate: sessionSummary.attemptDate,

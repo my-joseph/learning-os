@@ -28,15 +28,13 @@ export type NotionDrillSyncSpawner = (
   spawnArgs: NotionDrillSyncSpawnArgs
 ) => Promise<NotionDrillSyncProcessResult>;
 
-let activeTimeoutMs: number = DEFAULT_DRILL_SYNC_TIMEOUT_MS;
-
 export const spawnNotionDrillSync: NotionDrillSyncSpawner = ({
   pythonBin,
   args,
   cwd,
   env,
   stdinPayload,
-  timeoutMs = activeTimeoutMs,
+  timeoutMs = DEFAULT_DRILL_SYNC_TIMEOUT_MS,
 }) =>
   new Promise<NotionDrillSyncProcessResult>((resolve) => {
     const useProcessGroup = process.platform !== "win32";
@@ -151,14 +149,6 @@ export function setNotionDrillSyncSpawnerForTests(
   activeSpawner = spawner ?? spawnNotionDrillSync;
 }
 
-/** Override the child_process sync timeout in unit tests (pass null to restore default). */
-export function setNotionDrillSyncTimeoutForTests(timeoutMs: number | null): void {
-  activeTimeoutMs =
-    typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0
-      ? timeoutMs
-      : DEFAULT_DRILL_SYNC_TIMEOUT_MS;
-}
-
 export const DRILL_SYNC_INLINE_SCRIPT = `
 import json, sys
 from notion_sync.drill_sync import sync_drill_to_notion
@@ -188,6 +178,6 @@ export async function runNotionDrillSync(options: {
       NOTION_DRY_RUN: isDryRun ? "1" : process.env.NOTION_DRY_RUN || "",
     },
     stdinPayload: JSON.stringify({ doc: mergedDoc, retry: options.retry }),
-    timeoutMs: timeoutMs ?? activeTimeoutMs,
+    timeoutMs,
   });
 }
