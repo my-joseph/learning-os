@@ -610,3 +610,60 @@ def test_only_attempted_problem_content_leaves_the_result_writer(mode, export_ca
 )
 def test_notion_attempt_evidence(state, is_prg, evidence):
     assert drill_sync._notion_attempt_evidence(state, is_prg=is_prg) == evidence
+
+
+def test_skipped_item_with_opened_solution_and_untried_item_omit_answer_blocks(export_capture):
+    doc = _doc()
+    first = doc["problems"][0]
+    first["prompt"] = "Attempted prompt"
+    first["steps"] = [{"latex": "x=1", "explain": "Attempted step"}]
+    first["answerDisplay"] = "attempted-answer"
+    first["state"] = {"attempts": [{"verdict": "correct", "input": "1", "ts": "2026-11-24T09:00:00Z"}]}
+
+    skipped_opened = {
+        **first,
+        "id": "Q02",
+        "prompt": "Skipped-but-opened prompt",
+        "steps": [{"latex": "x=2", "explain": "SECRET_SKIPPED_STEP"}],
+        "answerDisplay": "SECRET_SKIPPED_ANSWER",
+        "state": {
+            "skipped": True,
+            "solutionRevealedBeforeAnswer": True,
+            "setupRevealedBeforeAnswer": True,
+            "reviewStepsRevealedAt": "2026-11-24T09:02:00Z",
+            "attempts": [{"verdict": "skipped", "solutionRevealed": True, "ts": "2026-11-24T09:01:00Z"}],
+        },
+    }
+    untried_with_flags = {
+        **first,
+        "id": "Q03",
+        "prompt": "Untried prompt",
+        "steps": [{"latex": "x=3", "explain": "SECRET_UNTRIED_STEP"}],
+        "answerDisplay": "SECRET_UNTRIED_ANSWER",
+        "state": {
+            "userInput": "draft",
+            "score": 0.5,
+            "solutionRevealedBeforeAnswer": True,
+            "setupRevealedBeforeAnswer": True,
+            "attempts": [{"verdict": "parse_error", "input": "((", "ts": "2026-11-24T09:03:00Z"}],
+        },
+    }
+    doc["problems"].extend([skipped_opened, untried_with_flags])
+
+    res = drill_sync.sync_drill_to_notion(doc, save_local=False, studio_results=True)
+    calls, blocks = export_capture
+    assert res["ok"] and calls
+    published = json.dumps(blocks)
+    assert "Attempted prompt" in published
+    assert "Attempted step" in published
+    assert "attempted-answer" in published
+    assert "Q02 (Core Skill)" in published
+    for secret in (
+        "Skipped-but-opened prompt",
+        "SECRET_SKIPPED_STEP",
+        "SECRET_SKIPPED_ANSWER",
+        "Untried prompt",
+        "SECRET_UNTRIED_STEP",
+        "SECRET_UNTRIED_ANSWER",
+    ):
+        assert secret not in published

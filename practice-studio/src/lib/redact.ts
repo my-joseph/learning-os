@@ -1,13 +1,19 @@
 import {
   AnswerSpec,
   AttemptRecord,
+  CheckResult,
   ChoiceOption,
   CodeExample,
   DrillDocument,
   Problem,
   ProblemState,
   RedactedVariant,
+  ReviewFinding,
+  ReviewRecord,
   Step,
+  TestResult,
+  TestRunRecord,
+  TestRunReport,
   VariantSessionRecord,
   WorkedExampleVariant,
 } from "../types/drill";
@@ -15,12 +21,16 @@ import {
   isHiddenTestFailureName,
   maskHiddenTestFailures,
   sanitizeCodeCheckError,
+  type ReviewRunLintItem,
+  type ReviewRunResult,
+  type ReviewRunTypecheckItem,
 } from "./codeStatus";
 import {
   canRevealVerifiedAnswer,
   canShowReferenceSolution,
   isSubstantiveVerdict,
   isTimestampInCycle,
+  sanitizeCheckMessage,
 } from "./reviewGuard";
 import { cycleAttempts, cycleOriginalAttempts, isInCycle } from "./similarTabs";
 import { hasCheckpointHint } from "./studioRules";
@@ -207,10 +217,388 @@ export function canRevealVariantSteps(
   return false;
 }
 
+const MAX_PUBLIC_ERROR_LEN = 2000;
+const MAX_PUBLIC_NAME_LEN = 500;
+
+function nonNegInt(val: unknown, fallback = 0): number {
+  return typeof val === "number" && Number.isFinite(val) && val >= 0 ? Math.floor(val) : fallback;
+}
+
+function nonNegNumber(val: unknown, fallback = 0): number {
+  return typeof val === "number" && Number.isFinite(val) && val >= 0 ? val : fallback;
+}
+
+function boundedText(val: unknown, maxLen: number): string {
+  if (typeof val !== "string") return "";
+  return val.length > maxLen ? val.slice(0, maxLen) : val;
+}
+
+function projectVisibleResults(rawResults: unknown): TestResult[] {
+  if (!Array.isArray(rawResults)) return [];
+  const cleaned: TestResult[] = [];
+  let hiddenFailCount = 0;
+  for (const entry of rawResults) {
+    if (!entry || typeof entry !== "object") continue;
+    const r = entry as Record<string, unknown>;
+    const rawName = typeof r.name === "string" ? r.name : "Test case";
+    const rawError = typeof r.error === "string" ? r.error : undefined;
+    if (isHiddenTestFailureName(rawName) || isHiddenTestFailureName(rawError)) {
+      if (r.passed !== true) hiddenFailCount += 1;
+      continue;
+    }
+    const passed = r.passed === true;
+    const item: TestResult = {
+      name: boundedText(sanitizeCodeCheckError(rawName), MAX_PUBLIC_NAME_LEN) || "Test case",
+      passed,
+    };
+    if (typeof r.durationMs === "number" && Number.isFinite(r.durationMs) && r.durationMs >= 0) {
+      item.durationMs = Math.round(r.durationMs * 100) / 100;
+    }
+    if (!passed && rawError && rawError.trim()) {
+      const safeErr = boundedText(sanitizeCodeCheckError(rawError), MAX_PUBLIC_ERROR_LEN);
+      if (safeErr) item.error = safeErr;
+    }
+    cleaned.push(item);
+  }
+  if (hiddenFailCount > 0) {
+    cleaned.push({
+      name:
+        hiddenFailCount === 1
+          ? "1 hidden check failed"
+          : `${hiddenFailCount} hidden checks failed`,
+      passed: false,
+    });
+  }
+  return cleaned;
+}
+
+export interface ProjectTestRunReportOptions {
+  trustedHiddenTotal?: number;
+  trustedVisibleCount?: number;
+  recomputeFromRunnerResults?: boolean;
+}
+
+/**
+ * Project a raw or persisted test-run report onto the allowlisted `TestRunReport` schema:
+ * drops `rawOutput` and any unknown/extra fields, masks hidden test failures, sanitizes
+ * visible error strings, and enforces consistent counts.
+ */
+export function projectTestRunReport(
+  raw: unknown,
+  options: ProjectTestRunReportOptions = {}
+): TestRunReport {
+  const rec = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const visibleResults = projectVisibleResults(rec.visibleResults);
+  const hiddenTotal =
+    options.trustedHiddenTotal !== undefined
+      ? nonNegInt(options.trustedHiddenTotal, 0)
+      : nonNegInt(rec.hiddenTotal, 0);
+  const hiddenPassed = Math.min(nonNegInt(rec.hiddenPassed, 0), hiddenTotal);
+  const executionTimeMs = nonNegNumber(rec.executionTimeMs, 0);
+  const ts = typeof rec.ts === "string" && rec.ts.trim() ? rec.ts.trim() : undefined;
+
+  if (options.recomputeFromRunnerResults) {
+    const hasFailureEntry = visibleResults.some((r) => !r.passed);
+    if (
+      options.trustedVisibleCount !== undefined &&
+      visibleResults.length !== options.trustedVisibleCount
+    ) {
+      const totalCount = options.trustedVisibleCount + hiddenTotal;
+      // Preserve a runner-produced failure/timeout diagnostic when the runner already failed,
+      // but never allow an incomplete report to claim any passing count or allPassed=true.
+      const failureResults: TestResult[] =
+        hasFailureEntry && rec.allPassed !== true
+          ? visibleResults
+              .filter((r) => !r.passed)
+              .map((r) => ({ ...r, passed: false }))
+          : [
+              {
+                name: "Execution failure",
+                passed: false,
+                error: "Test runner returned an incomplete report",
+              },
+            ];
+      return {
+        allPassed: false,
+        score: 0,
+        passedCount: 0,
+        totalCount,
+        visibleResults: failureResults,
+        hiddenPassed: 0,
+        hiddenTotal,
+        executionTimeMs,
+        ...(ts ? { ts } : {}),
+      };
+    }
+    const visiblePassed = visibleResults.filter((r) => r.passed).length;
+    const totalCount = visibleResults.length + hiddenTotal;
+    const passedCount = visiblePassed + hiddenPassed;
+    const allPassed = totalCount > 0 && passedCount === totalCount;
+    const score = totalCount > 0 ? Math.round((passedCount / totalCount) * 100) / 100 : 0;
+    return {
+      allPassed,
+      score,
+      passedCount,
+      totalCount,
+      visibleResults,
+      hiddenPassed,
+      hiddenTotal,
+      executionTimeMs,
+      ...(ts ? { ts } : {}),
+    };
+  }
+
+  const totalCount = nonNegInt(rec.totalCount, visibleResults.length + hiddenTotal);
+  const passedCount = Math.min(nonNegInt(rec.passedCount, 0), totalCount);
+  const hasVisibleFail = visibleResults.some((r) => !r.passed);
+  const allPassed =
+    rec.allPassed === true &&
+    totalCount > 0 &&
+    passedCount === totalCount &&
+    !hasVisibleFail &&
+    hiddenPassed === hiddenTotal;
+  const rawScore = nonNegNumber(rec.score, totalCount > 0 ? passedCount / totalCount : 0);
+  const score = Math.min(1, Math.round(rawScore * 100) / 100);
+
+  return {
+    allPassed,
+    score,
+    passedCount,
+    totalCount,
+    visibleResults,
+    hiddenPassed,
+    hiddenTotal,
+    executionTimeMs,
+    ...(ts ? { ts } : {}),
+  };
+}
+
+function projectLintItems(rawLint: unknown): ReviewRunLintItem[] {
+  if (!Array.isArray(rawLint)) return [];
+  const out: ReviewRunLintItem[] = [];
+  for (const entry of rawLint) {
+    if (!entry || typeof entry !== "object") continue;
+    const item = entry as Record<string, unknown>;
+    const cleanFile =
+      typeof item.file === "string" && item.file.trim()
+        ? sanitizeCodeCheckError(item.file)
+        : undefined;
+    out.push({
+      ...(cleanFile ? { file: cleanFile } : {}),
+      rule: typeof item.rule === "string" && item.rule.trim() ? item.rule.trim() : "lint",
+      line: nonNegInt(item.line, 0),
+      message: boundedText(sanitizeCodeCheckError(typeof item.message === "string" ? item.message : ""), MAX_PUBLIC_ERROR_LEN),
+    });
+  }
+  return out;
+}
+
+function projectTypecheckItems(rawTypes: unknown): ReviewRunTypecheckItem[] {
+  if (!Array.isArray(rawTypes)) return [];
+  const out: ReviewRunTypecheckItem[] = [];
+  for (const entry of rawTypes) {
+    if (!entry || typeof entry !== "object") continue;
+    const item = entry as Record<string, unknown>;
+    const cleanFile =
+      typeof item.file === "string" && item.file.trim()
+        ? sanitizeCodeCheckError(item.file)
+        : undefined;
+    out.push({
+      ...(cleanFile ? { file: cleanFile } : {}),
+      line: nonNegInt(item.line, 0),
+      message: boundedText(sanitizeCodeCheckError(typeof item.message === "string" ? item.message : ""), MAX_PUBLIC_ERROR_LEN),
+    });
+  }
+  return out;
+}
+
+function projectReviewFindings(rawFindings: unknown): ReviewFinding[] {
+  if (!Array.isArray(rawFindings)) return [];
+  const out: ReviewFinding[] = [];
+  for (const entry of rawFindings) {
+    if (!entry || typeof entry !== "object") continue;
+    const f = entry as Record<string, unknown>;
+    const rawDisputed =
+      f.disputed && typeof f.disputed === "object" ? (f.disputed as Record<string, unknown>) : null;
+    const disputed = rawDisputed
+      ? {
+          reason: typeof rawDisputed.reason === "string" ? rawDisputed.reason : "",
+          issueId: typeof rawDisputed.issueId === "string" ? rawDisputed.issueId : "",
+        }
+      : undefined;
+    out.push({
+      check: typeof f.check === "string" ? f.check : "",
+      severity: f.severity === "must" ? "must" : "should",
+      line: nonNegInt(f.line, 0),
+      note: typeof f.note === "string" ? f.note : "",
+      ...(typeof f.hint === "string" && f.hint ? { hint: f.hint } : {}),
+      ...(disputed ? { disputed } : {}),
+    });
+  }
+  return out;
+}
+
+/** Project a persisted `ReviewRecord` onto the allowlisted schema and mask hidden failures. */
+export function projectReviewRecord(raw: unknown): ReviewRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const rev = raw as Record<string, unknown>;
+  const rawTests =
+    rev.tests && typeof rev.tests === "object" ? (rev.tests as Record<string, unknown>) : {};
+  const total = nonNegInt(rawTests.total, 0);
+  const passed = Math.min(nonNegInt(rawTests.passed, 0), total);
+  const failed = Array.isArray(rawTests.failed)
+    ? maskHiddenTestFailures(rawTests.failed.filter((x): x is string => typeof x === "string")).map(
+        (entry) => sanitizeCodeCheckError(entry)
+      )
+    : [];
+
+  return {
+    at: typeof rev.at === "string" ? rev.at : "",
+    ...(typeof rev.ts === "string" && rev.ts ? { ts: rev.ts } : {}),
+    attempt: nonNegInt(rev.attempt, 0),
+    codeHash: typeof rev.codeHash === "string" ? rev.codeHash : "",
+    code: typeof rev.code === "string" ? rev.code : "",
+    tests: { passed, total, failed },
+    lint: projectLintItems(rev.lint),
+    typecheck: projectTypecheckItems(rev.typecheck),
+    findings: projectReviewFindings(rev.findings),
+    verdict: rev.verdict === "pass" ? "pass" : "revise",
+    explain: typeof rev.explain === "string" ? rev.explain : null,
+    ...(typeof rev.explainQuestion === "string" || rev.explainQuestion === null
+      ? { explainQuestion: rev.explainQuestion }
+      : {}),
+  };
+}
+
+/**
+ * Project a `/api/review-run` runner payload onto the strict allowlisted `ReviewRunResult` schema,
+ * dropping unknown/extra fields and masking hidden test names.
+ */
+export function projectReviewRunResponse(
+  raw: unknown,
+  context: {
+    drillId: string;
+    problemId: string;
+    isLab: boolean;
+    testReport?: TestRunReport | null;
+  }
+): ReviewRunResult {
+  const rec = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const rawTests =
+    rec.tests && typeof rec.tests === "object" ? (rec.tests as Record<string, unknown>) : {};
+  const total = nonNegInt(rawTests.total, 0);
+  const passed = Math.min(nonNegInt(rawTests.passed, 0), total);
+  const failed = Array.isArray(rawTests.failed)
+    ? maskHiddenTestFailures(rawTests.failed.filter((x): x is string => typeof x === "string")).map(
+        (entry) => sanitizeCodeCheckError(entry)
+      )
+    : [];
+
+  const lint = projectLintItems(rec.lint);
+  const typecheck = projectTypecheckItems(rec.typecheck);
+  const checks = Array.isArray(rec.checks)
+    ? rec.checks
+        .filter((c): c is Record<string, unknown> => Boolean(c && typeof c === "object"))
+        .map((c) => {
+          const accepted = Array.isArray(c.accepted)
+            ? c.accepted.filter((x): x is string => typeof x === "string")
+            : undefined;
+          return {
+            id: typeof c.id === "string" ? c.id : "",
+            check: typeof c.check === "string" ? c.check : "",
+            why: typeof c.why === "string" ? c.why : "",
+            severity: (c.severity === "must" ? "must" : "should") as "must" | "should",
+            ...(accepted ? { accepted } : {}),
+          };
+        })
+    : undefined;
+
+  const archetypeKey =
+    typeof rec.archetypeKey === "string"
+      ? rec.archetypeKey
+      : rec.archetypeKey === null
+      ? null
+      : undefined;
+  const level =
+    typeof rec.level === "number" && Number.isFinite(rec.level)
+      ? rec.level
+      : rec.level === null
+      ? null
+      : undefined;
+  const codeHash = typeof rec.codeHash === "string" ? rec.codeHash : undefined;
+
+  return {
+    ...(context.testReport ? { testReport: projectTestRunReport(context.testReport) } : {}),
+    drillId: context.drillId,
+    problemId: context.problemId,
+    ...(context.isLab ? { labId: context.drillId, milestone: context.problemId } : {}),
+    ...(archetypeKey !== undefined ? { archetypeKey } : {}),
+    ...(level !== undefined ? { level } : {}),
+    ...(codeHash !== undefined ? { codeHash } : {}),
+    tests: { passed, total, failed },
+    lint,
+    typecheck,
+    types: typecheck,
+    ...(checks !== undefined ? { checks } : {}),
+  };
+}
+
+function projectCheckResultForClient(raw: unknown): CheckResult | null {
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw as Record<string, unknown>;
+  const verdict = typeof c.verdict === "string" ? (c.verdict as CheckResult["verdict"]) : "incorrect";
+  const message = sanitizeCheckMessage(verdict, typeof c.message === "string" ? c.message : "");
+  const components = Array.isArray(c.components)
+    ? c.components
+        .filter((x): x is Record<string, unknown> => Boolean(x && typeof x === "object"))
+        .map((x) => ({ label: String(x.label ?? ""), ok: Boolean(x.ok) }))
+    : [];
+  const diagnostics = Array.isArray(c.diagnostics)
+    ? c.diagnostics
+        .filter((x): x is Record<string, unknown> => Boolean(x && typeof x === "object"))
+        .map((x) => ({ code: String(x.code ?? ""), message: String(x.message ?? "") }))
+    : [];
+  return {
+    ...(typeof c.eventId === "string" ? { eventId: c.eventId } : {}),
+    ...(typeof c.ts === "string" ? { ts: c.ts } : {}),
+    verdict,
+    message,
+    components,
+    diagnostics,
+    ...(typeof c.trapMatched === "boolean" ? { trapMatched: c.trapMatched } : {}),
+  };
+}
+
+function projectAttemptRecord(
+  raw: unknown,
+  { stripMatchedTrap }: { stripMatchedTrap: boolean }
+): AttemptRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const a = raw as Record<string, unknown>;
+  const out: AttemptRecord = {
+    ...(typeof a.eventId === "string" && a.eventId ? { eventId: a.eventId } : {}),
+    ...(typeof a.hintsUsed === "boolean" ? { hintsUsed: a.hintsUsed } : {}),
+    input: typeof a.input === "string" ? a.input : "",
+    ts: typeof a.ts === "string" ? a.ts : "",
+    verdict: typeof a.verdict === "string" ? a.verdict : "",
+    ...(Array.isArray(a.diagnosticCodes)
+      ? { diagnosticCodes: a.diagnosticCodes.filter((c): c is string => typeof c === "string") }
+      : {}),
+    ...(!stripMatchedTrap && typeof a.matchedTrap === "string" && a.matchedTrap
+      ? { matchedTrap: a.matchedTrap }
+      : {}),
+    ...(a.kind === "variant" ? { kind: "variant" } : {}),
+    ...(a.setupRevealed === true ? { setupRevealed: true } : {}),
+    ...(a.solutionRevealed === true ? { solutionRevealed: true } : {}),
+    ...(a.exampleViewed === true ? { exampleViewed: true } : {}),
+  };
+  return out;
+}
+
 /**
  * Strip bank `variantId`s, `variantsSeen`/`variantsAttempted`, legacy `activeVariant`,
  * and variant trap tags from `ProblemState` before sending it to the browser so
- * method/archetype names never leak.
+ * method/archetype names never leak, and sanitize nested check/test/review history.
  */
 export function redactProblemStateForClient(
   state?: ProblemState | null
@@ -226,11 +614,9 @@ export function redactProblemStateForClient(
     for (const [token, rec] of Object.entries(state.variants)) {
       if (!rec || typeof rec !== "object") continue;
       const cleanAttempts: AttemptRecord[] = Array.isArray(rec.attempts)
-        ? rec.attempts.map((a) => {
-            const attCopy: AttemptRecord = { ...a };
-            delete attCopy.matchedTrap;
-            return attCopy;
-          })
+        ? rec.attempts
+            .map((a) => projectAttemptRecord(a, { stripMatchedTrap: true }))
+            .filter((a): a is AttemptRecord => a !== null)
         : [];
       cleanVariants[token] = {
         role: rec.role === "example" ? "example" : "try",
@@ -244,49 +630,31 @@ export function redactProblemStateForClient(
     }
     copy.variants = cleanVariants;
   }
+  if (Array.isArray(copy.attempts)) {
+    copy.attempts = copy.attempts
+      .map((a) => projectAttemptRecord(a, { stripMatchedTrap: false }))
+      .filter((a): a is AttemptRecord => a !== null);
+  }
+  if (copy.lastCheck && typeof copy.lastCheck === "object") {
+    copy.lastCheck = projectCheckResultForClient(copy.lastCheck);
+  }
   if (copy.lastTestReport && typeof copy.lastTestReport === "object") {
-    const repCopy = { ...copy.lastTestReport };
-    delete repCopy.rawOutput;
-    if (Array.isArray(repCopy.visibleResults)) {
-      const cleanedResults: typeof repCopy.visibleResults = [];
-      let hiddenFailCount = 0;
-      for (const r of repCopy.visibleResults) {
-        if (!r || typeof r !== "object") continue;
-        if (!r.passed && (isHiddenTestFailureName(r.name) || isHiddenTestFailureName(r.error))) {
-          hiddenFailCount += 1;
-        } else {
-          cleanedResults.push({
-            ...r,
-            ...(r.error ? { error: sanitizeCodeCheckError(r.error) } : {}),
-          });
-        }
-      }
-      if (hiddenFailCount > 0) {
-        cleanedResults.push({
-          name:
-            hiddenFailCount === 1
-              ? "1 hidden check failed"
-              : `${hiddenFailCount} hidden checks failed`,
-          passed: false,
-        });
-      }
-      repCopy.visibleResults = cleanedResults;
-    }
-    copy.lastTestReport = repCopy;
+    copy.lastTestReport = projectTestRunReport(copy.lastTestReport);
+  }
+  if (Array.isArray(copy.testRuns)) {
+    copy.testRuns = copy.testRuns
+      .filter((tr): tr is TestRunRecord => Boolean(tr && typeof tr === "object"))
+      .map((tr) => ({
+        ts: typeof tr.ts === "string" ? tr.ts : "",
+        allPassed: Boolean(tr.allPassed),
+        ...(typeof tr.passedCount === "number" ? { passedCount: nonNegInt(tr.passedCount, 0) } : {}),
+        ...(typeof tr.totalCount === "number" ? { totalCount: nonNegInt(tr.totalCount, 0) } : {}),
+      }));
   }
   if (Array.isArray(copy.reviews)) {
-    copy.reviews = copy.reviews.map((rev) => {
-      if (!rev || typeof rev !== "object" || !rev.tests) return rev;
-      return {
-        ...rev,
-        tests: {
-          ...rev.tests,
-          failed: Array.isArray(rev.tests.failed)
-            ? maskHiddenTestFailures(rev.tests.failed)
-            : [],
-        },
-      };
-    });
+    copy.reviews = copy.reviews
+      .map((rev) => projectReviewRecord(rev))
+      .filter((rev): rev is ReviewRecord => rev !== null);
   }
   return copy;
 }

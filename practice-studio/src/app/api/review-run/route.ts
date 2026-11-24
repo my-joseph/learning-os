@@ -15,7 +15,8 @@ import {
 } from "@/lib/paths";
 import { currentPracticeCycle, recordTestReport } from "@/lib/practiceEvidence";
 import { loadLabDetailFromDisk } from "@/lib/labs";
-import { maskHiddenTestFailures, sanitizeCodeCheckError } from "@/lib/codeStatus";
+import { sanitizeCodeCheckError } from "@/lib/codeStatus";
+import { projectReviewRunResponse, projectTestRunReport } from "@/lib/redact";
 import {
   appendBoundedOutput,
   buildPrgPythonEnv,
@@ -328,52 +329,58 @@ export async function POST(req: NextRequest) {
 
         try {
           const parsed = JSON.parse(stdout.trim());
-          const safeTests =
-            parsed?.tests && typeof parsed.tests === "object"
-              ? {
-                  ...parsed.tests,
-                  failed: Array.isArray(parsed.tests.failed)
-                    ? maskHiddenTestFailures(parsed.tests.failed)
-                    : [],
-                }
-              : parsed?.tests;
-          const testReport = lab && safeTests ? recordTestReport(
-            drillId, problemId, lab.unitCode, cycle, {
-              allPassed: safeTests.total > 0 && safeTests.total === safeTests.passed && safeTests.failed.length === 0,
-              score: safeTests.total > 0 ? safeTests.passed / safeTests.total : 0,
-              passedCount: safeTests.passed,
-              totalCount: safeTests.total,
-              visibleResults: safeTests.failed.map((name: string) => ({ name, passed: false })),
-              hiddenPassed: 0,
-              hiddenTotal: 0,
-              executionTimeMs: 0,
-            }
-          ) : undefined;
+          const projectedWithoutReport = projectReviewRunResponse(parsed, {
+            drillId,
+            problemId,
+            isLab: drillId.startsWith("LAB-"),
+          });
+          const safeTests = projectedWithoutReport.tests;
+          const testReport = lab
+            ? recordTestReport(
+                drillId,
+                problemId,
+                lab.unitCode,
+                cycle,
+                projectTestRunReport({
+                  allPassed:
+                    safeTests.total > 0 &&
+                    safeTests.total === safeTests.passed &&
+                    safeTests.failed.length === 0,
+                  score: safeTests.total > 0 ? safeTests.passed / safeTests.total : 0,
+                  passedCount: safeTests.passed,
+                  totalCount: safeTests.total,
+                  visibleResults: safeTests.failed.map((name: string) => ({ name, passed: false })),
+                  hiddenPassed: 0,
+                  hiddenTotal: 0,
+                  executionTimeMs: 0,
+                })
+              )
+            : undefined;
           if (testReport === null) {
             finish(NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
             return;
           }
           finish(
-            NextResponse.json({
-              ...parsed,
-              ...(testReport ? { testReport } : {}),
-              ...(safeTests !== undefined ? { tests: safeTests } : {}),
-              types: parsed.typecheck ?? [],
-            })
+            NextResponse.json(
+              projectReviewRunResponse(parsed, {
+                drillId,
+                problemId,
+                isLab: drillId.startsWith("LAB-"),
+                testReport,
+              })
+            )
           );
-        } catch (err: unknown) {
-          const errMsg = err instanceof Error ? err.message : String(err);
+        } catch {
           finish(
             NextResponse.json(
-              { error: `Could not parse review_run output: ${errMsg}` },
+              { error: "Could not parse review_run output" },
               { status: 500 }
             )
           );
         }
       });
     });
-  } catch (err: unknown) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Review check failed" }, { status: 500 });
   }
 }
