@@ -1,5 +1,4 @@
 import { spawn } from "child_process";
-import type { ProgressFile } from "@/lib/progress";
 
 export const DEFAULT_DRILL_SYNC_TIMEOUT_MS = 90_000;
 
@@ -31,7 +30,7 @@ export type NotionDrillSyncSpawner = (
 
 let activeTimeoutMs: number = DEFAULT_DRILL_SYNC_TIMEOUT_MS;
 
-const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
+export const spawnNotionDrillSync: NotionDrillSyncSpawner = ({
   pythonBin,
   args,
   cwd,
@@ -143,13 +142,13 @@ const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
     proc.stdin.end();
   });
 
-let activeSpawner: NotionDrillSyncSpawner = defaultDrillSyncSpawner;
+let activeSpawner: NotionDrillSyncSpawner = spawnNotionDrillSync;
 
 /** Override the child_process spawner in unit tests so Notion is never called. */
 export function setNotionDrillSyncSpawnerForTests(
   spawner: NotionDrillSyncSpawner | null
 ): void {
-  activeSpawner = spawner ?? defaultDrillSyncSpawner;
+  activeSpawner = spawner ?? spawnNotionDrillSync;
 }
 
 /** Override the child_process sync timeout in unit tests (pass null to restore default). */
@@ -160,79 +159,11 @@ export function setNotionDrillSyncTimeoutForTests(timeoutMs: number | null): voi
       : DEFAULT_DRILL_SYNC_TIMEOUT_MS;
 }
 
-/**
- * Rehydrates canonical server drill content (steps, answerPlain, solutionCode, etc.)
- * while overlaying server-merged progress (falling back to client state only when no
- * disk progress is provided).
- */
-export function mergeDrillForNotionSync(
-  serverDoc: Record<string, unknown> | null,
-  clientDoc: Record<string, unknown>,
-  diskProgress?: ProgressFile | null
-): Record<string, unknown> {
-  const clientStateById = new Map<string, unknown>();
-  const clientProblems = Array.isArray(clientDoc.problems) ? clientDoc.problems : [];
-  for (const p of clientProblems) {
-    if (p && typeof p === "object" && typeof (p as { id?: unknown }).id === "string") {
-      const probObj = p as { id: string; state?: unknown };
-      if (probObj.state) {
-        clientStateById.set(probObj.id, probObj.state);
-      }
-    }
-  }
-
-  const diskProblems =
-    diskProgress?.problems && typeof diskProgress.problems === "object"
-      ? (diskProgress.problems as Record<string, unknown>)
-      : null;
-
-  const resolvedSummary =
-    diskProgress?.sessionSummary &&
-    typeof diskProgress.sessionSummary === "object" &&
-    Object.keys(diskProgress.sessionSummary).length > 0
-      ? diskProgress.sessionSummary
-      : clientDoc.sessionSummary;
-
-  if (!serverDoc) {
-    return {
-      ...clientDoc,
-      ...(resolvedSummary ? { sessionSummary: resolvedSummary } : {}),
-      ...(diskProblems && Array.isArray(clientDoc.problems)
-        ? {
-            problems: (clientDoc.problems as Array<Record<string, unknown>>).map((cp) => {
-              const pid = typeof cp.id === "string" ? cp.id : "";
-              return pid && Object.prototype.hasOwnProperty.call(diskProblems, pid)
-                ? { ...cp, state: diskProblems[pid] }
-                : cp;
-            }),
-          }
-        : {}),
-    };
-  }
-
-  return {
-    ...serverDoc,
-    ...(resolvedSummary ? { sessionSummary: resolvedSummary } : {}),
-    ...(clientDoc.dryRun !== undefined ? { dryRun: clientDoc.dryRun } : {}),
-    problems: Array.isArray(serverDoc.problems)
-      ? (serverDoc.problems as Array<Record<string, unknown>>).map((sp) => {
-          const pid = typeof sp.id === "string" ? sp.id : "";
-          if (pid && diskProblems && Object.prototype.hasOwnProperty.call(diskProblems, pid)) {
-            return { ...sp, state: diskProblems[pid] };
-          }
-          return clientStateById.has(pid)
-            ? { ...sp, state: clientStateById.get(pid) }
-            : sp;
-        })
-      : clientDoc.problems,
-  };
-}
-
 export const DRILL_SYNC_INLINE_SCRIPT = `
 import json, sys
 from notion_sync.drill_sync import sync_drill_to_notion
 payload = json.loads(sys.stdin.read())
-res = sync_drill_to_notion(payload["doc"], save_local=False, retry=payload.get("retry"))
+res = sync_drill_to_notion(payload["doc"], save_local=False, studio_results=True, retry=payload.get("retry"))
 print(json.dumps(res))
 `;
 

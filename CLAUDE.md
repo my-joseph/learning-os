@@ -38,6 +38,7 @@
 - Doc drift guards: `python -m scripts.doc_refs` checks doc/skill/rule paths, CLI flags, npm scripts, and skill names; `python -m scripts.doc_refs --changed origin/main` checks `docs/doc_map.json` on PRs.
 - Before calling work done: run the commands above that apply (lint/build/tests) and report failures honestly, separating pre-existing ones from new ones.
 - New drill/lab authoring: follow the relevant skill’s Notion sync step and task-specific instructions. From a worktree this works without copying `.env`: `notion_sync.client.load_env` reads the main checkout's `.env`.
+- A partial Notion sync reports `failedSteps`. Studio saves its retry checkpoint under `_notion_sync/` in the configured progress directory and advances the success stamp when every required step has completed. The Studio subprocess deadline sends SIGTERM to the process group and escalates to SIGKILL after one second if needed on macOS and Linux.
 
 ## Refactor history (historical)
 The following table records completed work from the earlier refactor; it is historical context, not an active phase plan.
@@ -64,6 +65,7 @@ The following table records completed work from the earlier refactor; it is hist
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
 - Thai exam PDF indexing uses optional `pdftoppm` + Tesseract (`tha+eng`) OCR for empty or legacy-font-garbled pages; install with `brew install tesseract tesseract-lang`, and worker prompts link cached page images when OCR may miss formulas.
 - Drill files in `drills/data/` are **content only**. Learner progress (problem `state`, `sessionSummary`) lives in `progress/<DRILL_ID>.json` (gitignored; `progress_store.py` / `practice-studio/src/lib/progress.ts`). Never write practice results into a drill file; `tests/test_progress_store.py` enforces it.
+- Studio saves progress before `POST /api/sync-notion`. The server requires a matching canonical drill, builds the export from saved progress, and includes question and solution blocks only for items with recorded attempt evidence in the current cycle. Skips can sync as concept gaps. Pilot Studio requests are local acknowledgements. The authoring CLI can register a pristine drill with overview and Practice Studio link.
 - Practice Studio `DELETE /api/drill?id=<DRILL_ID>` deletes exactly one canonical local MTH/PHY/PRG drill JSON file. It retains progress, workspaces, Labs, variants, Notion records, and other drills; saves for deleted drills are rejected. Regression coverage: `practice-studio/tests/drillDeletion.test.ts`.
 - Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6). AI-written math prompts must not give away the solution either (`rules/07` §4.7, enforced at ingest); audit with `python scripts/audit_solution_leaks.py [UNIT] [--display]` (`--display` is advisory: `display` is the hidden "Show equation set-up" box and may restate the given expression, so a flag there is not a gate failure).
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.

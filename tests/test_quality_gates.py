@@ -793,9 +793,10 @@ TEMPLATES = [
 
     def test_23_diff_whitelist_and_notion_dry_run(self) -> None:
         """Test 23: User input diff(...) blocked as invalid input; Notion dry-run works without network."""
+        from unittest import mock
 
         from math_engine.answer_check import check_answer
-        from notion_sync.drill_sync import sync_drill_to_notion
+        from notion_sync import drill_sync
 
         # 1. User typing diff(...) returns 'invalid input'
         spec = {"type": "expression", "value": "2*x", "variables": ["x"]}
@@ -811,30 +812,27 @@ TEMPLATES = [
         res_bad = check_answer(spec, "__import__('os').system('ls')")
         self.assertEqual(res_bad["verdict"], "invalid input")
 
-        # 4. Notion dry-run test: never calls real network, returns dryRun flag
-        from unittest import mock
-
-        mock_doc = {
+        # 4. Dry-run still requires a complete drill and never enters the Notion writer.
+        drill_doc = {
             "drillId": "DRL-MTH-TEST-DRYRUN-01",
             "unitCode": "MTH-CALC-DIFF",
             "chapterCode": "MTH-CALC",
             "topicCode": "MTH-CALC",
-            "problems": [],
+            "problems": [{"id": "Q01", "levelLabel": "L1", "category": "Core Skill", "prompt": "Synthetic prompt."}],
         }
-        with mock.patch.dict(os.environ, {"NOTION_DRY_RUN": "1"}):
-            dry_res = sync_drill_to_notion(mock_doc)
-        try:
-            self.assertTrue(dry_res["ok"])
-            self.assertTrue(dry_res.get("dryRun"))
-            self.assertEqual(dry_res.get("drillPageId"), "mock-DRL-MTH-TEST-DRYRUN-01")
-        finally:
-            saved_path = dry_res.get("localFilePath")
-            if saved_path and os.path.exists(saved_path):
-                os.remove(saved_path)
-                try:
-                    os.rmdir(os.path.dirname(saved_path))
-                except OSError:
-                    pass
+        with (
+            mock.patch.dict(os.environ, {"NOTION_DRY_RUN": "1"}),
+            mock.patch.object(drill_sync, "_sync_drill_to_notion_inner") as notion_writer,
+        ):
+            incomplete = drill_sync.sync_drill_to_notion({**drill_doc, "problems": []})
+            dry_res = drill_sync.sync_drill_to_notion(drill_doc)
+
+        notion_writer.assert_not_called()
+        self.assertFalse(incomplete["ok"], incomplete)
+        self.assertIn("drill.problems", incomplete["error"])
+        self.assertTrue(dry_res["ok"], dry_res)
+        self.assertTrue(dry_res.get("dryRun"))
+        self.assertEqual(dry_res.get("drillPageId"), "mock-DRL-MTH-TEST-DRYRUN-01")
 
     def test_24_gate_g6_formatting_rejects_sloppy_math(self) -> None:
         """Test 24: G6 rejects '+ -', '- -', '+-', '--', '^1', 'x^0', '*1', '1x' and passes clean forms."""

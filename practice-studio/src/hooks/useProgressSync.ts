@@ -487,7 +487,8 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
       });
 
       try {
-        await flushAutoSave();
+        const docToSync = getLatestDrill?.() ?? currentDrill;
+        const saved = await saveNow(docToSync);
         if (
           syncGenRef.current !== syncGen ||
           (getLatestDrill && getLatestDrill()?.drillId !== syncedDrillId)
@@ -497,7 +498,9 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
           }
           return;
         }
-        const docToSync = getLatestDrill?.() ?? currentDrill;
+        if (!saved) {
+          throw new Error("Progress could not be saved. Try syncing again.");
+        }
         const result = await executeNotionSync({
           currentDrill: docToSync,
           statusOverride,
@@ -554,7 +557,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         }
       }
     },
-    [flushAutoSave, setStatus, statusOverride]
+    [saveNow, setStatus, statusOverride]
   );
 
   return {

@@ -107,11 +107,11 @@ Report to the learner in polite Thai in a few lines, **without prompts, code, or
 
 ## 9. Sync, then ship (in this order)
 
-1. Sync the pristine drill record to Notion per this skill’s workflow from repo root:
+1. Register the pristine drill overview and Practice Studio link in Notion from the repo root. Question and solution blocks require saved attempt evidence.
    ```bash
    .venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json
    ```
-   (If `degraded: true`, report that Notion was not updated.)
+   Report a partial sync with the steps listed in `failedSteps`. A degraded result means registration could not be confirmed.
 2. Create a branch `drill/<DRILL_ID>` (never on `main`), commit **only** the new drill file under `drills/data/<UNIT>/`, its unit/chapter vault file, and `id_map.json`, push, and open a PR (`gh pr create`).
 3. Verify the PR diff and CI result, then follow `rules/00_core.md` §10 for delivery. Do not repeat or expand the policy here.
 

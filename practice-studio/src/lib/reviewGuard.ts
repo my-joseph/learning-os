@@ -1,4 +1,4 @@
-import { ProblemState, ReviewRecord } from "../types/drill";
+import { ProblemState, ReviewRecord, TestRunRecord } from "../types/drill";
 
 export const NON_SUBSTANTIVE_VERDICTS = new Set(["invalid input", "parse_error"]);
 
@@ -139,6 +139,36 @@ export function hasSubstantiveAttempt(state?: ProblemState | null): boolean {
  */
 export function canRevealVerifiedAnswer(state?: ProblemState | null): boolean {
   return hasSubstantiveAttempt(state);
+}
+
+const NOTION_CHECK_VERDICTS = new Set(["correct", "incorrect", "partial", "equivalent_not_in_form"]);
+
+/** A skip can sync as a concept gap. Item content requires a graded answer,
+ * an executed test run, or a code review in the current cycle. */
+export function getNotionAttemptEvidence(state: ProblemState | undefined, isPrg: boolean) {
+  const cycleStartedAt = state?.cycleStartedAt;
+  const inCycle = (ts?: string | null) =>
+    !cycleStartedAt || (typeof ts === "string" && Date.parse(ts) >= Date.parse(cycleStartedAt));
+  const attempts = Array.isArray(state?.attempts) ? state.attempts : [];
+  const current = attempts.filter((a) => a && a.kind !== "variant" && inCycle(a.ts));
+  const legacyVerdict = cycleStartedAt ? undefined : state?.lastCheck?.verdict;
+  const skipped = current.some((a) => a.verdict === "skipped") ||
+    (!cycleStartedAt && (state?.skipped === true || legacyVerdict === "skipped"));
+  const checked = current.some((a) => NOTION_CHECK_VERDICTS.has(a.verdict)) ||
+    (legacyVerdict !== undefined && NOTION_CHECK_VERDICTS.has(legacyVerdict));
+
+  const ranTests = (report?: Partial<TestRunRecord> & { total?: number; updatedAt?: string } | null) => {
+    if (typeof report?.allPassed !== "boolean") return false;
+    const total = report.totalCount ?? report.total;
+    return (total == null || (Number.isFinite(total) && total > 0)) && inCycle(report.ts || report.updatedAt);
+  };
+  const runs = Array.isArray(state?.testRuns) ? state.testRuns : [];
+  const reviews = Array.isArray(state?.reviews) ? state.reviews : [];
+  const attempted = checked || (isPrg && (
+    runs.some(ranTests) || ranTests(state?.lastTestReport) ||
+    reviews.some((r) => (r?.verdict === "pass" || r?.verdict === "revise") && inCycle(r.at || r.ts))
+  ));
+  return { attempted, skipped };
 }
 
 /**
