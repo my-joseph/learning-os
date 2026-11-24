@@ -8,6 +8,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+import pytest
+
 from code_engine import submit as drill_submit
 from labs.common import submit_lab
 from notion_sync import client as notion_client
