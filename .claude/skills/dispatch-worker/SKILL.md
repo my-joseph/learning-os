@@ -1,6 +1,6 @@
 ---
 name: dispatch-worker
-description: Delegate implementation, content, and audit jobs to worker models (Luna/Hydrogen/Neon) through tools/agents/run-worker.sh with isolated worktrees, bounded prompts, and tracked completion.
+description: Delegate implementation, content, and audit jobs to worker models (Luna/Sol/Hydrogen/Neon/Carbon) through tools/agents/run-worker.sh with isolated worktrees, bounded prompts, and tracked completion.
 ---
 
 # Dispatch worker
@@ -28,11 +28,12 @@ From the main checkout run `git worktree add ../wt-<name> -b <branch> origin/mai
   | Model | `MODELS` value | Use for |
   | :-- | :-- | :-- |
   | GPT Luna (cheapest, own Codex quota) | `gpt-6-luna` | High-volume or simple work: card extraction, source download/registry, docs, specs naming exact files, small single-file fixes, simple tests, read-only audits. |
+  | GPT Sol (Codex pool) | `gpt-6.2-sol` | Medium coding and fixes when the agy pool is busy or out; second-opinion reviews of Gemini-authored PRs. |
   | Gemini Hydrogen (everyday coding) | `gemini-4-hydrogen-high` | A feature or UI component across a few files, focused bug hunts, new scripts with tests. |
   | Gemini Neon (hardest work) | `gemini-4-neon-high` | Architecture, multi-file refactors, cross-cutting bugs (scoring/save/sync parity), bugs other models failed on. |
-  | Gemini Argon (strong, shares the agy pool) | `gemini-4-argon-high` | Independent second opinion: blind solves, reviewing another worker's PR, skill trials; parallel medium/hard jobs when the Neon/Hydrogen pool is busy or low. |
+  | Gemini Carbon (deepest thinking, slow) | `gemini-4-carbon-high` | Escalation tier: root-cause of hard cross-system bugs (races, concurrency), architecture/interface design, security audits, independent high-risk PR reviews, long background runs; or when Neon failed twice. Plan with Carbon, then hand the implementation to Hydrogen. |
 
-  Quota pools (2026-11-24): Neon, Hydrogen and Argon share ONE agy pool; Luna and Sol (gpt-6.2-sol) use the Codex pool. Spread parallel jobs across pools. For a reviewer/verifier, prefer a different model from the author (author Neon/Hydrogen -> reviewer Argon). When the agy pool is out, fall back to the Codex pool (Sol, then Luna); narrow the spec when dropping to Luna. For improvement assessments, use Argon as an independent verifier separate from the original assessor; if unavailable, pick a different available model and record the limitation.
+  Quota pools (2026-11-24): Neon, Hydrogen and Carbon share ONE agy pool; Sol (gpt-6.2-sol) and Luna use the Codex pool. Argon is retired (weaker than Hydrogen, pricier than Neon) — do not route to it. Spread parallel jobs across pools. For an independent reviewer prefer a different model from the author (author Hydrogen/Neon -> reviewer Carbon for high-risk, Sol otherwise). When the agy pool is out, fall back to the Codex pool (Sol, then Luna); narrow the spec when dropping to Luna.
 - Set `MODELS` in fallback order, `MAX_SECS`, and `IDLE_AFTER_PR` as needed. The runner falls back on quota limits; model availability changes, so check memory/learner settings and do not hard-code one account. For continued work on a branch with an existing PR, use a large `IDLE_AFTER_PR` (for example `1500`) so a quiet log does not stop the worker early. An existing PR counts as done only after this run advances its PR head; a fresh branch counts as done when its PR appears.
 - Read-only jobs set a unique absolute `DONE_FILE` for each job. Code jobs on a fresh branch complete when their PR exists; continued jobs complete after this run pushes a new commit to the existing PR.
 - Run `MODELS=... IDLE_AFTER_PR=... MAX_SECS=... tools/agents/run-worker.sh <wt> <branch> <prompt> <log>` through the Bash tool with `run_in_background: true`. Do not launch it with detached shell syntax such as `( ... &)`; that loses tracked completion.
