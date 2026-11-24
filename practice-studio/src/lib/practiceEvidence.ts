@@ -7,6 +7,7 @@ import { mutateProblemState, mutateProblemStates, readProgress } from "@/lib/pro
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { isLabId } from "@/lib/routes";
+import { MAX_ATTEMPT_DURATION_MS } from "@/lib/telemetryTimer";
 import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import type { CheckResult, DrillDocument, Problem, ProblemState, TestRunReport } from "@/types/drill";
 
@@ -27,7 +28,9 @@ export function currentPracticeCycle(drillId: string, qid: string): string | nul
 }
 
 export function practiceDuration(raw: unknown): number | undefined {
-  return typeof raw === "number" && Number.isFinite(raw) && raw >= 0 ? raw : undefined;
+  return typeof raw === "number" && Number.isFinite(raw) && raw >= 0
+    ? Math.min(raw, MAX_ATTEMPT_DURATION_MS)
+    : undefined;
 }
 
 export function recordOriginalCheck(
@@ -110,7 +113,7 @@ export function resetPractice(
     attemptDate: null,
     statusOverride: null,
   } : undefined;
-  mutateProblemStates(doc.drillId, doc.unitCode, [...targets.keys()], (state, qid) => {
+  mutateProblemStates(doc.drillId, doc.unitCode, Array.from(targets.keys()), (state, qid) => {
     const problem = targets.get(qid)!;
     const next = resetProblemForRetry({ ...problem, state }, cycle).state;
     delete next.reviewBaseLevel;

@@ -226,7 +226,7 @@ export async function POST(req: NextRequest) {
         const tags = new Set(state.mistakes);
         if (tags.has(body.tag)) tags.delete(body.tag);
         else tags.add(body.tag);
-        state.mistakes = [...tags];
+        state.mistakes = Array.from(tags);
       });
       return NextResponse.json({ ok: true });
     }
