@@ -30,7 +30,7 @@ from code_engine.quality_checks import (  # noqa: E402
     load_archetype,
     load_universal,
 )
-from code_engine.submit import _parse_junit_xml, _run_vitest_junit, run_tests_junit  # noqa: E402
+from code_engine.submit import _parse_completed_junit_run, _run_vitest_junit, run_tests_junit  # noqa: E402
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name  # noqa: E402
 from progress_store import labs_root as default_labs_root  # noqa: E402
 from progress_store import pilot_mode  # noqa: E402
@@ -39,6 +39,7 @@ from progress_store import workspace_root as default_workspace_root  # noqa: E40
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
 _HIDDEN_CASE_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b", re.IGNORECASE)
+_MILESTONE_TEST_PREFIX_RE = re.compile(r"^m\d+_", re.IGNORECASE)
 
 
 def is_hidden_test_name(name: str) -> bool:
@@ -317,7 +318,7 @@ def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hi
                 linked.append(link)
         env = {**os.environ, "LAB_SRC_DIR": str(src_dir.resolve())}
         try:
-            return _run_vitest_junit(test_files, cwd, force_hidden=force_hidden, env=env)
+            return _run_vitest_junit(test_files, cwd, force_hidden=force_hidden, env=env, require_complete=True)
         finally:
             for link in linked:
                 link.unlink(missing_ok=True)
@@ -329,7 +330,7 @@ def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hi
     env = dict(os.environ)
     env["LAB_SRC_DIR"] = str(src_dir.resolve())
     proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
-    return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=force_hidden)
+    return _parse_completed_junit_run(proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden)
 
 
 def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
@@ -427,19 +428,27 @@ def _run_lab_review_with_source(
     else:
         vis_files = []
 
-    cases = _run_lab_tests(vis_files, lab_dir, src_dir, force_hidden=False)
     ref_hidden = lab_dir.parent / "_reference" / lab_id / "hidden"
     if not ref_hidden.is_dir() and pilot_mode():
         ref_hidden = Path(os.environ.get("LABS_DIR", "labs")) / "_reference" / lab_id / "hidden"
-    if ref_hidden.is_dir():
-        all_hidden = sorted(
-            list(ref_hidden.glob("*.test.tsx"))
-            + list(ref_hidden.glob("*.test.ts"))
-            + list(ref_hidden.glob("*.test.js"))
+    all_hidden = sorted(
+        list(ref_hidden.glob("*.test.tsx")) + list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js"))
+    )
+    prefix = f"{mid.lower()}_"
+    hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)]
+    if not hid_files and not any(_MILESTONE_TEST_PREFIX_RE.match(f.name) for f in all_hidden):
+        hid_files = all_hidden  # Older labs can use one shared hidden suite.
+
+    cases = []
+    for files, cwd, hidden in ((vis_files, lab_dir, False), (hid_files, ref_hidden, True)):
+        try:
+            suite_cases = _run_lab_tests(files, cwd, src_dir, force_hidden=hidden)
+        except (OSError, UnicodeError):
+            suite_cases = []
+        cases.extend(
+            suite_cases
+            or [{"name": "Test suite did not produce a complete report", "passed": False, "is_hidden": hidden}]
         )
-        prefix = f"{mid.lower()}_"
-        hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)] or all_hidden
-        cases.extend(_run_lab_tests(hid_files, ref_hidden, src_dir, force_hidden=True))
 
     tests_summary = _summarize_test_cases(cases)
     lint = _lint_lab_src(lab_dir, src_dir)
