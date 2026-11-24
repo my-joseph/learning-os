@@ -8,6 +8,7 @@ import { plainTitle } from "@/lib/titleText";
 import { warningTone } from "@/lib/statusTone";
 import type { DueTodayUnit, UnitMasteryContext, WeakSpotUnit } from "@/lib/dueToday";
 import { FormattedText } from "@/components/FormattedText";
+import { Button } from "@/components/ui/shadcn/Button";
 import { Card } from "@/components/ui/shadcn/Card";
 import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 
@@ -178,14 +179,17 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               </Link>
             )}
 
-            <Link
-              href={workspaceReviewHref}
-              onClick={onNavigate}
-              className="inline-flex w-full items-center justify-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+            <Button
+              asChild
+              variant="primary"
+              size="compact"
+              className="w-full rounded-xl px-3.5 text-xs"
             >
-              <span>Start review · {sessionSize} of {dueReviewCount}</span>
-              <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
-            </Link>
+              <Link href={workspaceReviewHref} onClick={onNavigate}>
+                <span>Start review · {sessionSize} of {dueReviewCount}</span>
+                <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="space-y-1.5 min-w-0">

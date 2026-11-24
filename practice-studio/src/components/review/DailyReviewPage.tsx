@@ -27,6 +27,7 @@ import {
 } from "@/hooks/useDrill";
 import { useTheme } from "@/hooks/useTheme";
 import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
+import { Button } from "@/components/ui/shadcn/Button";
 import { Card } from "@/components/ui/shadcn/Card";
 import { Input } from "@/components/ui/shadcn/Input";
 import { Skeleton } from "@/components/ui/shadcn/Skeleton";
@@ -228,7 +229,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
               <ThemeToggleButton
                 theme={theme}
                 onToggle={onToggleTheme}
-                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               />
             )}
           </div>
@@ -256,13 +257,12 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 Could not load daily review
               </p>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{error}</p>
-              <Link
-                href={resolvedBackHref}
-                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Back to drill</span>
-              </Link>
+              <Button asChild variant="primary" size="compact" className="rounded-xl px-3.5">
+                <Link href={resolvedBackHref}>
+                  <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Back to drill</span>
+                </Link>
+              </Button>
             </Card>
           ) : items.length === 0 ? (
             /* Empty state when nothing is due */
@@ -278,13 +278,12 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 </p>
               </div>
               <div>
-                <Link
-                  href={resolvedBackHref}
-                  className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
-                >
-                  <span>Back to drill</span>
-                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                </Link>
+                <Button asChild variant="primary" size="compact" className="rounded-xl px-4">
+                  <Link href={resolvedBackHref}>
+                    <span>Back to drill</span>
+                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </Link>
+                </Button>
               </div>
             </Card>
           ) : completed ? (
