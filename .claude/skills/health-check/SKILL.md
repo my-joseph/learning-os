@@ -11,14 +11,14 @@ Audit only. Do not change application or curriculum files during the audit. Spea
 
 - Resolve `MAIN` from `git worktree list`, capture `AUDIT_SHA=$(git -C "$MAIN" rev-parse HEAD)` once, and pass it to every check and worker. Create `$MAIN/pilot/health-<YYYY-MM-DD>/logs/`; do not inspect or modify learner `progress/`.
 - Record `AUDIT_SHA`, date, commands, exit statuses, and skipped checks in `checks.md`. Workers use isolated worktrees at `AUDIT_SHA`; do not audit a moving checkout or ephemeral sibling worktrees. Read-only references to main-checkout `.env`/`sources/` may be passed by absolute path when needed; never copy `.env` or learner data.
-- Never write to Notion. Do not globally export `LEARNINGOS_PILOT=1` or `NOTION_DRY_RUN=1` into checks. In particular run pytest as `env -u LEARNINGOS_PILOT -u NOTION_DRY_RUN ...`; `tests/conftest.py` isolates `PROGRESS_DIR` and blocks network calls, while those flags can break non-pilot assertions.
+- Never write to Notion. Do not globally export `LEARNINGOS_PILOT=1` or `NOTION_DRY_RUN=1` into checks. Pytest sets a per-test `PROGRESS_DIR`, clears ambient Notion credentials, and blocks in-process `urllib` requests. Run it with an OS guard as described below to cover subprocesses.
 
 ## 2. Run automated checks (no AI)
 
 Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local dependencies linked read-only where practical (for example `.venv` and `practice-studio/node_modules`). Save category logs under `logs/`. Preserve full failure tracebacks and useful diagnostic metadata; never redact the error that explains a failure.
 
 1. `.venv/bin/ruff check .` and `.venv/bin/ruff format --check .`.
-2. `env -u LEARNINGOS_PILOT -u NOTION_DRY_RUN .venv/bin/python -m pytest -n auto -q --tb=long`.
+2. Create a dedicated scratch directory outside both the main checkout and the audit worktree. Use it for `TMPDIR` and put any explicit pytest base inside it. Keep the test log in the dated audit folder. Run `env -u LEARNINGOS_PILOT -u NOTION_DRY_RUN -u NOTION_TOKEN .venv/bin/python -m pytest -n auto -q --tb=long` inside an OS sandbox (for example, `sandbox-exec` on macOS). Deny read and write access to both checkouts' `progress/`, `pilot/progress/`, and real `.env*` files, and deny outbound IP network access. Use a disposable runner with those paths absent and networking disabled if an OS sandbox is unavailable. Verify the guard denies a subprocess read and write against a synthetic file before running the suite. Remove the external scratch directory after the checks.
 3. In `practice-studio/`: `npm run lint`, `npm run build`, and `npm run test:telemetry`.
 4. `.venv/bin/python -m code_engine.quality_checks --check-vaults` and `.venv/bin/python -m code_engine.lint_check --all`.
 5. For every `labs/LAB-*/`, run `npm run check:reference`; report each lab result.

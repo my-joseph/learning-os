@@ -281,7 +281,8 @@ def test_review_record_dispute_unblocks_must_and_explain(tmp_path):
 
 
 def _write_prg_progress(tmp_path: Path, drills: dict[str, list[tuple]]) -> tuple[str, str]:
-    data_dir = tmp_path / "drills" / "data" / "PRG-T09-C01-U01"
+    unit = "PRG-T09-C01-U01"
+    data_dir = tmp_path / "drills" / "data" / unit
     prog_dir = tmp_path / "progress"
     data_dir.mkdir(parents=True, exist_ok=True)
     prog_dir.mkdir(parents=True, exist_ok=True)
@@ -291,11 +292,12 @@ def _write_prg_progress(tmp_path: Path, drills: dict[str, list[tuple]]) -> tuple
                 {
                     "drillId": did,
                     "subject": "PRG",
-                    "unitCode": "PRG-T09-C01-U01",
+                    "unitCode": unit,
                     "problems": [
                         {
                             "id": pid,
                             "level": lv,
+                            "unitCode": unit,
                             "archetype": arch_type,
                             "archetypeKey": "prg-c02-primitive-coercion-guard",
                         }
@@ -397,6 +399,16 @@ def test_weak_spots_prg_level_advice(tmp_path):
 
 
 def test_mastery_prg_only_from_pass_and_mocked_notion(tmp_path, monkeypatch):
+    # A newer problem's explicit unit takes precedence over the legacy vault lookup.
+    vault = tmp_path / "code_engine" / "reasoning_vault"
+    vault.mkdir(parents=True)
+    (vault / "synthetic.json").write_text(
+        json.dumps(
+            {"archetypes": [{"archetypeKey": "prg-c02-primitive-coercion-guard", "unitCode": "PRG-T00-C03-U01"}]}
+        ),
+        encoding="utf-8",
+    )
+
     # Passing tests without review -> awaiting review (score None -> no mastery evidence yet; never Mastery 3)
     roots_no_rev = _write_prg_progress(
         tmp_path / "norev",
