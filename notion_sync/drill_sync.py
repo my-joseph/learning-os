@@ -31,7 +31,7 @@ from notion_sync.blocks import (
     replace_page_blocks,
     toggle_block,
 )
-from notion_sync.client import get_all_blocks, load_env, notion_request
+from notion_sync.client import get_all_blocks, load_env, notion_request, sync_deadline
 from notion_sync.id_map import save_id_map
 from progress_store import apply_progress, has_practice, load_progress, merge_review_schedule, pilot_mode, save_progress
 
@@ -151,7 +151,7 @@ def _block_text(block: dict) -> str:
 
 
 def _has_mistake_log_entry(blocks: list[dict], attempt_date: str, drill_id: str, id_map: dict) -> bool:
-    """Match a date plus the drill's native page mention in an existing unit log line."""
+    """Match a date plus either the drill mention or its literal ID in a unit log line."""
     drill_entry = id_map.get(drill_id)
     drill_page_id = drill_entry.get("id") if isinstance(drill_entry, dict) else drill_entry
     for block in blocks:
@@ -159,12 +159,13 @@ def _has_mistake_log_entry(blocks: list[dict], attempt_date: str, drill_id: str,
         rich_text = body.get("rich_text", []) if isinstance(body, dict) else []
         if f"[{attempt_date}]" not in _block_text(block):
             continue
-        if any(
+        page_mention = any(
             item.get("type") == "mention"
             and item.get("mention", {}).get("type") == "page"
             and item.get("mention", {}).get("page", {}).get("id") == drill_page_id
             for item in rich_text
-        ):
+        )
+        if page_mention or drill_id in _block_text(block):
             return True
     return False
 
@@ -212,6 +213,8 @@ def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token
             if title:
                 entry["title"] = title
             cache_updates[unit] = entry
+    except TimeoutError:
+        raise
     finally:
         if cache_updates:
             merge_review_schedule(cache_updates)
@@ -222,7 +225,7 @@ def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
 
-def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
+def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
     env = load_env()
     token = env.get("NOTION_TOKEN")
     with open("id_map.json", "r", encoding="utf-8") as f:
@@ -453,10 +456,25 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
                 anchor = section_end(unit_blocks, "Mistake Log")
                 if not _has_mistake_log_entry(unit_blocks, attempt_date, drill_id, id_map):
                     insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
+            except TimeoutError:
+                raise
             except Exception:
                 pass
 
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
+
+
+def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
+    """Run all Notion work under one bounded deadline (default 75s, always < 90s)."""
+    try:
+        deadline_s = float(os.environ.get("NOTION_SYNC_DEADLINE_S", "75"))
+    except (TypeError, ValueError):
+        deadline_s = 75.0
+    if deadline_s <= 0:
+        deadline_s = 0.001
+    deadline_s = min(deadline_s, 89.0)
+    with sync_deadline(deadline_s):
+        return _sync_drill_to_notion_with_deadline(drill_doc, path, content_only=content_only)
 
 
 def sync_drill_to_notion(
