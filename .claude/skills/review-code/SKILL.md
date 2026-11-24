@@ -27,6 +27,8 @@ authorize an extra review attempt.
 If the drill/lab or problem/milestone is missing, say so and stop. If the workspace file is missing, the learner has not started:
 tell them to open the workspace from the Studio (or `labs/<LAB_ID>/` in VS Code).
 
+For labs, both test suites must produce complete passing reports before a pass can be recorded. Report hidden failures in aggregate only.
+
 - **For a drill (`DRL-*`)**: read the learner's source file, the problem's `prompt` in `drills/data/<UNIT>/<DRILL_ID>.json`, the rubric printed by `review_run` (universal `U-*` + archetype `QC-*`, with effective severity), and the archetype's `cognitiveTraps` in `code_engine/reasoning_vault/`. Do not read or quote `hiddenTests` code or `solutionCode` to the learner before a pass.
 - **For a lab (`LAB-* <MILESTONE>`, e.g. `LAB-PRG-T01-C04-02 M2`)**: read `labs/<LAB_ID>/lab.config.json`, `labs/<LAB_ID>/README.md` (if present), the learner's files in `labs/<LAB_ID>/src/`, and the milestone's rubric printed by `review_run`. Do **not** read or quote `labs/_reference/<LAB_ID>/` (`src/` or `hidden/`) before a pass.
 
