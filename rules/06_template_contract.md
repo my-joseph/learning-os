@@ -55,6 +55,7 @@ TEMPLATES = [
 2. **Folder-Level vs. File-Level Deep Links**:
    - **Folder-Level**: `workspaceDir` (absolute path) and `vscodeFolderUrl` (`vscode://file/<abs_ws>`) computed at runtime by Studio API (do not emit `cursor://` or `cursorFolderUrl`).
    - **File-Level**: `workspaceFile` (relative path in drill JSON) and `vscodeUrl` (`vscode://file/<abs_src>`) computed at runtime (do not emit `cursorUrl`).
+   - Workspace source paths must use the drill-relative manifest format and an allowed source extension. The materializer validates output paths before opening files.
 3. **Non-Negotiable Invariants**:
    - The primary "Open in VS Code" button in Practice Studio **must always open the workspace folder** (`vscodeFolderUrl`) and never fall back to a single file, so VS Code discovers `package.json`, NPM Scripts, and the workspace terminal directory. Do not render an "Open in Cursor" button (code is edited in the learner's own editor).
    - การเปิดไฟล์เดี่ยว (`vscodeUrl`) อนุญาตให้เป็นปุ่มรอง "Open File" เท่านั้น
