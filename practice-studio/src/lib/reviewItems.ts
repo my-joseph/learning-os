@@ -11,7 +11,11 @@ import {
 } from "@/lib/paths";
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
-import { isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
+import {
+  compareIsoTimestamps,
+  isSubstantiveVerdict,
+  isTimestampInCycle,
+} from "@/lib/reviewGuard";
 import type { ProblemState } from "@/types/drill";
 
 /**
@@ -262,21 +266,68 @@ export function stepReviewSchedule(
   };
 }
 
+function trimIsoField(raw: unknown): string {
+  return typeof raw === "string" && raw.trim() ? raw.trim() : "";
+}
+
+function helpAppliesToEvent(
+  helpAt: string,
+  evTs: string,
+  cycleStartedAt: string
+): boolean {
+  if (!helpAt) return false;
+  if (!evTs) {
+    return !cycleStartedAt || !isTimestampInCycle(helpAt, cycleStartedAt);
+  }
+  if (!isTimestampInCycle(evTs, helpAt)) {
+    return false;
+  }
+  if (!cycleStartedAt) {
+    return true;
+  }
+  return isTimestampInCycle(evTs, cycleStartedAt) === isTimestampInCycle(helpAt, cycleStartedAt);
+}
+
+function untimestampedHelpForEvent(
+  state: Record<string, unknown>,
+  evTs: string,
+  cycleStartedAt: string,
+  revHintAt: string,
+  revSetupAt: string,
+  revStepsAt: string
+): boolean {
+  if (cycleStartedAt && evTs && isTimestampInCycle(evTs, cycleStartedAt)) {
+    return false;
+  }
+  const hasHints = typeof state.hintsRevealed === "number" && state.hintsRevealed > 0;
+  const hintFromState =
+    hasHints && (!revHintAt || helpAppliesToEvent(revHintAt, evTs, cycleStartedAt));
+  const setupFromState =
+    Boolean(state.setupRevealedBeforeAnswer) &&
+    (!revSetupAt || helpAppliesToEvent(revSetupAt, evTs, cycleStartedAt));
+  const stepsFromState =
+    Boolean(state.solutionRevealedBeforeAnswer) &&
+    (!revStepsAt || helpAppliesToEvent(revStepsAt, evTs, cycleStartedAt));
+  return hintFromState || setupFromState || stepsFromState;
+}
+
 export function extractReviewEvents(
   state: Record<string, unknown> | null | undefined
 ): ReviewEvent[] {
   if (!state || typeof state !== "object") return [];
   const fallbackDate = LEGACY_UNDATED;
-  const exampleViewedAt =
-    typeof state.exampleViewedAt === "string" && state.exampleViewedAt.trim()
-      ? state.exampleViewedAt.trim()
-      : "";
-  const stateAssisted = Boolean(
-    state.setupRevealedBeforeAnswer ||
-      state.solutionRevealedBeforeAnswer ||
-      (typeof state.hintsRevealed === "number" && state.hintsRevealed > 0)
-  );
-  const stateAssistedWithExample = stateAssisted || Boolean(exampleViewedAt);
+  const cycleStartedAt = trimIsoField(state.cycleStartedAt);
+  const exampleViewedAt = trimIsoField(state.exampleViewedAt);
+  const revHintAt = trimIsoField(state.reviewHintRevealedAt);
+  const revSetupAt = trimIsoField(state.reviewSetupRevealedAt);
+  const revStepsAt = trimIsoField(state.reviewStepsRevealedAt);
+
+  const fallbackHelp = (evTs: string): boolean =>
+    helpAppliesToEvent(revHintAt, evTs, cycleStartedAt) ||
+    helpAppliesToEvent(revSetupAt, evTs, cycleStartedAt) ||
+    helpAppliesToEvent(revStepsAt, evTs, cycleStartedAt) ||
+    helpAppliesToEvent(exampleViewedAt, evTs, cycleStartedAt) ||
+    untimestampedHelpForEvent(state, evTs, cycleStartedAt, revHintAt, revSetupAt, revStepsAt);
 
   const rawAttempts = Array.isArray(state.attempts)
     ? (state.attempts as Array<Record<string, unknown>>)
@@ -295,14 +346,14 @@ export function extractReviewEvents(
       substantive[0]?.verdict === "correct" &&
       state.score === 0.5;
     return substantive.map((att) => {
-      const attTs = typeof att.ts === "string" ? att.ts.trim() : "";
+      const attTs = trimIsoField(att.ts);
       const evDate = attTs ? normalizeReviewDate(attTs) : LEGACY_UNDATED;
       const verdict = String(att.verdict || "");
       const correct = verdict === "correct";
       const hasExplicitHint =
         "hintsUsed" in att || "assisted" in att || "hintsRevealed" in att;
       const afterExample = Boolean(
-        att.exampleViewed || (exampleViewedAt && (!attTs || attTs >= exampleViewedAt))
+        att.exampleViewed || helpAppliesToEvent(exampleViewedAt, attTs, cycleStartedAt)
       );
       const attRevealed = Boolean(
         att.setupRevealed || att.solutionRevealed || afterExample
@@ -316,7 +367,7 @@ export function extractReviewEvents(
             attRevealed
         );
       } else {
-        assisted = stateAssisted || attRevealed || singleHalfScore;
+        assisted = fallbackHelp(attTs) || attRevealed || singleHalfScore;
       }
       return { date: evDate, correct, assisted };
     });
@@ -330,7 +381,7 @@ export function extractReviewEvents(
   );
   if (validReviews.length > 0) {
     return validReviews.map((rev) => {
-      const revAt = typeof rev.at === "string" ? rev.at : "";
+      const revAt = trimIsoField(rev.at) || trimIsoField(rev.ts);
       const evDate = revAt ? normalizeReviewDate(revAt) : LEGACY_UNDATED;
       const correct = rev.verdict === "pass";
       const hasExplicitHint =
@@ -341,13 +392,28 @@ export function extractReviewEvents(
               rev.assisted ||
               (typeof rev.hintsRevealed === "number" && rev.hintsRevealed > 0)
           )
-        : stateAssistedWithExample;
+        : fallbackHelp(revAt);
       return { date: evDate, correct, assisted };
     });
   }
 
+  const summaryHelp = cycleStartedAt
+    ? isTimestampInCycle(revHintAt, cycleStartedAt) ||
+      isTimestampInCycle(revSetupAt, cycleStartedAt) ||
+      isTimestampInCycle(revStepsAt, cycleStartedAt) ||
+      isTimestampInCycle(exampleViewedAt, cycleStartedAt)
+    : Boolean(
+        state.setupRevealedBeforeAnswer ||
+          state.solutionRevealedBeforeAnswer ||
+          (typeof state.hintsRevealed === "number" && state.hintsRevealed > 0) ||
+          exampleViewedAt ||
+          revHintAt ||
+          revSetupAt ||
+          revStepsAt
+      );
+
   if (state.skipped) {
-    return [{ date: fallbackDate, correct: false, assisted: stateAssistedWithExample }];
+    return [{ date: fallbackDate, correct: false, assisted: summaryHelp }];
   }
 
   const lastCheck = state.lastCheck as Record<string, unknown> | null | undefined;
@@ -359,13 +425,13 @@ export function extractReviewEvents(
     !NON_SUBSTANTIVE_VERDICTS.has(lastCheck.verdict)
   ) {
     const correct = lastCheck.verdict === "correct";
-    const assisted = stateAssistedWithExample || (correct && state.score === 0.5);
+    const assisted = summaryHelp || (correct && state.score === 0.5);
     return [{ date: fallbackDate, correct, assisted }];
   }
 
   if (typeof state.score === "number" && !Number.isNaN(state.score)) {
     const correct = state.score > 0;
-    const assisted = stateAssistedWithExample || (state.score > 0 && state.score < 1.0);
+    const assisted = summaryHelp || (state.score > 0 && state.score < 1.0);
     return [{ date: fallbackDate, correct, assisted }];
   }
 
@@ -993,13 +1059,20 @@ function computeOpenWeakTrapsFromLoaded(loaded: LoadedProgressItem[]): Set<strin
     if (n < WEAK_SPOT_MIN_MATCHES) return;
     let lastHit = "";
     for (const h of hits) {
-      if (h.ts > lastHit) lastHit = h.ts;
+      if (!lastHit) {
+        lastHit = h.ts;
+      } else {
+        const cmp = h.ts ? compareIsoTimestamps(h.ts, lastHit) : null;
+        if (cmp !== null ? cmp > 0 : h.ts > lastHit) lastHit = h.ts;
+      }
     }
     const laterByDrill = new Map<string, LoadedProgressItem[]>();
     for (const it of mthItems) {
+      const cmpHit = it.ts && lastHit ? compareIsoTimestamps(it.ts, lastHit) : null;
+      const isLater = cmpHit !== null ? cmpHit > 0 : it.ts > lastHit;
       if (
         (it.trap === trap || it.matched.includes(trap)) &&
-        it.ts > lastHit &&
+        isLater &&
         !it.matched.includes(trap)
       ) {
         const list = laterByDrill.get(it.drillId) || [];
@@ -1353,7 +1426,7 @@ function hasInCycleReviewHelp(state?: Record<string, unknown> | null): boolean {
   if (!cycle) return false;
   for (const field of ["reviewHintRevealedAt", "reviewSetupRevealedAt", "reviewStepsRevealedAt"] as const) {
     const ts = state[field];
-    if (typeof ts === "string" && ts.trim() && ts.trim() >= cycle) {
+    if (typeof ts === "string" && ts.trim() && isTimestampInCycle(ts, cycle)) {
       return true;
     }
   }

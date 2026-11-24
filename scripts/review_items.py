@@ -26,7 +26,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from progress_store import find_repo_root, progress_root, review_items_path
+from progress_store import find_repo_root, is_timestamp_in_cycle, progress_root, review_items_path
 from scripts import weak_spots
 
 REVIEW_INTERVALS: dict[int, int] = {
@@ -176,20 +176,63 @@ def step_schedule(
     }
 
 
+def _trim_iso_field(raw: Any) -> str:
+    return raw.strip() if isinstance(raw, str) and raw.strip() else ""
+
+
+def _help_applies_to_event(help_at: str, ev_ts: str, cycle_started_at: str) -> bool:
+    if not help_at:
+        return False
+    if not ev_ts:
+        return not cycle_started_at or not is_timestamp_in_cycle(help_at, cycle_started_at)
+    if not is_timestamp_in_cycle(ev_ts, help_at):
+        return False
+    if not cycle_started_at:
+        return True
+    return is_timestamp_in_cycle(ev_ts, cycle_started_at) == is_timestamp_in_cycle(help_at, cycle_started_at)
+
+
+def _untimestamped_help_for_event(
+    state: dict[str, Any],
+    ev_ts: str,
+    cycle_started_at: str,
+    rev_hint_at: str,
+    rev_setup_at: str,
+    rev_steps_at: str,
+) -> bool:
+    if cycle_started_at and ev_ts and is_timestamp_in_cycle(ev_ts, cycle_started_at):
+        return False
+    has_hints = (state.get("hintsRevealed") or 0) > 0
+    hint_from_state = has_hints and (not rev_hint_at or _help_applies_to_event(rev_hint_at, ev_ts, cycle_started_at))
+    setup_from_state = bool(state.get("setupRevealedBeforeAnswer")) and (
+        not rev_setup_at or _help_applies_to_event(rev_setup_at, ev_ts, cycle_started_at)
+    )
+    steps_from_state = bool(state.get("solutionRevealedBeforeAnswer")) and (
+        not rev_steps_at or _help_applies_to_event(rev_steps_at, ev_ts, cycle_started_at)
+    )
+    return hint_from_state or setup_from_state or steps_from_state
+
+
 def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[dict[str, Any]]:
     """Extract chronological review events from a problem's progress `state`."""
     if not isinstance(state, dict):
         return []
     # Old records without event timestamps are due immediately and never drift with updatedAt.
     fallback_date = _LEGACY_UNDATED
-    raw_example_at = state.get("exampleViewedAt")
-    example_viewed_at = raw_example_at.strip() if isinstance(raw_example_at, str) and raw_example_at.strip() else ""
-    state_assisted = bool(
-        state.get("setupRevealedBeforeAnswer")
-        or state.get("solutionRevealedBeforeAnswer")
-        or (state.get("hintsRevealed") or 0) > 0
-    )
-    state_assisted_with_example = state_assisted or bool(example_viewed_at)
+    cycle_started_at = _trim_iso_field(state.get("cycleStartedAt"))
+    example_viewed_at = _trim_iso_field(state.get("exampleViewedAt"))
+    rev_hint_at = _trim_iso_field(state.get("reviewHintRevealedAt"))
+    rev_setup_at = _trim_iso_field(state.get("reviewSetupRevealedAt"))
+    rev_steps_at = _trim_iso_field(state.get("reviewStepsRevealedAt"))
+
+    def fallback_help(ev_ts: str) -> bool:
+        return (
+            _help_applies_to_event(rev_hint_at, ev_ts, cycle_started_at)
+            or _help_applies_to_event(rev_setup_at, ev_ts, cycle_started_at)
+            or _help_applies_to_event(rev_steps_at, ev_ts, cycle_started_at)
+            or _help_applies_to_event(example_viewed_at, ev_ts, cycle_started_at)
+            or _untimestamped_help_for_event(state, ev_ts, cycle_started_at, rev_hint_at, rev_setup_at, rev_steps_at)
+        )
 
     attempts = state.get("attempts") or []
     substantive = [
@@ -203,13 +246,13 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
             len(substantive) == 1 and substantive[0].get("verdict") == "correct" and state.get("score") == 0.5
         )
         for att in substantive:
-            att_ts = str(att.get("ts") or "").strip()
+            att_ts = _trim_iso_field(att.get("ts"))
             ev_date = _normalize_date(att_ts) if att_ts else _LEGACY_UNDATED
             verdict = str(att.get("verdict") or "")
             correct = verdict == "correct"
             has_explicit_hint = any(k in att for k in ("hintsUsed", "assisted", "hintsRevealed"))
             after_example = bool(
-                att.get("exampleViewed") or (example_viewed_at and (not att_ts or att_ts >= example_viewed_at))
+                att.get("exampleViewed") or _help_applies_to_event(example_viewed_at, att_ts, cycle_started_at)
             )
             att_revealed = bool(att.get("setupRevealed") or att.get("solutionRevealed") or after_example)
             if has_explicit_hint:
@@ -217,7 +260,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
                     att.get("hintsUsed") or att.get("assisted") or (att.get("hintsRevealed") or 0) > 0 or att_revealed
                 )
             else:
-                assisted = state_assisted or att_revealed or single_half_score
+                assisted = fallback_help(att_ts) or att_revealed or single_half_score
             events.append({"date": ev_date, "correct": correct, "assisted": assisted})
         return events
 
@@ -225,7 +268,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     valid_reviews = [r for r in reviews if isinstance(r, dict) and r.get("verdict")]
     if valid_reviews:
         for rev in valid_reviews:
-            rev_at = str(rev.get("at") or "")
+            rev_at = _trim_iso_field(rev.get("at")) or _trim_iso_field(rev.get("ts"))
             ev_date = _normalize_date(rev_at) if rev_at else _LEGACY_UNDATED
             verdict = str(rev.get("verdict") or "")
             correct = verdict == "pass"
@@ -233,12 +276,31 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
             if has_explicit_hint:
                 assisted = bool(rev.get("hintsUsed") or rev.get("assisted") or (rev.get("hintsRevealed") or 0) > 0)
             else:
-                assisted = state_assisted_with_example
+                assisted = fallback_help(rev_at)
             events.append({"date": ev_date, "correct": correct, "assisted": assisted})
         return events
 
+    summary_help = (
+        bool(
+            is_timestamp_in_cycle(rev_hint_at, cycle_started_at)
+            or is_timestamp_in_cycle(rev_setup_at, cycle_started_at)
+            or is_timestamp_in_cycle(rev_steps_at, cycle_started_at)
+            or is_timestamp_in_cycle(example_viewed_at, cycle_started_at)
+        )
+        if cycle_started_at
+        else bool(
+            state.get("setupRevealedBeforeAnswer")
+            or state.get("solutionRevealedBeforeAnswer")
+            or (state.get("hintsRevealed") or 0) > 0
+            or example_viewed_at
+            or rev_hint_at
+            or rev_setup_at
+            or rev_steps_at
+        )
+    )
+
     if state.get("skipped"):
-        return [{"date": fallback_date, "correct": False, "assisted": state_assisted_with_example}]
+        return [{"date": fallback_date, "correct": False, "assisted": summary_help}]
 
     last_check = state.get("lastCheck")
     if isinstance(last_check, dict) and last_check.get("verdict") not in (
@@ -248,7 +310,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
     ):
         verdict = str(last_check.get("verdict") or "")
         correct = verdict == "correct"
-        assisted = state_assisted_with_example or (correct and state.get("score") == 0.5)
+        assisted = summary_help or (correct and state.get("score") == 0.5)
         return [{"date": fallback_date, "correct": correct, "assisted": assisted}]
 
     if state.get("score") is not None:
@@ -257,7 +319,7 @@ def extract_review_events(state: dict[str, Any], fallback_ts: str = "") -> list[
         except (TypeError, ValueError):
             return []
         correct = sc > 0
-        assisted = state_assisted_with_example or (0 < sc < 1.0)
+        assisted = summary_help or (0 < sc < 1.0)
         return [{"date": fallback_date, "correct": correct, "assisted": assisted}]
 
     return []
@@ -791,7 +853,7 @@ def _has_in_cycle_review_help(state: dict[str, Any] | None) -> bool:
         return False
     for field in ("reviewHintRevealedAt", "reviewSetupRevealedAt", "reviewStepsRevealedAt"):
         ts = state.get(field)
-        if isinstance(ts, str) and ts.strip() and ts.strip() >= cycle:
+        if isinstance(ts, str) and ts.strip() and is_timestamp_in_cycle(ts, cycle):
             return True
     return False
 

@@ -651,6 +651,53 @@ runCase("Mark diverged step is a note only: never turns null into 0.5 or lowers 
   assert(stDivOne.score === 1, "Diverged step must NOT overwrite a first-try 1.0 score");
 });
 
+runCase("applyCheckResult and applySkip record attempt-level hintsUsed scoped to current cycle", () => {
+  const cleanRes = applyCheckResult(createBaseProblem(), "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-20T10:00:00.000Z",
+  });
+  assert(cleanRes.attempts?.[0].hintsUsed === false, "Clean attempt must record hintsUsed: false");
+
+  const preCycleHintRes = applyCheckResult(createBaseProblem(), "360", correctResult, mockMistakeTags, {
+    hintsRevealed: 1,
+    ts: "2026-11-20T10:01:00.000Z",
+  });
+  assert(preCycleHintRes.attempts?.[0].hintsUsed === true, "Pre-cycle hinted attempt must record hintsUsed: true");
+
+  const inCycleProb = createBaseProblem({
+    state: {
+      ...createBaseProblem().state,
+      cycleStartedAt: "2026-11-20T12:00:00.000Z",
+      hintsRevealed: 2,
+      reviewHintRevealedAt: "2026-11-19T10:00:00.000Z",
+    },
+  });
+  const staleHintCycleRes = applyCheckResult(inCycleProb, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-20T12:05:00.000Z",
+  });
+  assert(
+    staleHintCycleRes.attempts?.[0].hintsUsed === false,
+    "Stale prior-cycle hintsRevealed/reviewHintRevealedAt must record hintsUsed: false in new cycle"
+  );
+
+  const activeHintProb = createBaseProblem({
+    state: {
+      ...createBaseProblem().state,
+      cycleStartedAt: "2026-11-20T12:00:00.000Z",
+      reviewHintRevealedAt: "2026-11-20T12:01:00.000Z",
+    },
+  });
+  const activeHintRes = applyCheckResult(activeHintProb, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-20T12:05:00.000Z",
+  });
+  assert(
+    activeHintRes.attempts?.[0].hintsUsed === true,
+    "In-cycle reviewHintRevealedAt must record hintsUsed: true on the attempt"
+  );
+
+  const skipHintRes = applySkip(activeHintProb, { ts: "2026-11-20T12:06:00.000Z" });
+  assert(skipHintRes.attempts?.[0].hintsUsed === true, "Skip after in-cycle hint must record hintsUsed: true");
+});
+
 console.log("\n=======================================================");
 console.log(`ALL ${passed} TEST CASES PASSED SUCCESSFULLY!`);
 console.log("=======================================================");

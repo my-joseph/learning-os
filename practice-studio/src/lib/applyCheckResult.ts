@@ -7,7 +7,7 @@ import {
   AttemptRecord,
   TestRunReport,
 } from "../types/drill";
-import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
+import { isSubstantiveVerdict, isTimestampInCycle, sanitizeCheckMessage } from "./reviewGuard";
 import { isLockedAfterCorrect, scoreProblem } from "./scoring";
 import { isInCycle } from "./similarTabs";
 
@@ -56,6 +56,19 @@ export function applyCheckResult(
           isInCycle(prob.state.reviewStepsRevealedAt, cycleStartedAt)
       )
     : Boolean(prob.state?.solutionRevealedBeforeAnswer);
+  const hintRevealedInCycle = cycleStartedAt
+    ? Boolean(
+        prob.state?.reviewHintRevealedAt &&
+          isTimestampInCycle(prob.state.reviewHintRevealedAt, cycleStartedAt)
+      )
+    : hintsCount > 0 || Boolean(prob.state?.reviewHintRevealedAt);
+  const exampleViewed = Boolean(
+    prob.state?.exampleViewedAt &&
+      isInCycle(prob.state.exampleViewedAt, cycleStartedAt)
+  );
+  const hintsUsedInCycle = Boolean(
+    hintRevealedInCycle || setupRevealedInCycle || solutionRevealedInCycle || exampleViewed
+  );
 
   // 4. Skip action
   if (result.verdict === "skipped") {
@@ -64,8 +77,10 @@ export function applyCheckResult(
       input: trimmed || "(Skipped)",
       ts,
       verdict: "skipped",
+      hintsUsed: hintsUsedInCycle,
       ...(setupRevealedInCycle ? { setupRevealed: true } : {}),
       ...(solutionRevealedInCycle ? { solutionRevealed: true } : {}),
+      ...(exampleViewed ? { exampleViewed: true } : {}),
     };
     return {
       ...prob.state,
@@ -79,11 +94,6 @@ export function applyCheckResult(
       durationMs: (prob.state?.durationMs || 0) + (options.durationMs || 0),
     };
   }
-
-  const exampleViewed = Boolean(
-    prob.state?.exampleViewedAt &&
-      isInCycle(prob.state.exampleViewedAt, cycleStartedAt)
-  );
 
   const newMistakes = new Set(prob.state?.mistakes || []);
   let matchedTrapTag: string | undefined;
@@ -148,6 +158,7 @@ export function applyCheckResult(
     input: trimmed,
     ts,
     verdict: result.verdict,
+    ...(substantive ? { hintsUsed: hintsUsedInCycle } : {}),
     ...(diagCodes.length > 0 ? { diagnosticCodes: diagCodes } : {}),
     ...(matchedTrapTag ? { matchedTrap: matchedTrapTag } : {}),
     ...(setupRevealedInCycle ? { setupRevealed: true } : {}),

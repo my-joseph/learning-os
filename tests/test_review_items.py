@@ -921,3 +921,64 @@ def test_record_review_result_preserves_level_after_in_cycle_review_help_reveal(
     )
     assert updated["level"] == 3
     assert updated["dueDate"] == "2026-11-27"
+
+
+def test_extract_review_events_respects_review_help_timestamps_and_successive_cycles():
+    # Historical record without attempt.hintsUsed where reviewHintRevealedAt preceded correct attempt
+    events = ri.extract_review_events(
+        {
+            "cycleStartedAt": "2026-11-20T12:00:00.000Z",
+            "reviewHintRevealedAt": "2026-11-20T12:01:00.000Z",
+            "hintsRevealed": 0,
+            "score": 0.5,
+            "attempts": [{"verdict": "correct", "ts": "2026-11-20T12:05:00.000Z"}],
+        }
+    )
+    assert len(events) == 1
+    assert events[0]["assisted"] is True
+    assert ri.replay_events(events)["level"] == 1
+
+    # Successive cycles: Cycle 1 clean -> Cycle 2 reviewHintRevealedAt -> Cycle 3 clean
+    multi = ri.extract_review_events(
+        {
+            "cycleStartedAt": "2026-11-22T12:00:00.000Z",
+            "reviewHintRevealedAt": "2026-11-21T12:01:00.000Z",
+            "hintsRevealed": 1,
+            "score": 1,
+            "attempts": [
+                {"verdict": "correct", "ts": "2026-11-20T10:00:00.000Z"},
+                {"verdict": "correct", "ts": "2026-11-21T12:05:00.000Z", "hintsUsed": True},
+                {"verdict": "correct", "ts": "2026-11-22T12:05:00.000Z", "hintsUsed": False},
+            ],
+        }
+    )
+    assert [e["assisted"] for e in multi] == [False, True, False]
+    assert ri.replay_events(multi)["level"] == 3
+
+    # Cycle 1 clean (no hintsUsed field), Cycle 2 opened hint (sets hintsRevealed=1 + reviewHintRevealedAt in Cycle 2)
+    c2_hint = ri.extract_review_events(
+        {
+            "cycleStartedAt": "2026-11-21T12:00:00.000Z",
+            "reviewHintRevealedAt": "2026-11-21T12:01:00.000Z",
+            "hintsRevealed": 1,
+            "score": 0.5,
+            "attempts": [
+                {"verdict": "correct", "ts": "2026-11-20T10:00:00.000Z"},
+                {"verdict": "correct", "ts": "2026-11-21T12:05:00.000Z"},
+            ],
+        }
+    )
+    assert [e["assisted"] for e in c2_hint] == [False, True]
+    assert ri.replay_events(c2_hint)["level"] == 2
+
+    # PRG review after reviewHintRevealedAt
+    prg_events = ri.extract_review_events(
+        {
+            "cycleStartedAt": "2026-11-20T12:00:00.000Z",
+            "reviewHintRevealedAt": "2026-11-20T12:01:00.000Z",
+            "hintsRevealed": 0,
+            "reviews": [{"at": "2026-11-20T12:05:00.000Z", "verdict": "pass"}],
+        }
+    )
+    assert len(prg_events) == 1
+    assert prg_events[0]["assisted"] is True
