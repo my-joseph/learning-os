@@ -409,6 +409,96 @@ assert(!afterNoteAutosave.reviewSetupRevealedAt, "normal autosave must not stamp
 assert(!afterNoteAutosave.reviewHintRevealedAt, "normal autosave must not stamp reviewHintRevealedAt from stale Cycle 1 hintsRevealed");
 assert(scoreProblem(afterNoteAutosave).score === 1, "Q01 must stay 1.0 after drill-page note autosave");
 
+// 10c. A2: delayed Daily Review help payload from an older cycle must NOT penalize a clean newer cycle,
+//      while a valid current-cycle merge preserves original event timestamps.
+writeProgress({
+  drillId: "DRL-MTH-A2-DELAYED-01",
+  unitCode: "MTH-REV",
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        userInput: "5",
+        score: 1,
+        hintsRevealed: 0,
+        setupRevealedBeforeAnswer: false,
+        solutionRevealedBeforeAnswer: false,
+        skipped: false,
+        cycleStartedAt: "2026-11-20T12:00:00.000Z",
+        attempts: [{ input: "5", ts: "2026-11-20T12:05:00.000Z", verdict: "correct", hintsUsed: false }],
+      },
+    },
+  ],
+  sessionSummary: { score: 1 },
+});
+
+// Delayed hint-only, setup-only, and steps-only payloads from Cycle 1 (11-19) or untimestamped pre-cycle
+for (const delayedState of [
+  {
+    cycleStartedAt: "2026-11-19T10:00:00.000Z",
+    hintsRevealed: 1,
+  },
+  {
+    cycleStartedAt: "2026-11-19T10:00:00.000Z",
+    setupRevealedBeforeAnswer: true,
+    reviewSetupRevealedAt: "2026-11-19T10:01:00.000Z",
+  },
+  {
+    cycleStartedAt: "2026-11-19T10:00:00.000Z",
+    solutionRevealedBeforeAnswer: true,
+    reviewStepsRevealedAt: "2026-11-19T10:02:00.000Z",
+  },
+  {
+    hintsRevealed: 1,
+    setupRevealedBeforeAnswer: true,
+    solutionRevealedBeforeAnswer: true,
+  },
+]) {
+  writeProgress({
+    drillId: "DRL-MTH-A2-DELAYED-01",
+    unitCode: "MTH-REV",
+    reviewMerge: true,
+    problems: [{ id: "Q01", state: delayedState }],
+  });
+}
+
+const afterDelayedHelp = readProgress("DRL-MTH-A2-DELAYED-01")?.problems?.Q01 as Record<string, unknown>;
+assert(!afterDelayedHelp.reviewHintRevealedAt, "delayed old-cycle hint must not stamp reviewHintRevealedAt in Cycle 2");
+assert(!afterDelayedHelp.reviewSetupRevealedAt, "delayed old-cycle setup must not stamp reviewSetupRevealedAt in Cycle 2");
+assert(!afterDelayedHelp.reviewStepsRevealedAt, "delayed old-cycle steps must not stamp reviewStepsRevealedAt in Cycle 2");
+assert(scoreProblem(afterDelayedHelp).score === 1, "delayed old-cycle help must not lower clean Cycle 2 score");
+assert(scoreProblem(afterDelayedHelp).usedHelp === false, "delayed old-cycle help must leave Cycle 2 usedHelp=false");
+
+// Valid current-cycle merge carrying original event timestamp must keep that original timestamp (not write-time nowIso)
+const origHintTs = "2026-11-20T12:01:00.000Z";
+const origSetupTs = "2026-11-20T12:02:00.000Z";
+const origStepsTs = "2026-11-20T12:03:00.000Z";
+writeProgress({
+  drillId: "DRL-MTH-A2-DELAYED-01",
+  unitCode: "MTH-REV",
+  reviewMerge: true,
+  problems: [
+    {
+      id: "Q01",
+      state: {
+        cycleStartedAt: "2026-11-20T12:00:00.000Z",
+        hintsRevealed: 1,
+        reviewHintRevealedAt: origHintTs,
+        setupRevealedBeforeAnswer: true,
+        reviewSetupRevealedAt: origSetupTs,
+        solutionRevealedBeforeAnswer: true,
+        reviewStepsRevealedAt: origStepsTs,
+      },
+    },
+  ],
+});
+const afterValidHelp = readProgress("DRL-MTH-A2-DELAYED-01")?.problems?.Q01 as Record<string, unknown>;
+assert(afterValidHelp.reviewHintRevealedAt === origHintTs, "valid current-cycle merge must preserve original reviewHintRevealedAt");
+assert(afterValidHelp.reviewSetupRevealedAt === origSetupTs, "valid current-cycle merge must preserve original reviewSetupRevealedAt");
+assert(afterValidHelp.reviewStepsRevealedAt === origStepsTs, "valid current-cycle merge must preserve original reviewStepsRevealedAt");
+assert(scoreProblem(afterValidHelp).score === 0.5, "valid current-cycle help must score 0.5");
+assert(scoreProblem(afterValidHelp).usedHelp === true, "valid current-cycle help must set usedHelp=true");
+
 // 11. Stale save preserves disk lastTestReport and avoids duplicating disputed reviews,
 //     while a newer cycleStartedAt retry reset is allowed to clear lastTestReport.
 const prgReportDoc = prgDoc();

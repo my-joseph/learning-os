@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { getProgressDir, isSafeId } from "@/lib/paths";
-import { isSubstantiveVerdict } from "@/lib/reviewGuard";
+import {
+  compareIsoTimestamps,
+  isSubstantiveVerdict,
+  isTimestampInCycle,
+  parseIsoTimestampMs,
+} from "@/lib/reviewGuard";
 import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
 import { generateVariantToken } from "@/lib/variants";
 import { AttemptRecord, ProblemState, VariantSessionRecord } from "@/types/drill";
@@ -130,7 +135,10 @@ function mergeAttempts(
     prev.length > 0 &&
     merged.every((a) => typeof a.ts === "string" && ISO_DATE_PREFIX_RE.test(a.ts))
   ) {
-    merged.sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+    merged.sort((a, b) => {
+      const cmp = compareIsoTimestamps(a.ts, b.ts);
+      return cmp !== null ? cmp : String(a.ts).localeCompare(String(b.ts));
+    });
   }
   return merged;
 }
@@ -210,8 +218,30 @@ function mergeReviews(prevRaw: unknown, nextRaw: unknown): unknown[] | undefined
 function maxIsoTimestamp(a: unknown, b: unknown): string | null {
   const sa = typeof a === "string" && a.trim() ? a.trim() : null;
   const sb = typeof b === "string" && b.trim() ? b.trim() : null;
-  if (sa && sb) return sa > sb ? sa : sb;
+  if (sa && sb) {
+    const cmp = compareIsoTimestamps(sa, sb);
+    if (cmp !== null) return cmp >= 0 ? sa : sb;
+    return sa >= sb ? sa : sb;
+  }
   return sa || sb;
+}
+
+function sameIsoTimestamp(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  const cmp = compareIsoTimestamps(a, b);
+  return cmp !== null ? cmp === 0 : a === b;
+}
+
+function compareTimestampFallback(a: string, b: string): number {
+  const cmp = compareIsoTimestamps(a, b);
+  if (cmp !== null) return cmp;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function hasInCycleHelpStamp(stamp: unknown, cycle: string | null): boolean {
+  if (typeof stamp !== "string" || parseIsoTimestampMs(stamp) === null) return false;
+  return cycle ? isTimestampInCycle(stamp, cycle) : true;
 }
 
 function mergeStringTags(prevRaw: unknown, nextRaw: unknown): string[] {
@@ -363,7 +393,7 @@ export function mergeSessionSummary(
   }
 
   const isNewerStamp = Boolean(
-    nextSyncedAt && (!prevSyncedAt || nextSyncedAt > prevSyncedAt)
+    nextSyncedAt && (!prevSyncedAt || compareTimestampFallback(nextSyncedAt, prevSyncedAt) > 0)
   );
 
   if (isNewerStamp) {
@@ -442,118 +472,162 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
           st.cycleStartedAt = maxCycle;
         }
 
-        const revealStamp = maxIsoTimestamp(nowIso, st.cycleStartedAt) || nowIso;
-        if (incoming.setupRevealedBeforeAnswer === true) {
-          st.reviewSetupRevealedAt = maxIsoTimestamp(prev.reviewSetupRevealedAt, revealStamp);
-        }
-        if (incoming.solutionRevealedBeforeAnswer === true) {
-          st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, revealStamp);
-        }
-        if (typeof incoming.hintsRevealed === "number" && incoming.hintsRevealed > 0) {
-          st.reviewHintRevealedAt = maxIsoTimestamp(prev.reviewHintRevealedAt, revealStamp);
-        }
-        const maxIncomingRevSetup = maxIsoTimestamp(
-          st.reviewSetupRevealedAt,
-          incoming.reviewSetupRevealedAt
-        );
-        if (maxIncomingRevSetup) {
-          st.reviewSetupRevealedAt = maxIncomingRevSetup;
-        }
-        const maxIncomingRevSteps = maxIsoTimestamp(
-          st.reviewStepsRevealedAt,
-          incoming.reviewStepsRevealedAt
-        );
-        if (maxIncomingRevSteps) {
-          st.reviewStepsRevealedAt = maxIncomingRevSteps;
-        }
-        const maxIncomingRevHint = maxIsoTimestamp(
-          st.reviewHintRevealedAt,
-          incoming.reviewHintRevealedAt
-        );
-        if (maxIncomingRevHint) {
-          st.reviewHintRevealedAt = maxIncomingRevHint;
-        }
-      } else {
-        st = { ...incoming };
-
-        const isNewCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
-        const isSameCycle = Boolean(incomingCycle && prevCycle && incomingCycle === prevCycle);
-        if (isNewCycle || isSameCycle) {
-          const revealStamp = maxIsoTimestamp(nowIso, incomingCycle) || nowIso;
-          const prevHints = typeof prev?.hintsRevealed === "number" ? prev.hintsRevealed : 0;
-          const incomingHints =
-            typeof incoming.hintsRevealed === "number" ? incoming.hintsRevealed : 0;
+        // Bind Daily Review help flags and timestamps strictly to the active cycle:
+        // ignore stale/older-cycle help flags, and preserve original event timestamps when present.
+        const incomingBelongsToActiveCycle =
+          !maxCycle || (incomingCycle !== null && sameIsoTimestamp(incomingCycle, maxCycle));
+        if (incomingBelongsToActiveCycle) {
+          const revealStamp = maxIsoTimestamp(nowIso, st.cycleStartedAt) || nowIso;
+          if (hasInCycleHelpStamp(incoming.reviewSetupRevealedAt, maxCycle)) {
+            st.reviewSetupRevealedAt = maxIsoTimestamp(
+              prev.reviewSetupRevealedAt,
+              incoming.reviewSetupRevealedAt
+            );
+          }
           if (
             incoming.setupRevealedBeforeAnswer === true &&
-            (isNewCycle || prev?.setupRevealedBeforeAnswer !== true)
+            !hasInCycleHelpStamp(st.reviewSetupRevealedAt, maxCycle)
           ) {
-            st.reviewSetupRevealedAt = maxIsoTimestamp(st.reviewSetupRevealedAt, revealStamp);
+            st.reviewSetupRevealedAt = maxIsoTimestamp(prev.reviewSetupRevealedAt, revealStamp);
+          }
+
+          if (hasInCycleHelpStamp(incoming.reviewStepsRevealedAt, maxCycle)) {
+            st.reviewStepsRevealedAt = maxIsoTimestamp(
+              prev.reviewStepsRevealedAt,
+              incoming.reviewStepsRevealedAt
+            );
           }
           if (
             incoming.solutionRevealedBeforeAnswer === true &&
-            (isNewCycle || prev?.solutionRevealedBeforeAnswer !== true)
+            !hasInCycleHelpStamp(st.reviewStepsRevealedAt, maxCycle)
           ) {
-            st.reviewStepsRevealedAt = maxIsoTimestamp(st.reviewStepsRevealedAt, revealStamp);
+            st.reviewStepsRevealedAt = maxIsoTimestamp(prev.reviewStepsRevealedAt, revealStamp);
           }
-          if (incomingHints > 0 && (isNewCycle || incomingHints > prevHints)) {
-            st.reviewHintRevealedAt = maxIsoTimestamp(st.reviewHintRevealedAt, revealStamp);
+
+          if (hasInCycleHelpStamp(incoming.reviewHintRevealedAt, maxCycle)) {
+            st.reviewHintRevealedAt = maxIsoTimestamp(
+              prev.reviewHintRevealedAt,
+              incoming.reviewHintRevealedAt
+            );
+          }
+          if (
+            typeof incoming.hintsRevealed === "number" &&
+            incoming.hintsRevealed > 0 &&
+            !hasInCycleHelpStamp(st.reviewHintRevealedAt, maxCycle)
+          ) {
+            st.reviewHintRevealedAt = maxIsoTimestamp(prev.reviewHintRevealedAt, revealStamp);
           }
         }
+      } else {
+        const isNewCycle = Boolean(
+          incomingCycle && (!prevCycle || compareTimestampFallback(incomingCycle, prevCycle) > 0)
+        );
+        const isSameCycle = Boolean(
+          incomingCycle && prevCycle && sameIsoTimestamp(incomingCycle, prevCycle)
+        );
+        const isStaleOlderCycle = Boolean(
+          prev &&
+            prevCycle &&
+            (!incomingCycle || compareTimestampFallback(incomingCycle, prevCycle) < 0)
+        );
+        st = isStaleOlderCycle ? { ...prev } : { ...incoming };
 
-        if (prev) {
-          // Server-owned history is never dropped by a normal autosave.
-          const mergedAttempts = mergeAttempts(prev.attempts, st.attempts);
-          if (mergedAttempts !== undefined) {
-            st.attempts = mergedAttempts;
-          }
-
-          const mergedReviews = mergeReviews(prev.reviews, st.reviews);
-          if (mergedReviews !== undefined) {
-            st.reviews = mergedReviews;
-          }
-
-          const mergedTestRuns = mergeAttempts(prev.testRuns, st.testRuns);
-          if (mergedTestRuns !== undefined) {
-            st.testRuns = mergedTestRuns;
-          }
-
-          if (prev.lastTestReport && typeof prev.lastTestReport === "object") {
-            if (st.lastTestReport == null) {
-              if (!isNewCycle) {
-                st.lastTestReport = prev.lastTestReport;
-              }
-            } else if (typeof st.lastTestReport === "object") {
-              const prevRepTs = (prev.lastTestReport as Record<string, unknown>).ts;
-              const nextRepTs = (st.lastTestReport as Record<string, unknown>).ts;
-              if (
-                typeof prevRepTs === "string" &&
-                prevRepTs &&
-                typeof nextRepTs === "string" &&
-                nextRepTs &&
-                prevRepTs > nextRepTs
-              ) {
-                st.lastTestReport = prev.lastTestReport;
-              }
-            }
-          }
-
+        if (isStaleOlderCycle && prev) {
+          const mergedAttempts = mergeAttempts(prev.attempts, incoming.attempts);
+          if (mergedAttempts !== undefined) st.attempts = mergedAttempts;
+          const mergedReviews = mergeReviews(prev.reviews, incoming.reviews);
+          if (mergedReviews !== undefined) st.reviews = mergedReviews;
+          const mergedTestRuns = mergeAttempts(prev.testRuns, incoming.testRuns);
+          if (mergedTestRuns !== undefined) st.testRuns = mergedTestRuns;
           for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
-            if (isEmptyValue(st[key]) && !isEmptyValue(prev[key])) {
-              st[key] = prev[key];
+            if (isEmptyValue(st[key]) && !isEmptyValue(incoming[key])) {
+              st[key] = incoming[key];
+            }
+          }
+        } else {
+          if (isNewCycle || isSameCycle) {
+            const revealStamp = maxIsoTimestamp(nowIso, incomingCycle) || nowIso;
+            const prevHints = typeof prev?.hintsRevealed === "number" ? prev.hintsRevealed : 0;
+            const incomingHints =
+              typeof incoming.hintsRevealed === "number" ? incoming.hintsRevealed : 0;
+            if (
+              incoming.setupRevealedBeforeAnswer === true &&
+              (isNewCycle || prev?.setupRevealedBeforeAnswer !== true) &&
+              !hasInCycleHelpStamp(st.reviewSetupRevealedAt, incomingCycle)
+            ) {
+              st.reviewSetupRevealedAt = maxIsoTimestamp(st.reviewSetupRevealedAt, revealStamp);
+            }
+            if (
+              incoming.solutionRevealedBeforeAnswer === true &&
+              (isNewCycle || prev?.solutionRevealedBeforeAnswer !== true) &&
+              !hasInCycleHelpStamp(st.reviewStepsRevealedAt, incomingCycle)
+            ) {
+              st.reviewStepsRevealedAt = maxIsoTimestamp(st.reviewStepsRevealedAt, revealStamp);
+            }
+            if (
+              incomingHints > 0 &&
+              (isNewCycle || incomingHints > prevHints) &&
+              !hasInCycleHelpStamp(st.reviewHintRevealedAt, incomingCycle)
+            ) {
+              st.reviewHintRevealedAt = maxIsoTimestamp(st.reviewHintRevealedAt, revealStamp);
             }
           }
 
-          const maxRevSetup = maxIsoTimestamp(prev.reviewSetupRevealedAt, st.reviewSetupRevealedAt);
-          if (maxRevSetup) {
-            st.reviewSetupRevealedAt = maxRevSetup;
-          }
-          const maxRevSteps = maxIsoTimestamp(prev.reviewStepsRevealedAt, st.reviewStepsRevealedAt);
-          if (maxRevSteps) {
-            st.reviewStepsRevealedAt = maxRevSteps;
-          }
-          const maxRevHint = maxIsoTimestamp(prev.reviewHintRevealedAt, st.reviewHintRevealedAt);
-          if (maxRevHint) {
-            st.reviewHintRevealedAt = maxRevHint;
+          if (prev) {
+            // Server-owned history is never dropped by a normal autosave.
+            const mergedAttempts = mergeAttempts(prev.attempts, st.attempts);
+            if (mergedAttempts !== undefined) {
+              st.attempts = mergedAttempts;
+            }
+
+            const mergedReviews = mergeReviews(prev.reviews, st.reviews);
+            if (mergedReviews !== undefined) {
+              st.reviews = mergedReviews;
+            }
+
+            const mergedTestRuns = mergeAttempts(prev.testRuns, st.testRuns);
+            if (mergedTestRuns !== undefined) {
+              st.testRuns = mergedTestRuns;
+            }
+
+            if (prev.lastTestReport && typeof prev.lastTestReport === "object") {
+              if (st.lastTestReport == null) {
+                if (!isNewCycle) {
+                  st.lastTestReport = prev.lastTestReport;
+                }
+              } else if (typeof st.lastTestReport === "object") {
+                const prevRepTs = (prev.lastTestReport as Record<string, unknown>).ts;
+                const nextRepTs = (st.lastTestReport as Record<string, unknown>).ts;
+                if (
+                  typeof prevRepTs === "string" &&
+                  prevRepTs &&
+                  typeof nextRepTs === "string" &&
+                  nextRepTs &&
+                  compareTimestampFallback(prevRepTs, nextRepTs) > 0
+                ) {
+                  st.lastTestReport = prev.lastTestReport;
+                }
+              }
+            }
+
+            for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
+              if (isEmptyValue(st[key]) && !isEmptyValue(prev[key])) {
+                st[key] = prev[key];
+              }
+            }
+
+            const maxRevSetup = maxIsoTimestamp(prev.reviewSetupRevealedAt, st.reviewSetupRevealedAt);
+            if (maxRevSetup) {
+              st.reviewSetupRevealedAt = maxRevSetup;
+            }
+            const maxRevSteps = maxIsoTimestamp(prev.reviewStepsRevealedAt, st.reviewStepsRevealedAt);
+            if (maxRevSteps) {
+              st.reviewStepsRevealedAt = maxRevSteps;
+            }
+            const maxRevHint = maxIsoTimestamp(prev.reviewHintRevealedAt, st.reviewHintRevealedAt);
+            if (maxRevHint) {
+              st.reviewHintRevealedAt = maxRevHint;
+            }
           }
         }
       }
@@ -585,9 +659,9 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       if (maxCycle) {
         st.cycleStartedAt = maxCycle;
       }
-      if (maxCycle === prevCycle && prev && "reviewBaseLevel" in prev) {
+      if (sameIsoTimestamp(maxCycle, prevCycle) && prev && "reviewBaseLevel" in prev) {
         st.reviewBaseLevel = prev.reviewBaseLevel;
-      } else if (maxCycle !== incomingCycle) {
+      } else if (!sameIsoTimestamp(maxCycle, incomingCycle)) {
         delete st.reviewBaseLevel;
       } else if (doc.reviewMerge) {
         if ("reviewBaseLevel" in incoming) st.reviewBaseLevel = incoming.reviewBaseLevel;
@@ -648,7 +722,10 @@ export function writeLearnerProgress(canonical: DocLike, incoming: DocLike): str
     const previous = problems[qid] as Partial<ProblemState> | undefined;
     const state = { ...previous };
     const draft = input as Record<string, unknown>;
-    const sameCycle = (previous?.cycleStartedAt ?? null) === (draft.cycleStartedAt ?? null);
+    const sameCycle = sameIsoTimestamp(
+      previous?.cycleStartedAt ?? null,
+      typeof draft.cycleStartedAt === "string" ? draft.cycleStartedAt : null
+    );
     for (const field of ["mistakeNote", "revisitNote"] as const) {
       if (typeof draft[field] === "string") {
         state[field] = draft[field];
@@ -709,7 +786,7 @@ export function stampSyncMetadata(
   const existing = readProgress(drillId);
   const prevSyncedAt = nonEmptyString(existing?.sessionSummary?.syncedToNotionAt);
   let effectiveSyncedAt = nonEmptyString(stamp.syncedToNotionAt) || new Date().toISOString();
-  if (prevSyncedAt && effectiveSyncedAt <= prevSyncedAt) {
+  if (prevSyncedAt && compareTimestampFallback(effectiveSyncedAt, prevSyncedAt) <= 0) {
     const prevMs = Date.parse(prevSyncedAt);
     effectiveSyncedAt = Number.isFinite(prevMs)
       ? new Date(prevMs + 1).toISOString()
@@ -928,7 +1005,8 @@ export function startProblemCycle(
       typeof st.cycleStartedAt === "string" && st.cycleStartedAt
         ? st.cycleStartedAt
         : null;
-    effectiveCycle = prevCycle && prevCycle > safeTs ? prevCycle : safeTs;
+    effectiveCycle =
+      prevCycle && compareTimestampFallback(prevCycle, safeTs) > 0 ? prevCycle : safeTs;
     st.cycleStartedAt = effectiveCycle;
   });
   return { cycleStartedAt: effectiveCycle, state };
@@ -946,8 +1024,7 @@ export function markVariantServed(
   if (
     existing &&
     existing.record.servedAt &&
-    (!existing.state.cycleStartedAt ||
-      existing.record.servedAt >= existing.state.cycleStartedAt)
+    isTimestampInCycle(existing.record.servedAt, existing.state.cycleStartedAt)
   ) {
     return existing;
   }
@@ -956,7 +1033,7 @@ export function markVariantServed(
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const inCurrentCycle = Boolean(
-      prev.servedAt && (!st.cycleStartedAt || prev.servedAt >= st.cycleStartedAt)
+      prev.servedAt && isTimestampInCycle(prev.servedAt, st.cycleStartedAt)
     );
     const nextRec: VariantSessionRecord = inCurrentCycle
       ? prev
@@ -1032,7 +1109,10 @@ export function registerServedVariant(
     };
     st.variants = variants;
     if (role === "example") {
-      if (!st.exampleViewedAt || (st.cycleStartedAt && st.exampleViewedAt < st.cycleStartedAt)) {
+      if (
+        !st.exampleViewedAt ||
+        (st.cycleStartedAt && !isTimestampInCycle(st.exampleViewedAt, st.cycleStartedAt))
+      ) {
         st.exampleViewedAt = nowIso;
       }
     }
@@ -1075,7 +1155,7 @@ export function recordVariantAttempt(
         ? Math.min(Math.round(durationMs), 600_000)
         : 0;
     const prevInCycle = Boolean(
-      !st.cycleStartedAt || (prev.servedAt && prev.servedAt >= st.cycleStartedAt)
+      !st.cycleStartedAt || (prev.servedAt && isTimestampInCycle(prev.servedAt, st.cycleStartedAt))
     );
     const entry: AttemptRecord = {
       ...attempt,
@@ -1130,7 +1210,7 @@ export function updateVariantSession(
         durationMs: 0,
       };
     } else {
-      if (st.cycleStartedAt && (!prev.servedAt || prev.servedAt < st.cycleStartedAt)) {
+      if (st.cycleStartedAt && (!prev.servedAt || !isTimestampInCycle(prev.servedAt, st.cycleStartedAt))) {
         nextRec = {
           ...prev,
           hintsRevealed: 0,
