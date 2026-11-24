@@ -12,7 +12,7 @@ Collects deterministic, no-AI improvement signals from:
 5. Doc-reference checks via ``scripts/doc_refs.py`` (skipped gracefully if absent).
 
 Usage:
-    python -m scripts.self_review [--since YYYY-MM-DD] [--target TARGET] [--json]
+    python -m scripts.self_review [--since YYYY-MM-DD] [--compare-at YYYY-MM-DD] [--target TARGET] [--json]
 """
 
 from __future__ import annotations
@@ -42,6 +42,26 @@ _USAGE_HIGH_TOKENS = 2_000_000
 _USAGE_HIGH_DURATION_SECS = 1500.0
 _REWORK_WINDOW_HOURS = 48.0
 _FALLBACK_WINDOW_SECS = 1800.0
+_COMPARE_MIN_RUNS = 5
+
+
+def _load_addressed(path: str | None = None) -> dict[str, dict[str, Any]]:
+    """Load target|kind process resolutions from the optional mapping file."""
+    mapping_path = path or os.path.join(Path(__file__).resolve().parent.parent, "docs", "self_review_addressed.json")
+    try:
+        with open(mapping_path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _addressed_footer(addressed: dict[str, dict[str, Any]], observed: set[str]) -> list[dict[str, Any]]:
+    return [
+        {"key": key, "since": value.get("since"), "pr": value.get("pr"), "note": value.get("note", "")}
+        for key, value in sorted(addressed.items())
+        if key not in observed
+    ]
 
 
 def _parse_iso_dt(value: str | None) -> datetime | None:
@@ -262,17 +282,17 @@ def collect_issue_signals(
         impact = rec.get("impact") or ("high" if rec.get("severity") == "urgent" else "med")
         evidence = rec.get("evidence") or rec.get("where") or ""
         proposal_text = rec.get("proposal") or rec.get("what") or ""
-        proposals.append(
-            _make_proposal(
-                target=target,
-                category="open-proposal",
-                impact=impact,
-                evidence_count=1,
-                examples=[f"[{rec['id']}] {evidence}"],
-                suggested_change=proposal_text,
-                urgent_bonus=3 if rec.get("severity") == "urgent" else 1,
-            )
+        proposal = _make_proposal(
+            target=target,
+            category="open-proposal",
+            impact=impact,
+            evidence_count=1,
+            examples=[f"[{rec['id']}] {evidence}"],
+            suggested_change=proposal_text,
+            urgent_bonus=3 if rec.get("severity") == "urgent" else 1,
         )
+        proposal["addressKey"] = f"{target}|proposal"
+        proposals.append(proposal)
 
     # 2. Explicit open gate-gap records
     for target, recs in sorted(gate_gaps_by_target.items()):
@@ -280,19 +300,19 @@ def collect_issue_signals(
         urgent = any(r.get("severity") == "urgent" for r in recs)
         impact = "high" if urgent or len(recs) >= 2 else "med"
         examples = [f"[{r['id']}] {r['where']}: {r['what']}" for r in recs[:5]]
-        proposals.append(
-            _make_proposal(
-                target=target,
-                category="gate-gap",
-                impact=impact,
-                evidence_count=len(recs),
-                examples=examples,
-                suggested_change=(
-                    f"Gate for {target} missed {len(recs)} issue(s) -> add automated gate check and regression test"
-                ),
-                urgent_bonus=3 if urgent else 1,
-            )
+        proposal = _make_proposal(
+            target=target,
+            category="gate-gap",
+            impact=impact,
+            evidence_count=len(recs),
+            examples=examples,
+            suggested_change=(
+                f"Gate for {target} missed {len(recs)} issue(s) -> add automated gate check and regression test"
+            ),
+            urgent_bonus=3 if urgent else 1,
         )
+        proposal["addressKey"] = f"{target}|gate-gap"
+        proposals.append(proposal)
 
     # 3. Reviewer / learner catches that gates missed (same target + quality kind >= 2)
     for (target, kind), recs in sorted(reviewer_catches.items()):
@@ -304,20 +324,20 @@ def collect_issue_signals(
         urgent = any(r.get("severity") == "urgent" for r in recs)
         impact = "high" if urgent or len(recs) >= 3 else "med"
         examples = [f"[{r['id']}] {r['where']}: {r['what']}" for r in recs[:5]]
-        proposals.append(
-            _make_proposal(
-                target=target,
-                category="gate-gap",
-                impact=impact,
-                evidence_count=len(recs),
-                examples=examples,
-                suggested_change=(
-                    f"Gate for {target} missed {len(recs)} {source_label} catch(es) of kind {kind} "
-                    f"-> add automated check for {kind}"
-                ),
-                urgent_bonus=2 if urgent else 0,
-            )
+        proposal = _make_proposal(
+            target=target,
+            category="gate-gap",
+            impact=impact,
+            evidence_count=len(recs),
+            examples=examples,
+            suggested_change=(
+                f"Gate for {target} missed {len(recs)} {source_label} catch(es) of kind {kind} "
+                f"-> add automated check for {kind}"
+            ),
+            urgent_bonus=2 if urgent else 0,
         )
+        proposal["addressKey"] = f"{target}|{kind}"
+        proposals.append(proposal)
 
     # 4. Recurring (target, kind) >= 2 patterns not already emitted above
     recurring_summary: list[dict[str, Any]] = []
@@ -340,21 +360,20 @@ def collect_issue_signals(
         impact = "high" if urgent or len(recs) >= 3 else "med"
         playbook = playbook_for_target(target)
         examples = [f"[{r['id']}] {r['where']}: {r['what']}" for r in recs[:5]]
-        proposals.append(
-            _make_proposal(
-                target=target,
-                category="recurring-issue",
-                impact=impact,
-                evidence_count=len(recs),
-                examples=examples,
-                suggested_change=(
-                    f"Recurring {kind} on {target} ({len(recs)}x, {pending_count} pending) "
-                    f"-> fix root cause via {playbook}"
-                ),
-                playbook=playbook,
-                urgent_bonus=2 if urgent else 0,
-            )
+        proposal = _make_proposal(
+            target=target,
+            category="recurring-issue",
+            impact=impact,
+            evidence_count=len(recs),
+            examples=examples,
+            suggested_change=(
+                f"Recurring {kind} on {target} ({len(recs)}x, {pending_count} pending) -> fix root cause via {playbook}"
+            ),
+            playbook=playbook,
+            urgent_bonus=2 if urgent else 0,
         )
+        proposal["addressKey"] = f"{target}|{kind}"
+        proposals.append(proposal)
 
     signal = {
         "path": path,
@@ -653,6 +672,139 @@ def collect_usage_signals(
         "reopenedBranches": reopened_branches,
     }
     return signal, proposals
+
+
+def _read_jsonl(path: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(rec, dict):
+                    records.append(rec)
+    except OSError:
+        pass
+    return records
+
+
+def _percent_delta(before: float | int | None, after: float | int | None) -> float | None:
+    if before is None or after is None:
+        return None
+    if before == 0:
+        return 0.0 if after == 0 else None
+    return round((after - before) / before * 100, 1)
+
+
+def _usage_window_stats(records: list[dict[str, Any]]) -> dict[str, Any]:
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    branches: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for rec in records:
+        branch = str(rec.get("branch") or "")
+        model = str(rec.get("model") or "unknown")
+        job = infer_job_type(branch)
+        for key, val in ((f"model:{model}", rec), (f"job:{job}", rec)):
+            groups[key].append(val)
+        if branch:
+            branches[branch].append(rec)
+
+    fallback_count: Counter[str] = Counter()
+    revisions: Counter[str] = Counter()
+    branch_count: Counter[str] = Counter()
+    for branch, runs in branches.items():
+        ordered = sorted(runs, key=lambda r: str(r.get("ts") or ""))
+        fallback_indexes: set[int] = set()
+        for idx in range(1, len(ordered)):
+            prev, curr = ordered[idx - 1], ordered[idx]
+            prev_outcome = str(prev.get("outcome") or "")
+            rc = _parse_outcome_rc(prev_outcome)
+            is_fallback_run = rc == 3 or (rc is not None and rc not in {0, 3} and "idle-after-pr" not in prev_outcome)
+            prev_dt, curr_dt = _parse_iso_dt(prev.get("ts")), _parse_iso_dt(curr.get("ts"))
+            close_in_time = (
+                prev_dt is not None
+                and curr_dt is not None
+                and 0 <= (curr_dt - prev_dt).total_seconds() <= _FALLBACK_WINDOW_SECS
+            )
+            if (
+                is_fallback_run
+                and str(prev.get("model") or "unknown") != str(curr.get("model") or "unknown")
+                and (close_in_time or prev_dt is None or curr_dt is None)
+            ):
+                fallback_indexes.add(idx)
+                fallback_count[f"model:{prev.get('model') or 'unknown'}"] += 1
+                fallback_count[f"job:{infer_job_type(branch)}"] += 1
+        for key in (f"job:{infer_job_type(branch)}",):
+            branch_count[key] += 1
+            stop_count = sum("idle-after-pr" in str(r.get("outcome") or "") for r in ordered)
+            revisions[key] += max(0, len(ordered) - 1 - len(fallback_indexes) - stop_count)
+        for model in {str(r.get("model") or "unknown") for r in ordered}:
+            key = f"model:{model}"
+            branch_count[key] += 1
+            model_runs = [r for r in ordered if str(r.get("model") or "unknown") == model]
+            revisions[key] += max(0, len(model_runs) - 1)
+
+    result: dict[str, Any] = {}
+    for key, rows in sorted(groups.items()):
+        n = len(rows)
+        timed = [
+            float(r["duration_seconds"])
+            for r in rows
+            if isinstance(r.get("duration_seconds"), (int, float)) and r["duration_seconds"] > 0
+        ]
+        failed = sum((_parse_outcome_rc(str(r.get("outcome") or "")) not in (None, 0, 3)) for r in rows)
+        result[key] = {
+            "runs": n,
+            "avgTokensPerRun": round(sum(int(r.get("total_tokens") or 0) for r in rows) / n, 1) if n else None,
+            "avgMinutesPerRun": round(sum(timed) / len(timed) / 60, 2) if timed else None,
+            "revisionRate": round(revisions[key] / branch_count[key], 4) if branch_count[key] else 0.0,
+            "fallbackRate": round(fallback_count[key] / n, 4) if n else 0.0,
+            "failureRate": round(failed / n, 4) if n else 0.0,
+        }
+    return result
+
+
+def collect_compare_metrics(
+    *,
+    usage_path: str,
+    compare_at: str,
+    prs: list[dict[str, Any]] | None = None,
+    followup_prs: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Compare worker usage and follow-up PRs across a date boundary."""
+    rows = _read_jsonl(usage_path)
+    before_rows = [r for r in rows if _date_prefix(r.get("ts")) and _date_prefix(r.get("ts")) < compare_at]
+    after_rows = [r for r in rows if _date_prefix(r.get("ts")) and _date_prefix(r.get("ts")) >= compare_at]
+    before, after = _usage_window_stats(before_rows), _usage_window_stats(after_rows)
+    comparison: dict[str, Any] = {}
+    for group in sorted(set(before) | set(after)):
+        b, a = before.get(group, {}), after.get(group, {})
+        metrics: dict[str, Any] = {}
+        for name in ("runs", "avgTokensPerRun", "avgMinutesPerRun", "revisionRate", "fallbackRate", "failureRate"):
+            bv, av = b.get(name, 0 if name == "runs" else None), a.get(name, 0 if name == "runs" else None)
+            metrics[name] = {"before": bv, "after": av, "deltaPercent": _percent_delta(bv, av)}
+        metrics["insufficientData"] = a.get("runs", 0) < _COMPARE_MIN_RUNS
+        comparison[group] = metrics
+
+    # Count only follow-up fixes already identified against a preceding merged PR.
+    if followup_prs is None:
+        followup_signal, _, _ = collect_git_gh_signals(repo_root=".", prs=prs or [], use_gh=False)
+        followup_rows = followup_signal["followupFixPrs"]
+    else:
+        followup_rows = followup_prs
+    bcount = sum(1 for p in followup_rows if (_date_prefix(p.get("mergedAt")) or "") < compare_at)
+    acount = sum(1 for p in followup_rows if (_date_prefix(p.get("mergedAt")) or "") >= compare_at)
+    return {
+        "compareAt": compare_at,
+        "usage": comparison,
+        "followupFixPrs": {
+            "before": bcount,
+            "after": acount,
+            "deltaPercent": _percent_delta(bcount, acount),
+            "insufficientData": False,
+        },
+    }
 
 
 def _fetch_gh_merged_prs(repo_root: str, limit: int = 50) -> tuple[list[dict[str, Any]] | None, str | None]:
@@ -976,6 +1128,8 @@ def build_self_review(
     issues_path: str | None = None,
     usage_path: str | None = None,
     since: str | None = None,
+    compare_at: str | None = None,
+    addressed_path: str | None = None,
     target: str | None = None,
     prs: list[dict[str, Any]] | None = None,
     use_gh: bool = True,
@@ -984,8 +1138,16 @@ def build_self_review(
     """Run all read-only auto-signal collectors and return ranked improvement proposals."""
     if since and not _ISO_DATE_RE.fullmatch(since):
         raise ValueError(f"--since must be YYYY-MM-DD, got {since!r}")
+    if compare_at and not _ISO_DATE_RE.fullmatch(compare_at):
+        raise ValueError(f"--compare-at must be YYYY-MM-DD, got {compare_at!r}")
 
     root = os.path.abspath(repo_root or str(Path(__file__).resolve().parent.parent))
+    effective_usage_path = usage_path or os.path.join(root, "pilot", "agent-usage.jsonl")
+    addressed = _load_addressed(addressed_path)
+    if compare_at is None and addressed:
+        compare_at = max(str(v.get("since")) for v in addressed.values() if v.get("since"))
+    if compare_at is None:
+        compare_at = datetime.now(timezone.utc).date().isoformat()
     skipped: list[str] = []
     all_proposals: list[dict[str, Any]] = []
 
@@ -994,7 +1156,7 @@ def build_self_review(
     if not issue_sig["exists"]:
         skipped.append(f"issues: log not found at {issue_sig['path']}")
 
-    usage_sig, usage_props = collect_usage_signals(usage_path=usage_path, since=since)
+    usage_sig, usage_props = collect_usage_signals(usage_path=effective_usage_path, since=since)
     all_proposals.extend(usage_props)
     if not usage_sig["exists"]:
         skipped.append(f"usage: file not found at {usage_sig['path']}")
@@ -1003,6 +1165,82 @@ def build_self_review(
     all_proposals.extend(gh_props)
     if gh_skip:
         skipped.append(f"git/gh: {gh_skip}")
+
+    # Resolved issue notes naming a PR and the explicit mapping are both durable
+    # resolution records. Refresh matching proposals using only post-resolution evidence.
+    resolved: dict[str, dict[str, Any]] = dict(addressed)
+    for rec in issues_mod.issues(issues_path or issues_mod.log_path()):
+        note = str(rec.get("resolved") or "")
+        match = re.search(r"(\d{4}-\d{2}-\d{2}).*?(?:PR\s*#?)(\d+)", note, re.IGNORECASE)
+        if match:
+            key = f"{rec.get('target') or infer_target_from_path_or_where(rec.get('where', ''))}|{rec.get('kind', 'other')}"
+            resolved.setdefault(key, {"since": match.group(1), "pr": int(match.group(2)), "note": note})
+
+    addressed_footer: list[dict[str, Any]] = []
+    kept_proposals: list[dict[str, Any]] = []
+    observed_addressed: set[str] = set()
+    usage_addressed_cache: dict[str, list[dict[str, Any]]] = {}
+    for prop in all_proposals:
+        key = prop.get("addressKey", f"{prop['target']}|{prop['category']}")
+        resolution = resolved.get(key)
+        if not resolution:
+            kept_proposals.append(prop)
+            continue
+        cutoff = str(resolution.get("since") or "0000-00-00")
+        if prop["category"].startswith("usage-"):
+            target_prefix, target_name = prop["target"].split(":", 1)
+            usage_rows = _read_jsonl(effective_usage_path)
+            has_new_evidence = any(
+                (_date_prefix(r.get("ts")) or "") >= cutoff
+                and (
+                    (target_prefix == "job" and infer_job_type(str(r.get("branch") or "")) == target_name)
+                    or (target_prefix == "model" and str(r.get("model") or "unknown") == target_name)
+                )
+                for r in usage_rows
+            )
+            if has_new_evidence:
+                observed_addressed.add(key)
+            if cutoff not in usage_addressed_cache:
+                _, fresh = collect_usage_signals(usage_path=effective_usage_path, since=cutoff)
+                usage_addressed_cache[cutoff] = fresh
+            fresh = next(
+                (
+                    p
+                    for p in usage_addressed_cache[cutoff]
+                    if p["target"] == prop["target"] and p["category"] == prop["category"]
+                ),
+                None,
+            )
+            if fresh:
+                kept_proposals.append(fresh)
+            continue
+        # For issue-derived keys, only post-resolution issue evidence is active.
+        issue_kind = key.split("|", 1)[1]
+        raw_issue_records = issues_mod.issues(issues_path or issues_mod.log_path())
+        if any(
+            not rec.get("resolved")
+            and rec.get("kind") == issue_kind
+            and (rec.get("target") or infer_target_from_path_or_where(rec.get("where", ""))) == prop["target"]
+            and _after_since(rec.get("date"), cutoff)
+            for rec in raw_issue_records
+        ):
+            observed_addressed.add(key)
+        _, fresh_issues = collect_issue_signals(issues_path=issues_path, since=cutoff)
+        fresh_issue = next(
+            (p for p in fresh_issues if p.get("addressKey", f"{p['target']}|{p['category']}") == key),
+            None,
+        )
+        if fresh_issue:
+            kept_proposals.append(fresh_issue)
+    all_proposals = kept_proposals
+    addressed_footer = _addressed_footer(resolved, observed_addressed)
+
+    compare_sig = collect_compare_metrics(
+        usage_path=effective_usage_path,
+        compare_at=compare_at,
+        prs=prs,
+        followup_prs=gh_sig.get("followupFixPrs", []),
+    )
 
     dq_sig, dq_props, dq_skip = collect_drill_quality_signals(repo_root=root)
     all_proposals.extend(dq_props)
@@ -1031,8 +1269,11 @@ def build_self_review(
     return {
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "since": since,
+        "compareAt": compare_at,
         "targetFilter": target,
         "proposals": all_proposals,
+        "addressed": addressed_footer,
+        "comparison": compare_sig,
         "signals": {
             "issues": issue_sig,
             "usage": usage_sig,
@@ -1070,8 +1311,45 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
     if report.get("skipped"):
         lines.append("Skipped: " + "; ".join(report["skipped"]))
 
+    comparison = report.get("comparison", {})
+    lines.append(f"\nBefore/after usage comparison (boundary {comparison.get('compareAt', 'unknown')}):")
+    lines.append("Group | Metric | Before | After | Delta")
+    for group, metrics in comparison.get("usage", {}).items():
+        for metric, label in (
+            ("runs", "runs"),
+            ("avgTokensPerRun", "avg tokens/run"),
+            ("avgMinutesPerRun", "avg minutes/run"),
+            ("revisionRate", "revision rate"),
+            ("fallbackRate", "fallback rate"),
+            ("failureRate", "failure rate"),
+        ):
+            item = metrics[metric]
+            delta = item.get("deltaPercent")
+            delta_text = (
+                "n/a" if delta is None else f"{'↑' if delta > 0 else '↓' if delta < 0 else '→'} {abs(delta):.1f}%"
+            )
+            if metric in {"revisionRate", "fallbackRate", "failureRate"} and item.get("before") is not None:
+                b = f"{item['before']:.1%}"
+                a = f"{item['after']:.1%}"
+            else:
+                b = str(item.get("before", "n/a"))
+                a = str(item.get("after", "n/a"))
+            suffix = " (insufficient data)" if metrics.get("insufficientData") else ""
+            lines.append(f"{group} | {label} | {b} | {a} | {delta_text}{suffix}")
+    pr_metrics = comparison.get("followupFixPrs", {})
+    pr_delta = pr_metrics.get("deltaPercent")
+    pr_delta_text = (
+        "n/a" if pr_delta is None else f"{'↑' if pr_delta > 0 else '↓' if pr_delta < 0 else '→'} {abs(pr_delta):.1f}%"
+    )
+    lines.append(
+        f"PR follow-up fix PRs (within 48h) | {pr_metrics.get('before', 0)} | {pr_metrics.get('after', 0)} | {pr_delta_text}"
+    )
+
     if not proposals:
         lines.append("\nNo improvement proposals found.")
+        if report.get("addressed"):
+            lines.append("\nAddressed (no newer evidence):")
+            lines.extend(f"- {row['key']} — PR #{row['pr']} ({row['since']})" for row in report["addressed"])
         return "\n".join(lines)
 
     lines.append("\nRanked improvement proposals:")
@@ -1086,6 +1364,9 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
             lines.append(f"   - {ex}")
     if limit > 0 and len(proposals) > limit:
         lines.append(f"... {len(proposals) - limit} more; pass --limit 0 or --json to view all.")
+    if report.get("addressed"):
+        lines.append("\nAddressed (no newer evidence):")
+        lines.extend(f"- {row['key']} — PR #{row['pr']} ({row['since']})" for row in report["addressed"])
     return "\n".join(lines)
 
 
@@ -1095,6 +1376,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Read-only self-review auto-signal collector and proposal ranker.",
     )
     ap.add_argument("--since", default=None, help="only include dated signals on or after YYYY-MM-DD")
+    ap.add_argument("--compare-at", default=None, help="compare before/after usage windows at YYYY-MM-DD")
     ap.add_argument(
         "--target",
         default=None,
@@ -1106,7 +1388,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        report = build_self_review(since=args.since, target=args.target, use_gh=not args.no_gh)
+        report = build_self_review(
+            since=args.since, compare_at=args.compare_at, target=args.target, use_gh=not args.no_gh
+        )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2

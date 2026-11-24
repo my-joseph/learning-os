@@ -539,6 +539,210 @@ def test_self_review_cli_json_target_filter_and_bad_since(
     assert "YYYY-MM-DD" in capsys.readouterr().err
 
 
+def test_addressed_proposal_is_suppressed_without_post_since_evidence(tmp_path: Path) -> None:
+    usage_file = tmp_path / "agent-usage.jsonl"
+    rows = [
+        {
+            "ts": f"2026-11-{day:02d}T10:00:00Z",
+            "model": "m",
+            "branch": f"feat/a{day}",
+            "outcome": "rc=0",
+            "total_tokens": 3_000_000,
+            "duration_seconds": 1800,
+        }
+        for day in (10, 11)
+    ]
+    _write_jsonl(usage_file, rows)
+    addressed = tmp_path / "addressed.json"
+    addressed.write_text(
+        json.dumps({"job:feat|usage-cost": {"since": "2026-11-20", "pr": 293, "note": "rules"}}), encoding="utf-8"
+    )
+    report = sr.build_self_review(
+        repo_root=str(tmp_path),
+        issues_path=str(tmp_path / "missing-issues.jsonl"),
+        usage_path=str(usage_file),
+        addressed_path=str(addressed),
+        use_gh=False,
+    )
+    assert not any(p["target"] == "job:feat" and p["category"] == "usage-cost" for p in report["proposals"])
+    assert report["addressed"] == [{"key": "job:feat|usage-cost", "since": "2026-11-20", "pr": 293, "note": "rules"}]
+
+
+def test_addressed_proposal_resurfaces_on_post_since_evidence(tmp_path: Path) -> None:
+    usage_file = tmp_path / "agent-usage.jsonl"
+    rows = [
+        {
+            "ts": f"2026-11-{day:02d}T10:00:00Z",
+            "model": "m",
+            "branch": f"feat/a{day}",
+            "outcome": "rc=0",
+            "total_tokens": 3_000_000,
+            "duration_seconds": 1800,
+        }
+        for day in (10, 21, 22)
+    ]
+    _write_jsonl(usage_file, rows)
+    addressed = tmp_path / "addressed.json"
+    addressed.write_text(
+        json.dumps({"job:feat|usage-cost": {"since": "2026-11-20", "pr": 293, "note": "rules"}}), encoding="utf-8"
+    )
+    report = sr.build_self_review(
+        repo_root=str(tmp_path),
+        issues_path=str(tmp_path / "missing-issues.jsonl"),
+        usage_path=str(usage_file),
+        addressed_path=str(addressed),
+        use_gh=False,
+    )
+    assert any(p["target"] == "job:feat" and p["category"] == "usage-cost" for p in report["proposals"])
+    assert not report["addressed"]
+
+
+def test_resolved_issue_note_suppresses_old_evidence_and_uses_new_evidence(tmp_path: Path) -> None:
+    issue_file = tmp_path / "issues.jsonl"
+    usage_file = tmp_path / "agent-usage.jsonl"
+    _write_jsonl(
+        issue_file,
+        [
+            {
+                "id": "old",
+                "date": "2026-11-01 10:00 UTC",
+                "kind": "tool-gap",
+                "severity": "batch",
+                "source": "author",
+                "where": "scripts/old.py",
+                "what": "Old evidence",
+                "action": "open",
+                "target": "pipeline",
+            },
+            {"resolves": "old", "date": "2026-11-20 10:00 UTC", "note": "PR #123"},
+        ],
+    )
+    report = sr.build_self_review(
+        repo_root=str(tmp_path), issues_path=str(issue_file), usage_path=str(usage_file), use_gh=False
+    )
+    resolved_row = next(row for row in report["addressed"] if row["key"] == "pipeline|tool-gap")
+    assert resolved_row == {
+        "key": "pipeline|tool-gap",
+        "since": "2026-11-20",
+        "pr": 123,
+        "note": "2026-11-20 10:00 UTC: PR #123",
+    }
+
+    with issue_file.open("a", encoding="utf-8") as fh:
+        for issue_id in ("new1", "new2"):
+            fh.write(
+                json.dumps(
+                    {
+                        "id": issue_id,
+                        "date": "2026-11-21 10:00 UTC",
+                        "kind": "tool-gap",
+                        "severity": "batch",
+                        "source": "author",
+                        "where": "scripts/new.py",
+                        "what": "New evidence",
+                        "action": "open",
+                        "target": "pipeline",
+                    }
+                )
+                + "\n"
+            )
+    report = sr.build_self_review(
+        repo_root=str(tmp_path), issues_path=str(issue_file), usage_path=str(usage_file), use_gh=False
+    )
+    proposal = next(p for p in report["proposals"] if p["target"] == "pipeline" and p["category"] == "recurring-issue")
+    assert proposal["evidenceCount"] == 2
+    assert not any(row["key"] == "pipeline|tool-gap" for row in report["addressed"])
+
+
+def test_compare_metrics_math_and_insufficient_data(tmp_path: Path) -> None:
+    usage_file = tmp_path / "agent-usage.jsonl"
+    rows = [
+        {
+            "ts": "2026-11-01T10:00:00Z",
+            "model": "m",
+            "branch": "feat/old",
+            "outcome": "rc=0",
+            "total_tokens": 100,
+            "duration_seconds": 60,
+        },
+        {
+            "ts": "2026-11-21T10:00:00Z",
+            "model": "m",
+            "branch": "feat/new-1",
+            "outcome": "rc=0",
+            "total_tokens": 200,
+            "duration_seconds": 120,
+        },
+        {
+            "ts": "2026-11-22T10:00:00Z",
+            "model": "m",
+            "branch": "feat/new-2",
+            "outcome": "rc=1",
+            "total_tokens": 200,
+            "duration_seconds": 120,
+        },
+        {
+            "ts": "2026-11-23T10:00:00Z",
+            "model": "m",
+            "branch": "feat/new-3",
+            "outcome": "rc=0",
+            "total_tokens": 200,
+            "duration_seconds": 120,
+        },
+        {
+            "ts": "2026-11-24T10:00:00Z",
+            "model": "m",
+            "branch": "feat/new-4",
+            "outcome": "rc=0",
+            "total_tokens": 200,
+            "duration_seconds": 120,
+        },
+        {
+            "ts": "2026-11-24T11:00:00Z",
+            "model": "quota",
+            "branch": "fix/fallback",
+            "outcome": "rc=3",
+            "total_tokens": 100,
+            "duration_seconds": 60,
+        },
+        {
+            "ts": "2026-11-24T11:05:00Z",
+            "model": "target",
+            "branch": "fix/fallback",
+            "outcome": "rc=0",
+            "total_tokens": 100,
+            "duration_seconds": 60,
+        },
+        {
+            "ts": "2026-11-24T12:00:00Z",
+            "model": "rev",
+            "branch": "fix/revision",
+            "outcome": "rc=0",
+            "total_tokens": 100,
+            "duration_seconds": 60,
+        },
+        {
+            "ts": "2026-11-24T12:30:00Z",
+            "model": "rev",
+            "branch": "fix/revision",
+            "outcome": "rc=0",
+            "total_tokens": 100,
+            "duration_seconds": 60,
+        },
+    ]
+    _write_jsonl(usage_file, rows)
+    result = sr.collect_compare_metrics(usage_path=str(usage_file), compare_at="2026-11-20")
+    metrics = result["usage"]["job:feat"]
+    assert metrics["runs"]["before"] == 1 and metrics["runs"]["after"] == 4
+    assert metrics["avgTokensPerRun"] == {"before": 100.0, "after": 200.0, "deltaPercent": 100.0}
+    assert metrics["avgMinutesPerRun"] == {"before": 1.0, "after": 2.0, "deltaPercent": 100.0}
+    assert metrics["failureRate"]["after"] == 0.25
+    assert metrics["insufficientData"] is True
+    fix_metrics = result["usage"]["job:fix"]
+    assert fix_metrics["fallbackRate"]["after"] == 0.25
+    assert fix_metrics["revisionRate"]["after"] == 0.5
+
+
 def test_every_skill_has_self_review_step() -> None:
     repo_root = Path(__file__).resolve().parent.parent
     skills_dir = repo_root / ".claude" / "skills"
