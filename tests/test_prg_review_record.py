@@ -6,7 +6,6 @@ import json
 import os
 import shutil
 from pathlib import Path
-from subprocess import CompletedProcess
 
 import pytest
 
@@ -221,9 +220,12 @@ def test_review_run_and_record_mask_hidden_tests_in_drill_and_lab(tmp_path, monk
 def test_lab_review_requires_complete_reports_from_both_suites(
     suite, returncode, report, expected_verdict, tmp_path, monkeypatch
 ):
+    from code_engine.sandbox import SandboxResult
     from tests.test_new_project_lab import _make_fixture_lab
 
     lab_dir, ref_dir, _ = _make_fixture_lab(tmp_path)
+    hidden_test_path = ref_dir / "hidden" / "m1_budget.test.ts"
+    hidden_content = hidden_test_path.read_text(encoding="utf-8")
     missing_suite = "hidden" if suite == "other milestone" else suite
     if report is None:
         test_dir = ref_dir / "hidden" if missing_suite == "hidden" else lab_dir / "tests"
@@ -234,16 +236,16 @@ def test_lab_review_requires_complete_reports_from_both_suites(
             expected_file.unlink()
     calls = []
 
-    def run_node(cmd, *, cwd, **kwargs):
-        assert cmd[0] == "node"
-        called_suite = "hidden" if Path(cwd) == ref_dir / "hidden" else "visible"
+    def run_node(args, *, cwd, **kwargs):
+        staged_test = Path(cwd) / args[-1]
+        called_suite = "hidden" if staged_test.read_text(encoding="utf-8") == hidden_content else "visible"
         calls.append(called_suite)
         if called_suite == suite:
             assert report is not None
-            return CompletedProcess(cmd, returncode, stdout=report, stderr="private runner output")
-        return CompletedProcess(cmd, 0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
+            return SandboxResult(returncode=returncode, stdout=report, stderr="private runner output")
+        return SandboxResult(returncode=0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
 
-    monkeypatch.setattr(review_run.subprocess, "run", run_node)
+    monkeypatch.setattr(review_run, "run_node_isolated", run_node)
     monkeypatch.setattr(review_run, "_lint_lab_src", lambda *_: [])
     monkeypatch.setattr(review_run, "_typecheck_lab", lambda *_: [])
 
@@ -259,6 +261,8 @@ def test_lab_review_requires_complete_reports_from_both_suites(
 
 
 def test_lab_review_requires_complete_vitest_report(tmp_path, monkeypatch):
+    from code_engine import submit as submit_mod
+    from code_engine.sandbox import SandboxResult
     from tests.test_new_project_lab import _make_fixture_lab
 
     _require_node_and_lint()
@@ -266,17 +270,17 @@ def test_lab_review_requires_complete_vitest_report(tmp_path, monkeypatch):
     hidden_test = ref_dir / "hidden" / "m1_budget.test.ts"
     hidden_test.rename(hidden_test.with_suffix(".tsx"))
 
-    def run_tests(cmd, **kwargs):
-        if cmd[0] == "node":
-            return CompletedProcess(cmd, 0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
-        assert Path(cmd[0]).name == "vitest"
-        report_arg = next(arg for arg in cmd if arg.startswith("--outputFile="))
-        Path(report_arg.split("=", 1)[1]).write_text(
+    def fake_node(args, **kwargs):
+        return SandboxResult(returncode=0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
+
+    def fake_vitest(test_files, *, report_path, **kwargs):
+        Path(report_path).write_text(
             '<testsuites tests="1"><testcase name="private case"/></testsuites>', encoding="utf-8"
         )
-        return CompletedProcess(cmd, 1, stdout="", stderr="private Vitest output")
+        return SandboxResult(returncode=1, stdout="", stderr="private Vitest output")
 
-    monkeypatch.setattr(review_run.subprocess, "run", run_tests)
+    monkeypatch.setattr(review_run, "run_node_isolated", fake_node)
+    monkeypatch.setattr(submit_mod, "run_vitest_isolated", fake_vitest)
     monkeypatch.setattr(review_run, "_lint_lab_src", lambda *_: [])
     monkeypatch.setattr(review_run, "_typecheck_lab", lambda *_: [])
 

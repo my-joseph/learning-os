@@ -603,6 +603,83 @@ async function runReviewRunRouteChecks() {
     assert.equal(tsRevBody.tests.total, 2);
     assert.deepEqual(tsRevBody.lint, []);
     assert.deepEqual(tsRevBody.types, []);
+
+    // C02: /api/run-tests and /api/review-run scrub NOTION_TOKEN and block writes outside the temp sandbox
+    const prevNotionToken = process.env.NOTION_TOKEN;
+    const prevCustomSecret = process.env.ANTHROPIC_API_KEY;
+    const escapeSentinel = path.join(tmpRoot, "studio_escape_sentinel.txt");
+    try {
+      process.env.NOTION_TOKEN = "secret_studio_notion_token";
+      process.env.ANTHROPIC_API_KEY = "secret_studio_anthropic_key";
+
+      const isoRes = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId: tsDrillId,
+            problemId: "Q01",
+            userCode: [
+              'import fs from "node:fs";',
+              "export class BoundedBuffer<T> {",
+              "  private val: T | undefined;",
+              "  enqueue(value: T): void {",
+              "    if (process.env.NOTION_TOKEN || process.env.ANTHROPIC_API_KEY) {",
+              '      throw new Error("SECRET_LEAKED");',
+              "    }",
+              `    try { fs.writeFileSync(${JSON.stringify(escapeSentinel)}, "pwned"); } catch {}`,
+              "    this.val = value;",
+              "  }",
+              "  peek(): T | undefined { return this.val; }",
+              "}",
+            ].join("\n"),
+          }),
+        })
+      );
+      assert.equal(isoRes.status, 200);
+      const isoBody = (await isoRes.json()) as Record<string, unknown>;
+      assert.equal(isoBody.allPassed, true, `Expected scrubbed isolated run to pass, got: ${JSON.stringify(isoBody)}`);
+      assert.equal(fs.existsSync(escapeSentinel), false, "Learner code must not write outside its temp dir");
+
+      // Also verify /api/review-run scrubs NOTION_TOKEN and isolates workspace writes
+      const jsWsFile = path.join(tmpRoot, "drills", "workspace", jsDrillId, "Q01_clampPort.js");
+      fs.writeFileSync(
+        jsWsFile,
+        [
+          'const fs = require("fs");',
+          "function clampPort(port) {",
+          '  if (process.env.NOTION_TOKEN || process.env.ANTHROPIC_API_KEY) throw new Error("SECRET_LEAKED");',
+          '  fs.writeFileSync("ephemeral_review_write.txt", "temp");',
+          `  try { fs.writeFileSync(${JSON.stringify(escapeSentinel)}, "pwned"); } catch {}`,
+          '  return typeof port === "number" ? port : null;',
+          "}",
+          "module.exports = { clampPort };",
+        ].join("\n"),
+        "utf-8"
+      );
+      const isoRevRes = await reviewRunPOST(
+        new NextRequest("http://127.0.0.1:3000/api/review-run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId: jsDrillId, problemId: "Q01" }),
+        })
+      );
+      assert.equal(isoRevRes.status, 200);
+      const isoRevBody = (await isoRevRes.json()) as ReviewRunResult;
+      assert.equal(isoRevBody.tests.passed, 2);
+      assert.equal(isoRevBody.tests.total, 2);
+      assert.equal(fs.existsSync(escapeSentinel), false);
+      assert.equal(
+        fs.existsSync(path.join(tmpRoot, "drills", "workspace", jsDrillId, "ephemeral_review_write.txt")),
+        false,
+        "Relative writes during review_run must not appear in the real drill workspace"
+      );
+    } finally {
+      if (prevNotionToken === undefined) delete process.env.NOTION_TOKEN;
+      else process.env.NOTION_TOKEN = prevNotionToken;
+      if (prevCustomSecret === undefined) delete process.env.ANTHROPIC_API_KEY;
+      else process.env.ANTHROPIC_API_KEY = prevCustomSecret;
+    }
   } finally {
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
