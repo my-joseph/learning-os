@@ -25,6 +25,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from code_engine.workspace import build_react_test_header, resolve_test_imports  # noqa: E402
 from notion_sync.drill_sync import sync_drill_to_notion  # noqa: E402
+from progress_store import cycle_evidence, score_problem  # noqa: E402
 
 # ANSI Terminal Styling
 GREEN = "\033[92m"
@@ -63,7 +64,7 @@ def resolve_workspace(drill_id: str, cwd: Path | None = None) -> tuple[Path, Pat
     return repo_root, workspace
 
 
-def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
+def _parse_junit_xml(raw: str, force_hidden: bool = False, *, require_complete: bool = False) -> list:
     xml_start = raw.find("<?xml")
     if xml_start == -1:
         xml_start = raw.find("<testsuites")
@@ -80,6 +81,18 @@ def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
         root = ET.fromstring(xml_text)
     except Exception:
         return []
+
+    if require_complete:
+        if root.tag not in {"testsuites", "testsuite"} or root.find(".//skipped") is not None:
+            return []
+        for suite in (root, *root.iterfind(".//testsuite")):
+            declared = suite.get("tests")
+            # Node counts immediate child suites as tests; Vitest reports the total number of cases.
+            if declared is not None and declared not in {
+                str(len(suite.findall("testcase")) + len(suite.findall("testsuite"))),
+                str(len(suite.findall(".//testcase"))),
+            }:
+                return []
 
     cases = []
     for tc in root.findall(".//testcase"):
@@ -103,6 +116,14 @@ def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
                 "is_hidden": is_hidden,
             }
         )
+    return cases
+
+
+def _parse_completed_junit_run(raw: str, returncode: int, *, force_hidden: bool) -> list[dict]:
+    """Reject incomplete reports and runner failures that are absent from the test cases."""
+    cases = _parse_junit_xml(raw, force_hidden=force_hidden, require_complete=True)
+    if returncode != 0 and all(case["passed"] for case in cases):
+        return []
     return cases
 
 
@@ -273,6 +294,7 @@ def _run_vitest_junit(
     timeout_sec: float | None = None,
     force_hidden: bool = False,
     env: dict[str, str] | None = None,
+    require_complete: bool = False,
 ) -> list[dict]:
     """Run React component tests with shared Vitest and return the standard JUnit cases."""
     vitest = _REPO_ROOT / "tools" / "lint" / "node_modules" / ".bin" / "vitest"
@@ -327,6 +349,8 @@ def _run_vitest_junit(
                 }
             ]
         raw = report_path.read_text(encoding="utf-8") if report_path.is_file() else ""
+        if require_complete:
+            return _parse_completed_junit_run(raw, proc.returncode, force_hidden=force_hidden)
         cases = _parse_junit_xml(raw, force_hidden=force_hidden)
         if not cases:
             message = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
@@ -380,17 +404,17 @@ def evaluate_and_record_submission(
     cases: list[dict],
     now_iso: str | None = None,
 ) -> dict:
-    """Evaluate testcases per QID, record `lastTestReport`, and compute review-gated sessionSummary.
-
-    A PRG problem counts as passed ONLY when its latest review record in `state.reviews`
-    has `verdict == "pass"`. Tests alone never mark a problem correct.
-    """
-    attempt_date = now_iso or datetime.datetime.now(datetime.timezone.utc).isoformat()
+    """Record tests per QID and compute the session summary from current-cycle scores."""
+    # Use the same timestamp format as terminal review records for evidence ordering.
+    attempt_date = now_iso or datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace(
+        "+00:00", "Z"
+    )
     q_groups = group_cases_by_qid(cases)
     prob_by_id = {str(p.get("id", "")).upper(): p for p in drill_doc.get("problems", []) if p.get("id")}
     all_qids = sorted(set(q_groups.keys()) | set(prob_by_id.keys()))
 
     evaluated_questions = []
+    total_score = 0.0
     total_reviewed_passed = 0
     total_tests_passed = 0
     failing_reasons = []
@@ -410,31 +434,41 @@ def evaluate_and_record_submission(
             any_test_failed = True
             if tcs:
                 first_fail = next(tc for tc in tcs if not tc["passed"])
-                prefix = "[HIDDEN TRAP] " if first_fail.get("is_hidden") else ""
-                failing_reasons.append(f"[{qid}] {prefix}{first_fail['name']}: {first_fail['failure_msg'][:80]}")
+                if first_fail.get("is_hidden"):
+                    failing_reasons.append(f"[{qid}] Hidden checks failed.")
+                else:
+                    failing_reasons.append(f"[{qid}] {first_fail['name']}: {first_fail['failure_msg'][:80]}")
             else:
                 failing_reasons.append(f"[{qid}] No tests executed.")
 
         prob = prob_by_id.get(qid)
-        reviews = ((prob or {}).get("state") or {}).get("reviews") or []
-        latest_review = reviews[-1] if reviews else None
-        review_verdict = latest_review.get("verdict") if isinstance(latest_review, dict) else None
-        review_passed = review_verdict == "pass"
-
+        state = (prob or {}).get("state") or {}
         if prob is not None:
-            state = prob.setdefault("state", {})
-            state["lastTestReport"] = {
-                "allPassed": tests_passed,
-                "visiblePassed": vis_pass,
-                "visibleTotal": len(vis_tcs),
-                "hiddenPassed": hid_pass,
-                "hiddenTotal": len(hid_tcs),
-                "passedCount": vis_pass + hid_pass,
-                "totalCount": len(tcs),
-                "updatedAt": attempt_date,
-            }
+            prob["state"] = state
+        run = {
+            "ts": attempt_date,
+            "allPassed": tests_passed,
+            "passedCount": vis_pass + hid_pass,
+            "totalCount": len(tcs),
+        }
+        state["lastTestReport"] = {
+            **run,
+            "visiblePassed": vis_pass,
+            "visibleTotal": len(vis_tcs),
+            "hiddenPassed": hid_pass,
+            "hiddenTotal": len(hid_tcs),
+        }
+        test_runs = state.get("testRuns")
+        state["testRuns"] = [*test_runs, run] if isinstance(test_runs, list) else [run]
+        state["skipped"] = False
 
-        if review_passed:
+        score = score_problem(state, is_prg=True)["score"]
+        state["score"] = score
+        total_score += score or 0.0
+        current_reviews = cycle_evidence(state)["reviews"]
+        review_verdict = current_reviews[-1]["verdict"] if current_reviews else None
+        passed = tests_passed and score in (0.5, 1.0)
+        if passed:
             total_reviewed_passed += 1
         elif tests_passed:
             failing_reasons.append(f"[{qid}] Tests passed; awaiting passing code review (scripts.review_record).")
@@ -442,7 +476,7 @@ def evaluate_and_record_submission(
         evaluated_questions.append(
             {
                 "qid": qid,
-                "passed": review_passed,
+                "passed": passed,
                 "tests_passed": tests_passed,
                 "review_verdict": review_verdict,
                 "vis_pass": vis_pass,
@@ -456,7 +490,7 @@ def evaluate_and_record_submission(
     max_score = len(evaluated_questions)
     all_green = total_reviewed_passed == max_score and max_score > 0
     practice_status = "Graded" if all_green else "Needs Retry"
-    pct = round((total_reviewed_passed / max_score * 100), 1) if max_score > 0 else 0.0
+    pct = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
     if any_test_failed:
         mistake_cats = ["Assertion Failure / Unhandled Edge Case"]
@@ -466,19 +500,20 @@ def evaluate_and_record_submission(
         mistake_cats = []
 
     drill_doc["sessionSummary"] = {
-        "score": total_reviewed_passed,
+        "score": total_score,
         "maxScore": max_score,
         "accuracyPct": pct,
         "practiceStatus": practice_status,
         "mistakeCategories": mistake_cats,
         "divergedStepsSummary": " | ".join(failing_reasons)
         if failing_reasons
-        else "All question test suites and code reviews passed 100% verified.",
+        else "All question test suites and code reviews passed.",
         "attemptDate": attempt_date,
     }
 
     return {
         "evaluated_questions": evaluated_questions,
+        "score": total_score,
         "total_reviewed_passed": total_reviewed_passed,
         "total_tests_passed": total_tests_passed,
         "max_score": max_score,
@@ -527,7 +562,7 @@ def main(argv: list[str] | None = None):
 
     summary_res = evaluate_and_record_submission(drill_doc, cases)
     evaluated_questions = summary_res["evaluated_questions"]
-    total_reviewed_passed = summary_res["total_reviewed_passed"]
+    score = summary_res["score"]
     total_tests_passed = summary_res["total_tests_passed"]
     max_score = summary_res["max_score"]
     pct = summary_res["pct"]
@@ -553,10 +588,8 @@ def main(argv: list[str] | None = None):
 
     print(f"\n{BOLD}-------------------------------------------------------------------------{RESET}")
     print(f"  {BOLD}TESTS:{RESET}  {total_tests_passed} / {max_score} Questions Passing Tests")
-    score_col = GREEN if all_green else YELLOW if total_reviewed_passed > 0 else RED
-    print(
-        f"  {BOLD}SCORE:{RESET}  {score_col}{total_reviewed_passed} / {max_score} Questions Passed Review ({pct}%){RESET}"
-    )
+    score_col = GREEN if all_green else YELLOW if score > 0 else RED
+    print(f"  {BOLD}SCORE:{RESET}  {score_col}{score:g} / {max_score} ({pct}%){RESET}")
     status_label = f"{GREEN}GRADED (PASSED){RESET}" if all_green else f"{RED}NEEDS RETRY{RESET}"
     print(f"  {BOLD}STATUS:{RESET} {status_label}")
     print(f"{BOLD}-------------------------------------------------------------------------{RESET}\n")

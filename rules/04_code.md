@@ -29,6 +29,7 @@ To maintain the 100% Local IDE Execution mandate without breaking IDE context, a
 Programming work is evaluated in three layers:
 1. **Layer 1 — Automated Tests (Functional Correctness):**
    - **Scope:** Smoke tests, input/output validation, acceptance criteria verification, and regression prevention.
+   - **Lab review:** The milestone's visible and hidden suites must each produce a complete passing report. A missing suite, incomplete report, or test runner crash blocks a pass.
    - **Anti-Trap Invariant:** Scripts must **never** be over-assertive or attempt to rigidly assert internal class names, private members, or AST structures. Scripts verify *what the software does*, not *the exact internal code phrasing*. This prevents AI generators from retreating into trivial toy LeetCode problems.
 2. **Layer 2 — Lint and Types:** ESLint and `tsc` check style, static correctness, and supported TypeScript configurations via `code_engine/lint_check.py` and `tools/lint/`.
 3. **Layer 3 — Rubric Review:** `qualityChecks` evaluates architecture and code craft that tests cannot observe. Use `code_engine/quality_checks.py`, `code_engine/review_run.py`, and `scripts/review_record.py` for rubric-bound review and recording.
@@ -139,7 +140,7 @@ The Concept Vault registry uses `CON-*` keys in `id_map.json`. Current authoring
   1. **Drill Overview & Focus:** Core learning objectives, primary skills drilled, and critical invariant failure modes to avoid.
   2. **Question Inventory & Breakdown:** Exact count and listing of all problems, hints, diagrams, and full vertical step-by-step solutions (in expandable toggle blocks).
   3. **Curriculum Cross-References:** Native `@Page` mentions linking to parent Units and Chapters. Add registered Concept Vault mentions only where the applicable workflow requires them.
-- **Subsequent Result Sync:** The user will practice locally or in Practice Studio. Only upon completion does the user or submit runner sync the live `Score`, `Mistake Categories`, and error telemetry to update the existing page record.
+- **Subsequent Result Sync:** The user will practice locally or in Practice Studio. The drill's `npm run submit` records timestamped test evidence and uses the canonical current-cycle scorer for the terminal and Notion summaries. A drill is Graded when every question has passing tests and a passing review in the current cycle, including assisted passes worth 0.5.
 
 ### 7. Strict Zero-Leak Placeholder & Hint Policy for Programming Drills
 - **Anti-Spoiler Guardrail for Web Drills:** For `predict-output`, `code-tracing`, and conceptual triage questions rendered in Practice Studio:

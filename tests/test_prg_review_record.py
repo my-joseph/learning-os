@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 from pathlib import Path
+from subprocess import CompletedProcess
 
 import pytest
 
@@ -190,6 +191,99 @@ def test_review_run_and_record_mask_hidden_tests_in_drill_and_lab(tmp_path, monk
     lab_prog_text = (Path(os.environ["PROGRESS_DIR"]) / "LAB-PRG-T01-C01-99.json").read_text(encoding="utf-8")
     for secret_name in ("rejects overspend when budget is zero", "allows exact zero remaining", "HIDDEN"):
         assert secret_name not in lab_prog_text
+
+
+@pytest.mark.parametrize(
+    ("suite", "returncode", "report", "expected_verdict"),
+    [
+        ("hidden", 1, "", "revise"),
+        ("hidden", 0, "<testsuites><testcase", "revise"),
+        ("hidden", 0, "<testsuites/>", "revise"),
+        ("hidden", 0, '<testsuites tests="2"><testcase name="private case"/></testsuites>', "revise"),
+        ("hidden", 1, '<testsuites><testcase name="private case"/></testsuites>', "revise"),
+        ("hidden", 0, '<testsuites><testcase name="private case"/></testsuites>', "pass"),
+        ("hidden", 0, None, "revise"),
+        ("other milestone", 0, None, "revise"),
+        ("visible", 0, None, "revise"),
+    ],
+    ids=[
+        "crash",
+        "malformed",
+        "empty",
+        "partial",
+        "nonzero-with-report",
+        "valid",
+        "no-hidden",
+        "other-milestone",
+        "no-visible",
+    ],
+)
+def test_lab_review_requires_complete_reports_from_both_suites(
+    suite, returncode, report, expected_verdict, tmp_path, monkeypatch
+):
+    from tests.test_new_project_lab import _make_fixture_lab
+
+    lab_dir, ref_dir, _ = _make_fixture_lab(tmp_path)
+    missing_suite = "hidden" if suite == "other milestone" else suite
+    if report is None:
+        test_dir = ref_dir / "hidden" if missing_suite == "hidden" else lab_dir / "tests"
+        expected_file = test_dir / "m1_budget.test.ts"
+        if suite == "other milestone":
+            expected_file.rename(test_dir / "m2_budget.test.ts")
+        else:
+            expected_file.unlink()
+    calls = []
+
+    def run_node(cmd, *, cwd, **kwargs):
+        assert cmd[0] == "node"
+        called_suite = "hidden" if Path(cwd) == ref_dir / "hidden" else "visible"
+        calls.append(called_suite)
+        if called_suite == suite:
+            assert report is not None
+            return CompletedProcess(cmd, returncode, stdout=report, stderr="private runner output")
+        return CompletedProcess(cmd, 0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
+
+    monkeypatch.setattr(review_run.subprocess, "run", run_node)
+    monkeypatch.setattr(review_run, "_lint_lab_src", lambda *_: [])
+    monkeypatch.setattr(review_run, "_typecheck_lab", lambda *_: [])
+
+    result = review_run.run_review(lab_dir.name, "M1", labs_root=lab_dir.parent)
+
+    assert calls == [name for name in ("visible", "hidden") if name != missing_suite or report is not None]
+    assert review_record.compute_verdict(result["tests"], [], [], []) == expected_verdict
+    if missing_suite == "hidden" and expected_verdict == "revise":
+        assert result["tests"]["failed"] == ["1 hidden check failed"]
+    if expected_verdict == "pass":
+        assert result["tests"] == {"passed": 2, "total": 2, "failed": []}
+    assert "private" not in json.dumps(result)
+
+
+def test_lab_review_requires_complete_vitest_report(tmp_path, monkeypatch):
+    from tests.test_new_project_lab import _make_fixture_lab
+
+    _require_node_and_lint()
+    lab_dir, ref_dir, _ = _make_fixture_lab(tmp_path)
+    hidden_test = ref_dir / "hidden" / "m1_budget.test.ts"
+    hidden_test.rename(hidden_test.with_suffix(".tsx"))
+
+    def run_tests(cmd, **kwargs):
+        if cmd[0] == "node":
+            return CompletedProcess(cmd, 0, stdout='<testsuites><testcase name="check"/></testsuites>', stderr="")
+        assert Path(cmd[0]).name == "vitest"
+        report_arg = next(arg for arg in cmd if arg.startswith("--outputFile="))
+        Path(report_arg.split("=", 1)[1]).write_text(
+            '<testsuites tests="1"><testcase name="private case"/></testsuites>', encoding="utf-8"
+        )
+        return CompletedProcess(cmd, 1, stdout="", stderr="private Vitest output")
+
+    monkeypatch.setattr(review_run.subprocess, "run", run_tests)
+    monkeypatch.setattr(review_run, "_lint_lab_src", lambda *_: [])
+    monkeypatch.setattr(review_run, "_typecheck_lab", lambda *_: [])
+
+    result = review_run.run_review(lab_dir.name, "M1", labs_root=lab_dir.parent)
+
+    assert result["tests"] == {"passed": 1, "total": 2, "failed": ["1 hidden check failed"]}
+    assert "private" not in json.dumps(result)
 
 
 def test_review_run_degrades_gracefully_without_lint_tools(tmp_path, monkeypatch):
