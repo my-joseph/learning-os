@@ -33,7 +33,7 @@ export function buildPrgPythonEnv(
   pythonPath: string,
   options: { includeWorkspaceHints?: boolean } = {}
 ): NodeJS.ProcessEnv {
-  const clean: NodeJS.ProcessEnv = {
+  const clean: Record<string, string> = {
     LEARNINGOS_ROOT: rootDir,
     PYTHONPATH: pythonPath,
   };
@@ -54,7 +54,7 @@ export function buildPrgPythonEnv(
     }
   }
 
-  return clean;
+  return clean as NodeJS.ProcessEnv;
 }
 
 /**
