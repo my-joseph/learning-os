@@ -921,7 +921,7 @@ export const DailyReviewPage: React.FC = () => {
   const updateCurrentProblem = useCallback(
     (
       updater: (prob: Problem) => Problem,
-      options?: { autoSave?: boolean }
+      saveField?: "divergedStep" | "mistakeNote" | "revisitNote"
     ) => {
       if (!currentKey || !currentItem) return;
       setDrillsByKey((prev) => {
@@ -931,14 +931,17 @@ export const DailyReviewPage: React.FC = () => {
           p.id === currentItem.qid ? updater(p) : p
         );
         const updatedDoc: DrillDocument = { ...doc, problems: updatedProblems };
-        if (options?.autoSave) {
+        if (saveField) {
           const updatedProb = updatedProblems.find((p) => p.id === currentItem.qid);
           if (updatedProb) {
             void saveReviewProblemState(
               doc.drillId,
               currentItem.unitCode || doc.unitCode,
               currentItem.qid,
-              updatedProb.state
+              {
+                cycleStartedAt: updatedProb.state.cycleStartedAt,
+                [saveField]: updatedProb.state[saveField],
+              }
             );
           }
         }
@@ -1189,11 +1192,14 @@ export const DailyReviewPage: React.FC = () => {
 
   const handleResetProblem = useCallback(async () => {
     if (!currentDrill || !currentItem || !currentKey) return;
-    const started = sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "reset" })
+    const started = sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "reset-review" })
       .then((result) => result?.cycleStartedAt ?? null);
     reviewCycles.current.set(currentKey, started);
     const cycle = await started;
-    if (!cycle) return;
+    if (!cycle) {
+      if (reviewCycles.current.get(currentKey) === started) reviewCycles.current.delete(currentKey);
+      return;
+    }
     const now = Date.parse(cycle);
     const transition = computeResetProblemTransition(
       currentDrill,
@@ -1217,7 +1223,7 @@ export const DailyReviewPage: React.FC = () => {
             revisitNote: note.trim(),
           },
         }),
-        { autoSave: true }
+        "revisitNote"
       );
     },
     [currentKey, updateCurrentProblem]
@@ -1317,7 +1323,7 @@ export const DailyReviewPage: React.FC = () => {
       onMarkDivergedStep={(stepIdx) =>
         updateCurrentProblem(
           (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }),
-          { autoSave: true }
+          "divergedStep"
         )
       }
       onSetScore={(score) => {
@@ -1325,8 +1331,7 @@ export const DailyReviewPage: React.FC = () => {
         void sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "self-score", score },
           currentProblem.state.cycleStartedAt ?? null);
         updateCurrentProblem(
-          (p) => ({ ...p, state: applySelfScore(p.state, score) }),
-          { autoSave: true }
+          (p) => ({ ...p, state: applySelfScore(p.state, score) })
         );
       }}
       onToggleMistakeTag={(tagId) => {
@@ -1346,7 +1351,7 @@ export const DailyReviewPage: React.FC = () => {
       onMistakeNoteChange={(note) =>
         updateCurrentProblem(
           (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }),
-          { autoSave: true }
+          "mistakeNote"
         )
       }
       onRevisitNoteChange={handleRevisitNoteChange}

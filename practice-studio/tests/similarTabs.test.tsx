@@ -39,7 +39,6 @@ import { rowReason } from "../src/lib/reviewRow";
 import {
   executeReviewItemCheck,
   prepareProblemForReviewItem,
-  startReviewItemCycle,
 } from "../src/lib/reviewSession";
 import { createTelemetryTimerState } from "../src/lib/telemetryTimer";
 import { statusTone } from "../src/lib/statusTone";
@@ -1305,7 +1304,7 @@ async function testReviewCycleIsolation() {
       1
     );
 
-    // 7a. Start a new /review cycle: load /api/drill?review=1, prepare item, and post start-cycle.
+    // 7a. Start a new /review cycle: load /api/drill?review=1, prepare item, and start a server review cycle.
     const reviewDrillRes = await drillGET(
       new NextRequest(`http://127.0.0.1:3000/api/drill?id=${drillId}&review=1`)
     );
@@ -1366,13 +1365,11 @@ async function testReviewCycleIsolation() {
       throw new Error(`Unexpected fetch: ${method} ${urlStr}`);
     }) as typeof fetch;
 
-    const cycleStartedOk = await startReviewItemCycle(
-      drillId,
-      "Q01",
-      preparedQ1.state.cycleStartedAt!,
-      customFetch
-    );
-    assert.equal(cycleStartedOk, true, "start-cycle must succeed");
+    const startReview = await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+      method: "POST",
+      body: JSON.stringify({ drillId, qid: "Q01", action: "start-review" }),
+    }));
+    assert.equal(startReview.status, 200);
 
     // Before the new review attempt: cycleStartedAt is persisted on disk, strip is hidden, mode=list locked.
     const stateBeforeReviewAttempt = readProgress(drillId)?.problems?.Q01 as ProblemState;

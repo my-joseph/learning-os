@@ -210,33 +210,6 @@ export function prepareProblemForReviewItem(
 }
 
 /**
- * Stamp `cycleStartedAt` on the server when a Daily Review item starts a new cycle,
- * so `mode=list` and variant gates immediately isolate prior-cycle attempts.
- */
-export async function startReviewItemCycle(
-  drillId: string,
-  qid: string,
-  cycleStartedAt: string,
-  fetchFn: typeof fetch = fetch
-): Promise<boolean> {
-  try {
-    const res = await fetchFn("/api/variant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        drillId,
-        qid,
-        action: "start-cycle",
-        cycleStartedAt,
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Pure summary calculation for the Daily Review end screen:
  * counts correct / total, items moved up / down a level, and earliest upcoming next due date.
  */
@@ -297,7 +270,7 @@ export async function saveReviewProblemState(
   drillId: string,
   unitCode: string,
   qid: string,
-  state: ProblemState,
+  state: Partial<Pick<ProblemState, "cycleStartedAt" | "mistakeNote" | "revisitNote" | "divergedStep">>,
   fetchFn: typeof fetch = fetch
 ): Promise<boolean> {
   try {
@@ -312,7 +285,7 @@ export async function saveReviewProblemState(
           id: qid,
           state: {
             cycleStartedAt: state.cycleStartedAt,
-            ...(state.mistakeNote?.trim() ? { mistakeNote: state.mistakeNote } : {}),
+            mistakeNote: state.mistakeNote,
             revisitNote: state.revisitNote,
             divergedStep: state.divergedStep,
           },

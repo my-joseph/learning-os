@@ -12,7 +12,7 @@ import {
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
 import { isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
-import type { AttemptRecord, ProblemState } from "@/types/drill";
+import type { ProblemState } from "@/types/drill";
 
 /**
  * Per-item review schedule (mirrors `scripts/review_items.py`):
@@ -426,22 +426,13 @@ function cleanRevisitNote(raw: unknown): string | null {
   return null;
 }
 
-function cycleStartedAfterEvidence(state: Record<string, unknown>, evidenceDate: string): boolean {
-  const cycle = typeof state.cycleStartedAt === "string" ? state.cycleStartedAt : "";
-  if (!cycle) return false;
-  const evidenceTimes: string[] = [];
-  for (const [field, timestampField] of [["attempts", "ts"], ["reviews", "at"]] as const) {
-    const records = Array.isArray(state[field]) ? (state[field] as Array<Record<string, unknown>>) : [];
-    for (const record of records) {
-      if (field === "attempts" && record?.kind === "variant") continue;
-      const timestamp = record?.[timestampField];
-      if (typeof timestamp === "string" && timestamp) evidenceTimes.push(timestamp);
-    }
-  }
-  const cycleMs = Date.parse(cycle);
-  const evidenceMs = evidenceTimes.map(Date.parse).filter(Number.isFinite);
-  if (Number.isFinite(cycleMs) && evidenceMs.length > 0) return cycleMs > Math.max(...evidenceMs);
-  return normalizeReviewDate(cycle) > evidenceDate;
+function priorReviewEvidence(state: Partial<ProblemState>, cycle: string) {
+  return {
+    attempts: (Array.isArray(state.attempts) ? state.attempts : [])
+      .filter((attempt) => attempt && !isTimestampInCycle(attempt.ts, cycle)),
+    reviews: (Array.isArray(state.reviews) ? state.reviews : [])
+      .filter((review) => review && !isTimestampInCycle(review.at || review.ts, cycle)),
+  };
 }
 
 /**
@@ -1169,12 +1160,18 @@ function loadProgressContext(options?: ReviewStoreOptions): {
       if (!state || typeof state !== "object") return;
       statesByKey.set(reviewItemKey(drillId, qid), state);
       const revisitNote = cleanRevisitNote(state.revisitNote);
+      const practiceState = state as Partial<ProblemState>;
+      const scoringOptions = { isPrg: drill.subject === "PRG" };
+      let scored = scoreProblem(practiceState, scoringOptions);
+      // Resetting practice leaves the prior evidence available for the review schedule.
+      if (scored.score === null && practiceState.cycleStartedAt) {
+        scored = scoreProblem(priorReviewEvidence(practiceState, practiceState.cycleStartedAt), scoringOptions);
+      }
+      if (scored.score === null) return;
+      const score = scored.score;
+      const assisted = scored.usedHelp;
 
       if (drill.subject === "PRG") {
-        const prgResult = scoreProblem(state as Partial<ProblemState>, { isPrg: true });
-        if (prgResult.score === null) return;
-        const score = prgResult.score;
-        const assisted = prgResult.usedHelp;
         const reviews = Array.isArray(state.reviews)
           ? (state.reviews as Array<Record<string, unknown>>)
           : [];
@@ -1196,7 +1193,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           archetypeKey: probMeta.archetypeKey,
           ts: firstAttemptTs(state, fallbackTs),
           score,
-          skipped: prgResult.outcome === "skipped",
+          skipped: scored.outcome === "skipped",
           assisted,
           passed:
             (reviews.length > 0 && reviews[reviews.length - 1]?.verdict === "pass") ||
@@ -1209,10 +1206,6 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           state,
         });
       } else {
-        const mathResult = scoreProblem(state as Partial<ProblemState>);
-        if (mathResult.score === null) return;
-        const score = mathResult.score;
-        const assisted = mathResult.usedHelp;
         const matched = collectMatchedTraps(state);
         loaded.push({
           drillId,
@@ -1224,7 +1217,7 @@ function loadProgressContext(options?: ReviewStoreOptions): {
           archetypeKey: probMeta.archetypeKey,
           ts: firstAttemptTs(state, fallbackTs),
           score,
-          skipped: mathResult.outcome === "skipped",
+          skipped: scored.outcome === "skipped",
           assisted,
           passed: score === 1.0,
           matched,
@@ -1248,8 +1241,13 @@ function buildScheduleFromLoaded(
   const schedule: Record<string, ReviewItem> = {};
   for (const item of loaded) {
     if (!item.drillId || !item.qid) continue;
-    let events = extractReviewEvents(item.state);
+    const state = item.state as Partial<ProblemState>;
+    // Daily Review writes the current result through completion. Replay the earlier
+    // evidence here so an unfinished cycle cannot reschedule itself.
+    const reviewCycle = state.reviewBaseLevel !== undefined ? state.cycleStartedAt : null;
+    let events = extractReviewEvents(reviewCycle ? priorReviewEvidence(state, reviewCycle) : item.state);
     if (events.length === 0) {
+      if (reviewCycle) continue;
       events = [
         {
           date: normalizeReviewDate(item.ts),
@@ -1260,7 +1258,6 @@ function buildScheduleFromLoaded(
     }
     const replayed = replayReviewEvents(events);
     if (!replayed) continue;
-    if (cycleStartedAfterEvidence(item.state, replayed.lastReviewed)) continue;
 
     const trapTag =
       item.trap ||
@@ -1380,8 +1377,9 @@ function mergeSavedSchedule(
   for (const [key, savedEntry] of Object.entries(saved)) {
     const metadata = drills?.get(savedEntry.drillId);
     if (drills && (!metadata || !metadata.problems.has(savedEntry.qid))) continue;
-    if (cycleStartedAfterEvidence(stateByKey.get(key) || {}, savedEntry.lastReviewed)) continue;
     const entry: ReviewItem = { ...savedEntry };
+    const state = stateByKey.get(key);
+    if (state && "revisitNote" in state) entry.revisitNote = cleanRevisitNote(state.revisitNote);
     const bf = backfilled[key];
     if (bf && (bf.lastReviewed || "") > (entry.lastReviewed || "")) {
       // A newer attempt in a normal drill session wins over an older saved review result.
@@ -1641,29 +1639,26 @@ export function completeReviewItem(
   const saved = loadSavedReviewItems(progressDir);
   const previous = saved[key];
   if (previous?.completedCycle === cycle) return previous;
-  const priorAttempts = state.attempts.filter((attempt: AttemptRecord) =>
-    !isTimestampInCycle(attempt.ts, cycle)
-  );
-  const priorReviews = (state.reviews || []).filter((review) =>
-    !isTimestampInCycle(review.at, cycle)
-  );
-  const prior = replayReviewEvents(extractReviewEvents({
-    attempts: priorAttempts,
-    reviews: priorReviews,
-  }));
+  const prior = replayReviewEvents(extractReviewEvents(priorReviewEvidence(state, cycle)));
   const existing = previous && (!prior || previous.lastReviewed >= prior.lastReviewed)
     ? previous
     : prior;
-  const step = stepReviewSchedule(state.reviewBaseLevel ?? existing?.level ?? MIN_REVIEW_LEVEL, {
-    correct: event.verdict === "correct",
-    hintsUsed: event.hintsUsed,
-    date: normalizeReviewDate(event.ts),
-  });
+  const eventDate = normalizeReviewDate(event.ts);
+  const correct = event.verdict === "correct";
+  const sameDay = existing?.lastReviewed === eventDate;
+  const step = sameDay
+    ? existing
+    : stepReviewSchedule(state.reviewBaseLevel ?? existing?.level ?? MIN_REVIEW_LEVEL, {
+        correct,
+        hintsUsed: event.hintsUsed,
+        date: eventDate,
+      });
   const updated = redactReviewItem({
     drillId, qid,
     ...lookupProblemMetadata(drillId, qid, { ...options, progressDir }),
     ...step,
-    lastWrong: event.verdict !== "correct",
+    revisitNote: cleanRevisitNote(state.revisitNote),
+    lastWrong: sameDay ? existing.lastWrong : !correct,
     completedCycle: cycle,
   });
   saved[key] = updated;

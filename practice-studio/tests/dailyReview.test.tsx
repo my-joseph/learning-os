@@ -1018,7 +1018,7 @@ async function runTests() {
       unitCode,
       "Q01",
       {
-        ...checkedQ1.state,
+        cycleStartedAt: checkedQ1.state.cycleStartedAt,
         revisitNote: "Invert the divisor immediately and simplify.",
       },
       customFetch

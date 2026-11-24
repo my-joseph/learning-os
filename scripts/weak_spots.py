@@ -145,10 +145,25 @@ def _load_prg_vault_meta() -> tuple[dict[str, str], dict[str, int], dict[str, se
     return unit_of, level_of, arch_checks, sentences
 
 
+def prior_review_evidence(state: dict, cycle: str) -> dict:
+    """Keep historical attempts and reviews without current-cycle summary fields."""
+    return {
+        field: [
+            record
+            for record in (state.get(field) or [])
+            if isinstance(record, dict)
+            and (not isinstance(recorded_at := record.get(timestamp) or record.get("ts"), str) or recorded_at < cycle)
+        ]
+        for field, timestamp in (("attempts", "ts"), ("reviews", "at"))
+    }
+
+
 def load_items(
     data_root: str | None = None,
     progress_dir: str | None = None,
     labs_root: str | None = None,
+    *,
+    for_review_schedule: bool = False,
 ) -> list[Item]:
     repo_root = find_repo_root()
     data_root = data_root or os.environ.get("DRILLS_DATA_DIR", os.path.join(repo_root, "drills", "data"))
@@ -221,12 +236,15 @@ def load_items(
             arch_key = prob.get("archetypeKey") or prob.get("templateKey")
             raw_note = state.get("revisitNote")
             revisit_note = raw_note.strip() if isinstance(raw_note, str) and raw_note.strip() else None
+            scored = score_problem(state, is_prg=is_prg)
+            cycle = state.get("cycleStartedAt")
+            if scored["score"] is None and for_review_schedule and isinstance(cycle, str) and cycle:
+                scored = score_problem(prior_review_evidence(state, cycle), is_prg=is_prg)
+            if scored["score"] is None:
+                continue
+            score = float(scored["score"])
+            assisted = bool(scored["usedHelp"])
             if is_prg:
-                scored = score_problem(state, is_prg=True)
-                if scored["score"] is None:
-                    continue
-                score = float(scored["score"])
-                assisted = bool(scored["usedHelp"])
                 reviews = state.get("reviews") or []
                 sigs: list[str] = []
                 for r in reviews:
@@ -268,11 +286,6 @@ def load_items(
                     )
                 )
             else:
-                scored = score_problem(state)
-                if scored["score"] is None:
-                    continue
-                score = float(scored["score"])
-                assisted = bool(scored["usedHelp"])
                 fallback_unit = unit_of.get(arch_key) or doc.get("unitCode", "")
                 prob_units = problem_unit_codes(
                     prob,

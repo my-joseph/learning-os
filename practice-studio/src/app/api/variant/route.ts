@@ -6,9 +6,7 @@ import {
   markVariantServed,
   readProgress,
   registerServedVariant,
-  resetVariantProgress,
   resolveVariantToken,
-  startProblemCycle,
   updateVariantSession,
 } from "@/lib/progress";
 import {
@@ -316,9 +314,6 @@ const ALLOWED_ACTIONS = new Set([
   "reveal-steps",
   "reset",
   "duration",
-  "start-cycle",
-  "reset-question",
-  "reset-all",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -336,38 +331,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (action === "start-cycle") {
-      if (!qid || !isSafeId(qid)) {
-        return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
-      }
-      const loaded = loadProblemFromDisk(drillId, qid);
-      if (!loaded) {
-        return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
-      }
-      const { cycleStartedAt } = startProblemCycle(
-        drillId,
-        typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
-        qid
-      );
-      return NextResponse.json({ ok: true, cycleStartedAt });
-    }
-    if (action === "reset-question" || action === "reset-all") {
-      const targetQid = typeof body.qid === "string" ? body.qid.trim() : undefined;
-      if (action === "reset-question" && (!targetQid || !isSafeId(targetQid))) {
-        return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
-      }
-      const loaded = targetQid ? loadProblemFromDisk(drillId, targetQid) : null;
-      if (targetQid && !loaded) {
-        return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
-      }
-      resetVariantProgress(
-        drillId,
-        loaded && typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
-        action === "reset-question" ? targetQid : undefined
-      );
-      return NextResponse.json({ ok: true });
-    }
-
     if (!isSafeId(qid) || !isSafeId(variantToken)) {
       return NextResponse.json(
         { ok: false, error: "Invalid drillId, qid, or variantToken" },

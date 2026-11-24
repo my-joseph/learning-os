@@ -1,7 +1,7 @@
 /**
  * Tests for Similar Questions v2 server-side sessions (`/api/variant` modes `list`/`open`/`example`,
  * `/api/check-answer` with opaque slot token, `/api/reveal` with opaque slot token, `/api/drill`
- * redaction + `hasVariants`, `action: "duration"`, resets clearing new fields, lazy v1 migration,
+ * redaction + `hasVariants`, `action: "duration"`, lazy v1 migration,
  * zero-leak invariants, and review-schedule isolation at level >= 2).
  * Run: npx tsx tests/variantBank.test.tsx
  */
@@ -805,65 +805,7 @@ async function runTests() {
       assert.ok(!html0.includes("See a worked example"));
     }
 
-    // -----------------------------------------------------------------------
-    // 8. Question and drill resets clear similarSlots, cycleStartedAt, variants, exampleViewedAt
-    // -----------------------------------------------------------------------
-    {
-      // Stamp cycleStartedAt on Q01 so we can verify reset clears it too.
-      writeProgress({
-        drillId: "DRL-MTH-T01-C04-99",
-        unitCode: "MTH-T01-C04",
-        reviewMerge: true,
-        problems: [
-          {
-            id: "Q01",
-            state: {
-              userInput: "",
-              score: null,
-              divergedStep: null,
-              mistakes: [],
-              cycleStartedAt: "2026-11-20T00:00:00Z",
-            },
-          },
-        ],
-      });
-
-      const resetQuestion = await variantPOST(
-        new NextRequest("http://127.0.0.1:3000/api/variant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            drillId: "DRL-MTH-T01-C04-99",
-            qid: "Q01",
-            action: "reset-question",
-          }),
-        })
-      );
-      assert.equal(resetQuestion.status, 200);
-      let resetState = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q01 as Problem["state"];
-      assert.equal(resetState.similarSlots, undefined);
-      assert.equal(resetState.cycleStartedAt, undefined);
-      assert.equal(resetState.exampleViewedAt, undefined);
-      assert.equal(resetState.variants, undefined);
-      assert.equal(resetState.variantsSeen, undefined);
-      assert.equal(resetState.variantsAttempted, undefined);
-
-      const resetAll = await variantPOST(
-        new NextRequest("http://127.0.0.1:3000/api/variant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ drillId: "DRL-MTH-T01-C04-99", action: "reset-all" }),
-        })
-      );
-      assert.equal(resetAll.status, 200);
-      resetState = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q03 as Problem["state"];
-      assert.equal(resetState.similarSlots, undefined);
-      assert.equal(resetState.cycleStartedAt, undefined);
-      assert.equal(resetState.exampleViewedAt, undefined);
-      assert.equal(resetState.variants, undefined);
-    }
-
-    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation, resets)");
+    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation)");
   } finally {
     if (prevDrills === undefined) delete process.env.DRILLS_DATA_DIR;
     else process.env.DRILLS_DATA_DIR = prevDrills;

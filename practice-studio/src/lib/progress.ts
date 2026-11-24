@@ -403,6 +403,8 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
     if (p.state) {
       const incoming = p.state as Record<string, unknown>;
       let st: Record<string, unknown>;
+      const incomingCycle = maxIsoTimestamp(incoming.cycleStartedAt, null);
+      const prevCycle = maxIsoTimestamp(prev?.cycleStartedAt, null);
 
       if (doc.reviewMerge && prev) {
         // Daily Review merge: start from the original persisted state and ONLY append
@@ -474,14 +476,6 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       } else {
         st = { ...incoming };
 
-        const incomingCycle =
-          typeof incoming.cycleStartedAt === "string" && incoming.cycleStartedAt.trim()
-            ? incoming.cycleStartedAt.trim()
-            : null;
-        const prevCycle =
-          typeof prev?.cycleStartedAt === "string" && prev.cycleStartedAt.trim()
-            ? prev.cycleStartedAt.trim()
-            : null;
         const isNewCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
         const isSameCycle = Boolean(incomingCycle && prevCycle && incomingCycle === prevCycle);
         if (isNewCycle || isSameCycle) {
@@ -591,6 +585,14 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       if (maxCycle) {
         st.cycleStartedAt = maxCycle;
       }
+      if (maxCycle === prevCycle && prev && "reviewBaseLevel" in prev) {
+        st.reviewBaseLevel = prev.reviewBaseLevel;
+      } else if (maxCycle !== incomingCycle) {
+        delete st.reviewBaseLevel;
+      } else if (doc.reviewMerge) {
+        if ("reviewBaseLevel" in incoming) st.reviewBaseLevel = incoming.reviewBaseLevel;
+        else delete st.reviewBaseLevel;
+      }
 
       const derived = deriveVariantLists(
         st.variants as Record<string, VariantSessionRecord> | undefined,
@@ -648,7 +650,7 @@ export function writeLearnerProgress(canonical: DocLike, incoming: DocLike): str
     const draft = input as Record<string, unknown>;
     const sameCycle = (previous?.cycleStartedAt ?? null) === (draft.cycleStartedAt ?? null);
     for (const field of ["mistakeNote", "revisitNote"] as const) {
-      if (typeof draft[field] === "string" && (sameCycle || draft[field].trim())) {
+      if (typeof draft[field] === "string") {
         state[field] = draft[field];
       }
     }
@@ -1152,37 +1154,4 @@ export function updateVariantSession(
     updatedRecord = nextRec;
   });
   return { record: updatedRecord, state };
-}
-
-/** Clear server-owned variant UI state for one or every problem in a drill. */
-export function resetVariantProgress(
-  drillId: string,
-  unitCode: string | undefined,
-  qid?: string
-): void {
-  if (!isSafeId(drillId) || (qid !== undefined && !isSafeId(qid))) {
-    throw new Error("Invalid drillId or qid");
-  }
-  const existing = readProgress(drillId);
-  if (!existing) return;
-  const problems = { ...(existing.problems || {}) } as Record<string, Record<string, unknown>>;
-  const ids = qid ? [qid] : Object.keys(problems);
-  for (const id of ids) {
-    const state = { ...(problems[id] || {}) };
-    delete state.variants;
-    delete state.similarSlots;
-    delete state.activeVariant;
-    delete state.exampleViewedAt;
-    delete state.cycleStartedAt;
-    delete state.variantsSeen;
-    delete state.variantsAttempted;
-    problems[id] = state;
-  }
-  const file = progressFile(drillId);
-  writeJsonAtomic(file, {
-    ...existing,
-    unitCode: unitCode || existing.unitCode,
-    updatedAt: new Date().toISOString(),
-    problems,
-  });
 }

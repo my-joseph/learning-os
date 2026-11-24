@@ -4,7 +4,7 @@ import { labToDrillDocument } from "@/lib/labModel";
 import { loadLabDetailFromDisk } from "@/lib/labs";
 import { loadDrillFromDisk } from "@/lib/paths";
 import { mutateProblemState, mutateProblemStates, readProgress } from "@/lib/progress";
-import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { hasSubstantiveAttempt, isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { isLabId } from "@/lib/routes";
 import { MAX_ATTEMPT_DURATION_MS } from "@/lib/telemetryTimer";
@@ -58,7 +58,10 @@ export function recordOriginalCheck(
     if (attempt && next.attempts !== state.attempts && isSubstantiveVerdict(attempt.verdict)) {
       const eventId = randomUUID();
       attempt.eventId = eventId;
-      attempt.hintsUsed = Boolean(state.hintsRevealed || attempt.setupRevealed ||
+      const hintUsed = cycle
+        ? isTimestampInCycle(state.reviewHintRevealedAt, cycle)
+        : Boolean(state.hintsRevealed);
+      attempt.hintsUsed = Boolean(hintUsed || attempt.setupRevealed ||
         attempt.solutionRevealed || attempt.exampleViewed);
       event = { eventId, ts };
     }
@@ -86,7 +89,7 @@ export function recordTestReport(
 export function resetPractice(
   doc: DrillDocument,
   problems: Problem[],
-  options: { resetSummary?: boolean; reviewBaseLevel?: number } = {}
+  options: { resetSummary?: boolean; reviewBaseLevel?: number; keepReviewHelp?: boolean } = {}
 ): string {
   const now = Date.now();
   const saved = readProgress(doc.drillId);
@@ -118,6 +121,16 @@ export function resetPractice(
     const next = resetProblemForRetry({ ...problem, state }, cycle).state;
     delete next.reviewBaseLevel;
     if (options.reviewBaseLevel !== undefined) next.reviewBaseLevel = options.reviewBaseLevel;
+    if (options.keepReviewHelp && state.cycleStartedAt) {
+      if (isTimestampInCycle(state.reviewHintRevealedAt, state.cycleStartedAt)) {
+        next.hintsRevealed = state.hintsRevealed;
+        next.reviewHintRevealedAt = cycle;
+      }
+      if (isTimestampInCycle(state.reviewSetupRevealedAt, state.cycleStartedAt)) {
+        next.setupRevealedBeforeAnswer = true;
+        next.reviewSetupRevealedAt = cycle;
+      }
+    }
     return next;
   }, summary);
   return cycle;

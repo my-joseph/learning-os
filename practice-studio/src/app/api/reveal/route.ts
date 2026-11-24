@@ -16,7 +16,12 @@ import {
   recordSelfScore,
   resetPractice,
 } from "@/lib/practiceEvidence";
-import { getReviewItemsSchedule, reviewItemKey } from "@/lib/reviewItems";
+import {
+  getReviewItemsSchedule,
+  loadSavedReviewItems,
+  reviewItemKey,
+  writeReviewItemsStore,
+} from "@/lib/reviewItems";
 import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
@@ -191,15 +196,31 @@ export async function POST(req: NextRequest) {
     if (action === "reset") {
       return NextResponse.json({ cycleStartedAt: resetPractice(doc, [problem]) });
     }
-    if (action === "start-review") {
-      const item = getReviewItemsSchedule()[reviewItemKey(drillId, qid)];
+    if (action === "start-review" || action === "reset-review") {
+      const key = reviewItemKey(drillId, qid);
+      const saved = loadSavedReviewItems();
       const previous = readProgress(drillId)?.problems?.[qid] as ProblemState | undefined;
-      if (!item && !previous?.reviewBaseLevel) {
+      const cycle = previous?.cycleStartedAt;
+      if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== (cycle ?? null)) {
+        return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+      }
+      const unfinished = cycle && previous.reviewBaseLevel !== undefined &&
+        saved[key]?.completedCycle !== cycle;
+      if (unfinished && action === "start-review") {
+        return NextResponse.json({ cycleStartedAt: cycle });
+      }
+      const item = getReviewItemsSchedule()[key];
+      if (!item && !unfinished) {
         return NextResponse.json({ error: "Review item is unavailable" }, { status: 409 });
+      }
+      // Preserve the starting schedule even if legacy evidence only existed in the old summary.
+      if (item && item.lastReviewed !== saved[key]?.lastReviewed) {
+        writeReviewItemsStore({ ...saved, [key]: item });
       }
       return NextResponse.json({
         cycleStartedAt: resetPractice(doc, [problem], {
-          reviewBaseLevel: item?.level ?? previous?.reviewBaseLevel,
+          reviewBaseLevel: unfinished ? previous.reviewBaseLevel : item.level,
+          keepReviewHelp: Boolean(unfinished),
         }),
       });
     }

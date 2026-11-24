@@ -958,7 +958,7 @@ async function runTests() {
     assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].level, 1);
     assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].dueDate, "2026-11-20");
 
-    // A reset later on the same local day invalidates evidence and must be pruned in both engines.
+    // A practice reset later on the same local day retains the item schedule in both engines.
     const resetProgressPath = path.join(progressDir, "DRL-MTH-T01-C04-U01-01.json");
     const resetProgress = JSON.parse(fs.readFileSync(resetProgressPath, "utf8")) as Record<string, any>;
     resetProgress.problems.Q01.cycleStartedAt = "2026-11-19T11:30:00Z";
@@ -976,12 +976,10 @@ async function runTests() {
       const pyResetMap = Object.fromEntries(
         (JSON.parse(pyAfterReset.stdout) as { items: ReviewItem[] }).items.map((item) => [`${item.drillId}/${item.qid}`, item])
       );
-      assert.equal(tsAfterReset["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
-      assert.equal(pyResetMap["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
+      assert.equal(tsAfterReset["DRL-MTH-T01-C04-U01-01/Q01"].dueDate, "2026-11-20");
       assert.deepEqual(tsAfterReset, pyResetMap, "TS and Python must agree after a same-day reset");
 
-      // Bug #6: Saved review_items.json entry MUST also be pruned in TS (matching Python) when
-      // progress has a newer cycleStartedAt (even though scoreProblem returns null and omits it from `loaded`).
+      // A previously saved review takes precedence over the replayed history for the same day.
       fs.writeFileSync(
         storeFile,
         JSON.stringify(
@@ -1037,14 +1035,14 @@ async function runTests() {
       assert.equal(pyDueAfterResetProc.status, 0, pyDueAfterResetProc.stderr);
       const pyDueAfterReset = (JSON.parse(pyDueAfterResetProc.stdout) as { items: ReviewItem[] }).items;
       assert.equal(
-        tsSchedAfterReset["DRL-MTH-T01-C04-U01-01/Q01"],
-        undefined,
-        "TS getReviewItemsSchedule must prune saved entry after cycle reset"
+        tsSchedAfterReset["DRL-MTH-T01-C04-U01-01/Q01"].level,
+        3,
+        "TS getReviewItemsSchedule retains the saved level after a practice reset"
       );
       assert.equal(
         tsDueAfterReset.items.some((it) => it.drillId === "DRL-MTH-T01-C04-U01-01" && it.qid === "Q01"),
-        false,
-        "TS getDueReviewItems must prune saved entry after cycle reset"
+        true,
+        "TS getDueReviewItems keeps a due item after a practice reset"
       );
       assert.deepEqual(
         tsDueAfterReset.items,

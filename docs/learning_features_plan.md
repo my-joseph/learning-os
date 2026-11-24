@@ -19,8 +19,9 @@ math steps include an `explain` line; do not rebuild this capability.
    migration of drill files). Stored in `progress/review_items.json` (pilot: `pilot/progress/`).
 2. **Daily mixed review** page `/review` (Studio): due items across all units and both subjects, interleaved
    (never two in a row from the same unit when avoidable), default 8 items, shows each original problem with
-   the normal check flow. A current-cycle server check or explicit Skip updates the schedule once. The
-   due list and completion response share the same public metadata. "Due today" links to the page with a count.
+   the normal check flow. A due item stays queued while its review is unfinished, and opening a hint or
+   equation set-up still counts as help after a review reset. The first substantive server check or explicit
+   Skip updates the schedule for that day. The due list and completion response share the same public metadata. "Due today" links to the page with a count.
 3. **Mastery quality**: `suggest_mastery` weights hint depth and time (assisted ≠ fluent) and gates
    Mastery 3 on at least one correct L4+ item with no hint ("challenge"). Studio shows why a unit is
    capped ("needs one L4 challenge without hints").

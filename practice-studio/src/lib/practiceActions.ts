@@ -1,5 +1,5 @@
 type PracticeAction =
-  | { action: "reset" | "reset-all" | "start-review" | "hint" | "setup" | "steps" }
+  | { action: "reset" | "reset-all" | "start-review" | "reset-review" | "hint" | "setup" | "steps" }
   | { action: "toggle-mistake"; tag: string }
   | { action: "self-score"; score: number | null }
   | { action: "skip"; input: string; durationMs: number; countHint?: boolean };
