@@ -6,6 +6,8 @@ import { NextRequest } from "next/server";
 import { DELETE as drillDELETE, GET as drillGET } from "../src/app/api/drill/route";
 import { GET as drillsGET } from "../src/app/api/drills/route";
 import { POST as saveStatePOST } from "../src/app/api/save-state/route";
+import { POST as syncNotionPOST } from "../src/app/api/sync-notion/route";
+import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
 
 function deleteReq(id?: string): NextRequest {
   return new NextRequest(`http://127.0.0.1:3000/api/drill${id ? `?id=${encodeURIComponent(id)}` : ""}`, {
@@ -61,6 +63,7 @@ async function main() {
   process.env.DRILLS_DATA_DIR = dataDir;
   process.env.PROGRESS_DIR = progressDir;
   delete process.env.LEARNINGOS_PILOT;
+  setNotionDrillSyncSpawnerForTests(async () => assert.fail("Deleted drill must never start Notion sync"));
 
   try {
     // Delete an inactive drill by its canonical ID and verify the response.
@@ -112,6 +115,16 @@ async function main() {
       })
     );
     assert.equal(staleSave.status, 404);
+    const retainedProgress = fs.readFileSync(progressPath, "utf-8");
+    const syncDeleted = () => syncNotionPOST(new NextRequest("http://127.0.0.1:3000/api/sync-notion", {
+      method: "POST",
+      body: JSON.stringify({ drillId, unitCode: "MTH-T01-C01-U01" }),
+    }));
+    assert.equal((await syncDeleted()).status, 404);
+    assert.equal(fs.readFileSync(progressPath, "utf-8"), retainedProgress);
+    fs.unlinkSync(progressPath);
+    assert.equal((await syncDeleted()).status, 404);
+    assert.equal(fs.existsSync(progressPath), false);
 
     for (const invalidId of ["", "drL-MTH-T01-C01-01", "LAB-PRG-T01-C01-01", "../escape"]) {
       const response = await drillDELETE(deleteReq(invalidId));
@@ -128,6 +141,7 @@ async function main() {
     assert.deepEqual(await failed.json(), { ok: false, error: "Failed to delete drill" });
     assert.equal(fs.existsSync(siblingPath), true);
   } finally {
+    setNotionDrillSyncSpawnerForTests(null);
     if (prior.root === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prior.root;
     if (prior.drills === undefined) delete process.env.DRILLS_DATA_DIR;

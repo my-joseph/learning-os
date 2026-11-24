@@ -1,7 +1,7 @@
 import type { DrillDocument, SessionSummary } from "../types/drill";
 import type { PracticeStatusOverride } from "../hooks/types";
 import type { MasteryCap, ReviewScheduleEntry } from "./dueToday";
-import { hasSubstantiveAttempt } from "./reviewGuard";
+import { getNotionAttemptEvidence } from "./reviewGuard";
 import { classifyReviewOutcome } from "./reviewOutcome";
 import { scoreProblem } from "./scoring";
 import { plainTitle } from "./titleText";
@@ -80,7 +80,7 @@ export function computeSessionMetrics(
 
 /**
  * Build the canonical SessionSummary sent to `/api/sync-notion` and `notion_sync/drill_sync.py`.
- * Shared between the Review & Sync preview and `confirmSyncToNotion` so preview === payload.
+ * Shared by the Review & Sync preview and the server's saved-progress export.
  * Never includes `revisitNote` or sync metadata timestamps.
  */
 export function buildSessionSummary(
@@ -100,18 +100,20 @@ export function buildSessionSummary(
 
   const isPrg = currentDrill.subject === "PRG";
   currentDrill.problems.forEach((p) => {
+    const evidence = getNotionAttemptEvidence(p.state, isPrg);
+    if (!evidence.attempted && !evidence.skipped) return;
     const scored = scoreProblem(p.state, { isPrg });
     const isSkipped = scored.outcome === "skipped";
     const parts: string[] = [];
     if (isSkipped) {
-      skippedProblems.push(`${p.id} (${p.context || p.category})`);
+      skippedProblems.push(`${p.id} (${p.category})`);
       parts.push("SKIPPED - Concept Gap");
     }
     (p.state?.mistakes || []).forEach((tid) => {
       const rawName = tagMap.get(tid) || tid;
       mistakeNames.add(rawName.replace(/,/g, " /").trim());
     });
-    if (typeof p.state?.divergedStep === "number") {
+    if (evidence.attempted && typeof p.state?.divergedStep === "number") {
       const st = p.steps?.[p.state.divergedStep];
       parts.push(`Step ${p.state.divergedStep + 1}: ${st ? st.explain : "Diverged"}`);
     } else if (
@@ -321,7 +323,8 @@ export function buildSyncPreview(
     if (classifyReviewOutcome(p.state) === "unanswered") {
       unansweredCount += 1;
     }
-    if (hasSubstantiveAttempt(p.state)) {
+    const evidence = getNotionAttemptEvidence(p.state, drill.subject === "PRG");
+    if (evidence.attempted || evidence.skipped) {
       hasAnyAttempt = true;
     }
   }

@@ -245,15 +245,62 @@ async function main() {
       assert.equal(badSyncRes.status, 400);
       assert.equal(capturedSpawns.length, 0, "Invalid drillId must not spawn drill_sync");
 
+      const unknownId = "DRL-MTH-T01-C01-99";
+      const unknownPath = path.join(drillsUnitDir, `${unknownId}.json`);
+      const unknownProgress = path.join(tmpRoot, "progress", `${unknownId}.json`);
+      const syncRequest = () => makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+        drillId: unknownId,
+        unitCode,
+        problems: [{ id: "Q01", state: { attempts: [{ input: "5", verdict: "correct" }] } }],
+        sessionSummary: { score: 1, attemptDate: "2026-11-19" },
+      });
+      assert.equal((await syncNotionPOST(syncRequest())).status, 404, "No canonical file");
+      fs.writeFileSync(unknownPath, originalDrillFileContent);
+      assert.equal((await syncNotionPOST(syncRequest())).status, 404, "Internal drill ID mismatch");
+      fs.writeFileSync(unknownPath, JSON.stringify({ ...canonicalDrillDoc, drillId: unknownId }));
+      assert.equal((await syncNotionPOST(syncRequest())).status, 409, "Request is not saved evidence");
+      assert.equal((await syncNotionPOST(syncRequest())).status, 409, "Retry cannot promote request evidence");
+      assert.equal(fs.existsSync(unknownProgress), false);
+      assert.equal(capturedSpawns.length, 0);
+
+      const lockedProgress = JSON.stringify({
+        drillId: unknownId,
+        unitCode,
+        problems: {
+          Q01: {
+            cycleStartedAt: "2026-11-19T02:00:00.500Z",
+            attempts: [
+              { ts: "2026-11-19T02:00:00Z", verdict: "correct" },
+              { ts: "2026-11-19T02:00:01Z", verdict: "parse_error" },
+              { ts: "2026-11-19T02:00:02Z", kind: "variant", verdict: "correct" },
+            ],
+          },
+          Q99: { attempts: [{ verdict: "correct" }] },
+        },
+      });
+      fs.writeFileSync(unknownProgress, lockedProgress);
+      assert.equal((await syncNotionPOST(syncRequest())).status, 409);
+      assert.equal(fs.readFileSync(unknownProgress, "utf-8"), lockedProgress);
+      assert.equal(capturedSpawns.length, 0);
+
+      fs.writeFileSync(unknownPath, JSON.stringify({
+        ...canonicalDrillDoc,
+        drillId: unknownId,
+        problems: [canonicalDrillDoc.problems[0], canonicalDrillDoc.problems[0]],
+      }));
+      assert.equal((await syncNotionPOST(syncRequest())).status, 422);
+      assert.equal(fs.readFileSync(unknownProgress, "utf-8"), lockedProgress);
+      assert.equal(capturedSpawns.length, 0);
+
       // Send a redacted client doc (missing answerPlain and steps) with dryRun: true
       const syncRes = await syncNotionPOST(
         makePostReq("http://127.0.0.1:3000/api/sync-notion", {
           drillId,
-          unitCode,
+          unitCode: "MTH-T01-C01-U09",
           dryRun: true,
           sessionSummary: {
             practiceStatus: "Graded",
-            score: 1,
+            score: 99,
             maxScore: 1,
             accuracyPct: 100,
             mistakeCategories: [],
@@ -265,7 +312,7 @@ async function main() {
               id: "Q01",
               prompt: "Solve $2x = 10$.",
               state: {
-                userInput: "5",
+                userInput: "999",
                 score: 1,
                 divergedStep: null,
                 mistakes: [],
@@ -294,10 +341,11 @@ async function main() {
       assert.equal(spawnCall.env.DRILLS_DATA_DIR, path.join(tmpRoot, "drills", "data"));
       assert.equal(spawnCall.env.NOTION_DRY_RUN, "1");
 
-      // Verify stdin payload rehydrated canonical server steps & answerPlain while merging client state
+      // The helper receives canonical content and previously saved progress.
       const pipedDoc = JSON.parse(spawnCall.stdinPayload) as {
         drillId: string;
-        sessionSummary: { practiceStatus: string };
+        unitCode: string;
+        sessionSummary: { practiceStatus: string; score: number };
         problems: Array<{
           id: string;
           answerPlain?: string;
@@ -306,10 +354,12 @@ async function main() {
         }>;
       };
       assert.equal(pipedDoc.drillId, drillId);
+      assert.equal(pipedDoc.unitCode, unitCode);
       assert.equal(pipedDoc.sessionSummary.practiceStatus, "Graded");
+      assert.equal(pipedDoc.sessionSummary.score, 1);
       assert.equal(pipedDoc.problems[0].answerPlain, "5", "Canonical answerPlain must be rehydrated");
       assert.equal(pipedDoc.problems[0].steps?.length, 2, "Canonical steps must be rehydrated");
-      assert.equal(pipedDoc.problems[0].state?.userInput, "5", "Client state must be merged");
+      assert.equal(pipedDoc.problems[0].state?.userInput, "5", "Sync uses previously saved state");
       assert.equal(pipedDoc.problems[0].state?.score, 1);
 
       // Non-zero exit code returns 500
@@ -531,6 +581,12 @@ async function main() {
         undefined,
         "Precondition: redacted client state must not carry variantsSeen"
       );
+      const saveEditedNote = (state: ProblemState) => saveStatePOST(
+        makePostReq("http://127.0.0.1:3000/api/save-state", {
+          drillId: syncDrillId, unitCode, problems: [{ id: "Q01", state }],
+        })
+      );
+      assert.equal((await saveEditedNote(redactedClientQ01)).status, 200);
 
       const syncSpawns: NotionDrillSyncSpawnArgs[] = [];
       setNotionDrillSyncSpawnerForTests(async (spawnArgs) => {
@@ -564,18 +620,19 @@ async function main() {
             {
               id: "Q01",
               prompt: "Solve $2x = 10$.",
-              state: redactedClientQ01,
+              state: { ...redactedClientQ01, mistakeNote: "Stale unsaved note" },
             },
+            { id: "Q99", state: redactedClientQ01 },
           ],
         })
       );
       assert.equal(preserveRes.status, 200);
       assert.equal(syncSpawns.length, 1);
 
-      // 3a. Python drill_sync must be invoked with save_local=False so TS writeProgress is the single merge/save path
+      // 3a. The Python bridge uses the Studio result path and does not save progress.
       assert.match(
         syncSpawns[0].args[1],
-        /sync_drill_to_notion\(doc,\s*save_local=False\)/,
+        /sync_drill_to_notion\(doc, save_local=False, studio_results=True\)/,
         "Studio /api/sync-notion must pass save_local=False to avoid a second Python progress overwrite"
       );
 
@@ -615,11 +672,12 @@ async function main() {
       assert.equal(savedQ01.lastTestReport?.allPassed, true, "Sync must preserve concurrent lastTestReport");
       assert.equal(diskAfterSync.problems.Q02?.userInput, "4", "Sync must preserve untouched problems on disk");
 
-      // Learner-editable fields and client sessionSummary MUST still be applied
+      // Autosaved edits survive, and the summary is recomputed from the saved cycle.
       assert.equal(savedQ01.mistakeNote, "Updated note in Review & Sync");
       assert.equal(savedQ01.revisitNote, "Double-check signs next time");
       assert.deepEqual(savedQ01.mistakes, ["sign-error", "arithmetic"]);
-      assert.equal(diskAfterSync.sessionSummary.practiceStatus, "Graded");
+      assert.equal(diskAfterSync.problems.Q99, undefined);
+      assert.equal(diskAfterSync.sessionSummary.practiceStatus, "Needs Retry");
       assert.equal(diskAfterSync.sessionSummary.score, 1.5);
 
       // 3c. The stdin payload sent to Python must also carry the merged server-side progress (not redacted client state)
@@ -651,6 +709,10 @@ async function main() {
       process.env.DRILLS_DATA_DIR = path.join(tmpRoot, "drills", "data");
       process.env.PROGRESS_DIR = path.join(tmpRoot, "progress");
       process.env.NOTION_DRY_RUN = "1";
+      assert.equal((await saveEditedNote({
+        ...redactedClientQ01,
+        mistakeNote: "End-to-end dry run note",
+      })).status, 200);
 
       const realSyncRes = await syncNotionPOST(
         makePostReq("http://127.0.0.1:3000/api/sync-notion", {
@@ -742,6 +804,20 @@ async function main() {
         divergedStepsSummary: "No diverged steps logged.",
         attemptDate: "2026-11-21",
       };
+      const saveStampAttempt = (divergedStep: number | null) => saveStatePOST(
+        makePostReq("http://127.0.0.1:3000/api/save-state", {
+          drillId: stampDrillId,
+          unitCode,
+          problems: [{
+            id: "Q01",
+            state: {
+              userInput: "5", score: 1, divergedStep, mistakes: [],
+              attempts: [{ input: "5", verdict: "correct", ts: "2026-11-21T00:00:00Z" }],
+            },
+          }],
+        })
+      );
+      assert.equal((await saveStampAttempt(null)).status, 200);
 
       // 4a. Pilot mode, dryRun, and degraded NEVER stamp a fresh drill.
       setNotionDrillSyncSpawnerForTests(async () => ({
@@ -767,13 +843,9 @@ async function main() {
       assert.equal(diskStamp.sessionSummary.syncedToNotionAt, undefined, "dryRun must never stamp disk");
       assert.equal(diskStamp.sessionSummary.syncedFingerprint, undefined, "dryRun must never stamp fingerprint");
 
-      // Pilot mode (both via pilotSkipped and env LEARNINGOS_PILOT=1) must never stamp
+      // Pilot mode acknowledges locally even if there is no pilot progress.
       process.env.LEARNINGOS_PILOT = "1";
-      setNotionDrillSyncSpawnerForTests(async () => ({
-        code: 0,
-        stdout: JSON.stringify({ ok: true, drillPageId: "should-not-stamp" }),
-        stderr: "",
-      }));
+      setNotionDrillSyncSpawnerForTests(async () => assert.fail("Pilot sync must never spawn the helper"));
       const pilotSyncRes = await syncNotionPOST(
         makePostReq("http://127.0.0.1:3000/api/sync-notion", {
           drillId: stampDrillId,
@@ -784,12 +856,10 @@ async function main() {
       );
       assert.equal(pilotSyncRes.status, 200);
       const pilotSyncBody = (await pilotSyncRes.json()) as Record<string, unknown>;
+      assert.equal(pilotSyncBody.pilotSkipped, true);
       assert.equal(pilotSyncBody.syncedToNotionAt, undefined, "pilot sync must never return syncedToNotionAt");
       const pilotStampPath = path.join(tmpRoot, "pilot", "progress", `${stampDrillId}.json`);
-      const pilotDisk = JSON.parse(fs.readFileSync(pilotStampPath, "utf-8")) as {
-        sessionSummary: Record<string, unknown>;
-      };
-      assert.equal(pilotDisk.sessionSummary.syncedToNotionAt, undefined, "pilot sync must never stamp disk");
+      assert.equal(fs.existsSync(pilotStampPath), false, "pilot sync must never create progress");
       delete process.env.LEARNINGOS_PILOT;
 
       // Degraded sync must never stamp
@@ -925,10 +995,11 @@ async function main() {
         ...firstSummary,
         divergedStepsSummary: "Q01 (Step 2: Divide both sides by 2.)",
       };
+      assert.equal((await saveStampAttempt(1)).status, 200);
       const secondSuccessRes = await syncNotionPOST(
         makePostReq("http://127.0.0.1:3000/api/sync-notion", {
           drillId: stampDrillId,
-          unitCode,
+          unitCode: "MTH-T01-C01-U09",
           sessionSummary: updatedSummary,
           problems: [{ id: "Q01", state: { userInput: "5", score: 1, divergedStep: 1, mistakes: [] } }],
         })
@@ -944,6 +1015,7 @@ async function main() {
       );
       assert.equal(secondSuccessBody.syncedFingerprint, summaryFingerprint(updatedSummary));
       diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal((diskStamp as { unitCode?: string }).unitCode, unitCode);
       assert.equal(diskStamp.sessionSummary.syncedToNotionAt, secondSuccessBody.syncedToNotionAt);
       assert.equal(diskStamp.sessionSummary.syncedFingerprint, summaryFingerprint(updatedSummary));
 
@@ -982,7 +1054,7 @@ async function main() {
       setNotionDrillSyncSpawnerForTests(null);
       setNotionDrillSyncTimeoutForTests(150);
       const sleepBin = path.join(tmpRoot, "hang-python.sh");
-      fs.writeFileSync(sleepBin, "#!/bin/sh\nsleep 10\n", { mode: 0o755 });
+      fs.writeFileSync(sleepBin, "#!/bin/sh\nexec sleep 10\n", { mode: 0o755 });
       const { runNotionDrillSync } = await import("../src/lib/notionSyncRunner");
       const startMs = Date.now();
       const hangResult = await runNotionDrillSync({
