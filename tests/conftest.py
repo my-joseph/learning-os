@@ -1,20 +1,47 @@
-"""Test-wide safety: no test may reach the network (Notion included) or write real progress.
+"""Test-wide isolation for progress and in-process urllib requests.
 
-Worktrees now read the main checkout's .env, so a real NOTION_TOKEN can be present
-while tests run. Tests that exercise the client patch `urlopen` themselves; anything
-else that tries to open a URL fails loudly instead of writing to Notion.
+The health audit applies a separate OS guard to protect learner paths and block
+network access in subprocesses.
 """
 
+import os
+import tempfile
 import urllib.request
+from pathlib import Path
 
 import pytest
 
 
+def _require_external_temp(source: str, value: str) -> None:
+    path = Path(os.path.abspath(value))
+    for candidate in {path, path.resolve()}:
+        # Some tests clear PROGRESS_DIR and let the application walk up to a repo.
+        if any(
+            (parent / "id_map.json").is_file() or (parent / ".git").exists()
+            for parent in (candidate, *candidate.parents)
+        ):
+            raise pytest.UsageError(f"{source} must point outside repository checkouts: {value}")
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    # Check environment paths before tempfile probes them for writability.
+    for name in ("TMPDIR", "TEMP", "TMP"):
+        if value := os.environ.get(name):
+            _require_external_temp(name, value)
+    if basetemp := config.option.basetemp:
+        _require_external_temp("--basetemp", basetemp)
+    elif temproot := os.environ.get("PYTEST_DEBUG_TEMPROOT"):
+        _require_external_temp("PYTEST_DEBUG_TEMPROOT", temproot)
+    else:
+        _require_external_temp("default temp directory", tempfile.gettempdir())
+
+
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch):
-    """Scrub ambient pilot/dry-run flags so tests run with hermetic defaults unless set explicitly."""
+    """Use default modes and synthetic credentials unless a test sets its own."""
     monkeypatch.delenv("LEARNINGOS_PILOT", raising=False)
     monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
 
 
 @pytest.fixture(autouse=True)

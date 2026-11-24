@@ -46,14 +46,18 @@ def test_save_drill_doc_writes_progress_not_content(tmp_path, monkeypatch):
 
     from notion_sync.drill_sync import save_drill_doc
 
-    monkeypatch.chdir(tmp_path)
+    # Exercise default progress resolution from inside a synthetic checkout.
+    (tmp_path / "id_map.json").write_text("{}", encoding="utf-8")
+    subdir = tmp_path / "nested"
+    subdir.mkdir()
+    monkeypatch.chdir(subdir)
     monkeypatch.delenv("PROGRESS_DIR", raising=False)
     doc = _doc("Type the 3-digit status code (e.g. 401).", ["401"], codeType="predict-output")
     doc.update({"drillId": "DRL-X-01", "unitCode": "PRG-X"})
     doc["problems"][0].update({"id": "Q01", "state": {"userInput": "401", "score": 1}})
     path = save_drill_doc(doc)
     assert path.endswith("PRG-X/DRL-X-01.json")
-    assert not (tmp_path / path).exists(), "drill content must not be written by a save"
+    assert not (subdir / path).exists(), "drill content must not be written by a save"
     saved = json.loads((tmp_path / "progress" / "DRL-X-01.json").read_text(encoding="utf-8"))
     assert saved["problems"][doc["problems"][0]["id"]]["userInput"] == "401"
     assert "401" not in doc["problems"][0]["inputHint"], "hint still sanitised in memory for Notion"
