@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { getProgressDir, isSafeId } from "@/lib/paths";
+import { getProgressDir, isSafeId, JSON_EXTENSIONS, resolveContainedPath } from "@/lib/paths";
 import {
   compareIsoTimestamps,
   isSubstantiveVerdict,
@@ -34,7 +34,17 @@ type DocLike = {
 };
 
 function progressFile(drillId: string): string {
-  return path.join(getProgressDir(), `${drillId}.json`);
+  const file = resolveProgressFile(drillId, "", true);
+  if (!file) throw new Error("Invalid progress file");
+  return file;
+}
+
+function resolveProgressFile(drillId: string, prefix = "", allowMissing = false): string | null {
+  if (!isSafeId(drillId)) return null;
+  return resolveContainedPath(getProgressDir(), `${prefix}${drillId}.json`, {
+    extensions: JSON_EXTENSIONS,
+    allowMissing,
+  });
 }
 
 interface PendingNotionSync {
@@ -44,30 +54,31 @@ interface PendingNotionSync {
 }
 
 // Keep sync checkpoints outside the autosaved learner record so an edit cannot overwrite them.
-function pendingNotionSyncFile(drillId: string): string {
-  if (!isSafeId(drillId)) throw new Error("Invalid drillId");
-  return path.join(getProgressDir(), "_notion_sync", `${drillId}.json`);
-}
-
 export function readPendingNotionSync(drillId: string): PendingNotionSync | null {
-  const file = pendingNotionSyncFile(drillId);
-  if (!fs.existsSync(file)) return null;
+  const file = resolveProgressFile(drillId, "_notion_sync/");
+  if (!file) return null;
   return JSON.parse(fs.readFileSync(file, "utf-8")) as PendingNotionSync;
 }
 
 export function writePendingNotionSync(drillId: string, pending: PendingNotionSync | null): void {
-  const file = pendingNotionSyncFile(drillId);
+  const file = resolveProgressFile(drillId, "_notion_sync/", true);
+  if (!file) throw new Error("Invalid sync checkpoint file");
   if (pending) writeJsonAtomic(file, pending);
   else fs.rmSync(file, { force: true });
 }
 
 /** Write JSON atomically using a unique sibling temp file + rename so concurrent readers never see a half-written file. */
-function writeJsonAtomic(filePath: string, data: unknown): void {
+export function writeJsonAtomic(filePath: string, data: unknown, ending = ""): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const suffix = `${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`;
   const tmpPath = `${filePath}.${suffix}.tmp`;
+  const fd = fs.openSync(tmpPath, "wx");
   try {
-    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+    try {
+      fs.writeFileSync(fd, JSON.stringify(data, null, 2) + ending, "utf-8");
+    } finally {
+      fs.closeSync(fd);
+    }
     fs.renameSync(tmpPath, filePath);
   } catch (err) {
     try {
@@ -263,9 +274,8 @@ function mergeStringTags(prevRaw: unknown, nextRaw: unknown): string[] {
 }
 
 export function readProgress(drillId: string): ProgressFile | null {
-  if (!isSafeId(drillId)) return null;
-  const file = progressFile(drillId);
-  if (!fs.existsSync(file)) return null;
+  const file = resolveProgressFile(drillId);
+  if (!file) return null;
   try {
     return JSON.parse(fs.readFileSync(file, "utf-8")) as ProgressFile;
   } catch {
@@ -704,7 +714,7 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
   };
   const file = progressFile(doc.drillId);
   writeJsonAtomic(file, data);
-  return file;
+  return path.join(getProgressDir(), `${doc.drillId}.json`);
 }
 
 /** Persist only learner-owned fields from a client snapshot of a canonical drill. */
@@ -759,7 +769,7 @@ export function writeLearnerProgress(canonical: DocLike, incoming: DocLike): str
     sessionSummary: sessions,
     problems,
   } satisfies ProgressFile);
-  return file;
+  return path.join(getProgressDir(), `${drillId}.json`);
 }
 
 /**

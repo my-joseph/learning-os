@@ -10,7 +10,7 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
-import { getLabsDir, resolveInsideRoot } from "../src/lib/paths";
+import { getLabsDir, getWorkspaceRoot, resolveContainedPath, SOURCE_EXTENSIONS } from "../src/lib/paths";
 import { writeProgress } from "../src/lib/progress";
 import { statusTone } from "../src/lib/statusTone";
 import {
@@ -55,22 +55,22 @@ const makeReview = (verdict: "pass" | "revise"): ReviewRecord => ({
 });
 
 // ---------------------------------------------------------------------------
-// 1. Path guards: resolveInsideRoot blocks _reference, .canonical, .hidden.
+// 1. Path guards: resolveContainedPath blocks _reference, .canonical, .hidden.
 // ---------------------------------------------------------------------------
 assert.equal(
-  resolveInsideRoot("labs/_reference/LAB-PRG-T01-C01-01/src/index.ts"),
+  resolveContainedPath(getWorkspaceRoot(), "labs/_reference/LAB-PRG-T01-C01-01/src/index.ts", { extensions: SOURCE_EXTENSIONS }),
   null,
-  "resolveInsideRoot must reject any path under labs/_reference/"
+  "resolveContainedPath must reject any path under labs/_reference/"
 );
 assert.equal(
-  resolveInsideRoot("labs/_reference/LAB-PRG-T01-C01-01/hidden/m1_hidden.test.ts"),
+  resolveContainedPath(getWorkspaceRoot(), "labs/_reference/LAB-PRG-T01-C01-01/hidden/m1_hidden.test.ts", { extensions: SOURCE_EXTENSIONS }),
   null,
-  "resolveInsideRoot must reject hidden tests under _reference"
+  "resolveContainedPath must reject hidden tests under _reference"
 );
 assert.equal(
-  resolveInsideRoot("drills/workspace/DRL-1/.canonical/Q01.hidden.test.js"),
+  resolveContainedPath(getWorkspaceRoot(), "drills/workspace/DRL-1/.canonical/Q01.hidden.test.js", { extensions: SOURCE_EXTENSIONS }),
   null,
-  "resolveInsideRoot must reject .canonical / .hidden. files"
+  "resolveContainedPath must reject .canonical / .hidden. files"
 );
 
 // ---------------------------------------------------------------------------
@@ -695,9 +695,47 @@ async function testSyntheticLabAndProgress() {
   }
 }
 
+function testLabContainment() {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "lab-boundary-"));
+  try {
+    const labsDir = path.join(fixture, "labs");
+    const labId = "LAB-PRG-T01-C01-98";
+    const labDir = path.join(labsDir, labId);
+    const outside = path.join(fixture, "outside");
+    fs.mkdirSync(labDir, { recursive: true });
+    fs.mkdirSync(outside);
+    const config = JSON.stringify({
+      labId,
+      milestones: [{ id: "M1", mainFile: "src/index.ts", visibleTests: "tests/m1_*.test.ts" }],
+    });
+    const externalConfig = path.join(outside, "lab.config.json");
+    fs.writeFileSync(externalConfig, config);
+    const configPath = path.join(labDir, "lab.config.json");
+    fs.symlinkSync(externalConfig, configPath);
+    assert.equal(loadLabDetailFromDisk(labId, labsDir), null);
+    assert.deepEqual(listLabsFromDisk(labsDir), []);
+
+    fs.unlinkSync(configPath);
+    fs.writeFileSync(configPath, config);
+    fs.writeFileSync(path.join(outside, "README.md"), "# Outside fixture");
+    fs.writeFileSync(path.join(outside, "m1_fixture.test.ts"), 'test("outside fixture", () => {});');
+    fs.symlinkSync(path.join(outside, "README.md"), path.join(labDir, "README.md"));
+    fs.symlinkSync(outside, path.join(labDir, "tests"));
+    fs.symlinkSync(outside, path.join(labDir, "src"));
+    const detail = loadLabDetailFromDisk(labId, labsDir);
+    assert.ok(detail);
+    assert.equal(detail.readme, "");
+    assert.deepEqual(detail.milestones[0].visibleTests, []);
+    assert.equal(detail.milestones[0].mainFile, null);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
 async function main() {
   await testAllRealLabs();
   await testSyntheticLabAndProgress();
+  testLabContainment();
   console.log("labs tests passed");
 }
 

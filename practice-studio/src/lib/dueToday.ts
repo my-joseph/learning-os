@@ -1,6 +1,5 @@
 import fs from "fs";
-import path from "path";
-import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } from "@/lib/paths";
+import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, JSON_EXTENSIONS, listDrillFiles, loadIdMapTitles, resolveContainedPath } from "@/lib/paths";
 import { drillHref } from "@/lib/routes";
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
@@ -99,50 +98,38 @@ function isNewerDrill(candidate: DrillCandidate, existing: DrillCandidate | unde
 function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
   const direct = new Map<string, DrillCandidate>();
   const covered = new Map<string, DrillCandidate>();
-  if (!fs.existsSync(dataDir)) {
-    return new Map();
-  }
 
-  const visit = (dir: string) => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        visit(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith(".json")) {
-        try {
-          const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
-            drillId?: unknown;
-            unitCode?: unknown;
-            createdAt?: unknown;
-            problems?: Array<{ unitCode?: unknown }>;
-          };
-          if (typeof doc.drillId !== "string" || !doc.drillId) continue;
-          const candidate: DrillCandidate = {
-            drillId: doc.drillId,
-            createdAt: typeof doc.createdAt === "string" ? doc.createdAt : "",
-          };
-          if (typeof doc.unitCode === "string" && doc.unitCode) {
-            if (isNewerDrill(candidate, direct.get(doc.unitCode))) {
-              direct.set(doc.unitCode, candidate);
-            }
-          }
-          if (Array.isArray(doc.problems)) {
-            for (const prob of doc.problems) {
-              if (prob && typeof prob.unitCode === "string" && prob.unitCode) {
-                if (isNewerDrill(candidate, covered.get(prob.unitCode))) {
-                  covered.set(prob.unitCode, candidate);
-                }
-              }
-            }
-          }
-        } catch {
-          continue;
+  for (const fullPath of listDrillFiles(dataDir, true)) {
+    try {
+      const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
+        drillId?: unknown;
+        unitCode?: unknown;
+        createdAt?: unknown;
+        problems?: Array<{ unitCode?: unknown }>;
+      };
+      if (typeof doc.drillId !== "string" || !doc.drillId) continue;
+      const candidate: DrillCandidate = {
+        drillId: doc.drillId,
+        createdAt: typeof doc.createdAt === "string" ? doc.createdAt : "",
+      };
+      if (typeof doc.unitCode === "string" && doc.unitCode) {
+        if (isNewerDrill(candidate, direct.get(doc.unitCode))) {
+          direct.set(doc.unitCode, candidate);
         }
       }
+      if (Array.isArray(doc.problems)) {
+        for (const prob of doc.problems) {
+          if (prob && typeof prob.unitCode === "string" && prob.unitCode) {
+            if (isNewerDrill(candidate, covered.get(prob.unitCode))) {
+              covered.set(prob.unitCode, candidate);
+            }
+          }
+        }
+      }
+    } catch {
+      continue;
     }
-  };
-
-  visit(dataDir);
+  }
 
   const result = new Map<string, string>();
   covered.forEach((cand, unitCode) => {
@@ -155,8 +142,8 @@ function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
 }
 
 function readReviewSchedule(progressDir: string = getProgressDir()): Record<string, ReviewScheduleEntry> {
-  const cachePath = path.join(progressDir, "_review_schedule.json");
-  if (!fs.existsSync(cachePath)) return {};
+  const cachePath = resolveContainedPath(progressDir, "_review_schedule.json", { extensions: JSON_EXTENSIONS });
+  if (!cachePath) return {};
   try {
     const raw = JSON.parse(fs.readFileSync(cachePath, "utf-8")) as unknown;
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
@@ -175,7 +162,8 @@ const L4_CHALLENGE_CAP_REASON = "needs one L4 challenge without hints";
 
 function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string> {
   const passedUnits = new Set<string>();
-  if (!fs.existsSync(dataDir) || !fs.existsSync(progressDir)) {
+  const progressRoot = resolveContainedPath(progressDir, ".", { directory: true });
+  if (!progressRoot) {
     return passedUnits;
   }
 
@@ -184,56 +172,50 @@ function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string>
     { unitCode: string; isPrg: boolean; problems: Array<{ id: string; level: number; unitCodes: string[] }> }
   >();
 
-  const visit = (dir: string) => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        visit(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith(".json")) {
-        try {
-          const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
-            drillId?: unknown;
-            subject?: unknown;
-            unitCode?: unknown;
-            problems?: Array<{ id?: unknown; level?: unknown; unitCode?: unknown; unitCodes?: unknown[]; references?: unknown[] }>;
-          };
-          if (typeof doc.drillId !== "string" || !doc.drillId) continue;
-          const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
-          const isPrg =
-            doc.subject === "PRG" || drillUnit.startsWith("PRG-") || doc.drillId.startsWith("DRL-PRG-");
-          const problems: Array<{ id: string; level: number; unitCodes: string[] }> = [];
-          for (const p of doc.problems || []) {
-            if (!p || typeof p.id !== "string") continue;
-            const lv = typeof p.level === "number" ? p.level : 0;
-            const multi = Array.isArray(p.unitCodes)
-              ? p.unitCodes.filter((u): u is string => typeof u === "string" && Boolean(u.trim())).map((u) => u.trim())
-              : [];
-            const refUnits =
-              multi.length === 0 && drillUnit === "MTH-BRIDGE" && Array.isArray(p.references)
-                ? p.references
-                    .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
-                    .map((r) => r.trim())
-                : [];
-            const pUnit = typeof p.unitCode === "string" && p.unitCode ? p.unitCode : drillUnit;
-            const unitCodes =
-              multi.length > 0 ? multi : refUnits.length > 0 ? refUnits : pUnit ? [pUnit] : [];
-            problems.push({ id: p.id, level: lv, unitCodes });
-          }
-          drillsById.set(doc.drillId, { unitCode: drillUnit, isPrg, problems });
-        } catch {
-          continue;
-        }
+  for (const fullPath of listDrillFiles(dataDir, true)) {
+    try {
+      const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
+        drillId?: unknown;
+        subject?: unknown;
+        unitCode?: unknown;
+        problems?: Array<{ id?: unknown; level?: unknown; unitCode?: unknown; unitCodes?: unknown[]; references?: unknown[] }>;
+      };
+      if (typeof doc.drillId !== "string" || !doc.drillId) continue;
+      const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
+      const isPrg =
+        doc.subject === "PRG" || drillUnit.startsWith("PRG-") || doc.drillId.startsWith("DRL-PRG-");
+      const problems: Array<{ id: string; level: number; unitCodes: string[] }> = [];
+      for (const p of doc.problems || []) {
+        if (!p || typeof p.id !== "string") continue;
+        const lv = typeof p.level === "number" ? p.level : 0;
+        const multi = Array.isArray(p.unitCodes)
+          ? p.unitCodes.filter((u): u is string => typeof u === "string" && Boolean(u.trim())).map((u) => u.trim())
+          : [];
+        const refUnits =
+          multi.length === 0 && drillUnit === "MTH-BRIDGE" && Array.isArray(p.references)
+            ? p.references
+                .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
+                .map((r) => r.trim())
+            : [];
+        const pUnit = typeof p.unitCode === "string" && p.unitCode ? p.unitCode : drillUnit;
+        const unitCodes =
+          multi.length > 0 ? multi : refUnits.length > 0 ? refUnits : pUnit ? [pUnit] : [];
+        problems.push({ id: p.id, level: lv, unitCodes });
       }
+      drillsById.set(doc.drillId, { unitCode: drillUnit, isPrg, problems });
+    } catch {
+      continue;
     }
-  };
-  visit(dataDir);
+  }
 
-  for (const entry of fs.readdirSync(progressDir, { withFileTypes: true })) {
+  for (const entry of fs.readdirSync(progressRoot, { withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith(".json") || entry.name.startsWith("_") || entry.name === "review_items.json") {
       continue;
     }
+    const file = resolveContainedPath(progressDir, entry.name, { extensions: JSON_EXTENSIONS });
+    if (!file) continue;
     try {
-      const prog = JSON.parse(fs.readFileSync(path.join(progressDir, entry.name), "utf-8")) as {
+      const prog = JSON.parse(fs.readFileSync(file, "utf-8")) as {
         drillId?: unknown;
         problems?: Record<string, Record<string, unknown>>;
       };

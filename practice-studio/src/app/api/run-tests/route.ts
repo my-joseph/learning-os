@@ -56,10 +56,11 @@ export async function POST(req: NextRequest) {
         : "node-vanilla";
     const entryPoint =
       typeof problem.entryPoint === "string" ? problem.entryPoint : "";
-    const workspaceFile =
-      typeof problem.workspaceFile === "string" && problem.workspaceFile
-        ? problem.workspaceFile
-        : body.workspaceFile;
+    const workspaceFile = typeof problem.workspaceFile === "string" ? problem.workspaceFile : "";
+
+    if (!workspaceFile && body.workspaceFile) {
+      return NextResponse.json({ error: "Problem has no workspace file in the drill manifest" }, { status: 403 });
+    }
 
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);

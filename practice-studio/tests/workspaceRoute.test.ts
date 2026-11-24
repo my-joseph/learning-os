@@ -79,6 +79,7 @@ async function main() {
         starterCode: "function dangling() {}\nmodule.exports = { dangling };\n",
         workspaceFile: danglingWorkspaceFileRel,
       },
+      { id: "Q04", prompt: "Inline check fixture." },
     ],
   };
 
@@ -105,6 +106,8 @@ async function main() {
   const prevRoot = process.env.LEARNINGOS_ROOT;
   const prevDrillsDir = process.env.DRILLS_DATA_DIR;
   const prevPilot = process.env.LEARNINGOS_PILOT;
+  const prevProgress = process.env.PROGRESS_DIR;
+  process.env.PROGRESS_DIR = path.join(outerDir, "progress");
 
   process.env.LEARNINGOS_ROOT = repoRoot;
   delete process.env.DRILLS_DATA_DIR;
@@ -254,6 +257,29 @@ async function main() {
       const resUnsafeId = await POST(makeJsonReq("POST", { drillId: "../evil" }));
       assert.equal(resUnsafeId.status, 400, "POST with unsafe drillId must return 400");
     }
+
+    // Materialization refuses redirected outputs and succeeds after the links are removed.
+    {
+      const res = await POST(makeJsonReq("POST", { drillId }));
+      assert.equal(res.status, 404);
+      assert.equal(fs.existsSync(danglingOutsideTarget), false);
+      fs.unlinkSync(symlinkEscapePath);
+      fs.unlinkSync(danglingSymlinkPath);
+    }
+
+    for (const file of [
+      validFilePath,
+      `drills/workspace/${drillId}/sub/../Q01_solve.js`,
+      `drills/workspace/${drillId}/%51%30%31_solve.js`,
+    ]) {
+      assert.equal((await GET(makeGetReq({ file, drillId }))).status, 403);
+      assert.equal((await PUT(makeJsonReq("PUT", { drillId, file, content: "" }))).status, 403);
+    }
+
+    const missingManifest = await runTestsPOST(
+      makeJsonReq("POST", { drillId, problemId: "Q04", workspaceFile: workspaceFileRel })
+    );
+    assert.equal(missingManifest.status, 403);
 
     // 11. POST with valid { drillId } -> 200, no absolute server paths leaked
     {
@@ -479,6 +505,8 @@ async function main() {
     else process.env.DRILLS_DATA_DIR = prevDrillsDir;
     if (prevPilot === undefined) delete process.env.LEARNINGOS_PILOT;
     else process.env.LEARNINGOS_PILOT = prevPilot;
+    if (prevProgress === undefined) delete process.env.PROGRESS_DIR;
+    else process.env.PROGRESS_DIR = prevProgress;
     fs.rmSync(outerDir, { recursive: true, force: true });
   }
 }

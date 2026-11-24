@@ -2,6 +2,7 @@
  * Progress is stored apart from drill content (src/lib/progress.ts).
  * Run: npx tsx tests/progress.test.ts
  */
+import assertStrict from "node:assert/strict";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -55,6 +56,19 @@ try {
   threw = true;
 }
 assert(threw, "writeProgress refuses unsafe ids");
+
+const outside = fs.mkdtempSync(path.join(os.tmpdir(), "progress-sentinel-"));
+try {
+  const outsideRecord = path.join(outside, "record.json");
+  fs.writeFileSync(outsideRecord, "{}");
+  const linkedId = "DRL-MTH-LINK";
+  fs.symlinkSync(outsideRecord, path.join(tmp, `${linkedId}.json`));
+  assertStrict.equal(readProgress(linkedId), null);
+  assertStrict.throws(() => writeProgress({ ...content(), drillId: linkedId }), /Invalid progress file/);
+  assertStrict.equal(fs.readFileSync(outsideRecord, "utf-8"), "{}");
+} finally {
+  fs.rmSync(outside, { recursive: true, force: true });
+}
 
 // Verify writeProgress preserves existing `reviews` when Studio saves state without it
 const prgDoc = () => ({

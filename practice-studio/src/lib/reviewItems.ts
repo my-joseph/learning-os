@@ -8,7 +8,11 @@ import {
   getWorkspaceRoot,
   isSafeId,
   loadIdMapTitles,
+  JSON_EXTENSIONS,
+  listDrillFiles,
+  resolveContainedPath,
 } from "@/lib/paths";
+import { writeJsonAtomic } from "@/lib/progress";
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
 import {
@@ -692,8 +696,8 @@ function loadVaultMeta(rootDir: string): VaultMeta {
   const archChecks = new Map<string, Set<string>>();
   const universalIds = new Set<string>();
 
-  const universalPath = path.join(rootDir, "code_engine", "quality_checks.json");
-  if (fs.existsSync(universalPath)) {
+  const universalPath = resolveContainedPath(rootDir, "code_engine/quality_checks.json", { extensions: JSON_EXTENSIONS });
+  if (universalPath) {
     try {
       const raw = JSON.parse(fs.readFileSync(universalPath, "utf-8")) as unknown;
       const list = Array.isArray(raw)
@@ -716,13 +720,15 @@ function loadVaultMeta(rootDir: string): VaultMeta {
     path.join("math_engine", "reasoning_vault"),
     path.join("code_engine", "reasoning_vault"),
   ]) {
-    const dir = path.join(rootDir, sub);
-    if (!fs.existsSync(dir)) continue;
+    const dir = resolveContainedPath(rootDir, sub, { directory: true });
+    if (!dir) continue;
     const isCodeVault = sub.startsWith("code_engine");
     for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => cmpStr(a.name, b.name))) {
       if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+      const file = resolveContainedPath(dir, entry.name, { extensions: JSON_EXTENSIONS });
+      if (!file) continue;
       try {
-        const doc = JSON.parse(fs.readFileSync(path.join(dir, entry.name), "utf-8")) as {
+        const doc = JSON.parse(fs.readFileSync(file, "utf-8")) as {
           archetypes?: Array<{
             archetypeKey?: unknown;
             unitCode?: unknown;
@@ -773,114 +779,105 @@ function loadAllDrillMeta(
 ): Map<string, DrillMeta> {
   const drills = new Map<string, DrillMeta>();
 
-  if (fs.existsSync(dataDir)) {
-    const visit = (dir: string) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          visit(fullPath);
-        } else if (entry.isFile() && entry.name.endsWith(".json")) {
-          try {
-            const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
-              drillId?: unknown;
-              subject?: unknown;
-              unitCode?: unknown;
-              unitTitle?: unknown;
-              lintOverrides?: Array<{ rule?: unknown }>;
-              problems?: Array<Record<string, unknown>>;
-            };
-            if (typeof doc.drillId !== "string" || !doc.drillId) continue;
-            const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
-            const drillUnitTitle = typeof doc.unitTitle === "string" ? doc.unitTitle : "";
-            const isPrg =
-              doc.subject === "PRG" ||
-              drillUnit.startsWith("PRG-") ||
-              doc.drillId.startsWith("DRL-PRG-");
-            const lintOverrides = new Set<string>();
-            for (const o of doc.lintOverrides || []) {
-              if (o && typeof o.rule === "string" && o.rule) {
-                lintOverrides.add(o.rule);
-              }
-            }
-            const problems = new Map<string, ProblemMeta>();
-            for (const p of doc.problems || []) {
-              if (!p || typeof p.id !== "string" || !p.id) continue;
-              const archKey =
-                typeof p.archetypeKey === "string" && p.archetypeKey
-                  ? p.archetypeKey
-                  : typeof p.templateKey === "string" && p.templateKey
-                  ? p.templateKey
-                  : null;
-              const explicitMulti = Array.isArray(p.unitCodes)
-                ? Array.from(
-                    new Set(
-                      p.unitCodes
-                        .filter((u): u is string => typeof u === "string" && Boolean(u.trim()))
-                        .map((u) => u.trim())
-                    )
-                  )
-                : [];
-              const archMulti = (archKey && unitsOf.get(archKey)) || [];
-              const refMulti =
-                drillUnit === "MTH-BRIDGE" || !(typeof p.unitCode === "string" && p.unitCode)
-                  ? Array.from(
-                      new Set(
-                        (Array.isArray(p.references) ? p.references : [])
-                          .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
-                          .map((r) => r.trim())
-                      )
-                    )
-                  : [];
-              const resolvedMulti =
-                explicitMulti.length > 0
-                  ? explicitMulti
-                  : archMulti.length > 0
-                  ? archMulti
-                  : refMulti;
-              const fallbackUnit = (archKey && unitOf.get(archKey)) || drillUnit;
-              const pUnit =
-                drillUnit === "MTH-BRIDGE" && resolvedMulti.length >= 2
-                  ? "MTH-BRIDGE"
-                  : (typeof p.unitCode === "string" && p.unitCode) ||
-                    (resolvedMulti.length > 0 ? resolvedMulti[0] : fallbackUnit);
-              const trap =
-                typeof p.commonTrapTag === "string" && p.commonTrapTag
-                  ? p.commonTrapTag
-                  : null;
-              const qualityChecks = Array.isArray(p.qualityChecks)
-                ? p.qualityChecks.filter((c): c is string => typeof c === "string" && Boolean(c))
-                : [];
-              problems.set(p.id, {
-                id: p.id,
-                unitCode: pUnit,
-                unitCodes: resolvedMulti.length >= 2 ? resolvedMulti : [],
-                commonTrapTag: trap,
-                archetypeKey: archKey,
-                qualityChecks,
-              });
-            }
-            drills.set(doc.drillId, {
-              drillId: doc.drillId,
-              unitCode: drillUnit,
-              unitTitle: drillUnitTitle,
-              subject: isPrg ? "PRG" : "MTH",
-              lintOverrides,
-              problems,
-            });
-          } catch {
-            continue;
-          }
+  for (const fullPath of listDrillFiles(dataDir, true)) {
+    try {
+      const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
+        drillId?: unknown;
+        subject?: unknown;
+        unitCode?: unknown;
+        unitTitle?: unknown;
+        lintOverrides?: Array<{ rule?: unknown }>;
+        problems?: Array<Record<string, unknown>>;
+      };
+      if (typeof doc.drillId !== "string" || !doc.drillId) continue;
+      const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
+      const drillUnitTitle = typeof doc.unitTitle === "string" ? doc.unitTitle : "";
+      const isPrg =
+        doc.subject === "PRG" ||
+        drillUnit.startsWith("PRG-") ||
+        doc.drillId.startsWith("DRL-PRG-");
+      const lintOverrides = new Set<string>();
+      for (const o of doc.lintOverrides || []) {
+        if (o && typeof o.rule === "string" && o.rule) {
+          lintOverrides.add(o.rule);
         }
       }
-    };
-    visit(dataDir);
+      const problems = new Map<string, ProblemMeta>();
+      for (const p of doc.problems || []) {
+        if (!p || typeof p.id !== "string" || !p.id) continue;
+        const archKey =
+          typeof p.archetypeKey === "string" && p.archetypeKey
+            ? p.archetypeKey
+            : typeof p.templateKey === "string" && p.templateKey
+            ? p.templateKey
+            : null;
+        const explicitMulti = Array.isArray(p.unitCodes)
+          ? Array.from(
+              new Set(
+                p.unitCodes
+                  .filter((u): u is string => typeof u === "string" && Boolean(u.trim()))
+                  .map((u) => u.trim())
+              )
+            )
+          : [];
+        const archMulti = (archKey && unitsOf.get(archKey)) || [];
+        const refMulti =
+          drillUnit === "MTH-BRIDGE" || !(typeof p.unitCode === "string" && p.unitCode)
+            ? Array.from(
+                new Set(
+                  (Array.isArray(p.references) ? p.references : [])
+                    .filter((r): r is string => typeof r === "string" && r.includes("-U") && Boolean(r.trim()))
+                    .map((r) => r.trim())
+                )
+              )
+            : [];
+        const resolvedMulti =
+          explicitMulti.length > 0
+            ? explicitMulti
+            : archMulti.length > 0
+            ? archMulti
+            : refMulti;
+        const fallbackUnit = (archKey && unitOf.get(archKey)) || drillUnit;
+        const pUnit =
+          drillUnit === "MTH-BRIDGE" && resolvedMulti.length >= 2
+            ? "MTH-BRIDGE"
+            : (typeof p.unitCode === "string" && p.unitCode) ||
+              (resolvedMulti.length > 0 ? resolvedMulti[0] : fallbackUnit);
+        const trap =
+          typeof p.commonTrapTag === "string" && p.commonTrapTag
+            ? p.commonTrapTag
+            : null;
+        const qualityChecks = Array.isArray(p.qualityChecks)
+          ? p.qualityChecks.filter((c): c is string => typeof c === "string" && Boolean(c))
+          : [];
+        problems.set(p.id, {
+          id: p.id,
+          unitCode: pUnit,
+          unitCodes: resolvedMulti.length >= 2 ? resolvedMulti : [],
+          commonTrapTag: trap,
+          archetypeKey: archKey,
+          qualityChecks,
+        });
+      }
+      drills.set(doc.drillId, {
+        drillId: doc.drillId,
+        unitCode: drillUnit,
+        unitTitle: drillUnitTitle,
+        subject: isPrg ? "PRG" : "MTH",
+        lintOverrides,
+        problems,
+      });
+    } catch {
+      continue;
+    }
   }
 
-  if (fs.existsSync(labsDir)) {
-    for (const entry of fs.readdirSync(labsDir, { withFileTypes: true })) {
+  const labsRoot = resolveContainedPath(labsDir, ".", { directory: true });
+  if (labsRoot) {
+    for (const entry of fs.readdirSync(labsRoot, { withFileTypes: true })) {
       if (!entry.isDirectory() || !entry.name.startsWith("LAB-")) continue;
-      const cfgPath = path.join(labsDir, entry.name, "lab.config.json");
-      if (!fs.existsSync(cfgPath)) continue;
+      const cfgPath = resolveContainedPath(labsDir, `${entry.name}/lab.config.json`, { extensions: JSON_EXTENSIONS });
+      if (!cfgPath) continue;
       try {
         const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf-8")) as {
           labId?: unknown;
@@ -1187,12 +1184,13 @@ function loadProgressContext(options?: ReviewStoreOptions): {
   const drills = loadAllDrillMeta(dataDir, labsDir, unitOf, unitsOf);
   const statesByKey = new Map<string, Record<string, unknown>>();
 
-  if (!fs.existsSync(progressDir)) {
+  const progressRoot = resolveContainedPath(progressDir, ".", { directory: true });
+  if (!progressRoot) {
     return { loaded: [], drills, statesByKey };
   }
 
   const files = fs
-    .readdirSync(progressDir, { withFileTypes: true })
+    .readdirSync(progressRoot, { withFileTypes: true })
     .filter((e) => e.isFile() && e.name.endsWith(".json"))
     .map((e) => e.name)
     .sort(cmpStr);
@@ -1201,11 +1199,11 @@ function loadProgressContext(options?: ReviewStoreOptions): {
 
   for (const name of files) {
     if (name === "review_items.json" || name.startsWith("_")) continue;
+    const file = resolveContainedPath(progressDir, name, { extensions: JSON_EXTENSIONS });
+    if (!file) continue;
     let prog: Record<string, unknown>;
     try {
-      prog = JSON.parse(
-        fs.readFileSync(path.join(progressDir, name), "utf-8")
-      ) as Record<string, unknown>;
+      prog = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, unknown>;
     } catch {
       continue;
     }
@@ -1374,8 +1372,8 @@ export function buildScheduleFromProgress(
 export function loadSavedReviewItems(
   progressDir: string = getProgressDir()
 ): Record<string, ReviewItem> {
-  const filePath = getReviewItemsPath(progressDir);
-  if (!fs.existsSync(filePath)) return {};
+  const filePath = resolveContainedPath(progressDir, "review_items.json", { extensions: JSON_EXTENSIONS });
+  if (!filePath) return {};
   try {
     const raw = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
@@ -1404,8 +1402,8 @@ export function writeReviewItemsStore(
   schedule: Record<string, ReviewItem>,
   progressDir: string = getProgressDir()
 ): string {
-  const filePath = getReviewItemsPath(progressDir);
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const filePath = resolveContainedPath(progressDir, "review_items.json", { extensions: JSON_EXTENSIONS, allowMissing: true });
+  if (!filePath) throw new Error("Invalid review items file");
   const cleaned: Record<string, ReviewItem> = {};
   const keys = Object.keys(schedule).sort(cmpStr);
   for (const k of keys) {
@@ -1414,9 +1412,7 @@ export function writeReviewItemsStore(
     const redacted = redactReviewItem(v);
     cleaned[reviewItemKey(redacted.drillId, redacted.qid)] = redacted;
   }
-  const tmpPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
-  fs.writeFileSync(tmpPath, `${JSON.stringify(cleaned, null, 2)}\n`, "utf-8");
-  fs.renameSync(tmpPath, filePath);
+  writeJsonAtomic(filePath, cleaned, "\n");
   return filePath;
 }
 
@@ -1588,8 +1584,10 @@ function lookupProblemMetadata(
   const prob = drill?.problems.get(qid);
 
   let revisitNote: string | null = null;
-  const progFile = path.join(progressDir, `${drillId}.json`);
-  if (fs.existsSync(progFile)) {
+  const progFile = isSafeId(drillId)
+    ? resolveContainedPath(progressDir, `${drillId}.json`, { extensions: JSON_EXTENSIONS })
+    : null;
+  if (progFile) {
     try {
       const prog = JSON.parse(fs.readFileSync(progFile, "utf-8")) as {
         problems?: Record<string, Record<string, unknown>>;
