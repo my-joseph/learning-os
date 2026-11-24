@@ -200,6 +200,6 @@ The Concept Vault registry uses `CON-*` keys in `id_map.json`. Current authoring
 - **Skip Protocol:**
   - The UI provides an explicit **"Skip (Don't Know)"** action on every problem.
   - Skipping sets score to `0`, flags `skipped: true`, and assigns a `concept-gap` mistake tag.
-  - **Instant Learning Loop:** Skipping immediately unrolls the mental model hint and vertical step-by-step solution, allowing the learner to immediately learn the missing prerequisite without frustration.
+  - **Instant Learning Loop:** Skipping in a drill opens the mental model hint and vertical step-by-step solution. Daily Review unlocks the solution and lets the learner open it when ready.
   - **Notion Spaced Repetition Ledger:** Skipped questions are logged specifically as **Concept Gaps** in Notion (`Skipped Questions for Review`), surfacing them as the highest priority items for subsequent review sessions.
   - Self-scoring cannot raise a skipped score or clear its `skipped` flag. Reset begins a new `cycleStartedAt`; a prior cycle's skip does not unlock or score the new cycle.

@@ -421,9 +421,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           onSkip={
             onSkip
               ? () => {
-                  // Count the auto-opened hint inside the skip save itself. A separate
-                  // onHintRevealed() call raced the skip save and could overwrite
-                  // `skipped: true`, so /api/reveal refused steps and set-up (empty boxes).
+                  // Record the auto-opened hint together with the server skip.
                   const countHint = Boolean(allowAutoRevealOnSkip && !showHint && onHintRevealed);
                   if (allowAutoRevealOnSkip) {
                     setShowHint(true);
@@ -438,7 +436,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           showSetup={showSetup}
           setupUnopenedUnattempted={setupUnopenedUnattempted}
           onToggleSetup={toggleSetup}
-          hideShowStepsButton={hideShowStepsButton}
+          hideShowStepsButton={hideShowStepsButton || (!isVariant && !hasAttempt)}
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (

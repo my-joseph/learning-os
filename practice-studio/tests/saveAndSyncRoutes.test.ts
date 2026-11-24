@@ -3,6 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
+import { GET as revealGET, POST as revealPOST } from "../src/app/api/reveal/route";
+import { loadPracticeDocument, recordOriginalCheck } from "../src/lib/practiceEvidence";
 import { POST as saveStatePOST } from "../src/app/api/save-state/route";
 import { POST as syncNotionPOST } from "../src/app/api/sync-notion/route";
 import { GET as drillGET } from "../src/app/api/drill/route";
@@ -42,6 +44,7 @@ async function main() {
         prompt: "Solve $2x = 10$.",
         answerPlain: "5",
         answerDisplay: "5",
+        checkpointHint: "Use the inverse of multiplication.",
         steps: [
           { latex: "2x = 10", explain: "Start with the given equation." },
           { latex: "x = 5", explain: "Divide both sides by 2." },
@@ -65,6 +68,14 @@ async function main() {
   delete process.env.PROGRESS_DIR;
   delete process.env.LEARNINGOS_PILOT;
   delete process.env.NOTION_DRY_RUN;
+
+  const recordCorrect = (id: string) => {
+    const doc = loadPracticeDocument(id)!;
+    const event = recordOriginalCheck(doc, doc.problems[0], null, "5", {
+      verdict: "correct", message: "Correct", components: [], diagnostics: [],
+    });
+    assert.ok(event.eventId);
+  };
 
   try {
     // -------------------------------------------------------------------------
@@ -119,6 +130,11 @@ async function main() {
                 divergedStep: null,
                 mistakes: [],
                 attempts: [{ input: "5", ts: "2026-11-19T00:00:00Z", verdict: "correct" }],
+                reviews: [{ verdict: "pass" }],
+                lastTestReport: { allPassed: true },
+                lastCheck: { verdict: "correct" },
+                solutionRevealedBeforeAnswer: true,
+                reviewStepsRevealedAt: "2026-11-19T00:00:00Z",
               },
             },
           ],
@@ -139,10 +155,10 @@ async function main() {
         fs.readFileSync(expectedNormalProgressPath, "utf-8")
       ) as Record<string, unknown>;
       assert.equal(savedNormalProgress.drillId, drillId);
-      assert.equal(
-        ((savedNormalProgress.problems as Record<string, { score: number }>).Q01).score,
-        1
-      );
+      assert.deepEqual(savedNormalProgress.problems, {
+        Q01: { userInput: "5", divergedStep: null },
+      });
+      assert.deepEqual(savedNormalProgress.sessionSummary, {});
       // Verify progress file does not store curriculum content fields
       assert.equal("unitTitle" in savedNormalProgress, false);
 
@@ -215,6 +231,26 @@ async function main() {
         originalDrillFileContent,
         "Pilot mode /api/save-state must never write into drills/data"
       );
+      const revealUrl = "http://127.0.0.1:3000/api/reveal";
+      const steps = () => revealGET(new NextRequest(`${revealUrl}?drill=${drillId}&q=Q01&part=steps`));
+      assert.equal((await steps()).status, 403);
+      const action = (kind: string) => revealPOST(makePostReq(revealUrl, {
+        drillId, qid: "Q01", action: kind,
+      }));
+      assert.equal((await action("steps")).status, 403);
+      assert.equal((await action("hint")).status, 200);
+      assert.equal((await steps()).status, 403, "Checkpoint hint leaves steps locked");
+      const skipped = await action("skip");
+      assert.equal(skipped.status, 200);
+      assert.ok((await skipped.json()).eventId);
+      assert.equal((await steps()).status, 200);
+      const afterSkip = JSON.parse(fs.readFileSync(expectedPilotProgressPath, "utf8")).problems.Q01;
+      assert.equal(afterSkip.score, 0);
+      assert.equal(afterSkip.skipped, true);
+      assert.deepEqual(afterSkip.mistakes, ["concept-gap"]);
+      assert.equal(afterSkip.hintsRevealed, 1);
+      assert.equal((await action("reset")).status, 200);
+      assert.equal((await steps()).status, 403, "Reset isolates the preceding skip");
       delete process.env.LEARNINGOS_PILOT;
     }
 
@@ -293,6 +329,7 @@ async function main() {
       assert.equal(fs.readFileSync(unknownProgress, "utf-8"), lockedProgress);
       assert.equal(capturedSpawns.length, 0);
 
+      recordCorrect(drillId);
       // Send a redacted client doc (missing answerPlain and steps) with dryRun: true
       const syncRes = await syncNotionPOST(
         makePostReq("http://127.0.0.1:3000/api/sync-notion", {
@@ -676,7 +713,7 @@ async function main() {
       // Autosaved edits survive, and the summary is recomputed from the saved cycle.
       assert.equal(savedQ01.mistakeNote, "Updated note in Review & Sync");
       assert.equal(savedQ01.revisitNote, "Double-check signs next time");
-      assert.deepEqual(savedQ01.mistakes, ["sign-error", "arithmetic"]);
+      assert.deepEqual(savedQ01.mistakes, ["sign-error"]);
       assert.equal(diskAfterSync.problems.Q99, undefined);
       assert.equal(diskAfterSync.sessionSummary.practiceStatus, "Needs Retry");
       assert.equal(diskAfterSync.sessionSummary.score, 1.5);
@@ -818,6 +855,7 @@ async function main() {
           }],
         })
       );
+      recordCorrect(stampDrillId);
       assert.equal((await saveStampAttempt(null)).status, 200);
 
       // 4a. Pilot mode, dryRun, and degraded NEVER stamp a fresh drill.
@@ -968,8 +1006,8 @@ async function main() {
       );
       assert.equal(
         diskStamp.sessionSummary.divergedStepsSummary,
-        "Q01 (Note: added after sync)",
-        "non-stamp summary fields must still update"
+        "No diverged steps logged.",
+        "Autosave leaves server-computed summary fields intact"
       );
 
       // Client attempting to forge a newer stamp via /api/save-state must be ignored

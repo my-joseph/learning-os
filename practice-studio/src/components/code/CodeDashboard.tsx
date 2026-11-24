@@ -196,9 +196,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
-  const [showSolution, setShowSolution] = useState(() =>
-    hasSubstantiveAttempt(problem.state)
-  );
+  const autoOpenSolution = isReviewSession
+    ? problem.state.lastCheck?.verdict === "correct"
+    : hasSubstantiveAttempt(problem.state);
+  const [showSolution, setShowSolution] = useState(autoOpenSolution);
   const [revealedSolutionCode, setRevealedSolutionCode] = useState<string | undefined>(
     problem.solutionCode
   );
@@ -224,8 +225,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     enabled: !isKata,
   });
 
-  const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
-
   useEffect(() => {
     setUserCode(problem.state?.userCode || problem.starterCode || problem.codeSnippet || "");
     setTestReport(problem.state?.lastTestReport || null);
@@ -235,7 +234,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     setOpenExplain(false);
     setOpenReference(false);
     setShowHint(false);
-    setShowSolution(hasSubstantiveState);
+    setShowSolution(autoOpenSolution);
     setRevealedSolutionCode(problem.solutionCode);
   }, [
     problem.id,
@@ -244,7 +243,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.codeSnippet,
     problem.state?.lastTestReport,
     problem.solutionCode,
-    hasSubstantiveState,
+    autoOpenSolution,
   ]);
 
   const effectiveState = {
@@ -301,7 +300,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         const revRes = await fetch("/api/review-run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ drillId, problemId: problem.id }),
+          body: JSON.stringify({ drillId, problemId: problem.id, cycleStartedAt: problem.state.cycleStartedAt ?? null }),
         });
         const revJson = await revRes.json();
         if (!revRes.ok) {
@@ -320,6 +319,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             problemId: problem.id,
             userCode: problem.workspaceFile ? undefined : latestCode,
             workspaceFile: problem.workspaceFile,
+            cycleStartedAt: problem.state.cycleStartedAt ?? null,
           }),
         });
 
@@ -339,7 +339,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         const t = reviewRunData.tests;
         const safeFailed = maskHiddenTestFailures(t.failed || []);
         const allPassed = t.total > 0 && t.passed === t.total && safeFailed.length === 0;
-        const fallbackReport: TestRunReport = {
+        const fallbackReport: TestRunReport = reviewRunData.testReport ?? {
           allPassed,
           score: t.total > 0 ? t.passed / t.total : 0,
           passedCount: t.passed,
@@ -1265,6 +1265,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 setShowSolution(!showSolution);
               }}
               stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+              hideShowStepsButton={!hasAttempt}
               stepsRef={stepsRef}
               showStepsHeader={false}
               onMarkDivergedStep={onMarkDivergedStep}

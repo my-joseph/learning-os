@@ -12,7 +12,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
 import { GET as drillGET } from "../src/app/api/drill/route";
-import { GET as revealGET } from "../src/app/api/reveal/route";
+import { GET as revealGET, POST as revealPOST } from "../src/app/api/reveal/route";
 import { POST as reviewItemsPOST } from "../src/app/api/review-items/route";
 import { POST as saveStatePOST } from "../src/app/api/save-state/route";
 import { GET as variantGET, POST as variantPOST } from "../src/app/api/variant/route";
@@ -39,7 +39,6 @@ import { rowReason } from "../src/lib/reviewRow";
 import {
   executeReviewItemCheck,
   prepareProblemForReviewItem,
-  startReviewItemCycle,
 } from "../src/lib/reviewSession";
 import { createTelemetryTimerState } from "../src/lib/telemetryTimer";
 import { statusTone } from "../src/lib/statusTone";
@@ -1305,14 +1304,14 @@ async function testReviewCycleIsolation() {
       1
     );
 
-    // 7a. Start a new /review cycle: load /api/drill?review=1, prepare item, and post start-cycle.
+    // 7a. Start a new /review cycle: load /api/drill?review=1, prepare item, and start a server review cycle.
     const reviewDrillRes = await drillGET(
       new NextRequest(`http://127.0.0.1:3000/api/drill?id=${drillId}&review=1`)
     );
     assert.equal(reviewDrillRes.status, 200);
     const reviewDoc = (await reviewDrillRes.json()) as DrillDocument;
     const preparedQ1 = prepareProblemForReviewItem(reviewDoc.problems[0], {
-      subject: "MATH",
+      subject: "MTH",
       revisitNote: "",
     });
     assert.ok(
@@ -1366,17 +1365,16 @@ async function testReviewCycleIsolation() {
       throw new Error(`Unexpected fetch: ${method} ${urlStr}`);
     }) as typeof fetch;
 
-    const cycleStartedOk = await startReviewItemCycle(
-      drillId,
-      "Q01",
-      preparedQ1.state.cycleStartedAt!,
-      customFetch
-    );
-    assert.equal(cycleStartedOk, true, "start-cycle must succeed");
+    const startReview = await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+      method: "POST",
+      body: JSON.stringify({ drillId, qid: "Q01", action: "start-review" }),
+    }));
+    assert.equal(startReview.status, 200);
 
     // Before the new review attempt: cycleStartedAt is persisted on disk, strip is hidden, mode=list locked.
     const stateBeforeReviewAttempt = readProgress(drillId)?.problems?.Q01 as ProblemState;
-    assert.equal(stateBeforeReviewAttempt.cycleStartedAt, preparedQ1.state.cycleStartedAt);
+    assert.ok(stateBeforeReviewAttempt.cycleStartedAt);
+    preparedQ1.state.cycleStartedAt = stateBeforeReviewAttempt.cycleStartedAt;
     assert.equal(similarUnlock(stateBeforeReviewAttempt), false);
     assert.equal(countPractisedSimilar(stateBeforeReviewAttempt), 0);
 
@@ -1627,22 +1625,13 @@ async function testReviewCycleIsolation() {
       2
     );
 
-    // 7c. Drill review retry (resetAnswerForReviewRetry + save-state): locks strip again, then fresh tabs.
-    const latestBeforeRetry = readProgress(drillId)?.problems?.Q01 as ProblemState;
-    const retryCycleAt = new Date(Date.now() + 2_000).toISOString();
-    const retryResetState = resetAnswerForReviewRetry(latestBeforeRetry, retryCycleAt);
-    const saveRetryRes = await saveStatePOST(
-      new NextRequest("http://127.0.0.1:3000/api/save-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          drillId,
-          unitCode,
-          problems: [{ id: "Q01", state: retryResetState }],
-        }),
-      })
-    );
-    assert.equal(saveRetryRes.status, 200);
+    // 7c. The server starts a new cycle, locking Similar until another original check.
+    const retry = await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+      method: "POST",
+      body: JSON.stringify({ drillId, qid: "Q01", action: "reset" }),
+    }));
+    assert.equal(retry.status, 200);
+    const { cycleStartedAt } = await retry.json();
 
     const retryLockedList = await variantGET(
       new NextRequest(
@@ -1651,25 +1640,12 @@ async function testReviewCycleIsolation() {
     );
     assert.deepEqual(await retryLockedList.json(), { unlocked: false, tabs: [] });
 
-    const retryAttemptState = applyCheckResult(
-      makeProblem({ id: "Q01", state: retryResetState }),
-      "1/9",
-      { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
-      [],
-      { ts: new Date(Date.now() + 3_000).toISOString() }
-    );
-    const saveRetryAttemptRes = await saveStatePOST(
-      new NextRequest("http://127.0.0.1:3000/api/save-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          drillId,
-          unitCode,
-          problems: [{ id: "Q01", state: retryAttemptState }],
-        }),
-      })
-    );
-    assert.equal(saveRetryAttemptRes.status, 200);
+    const checkedRetry = await checkAnswerPOST(new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+      method: "POST",
+      body: JSON.stringify({ drillId, qid: "Q01", input: "1/9", cycleStartedAt }),
+    }));
+    assert.equal(checkedRetry.status, 200);
+    assert.ok((await checkedRetry.json()).eventId);
 
     const retryUnlockedList = (await (
       await variantGET(

@@ -11,7 +11,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
 import { DailyReviewView } from "../src/components/review/DailyReviewPage";
 import { GET as drillGET } from "../src/app/api/drill/route";
-import { GET as revealGET } from "../src/app/api/reveal/route";
+import { currentPracticeCycle, loadPracticeDocument, recordOriginalCheck } from "../src/lib/practiceEvidence";
+import { GET as revealGET, POST as revealPOST } from "../src/app/api/reveal/route";
 import {
   GET as reviewItemsGET,
   POST as reviewItemsPOST,
@@ -424,17 +425,17 @@ async function runTests() {
     assert.ok(loadEffectMatch, "Expected drill load effect in DailyReviewPage.tsx");
     assert.doesNotMatch(
       loadEffectMatch[0],
-      /startReviewItemCycle/,
+      /sendPracticeAction|ensureReviewCycle/,
       "/review load effect must not persist cycleStartedAt on mount/navigation"
     );
-    // Bug #3 + #4: handleHintRevealed must stamp reviewHintRevealedAt and autoSave via reviewMerge
+    // Opening a hint records cycle-scoped assistance.
     const hintHandlerMatch = reviewSource.match(/const handleHintRevealed = useCallback\([\s\S]*?\n\s*\}, \[[^\]]+\]\);/);
     assert.ok(hintHandlerMatch, "Expected handleHintRevealed in DailyReviewPage.tsx");
     assert.match(hintHandlerMatch[0], /reviewHintRevealedAt/, "handleHintRevealed must stamp cycle-scoped reviewHintRevealedAt");
-    assert.match(hintHandlerMatch[0], /autoSave:\s*true/, "handleHintRevealed must persist via reviewMerge on first real help reveal");
+    assert.match(hintHandlerMatch[0], /sendPracticeAction/, "Help must be recorded by the server");
     assert.match(mathAnswerAreaSource, /learningos:review-math-input-mode/);
     assert.match(studioClientSource, /You missed this in today&apos;s review/);
-    assert.match(studioClientSource, /resetAnswerForReviewRetry/);
+    assert.match(studioClientSource, /await handleResetProblem/);
 
     // 1g. PRG coding problem on /review shows prompt and "Open in drill" link instead of inline editor / VS Code
     const prgCodingProblem: Problem = {
@@ -518,6 +519,23 @@ async function runTests() {
     assert.match(prgPredictHtml, /aria-label="Check answer"/);
     assert.doesNotMatch(prgPredictHtml, /Open in drill/);
     assert.doesNotMatch(prgPredictHtml, /SECRET_OUTPUT_3/);
+
+    const prgSkippedHtml = renderToStaticMarkup(
+      <DailyReviewView
+        items={sampleItems}
+        currentIndex={1}
+        currentProblem={{
+          ...prgPredictProblem,
+          state: { ...prgPredictProblem.state, skipped: true, score: 0 },
+        }}
+        currentOutcome={{
+          drillId: sampleItems[1].drillId, qid: "Q01", initialLevel: 3,
+          newLevel: 1, correct: false, skipped: true, hintsUsed: 0, dueDate: "2026-11-20",
+        }}
+      />
+    );
+    assert.match(prgSkippedHtml, /Show steps/, "B4: Skip unlocks the closed Steps panel");
+    assert.doesNotMatch(prgSkippedHtml, /Hide steps/);
 
     // 1i. End screen: count correct / total, moved up / down a level, next due date, link back to last drill
     const outcomes: Record<string, ReviewSessionItemOutcome> = {
@@ -880,7 +898,7 @@ async function runTests() {
     );
     assert.equal(progressAfterLoad.problems.Q01.score, 0);
 
-    // 2c. API wiring test: executeReviewItemCheck wires check-answer, save-state (reviewMerge),
+    // 2c. API wiring test: executeReviewItemCheck wires check-answer,
     //     reveal, and review-items POST
     const calls: Array<{ url: string; method: string; body?: Record<string, unknown> }> = [];
     const customFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -894,15 +912,16 @@ async function runTests() {
 
       if (urlStr === "/api/check-answer" && method === "POST") {
         const isRight = parsedBody?.input === "7";
-        return new Response(
-          JSON.stringify({
-            verdict: isRight ? "correct" : "incorrect",
-            message: isRight ? "Correct." : "Not quite.",
-            components: [],
-            diagnostics: [],
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
+        const result = {
+          verdict: isRight ? "correct" : "incorrect",
+          message: isRight ? "Correct." : "Not quite.",
+          components: [],
+          diagnostics: [],
+        };
+        const doc = loadPracticeDocument(drillId)!;
+        const event = recordOriginalCheck(doc, doc.problems[0], currentPracticeCycle(drillId, "Q01"),
+          String(parsedBody?.input), result);
+        return Response.json({ ...result, ...event });
       }
       if (urlStr === "/api/save-state" && method === "POST") {
         return saveStatePOST(
@@ -911,6 +930,9 @@ async function runTests() {
             body: init?.body as string,
           })
         );
+      }
+      if (urlStr === "/api/reveal" && method === "POST") {
+        return revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", init));
       }
       if (urlStr.startsWith("/api/reveal") && method === "GET") {
         return revealGET(new NextRequest(`http://127.0.0.1:3000${urlStr}`));
@@ -926,9 +948,23 @@ async function runTests() {
       throw new Error(`Unexpected fetch: ${method} ${urlStr}`);
     }) as typeof fetch;
 
+    const reset = async () => {
+      const res = await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+        method: "POST",
+        body: JSON.stringify({ drillId, qid: "Q01", action: "start-review" }),
+      }));
+      assert.equal(res.status, 200);
+      const { cycleStartedAt } = await res.json();
+      return {
+        ...reviewDrillDoc,
+        problems: reviewDrillDoc.problems.map((p) => p.id === "Q01"
+          ? { ...p, state: { ...p.state, cycleStartedAt } }
+          : p),
+      };
+    };
     const timer = createTelemetryTimerState("DRL-MTH-T01-C04-U01-01/Q01", true, false, 1_000);
     const checkOutcome = await executeReviewItemCheck({
-      drillDoc: reviewDrillDoc,
+      drillDoc: await reset(),
       item: dueJson.items[0],
       inputVal: "7",
       hintsUsed: 0,
@@ -949,8 +985,8 @@ async function runTests() {
     );
     assert.equal(
       checkOutcome.outcome.commonTrapTag,
-      "c04-divide-not-invert-trap",
-      "POST /api/review-items returns commonTrapTag after answering so the UI can show Trap: <plain title>"
+      null,
+      "Completion response uses the same redaction as the due list"
     );
 
     // Verify all 4 API routes were called in order
@@ -959,7 +995,6 @@ async function runTests() {
       [
         "POST /api/check-answer",
         "POST /api/review-items",
-        "POST /api/save-state",
         "GET /api/reveal",
         "GET /api/reveal",
       ]
@@ -968,9 +1003,7 @@ async function runTests() {
     assert.deepEqual(reviewItemsCall.body, {
       drillId,
       qid: "Q01",
-      correct: true,
-      hintsUsed: 0,
-      date: "2026-11-19",
+      eventId: checkOutcome.result.eventId,
     });
 
     // Steps and display were revealed on updatedDoc after the check
@@ -985,7 +1018,7 @@ async function runTests() {
       unitCode,
       "Q01",
       {
-        ...checkedQ1.state,
+        cycleStartedAt: checkedQ1.state.cycleStartedAt,
         revisitNote: "Invert the divisor immediately and simplify.",
       },
       customFetch
@@ -1036,9 +1069,9 @@ async function runTests() {
       "Review check and revisitNote save must never modify drills/data"
     );
 
-    // 2e. Verify skip / wrong wiring records correct: false and hintsUsed count
+    // 2e. Verify an explicit skip schedules a missed review item.
     const skipOutcome = await executeReviewItemSkip({
-      drillDoc: reviewDrillDoc,
+      drillDoc: await reset(),
       item: { ...dueJson.items[0], level: 4 },
       hintsUsed: 2,
       timerState: timer,

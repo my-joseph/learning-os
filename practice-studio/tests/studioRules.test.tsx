@@ -262,15 +262,10 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(beforeAttemptHtml, /Practice only/i, "Math card must not show Practice only text");
 assert.doesNotMatch(beforeAttemptHtml, /Self-score:/, "self-score must not appear before an attempt");
-assert.match(
-  beforeAttemptHtml,
-  /title="Opening before checking counts as assisted"[^>]*>[\s\S]*Show steps/,
-  "Show steps button must carry assisted tooltip before first attempt"
-);
 assert.doesNotMatch(
   beforeAttemptHtml,
-  /Opening steps before checking counts as assisted\./,
-  "No assisted note line under the buttons (learner removed it; the button title keeps the hint)"
+  /Show steps/,
+  "Original steps stay closed until a substantive check or Skip"
 );
 assert.doesNotMatch(mathWorkspace, /Practice only|· Practice|isPracticeOnly/);
 assert.doesNotMatch(mathWorkspace, /!similarHasAttempt/);

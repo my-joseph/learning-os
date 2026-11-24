@@ -229,6 +229,9 @@ def _max_iso_timestamp(a: Any, b: Any) -> str | None:
 
 
 def _attempt_key(item: dict[str, Any]) -> str:
+    event_id = item.get("eventId")
+    if isinstance(event_id, str) and event_id:
+        return f"event:{event_id}"
     ts = item.get("ts")
     if isinstance(ts, str) and ts:
         return f"ts:{ts}"
@@ -491,6 +494,10 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
     )
     if max_cycle:
         st["cycleStartedAt"] = max_cycle
+    if isinstance(prev, dict) and max_cycle == prev_cycle and "reviewBaseLevel" in prev:
+        st["reviewBaseLevel"] = prev["reviewBaseLevel"]
+    elif incoming_cycle != max_cycle:
+        st.pop("reviewBaseLevel", None)
 
     prev_seen = (
         prev.get("variantsSeen") if isinstance(prev, dict) and isinstance(prev.get("variantsSeen"), list) else []

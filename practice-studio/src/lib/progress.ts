@@ -84,7 +84,8 @@ function isEmptyValue(v: unknown): boolean {
 
 function attemptKey(a: unknown): string {
   if (a && typeof a === "object") {
-    const ts = (a as Record<string, unknown>).ts;
+    const { eventId, ts } = a as Record<string, unknown>;
+    if (typeof eventId === "string" && eventId) return `event:${eventId}`;
     if (typeof ts === "string" && ts.length > 0) {
       return `ts:${ts}`;
     }
@@ -295,9 +296,7 @@ function deriveVariantLists(
 
 export interface WriteProgressOptions {
   /**
-   * When false (used by client-facing `/api/save-state` and pre-sync writes),
-   * existing sync stamps on disk are always preserved and incoming client stamps
-   * can never clear or forge them. Defaults to true for server/test callers.
+   * When false, preserve existing sync stamps while replacing the computed summary.
    */
   allowSyncStampUpdate?: boolean;
 }
@@ -404,6 +403,8 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
     if (p.state) {
       const incoming = p.state as Record<string, unknown>;
       let st: Record<string, unknown>;
+      const incomingCycle = maxIsoTimestamp(incoming.cycleStartedAt, null);
+      const prevCycle = maxIsoTimestamp(prev?.cycleStartedAt, null);
 
       if (doc.reviewMerge && prev) {
         // Daily Review merge: start from the original persisted state and ONLY append
@@ -475,14 +476,6 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       } else {
         st = { ...incoming };
 
-        const incomingCycle =
-          typeof incoming.cycleStartedAt === "string" && incoming.cycleStartedAt.trim()
-            ? incoming.cycleStartedAt.trim()
-            : null;
-        const prevCycle =
-          typeof prev?.cycleStartedAt === "string" && prev.cycleStartedAt.trim()
-            ? prev.cycleStartedAt.trim()
-            : null;
         const isNewCycle = Boolean(incomingCycle && (!prevCycle || incomingCycle > prevCycle));
         const isSameCycle = Boolean(incomingCycle && prevCycle && incomingCycle === prevCycle);
         if (isNewCycle || isSameCycle) {
@@ -592,6 +585,14 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       if (maxCycle) {
         st.cycleStartedAt = maxCycle;
       }
+      if (maxCycle === prevCycle && prev && "reviewBaseLevel" in prev) {
+        st.reviewBaseLevel = prev.reviewBaseLevel;
+      } else if (maxCycle !== incomingCycle) {
+        delete st.reviewBaseLevel;
+      } else if (doc.reviewMerge) {
+        if ("reviewBaseLevel" in incoming) st.reviewBaseLevel = incoming.reviewBaseLevel;
+        else delete st.reviewBaseLevel;
+      }
 
       const derived = deriveVariantLists(
         st.variants as Record<string, VariantSessionRecord> | undefined,
@@ -629,6 +630,58 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
   };
   const file = progressFile(doc.drillId);
   writeJsonAtomic(file, data);
+  return file;
+}
+
+/** Persist only learner-owned fields from a client snapshot of a canonical drill. */
+export function writeLearnerProgress(canonical: DocLike, incoming: DocLike): string {
+  const drillId = canonical.drillId;
+  if (!isSafeId(drillId)) throw new Error("Invalid drillId");
+  const existing = readProgress(drillId);
+  const problems = { ...existing?.problems };
+  const allowed = new Set(canonical.problems?.map((p) => p.id));
+  for (const problem of Array.isArray(incoming.problems) ? incoming.problems : []) {
+    const qid = problem?.id;
+    if (!isSafeId(qid) || !allowed.has(qid)) continue;
+    const input = problem.state;
+    if (!input || typeof input !== "object" || Array.isArray(input)) continue;
+    const previous = problems[qid] as Partial<ProblemState> | undefined;
+    const state = { ...previous };
+    const draft = input as Record<string, unknown>;
+    const sameCycle = (previous?.cycleStartedAt ?? null) === (draft.cycleStartedAt ?? null);
+    for (const field of ["mistakeNote", "revisitNote"] as const) {
+      if (typeof draft[field] === "string") {
+        state[field] = draft[field];
+      }
+    }
+    if (sameCycle) {
+      for (const field of ["userInput", "userCode"] as const) {
+        if (typeof draft[field] === "string") state[field] = draft[field];
+      }
+      if (draft.divergedStep === null || (
+        typeof draft.divergedStep === "number" && Number.isSafeInteger(draft.divergedStep) &&
+        draft.divergedStep >= 0
+      )) {
+        state.divergedStep = draft.divergedStep;
+      }
+    }
+    problems[qid] = state;
+  }
+
+  const sessions = { ...existing?.sessionSummary };
+  const summary = incoming.sessionSummary as { statusOverride?: unknown } | undefined;
+  const override = summary?.statusOverride;
+  if (override === "Graded" || override === "Needs Retry" || override === null) {
+    sessions.statusOverride = override;
+  }
+  const file = progressFile(drillId);
+  writeJsonAtomic(file, {
+    drillId,
+    unitCode: canonical.unitCode,
+    updatedAt: new Date().toISOString(),
+    sessionSummary: sessions,
+    problems,
+  } satisfies ProgressFile);
   return file;
 }
 
@@ -696,59 +749,71 @@ export function stampSyncMetadata(
   };
 }
 
-function mutateProblemVariantState(
+export function mutateProblemState(
   drillId: string,
   unitCode: string | undefined,
   qid: string,
-  mutator: (state: ProblemState) => void
+  mutator: (state: ProblemState) => void | ProblemState
 ): ProblemState {
-  if (!isSafeId(drillId) || !isSafeId(qid)) {
+  return mutateProblemStates(drillId, unitCode, [qid], mutator)[qid];
+}
+
+export function mutateProblemStates(
+  drillId: string,
+  unitCode: string | undefined,
+  qids: string[],
+  mutator: (state: ProblemState, qid: string) => void | ProblemState,
+  summary?: unknown
+): Record<string, ProblemState> {
+  if (!isSafeId(drillId) || !qids.every(isSafeId)) {
     throw new Error("Invalid drillId or qid");
   }
   const existing = readProgress(drillId);
   const problems = {
     ...((existing?.problems || {}) as Record<string, Partial<ProblemState>>),
   };
-  const nextState: ProblemState = {
-    userInput: "",
-    score: null,
-    divergedStep: null,
-    mistakes: [],
-    ...(problems[qid] || {}),
-  };
-  if (nextState.variants) {
-    nextState.variants = { ...nextState.variants };
-  }
-  mutator(nextState);
+  const changed: Record<string, ProblemState> = {};
+  for (const qid of qids) {
+    let nextState: ProblemState = {
+      userInput: "",
+      score: null,
+      divergedStep: null,
+      mistakes: [],
+      ...(problems[qid] || {}),
+    };
+    if (nextState.variants) {
+      nextState.variants = { ...nextState.variants };
+    }
+    nextState = mutator(nextState, qid) ?? nextState;
 
-  const derived = deriveVariantLists(
-    nextState.variants,
-    nextState.variantsSeen,
-    nextState.variantsAttempted
-  );
-  if (derived.variantsSeen.length > 0) {
-    nextState.variantsSeen = derived.variantsSeen;
-  } else {
-    delete nextState.variantsSeen;
-  }
-  if (derived.variantsAttempted.length > 0) {
-    nextState.variantsAttempted = derived.variantsAttempted;
-  } else {
-    delete nextState.variantsAttempted;
+    const derived = deriveVariantLists(
+      nextState.variants,
+      nextState.variantsSeen,
+      nextState.variantsAttempted
+    );
+    if (derived.variantsSeen.length > 0) {
+      nextState.variantsSeen = derived.variantsSeen;
+    } else {
+      delete nextState.variantsSeen;
+    }
+    if (derived.variantsAttempted.length > 0) {
+      nextState.variantsAttempted = derived.variantsAttempted;
+    } else {
+      delete nextState.variantsAttempted;
+    }
+
+    problems[qid] = nextState;
+    changed[qid] = nextState;
   }
 
-  problems[qid] = nextState;
-
-  const data: ProgressFile = {
+  writeJsonAtomic(progressFile(drillId), {
     drillId,
     unitCode: unitCode || existing?.unitCode,
     updatedAt: new Date().toISOString(),
-    sessionSummary: existing?.sessionSummary || {},
+    sessionSummary: mergeSessionSummary(existing?.sessionSummary, summary),
     problems,
-  };
-  const file = progressFile(drillId);
-  writeJsonAtomic(file, data);
-  return nextState;
+  } satisfies ProgressFile);
+  return changed;
 }
 
 /**
@@ -792,7 +857,7 @@ export function allocateSimilarSlots(
     .slice(0, MAX_SIMILAR_TABS);
 
   let assignedSlots: string[] = [];
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const variants: Record<string, VariantSessionRecord> = st.variants
       ? { ...st.variants }
       : {};
@@ -858,7 +923,7 @@ export function startProblemCycle(
       ? cycleStartedAt.trim()
       : new Date().toISOString();
   let effectiveCycle = safeTs;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const prevCycle =
       typeof st.cycleStartedAt === "string" && st.cycleStartedAt
         ? st.cycleStartedAt
@@ -887,7 +952,7 @@ export function markVariantServed(
     return existing;
   }
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const inCurrentCycle = Boolean(
@@ -923,7 +988,7 @@ export function addVariantDuration(
       ? Math.min(Math.round(durationMs), 600_000)
       : 0;
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const nextRec: VariantSessionRecord = {
@@ -952,7 +1017,7 @@ export function registerServedVariant(
     throw new Error("Invalid variantId");
   }
   let assignedToken = "";
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const variants = st.variants ? { ...st.variants } : {};
     assignedToken = generateVariantToken(variants);
     variants[assignedToken] = {
@@ -1002,7 +1067,7 @@ export function recordVariantAttempt(
   durationMs?: number
 ): { record: VariantSessionRecord; state: ProblemState } | null {
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const safeDuration =
@@ -1051,7 +1116,7 @@ export function updateVariantSession(
   }
 ): { record: VariantSessionRecord | null; state: ProblemState } {
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     let nextRec: VariantSessionRecord = { ...prev };
@@ -1089,37 +1154,4 @@ export function updateVariantSession(
     updatedRecord = nextRec;
   });
   return { record: updatedRecord, state };
-}
-
-/** Clear server-owned variant UI state for one or every problem in a drill. */
-export function resetVariantProgress(
-  drillId: string,
-  unitCode: string | undefined,
-  qid?: string
-): void {
-  if (!isSafeId(drillId) || (qid !== undefined && !isSafeId(qid))) {
-    throw new Error("Invalid drillId or qid");
-  }
-  const existing = readProgress(drillId);
-  if (!existing) return;
-  const problems = { ...(existing.problems || {}) } as Record<string, Record<string, unknown>>;
-  const ids = qid ? [qid] : Object.keys(problems);
-  for (const id of ids) {
-    const state = { ...(problems[id] || {}) };
-    delete state.variants;
-    delete state.similarSlots;
-    delete state.activeVariant;
-    delete state.exampleViewedAt;
-    delete state.cycleStartedAt;
-    delete state.variantsSeen;
-    delete state.variantsAttempted;
-    problems[id] = state;
-  }
-  const file = progressFile(drillId);
-  writeJsonAtomic(file, {
-    ...existing,
-    unitCode: unitCode || existing.unitCode,
-    updatedAt: new Date().toISOString(),
-    problems,
-  });
 }

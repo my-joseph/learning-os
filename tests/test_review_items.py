@@ -453,7 +453,7 @@ def test_newer_drill_attempt_wins_over_older_saved_review(tmp_path: Path):
     assert merged[key]["level"] == 4 and merged[key]["lastReviewed"] == "2026-11-18"
 
 
-def test_saved_items_for_deleted_or_reset_problems_are_ignored(tmp_path: Path):
+def test_saved_items_survive_reset_but_deleted_problems_are_ignored(tmp_path: Path):
     data_root, progress_dir = _seed_fixture(tmp_path)
     key = "DRL-MTH-T01-C04-U01-01/Q01"
     saved = ri.build_schedule_from_progress(data_root=data_root, progress_dir=progress_dir)
@@ -463,7 +463,7 @@ def test_saved_items_for_deleted_or_reset_problems_are_ignored(tmp_path: Path):
     progress["problems"]["Q01"]["cycleStartedAt"] = "2026-11-20T00:00:00Z"
     progress_file.write_text(json.dumps(progress), encoding="utf-8")
     active = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
-    assert key not in active
+    assert active[key] == saved[key]
 
     drill_file = Path(data_root) / "MTH-T01-C04-U01" / "DRL-MTH-T01-C04-U01-01.json"
     drill = json.loads(drill_file.read_text(encoding="utf-8"))
@@ -907,9 +907,9 @@ def test_record_review_result_preserves_level_after_in_cycle_review_help_reveal(
     progress["problems"]["Q01"]["reviewHintRevealedAt"] = "2026-11-20T12:01:00Z"
     progress_file.write_text(json.dumps(progress), encoding="utf-8")
 
-    # Schedule read prunes the cycle-reset entry, while recording the answer right after the
-    # in-cycle help reveal preserves Level 3 (assisted -> stays at Level 3).
-    assert key not in ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    schedule = ri.get_review_items_schedule(data_root=data_root, progress_dir=progress_dir)
+    assert schedule[key]["level"] == 3
+    assert schedule[key]["dueDate"] == "2026-11-20"
     updated = ri.record_review_result(
         "DRL-MTH-T01-C04-U01-01",
         "Q01",

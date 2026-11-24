@@ -178,6 +178,8 @@ export interface CheckDiagnostic {
 }
 
 export interface CheckResult {
+  eventId?: string;
+  ts?: string;
   verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "invalid input" | "skipped";
   message: string;
   components: CheckComponent[];
@@ -229,6 +231,8 @@ export interface TestRunRecord {
 }
 
 export interface AttemptRecord {
+  eventId?: string;
+  hintsUsed?: boolean;
   input: string;
   ts: string;
   verdict: string;
@@ -330,6 +334,8 @@ export interface ProblemState {
   exampleViewedAt?: string | null;
   /** ISO timestamp marking the start of the current review cycle (set on reset or review retry). */
   cycleStartedAt?: string | null;
+  /** Server-side level when this Daily Review cycle started. */
+  reviewBaseLevel?: number;
   /** ISO timestamp when a checkpoint hint was revealed during a Daily Review or retry cycle (does not modify original drill flags). */
   reviewHintRevealedAt?: string | null;
   /** ISO timestamp when equation set-up was revealed during a Daily Review cycle (does not modify original drill flags). */

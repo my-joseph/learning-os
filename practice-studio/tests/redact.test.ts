@@ -590,6 +590,7 @@ async function runRouteTests() {
       "Server answerSpec must win over client-spoofed answerSpec"
     );
 
+    assert.ok(spoofBody.eventId, "The check persists an event before returning");
     // 4f. /api/reveal respects review cycles (startProblemCycle + reviewMerge)
     const oldCycleState = makeState({
       userInput: "42",
@@ -615,7 +616,7 @@ async function runRouteTests() {
       unitCode: "MTH-TEST",
       problems: [{ id: mthDrillSample.problemId, state: oldCycleState }],
     });
-    const cycleTs = "2026-11-20T09:00:00.000Z";
+    const cycleTs = new Date(Date.parse(spoofBody.ts) + 1).toISOString();
     startProblemCycle(mthDrillSample.drillId, "MTH-TEST", mthDrillSample.problemId, cycleTs);
 
     // Immediately after starting a new review cycle, old attempts/lastCheck/flags must NOT unlock /api/reveal
@@ -643,7 +644,7 @@ async function runRouteTests() {
           state: makeState({
             cycleStartedAt: cycleTs,
             attempts: [
-              { input: "(((", ts: "2026-11-20T09:00:10.000Z", verdict: "parse_error" },
+              { input: "(((", ts: cycleTs, verdict: "parse_error" },
             ],
           }),
         },
