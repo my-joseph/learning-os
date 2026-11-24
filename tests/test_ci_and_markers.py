@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -99,3 +101,136 @@ def test_ci_workflow_checks_all_labs_and_preserves_required_job_names():
     assert "needs.changes.outputs.lab == 'true'" in ci_text
     assert "tools/lint/" in ci_text
     assert "test_unit_scope" in ci_text
+
+
+def _extract_ci_detect_script() -> str:
+    ci_text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    match = re.search(r"- id: detect\n\s+run: \|\n(.*?)\n  python:", ci_text, re.DOTALL)
+    assert match is not None, "detect step script not found in .github/workflows/ci.yml"
+    return textwrap.dedent(match.group(1))
+
+
+def _run_ci_detect(
+    tmp_path: Path,
+    *,
+    modify: tuple[str, ...] = (),
+    delete: tuple[str, ...] = (),
+    rename: tuple[tuple[str, str], ...] = (),
+) -> dict[str, str]:
+    repo = tmp_path / "repo"
+    repo.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "user.email", "ci-test@example.com"], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "user.name", "CI Test"], check=True)
+
+    seed_files = (
+        *modify,
+        *delete,
+        *(src for src, _ in rename),
+        "practice-studio/src/components/math/MathWorkspace.tsx",
+    )
+    for rel in sorted(set(seed_files)):
+        target = repo / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "base"], check=True)
+    base_sha = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+
+    for rel in modify:
+        target = repo / rel
+        target.write_text("changed\n", encoding="utf-8")
+    for rel in delete:
+        subprocess.run(["git", "-C", str(repo), "rm", "-q", rel], check=True)
+    for src, dst in rename:
+        (repo / dst).parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "-C", str(repo), "mv", src, dst], check=True)
+
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "pr"], check=True)
+    head_sha = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+
+    script = (
+        _extract_ci_detect_script()
+        .replace("${{ github.event_name }}", "pull_request")
+        .replace("${{ github.event.pull_request.base.sha }}", base_sha.stdout.strip())
+        .replace("${{ github.event.pull_request.head.sha }}", head_sha.stdout.strip())
+    )
+    out_file = tmp_path / "github_output"
+    env = {**os.environ, "GITHUB_OUTPUT": str(out_file)}
+    proc = subprocess.run(["bash", "-e", "-c", script], cwd=repo, env=env, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
+    return dict(line.split("=", 1) for line in out_file.read_text(encoding="utf-8").splitlines() if "=" in line)
+
+
+@pytest.mark.parametrize(
+    "changed_path",
+    [
+        "scripts/prg_migrate.py",
+        "docs/prg_migration_map.json",
+        "docs/prg_v1_codes.json",
+        "math_engine/source_cores/code_originality.py",
+        "math_engine/source_cores/originality.py",
+        "math_engine/source_cores/__init__.py",
+    ],
+)
+def test_ci_detect_triggers_prg_for_migration_and_shared_originality(tmp_path: Path, changed_path: str) -> None:
+    outputs = _run_ci_detect(tmp_path, modify=(changed_path,))
+    assert outputs == {"prg": "true", "lab": "false", "python": "true"}
+
+
+@pytest.mark.parametrize(
+    "changed_path",
+    [
+        "math_engine/generate.py",
+        "drills/data/MTH-T01-C01-U01/DRL-MTH-T01-C01-U01-01.json",
+        "math_engine/source_cores/schema.json",
+    ],
+)
+def test_ci_detect_keeps_non_prg_python_changes_out_of_prg_job(tmp_path: Path, changed_path: str) -> None:
+    outputs = _run_ci_detect(tmp_path, modify=(changed_path,))
+    assert outputs == {"prg": "false", "lab": "false", "python": "true"}
+
+
+@pytest.mark.parametrize(
+    "changed_path",
+    [
+        "practice-studio/src/types/drill.ts",
+        "practice-studio/src/types/figure.ts",
+        "practice-studio/src/lib/redact.ts",
+        "practice-studio/src/components/MathFigure/GeometryRenderer.tsx",
+        "practice-studio/src/components/MathFigure/CartesianRenderer.tsx",
+    ],
+)
+def test_ci_detect_triggers_python_for_studio_contract_files(tmp_path: Path, changed_path: str) -> None:
+    outputs = _run_ci_detect(tmp_path, modify=(changed_path,))
+    assert outputs == {"prg": "false", "lab": "false", "python": "true"}
+
+
+@pytest.mark.parametrize(
+    "changed_path",
+    [
+        "practice-studio/src/components/math/MathWorkspace.tsx",
+        "practice-studio/src/app/page.tsx",
+        "docs/studio_design.md",
+    ],
+)
+def test_ci_detect_skips_python_for_pure_studio_ui_and_design_doc(tmp_path: Path, changed_path: str) -> None:
+    outputs = _run_ci_detect(tmp_path, modify=(changed_path,))
+    assert outputs == {"prg": "false", "lab": "false", "python": "false"}
+
+
+def test_ci_detect_triggers_all_jobs_on_studio_deletion_or_rename(tmp_path: Path) -> None:
+    del_outputs = _run_ci_detect(tmp_path / "del", delete=("practice-studio/src/components/math/MathWorkspace.tsx",))
+    assert del_outputs == {"prg": "true", "lab": "true", "python": "true"}
+
+    ren_outputs = _run_ci_detect(
+        tmp_path / "ren",
+        rename=(
+            (
+                "practice-studio/src/components/math/MathWorkspace.tsx",
+                "practice-studio/src/components/math/MathWorkspaceNew.tsx",
+            ),
+        ),
+    )
+    assert ren_outputs == {"prg": "true", "lab": "true", "python": "true"}
