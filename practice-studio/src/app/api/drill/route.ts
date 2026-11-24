@@ -12,7 +12,7 @@ import {
   remapWorkspaceFileForMode,
   resolveInsideDrillWorkspace,
 } from "@/lib/paths";
-import { applyProgress, readProgress } from "@/lib/progress";
+import { applyProgress, readPendingNotionSync, readProgress } from "@/lib/progress";
 import { redactDrill, redactDrillForReview } from "@/lib/redact";
 import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
 import { plainTitle } from "@/lib/titleText";
@@ -72,6 +72,8 @@ export async function GET(req: NextRequest) {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, "utf-8");
       const doc = applyProgress(JSON.parse(content), readProgress(id));
+      const pendingSync = readPendingNotionSync(id);
+      if (pendingSync) doc.notionSyncProblems = pendingSync.retry.failedSteps;
 
       const rootDir = getWorkspaceRoot();
 

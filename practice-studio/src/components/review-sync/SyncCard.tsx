@@ -21,6 +21,7 @@ import {
   type SyncPreview,
 } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
+import { syncFailureLabel } from "@/lib/syncStatus";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -36,6 +37,7 @@ export interface SyncCardProps {
   syncedAt?: string | null;
   drillPageId?: string | null;
   changedCount: number;
+  failedSteps?: string[];
   isLab: boolean;
   labId?: string;
   labSummary?: {
@@ -75,6 +77,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
   syncedAt,
   drillPageId,
   changedCount,
+  failedSteps = [],
   isLab,
   labId,
   labSummary,
@@ -183,6 +186,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
   const toggleLabel = isGraded ? "Mark as needs retry" : "Mark as graded";
 
   const isSyncing = effectiveSyncPhase === "syncing";
+  const isPartial = effectiveSyncPhase === "partial";
   const syncTime = formatSyncTimestamp(syncedAt || syncState.at);
   const notionUrl = notionPageUrl(drillPageId || syncState.drillPageId);
 
@@ -514,8 +518,8 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
 
-        {/* Degraded / saved locally (warning tint) */}
-        {effectiveSyncPhase === "degraded" && (
+        {/* Incomplete Notion sync (warning tint) */}
+        {(effectiveSyncPhase === "degraded" || isPartial) && (
           <div className={`rounded-xl ${warningTone.softCard} p-4 space-y-3`}>
             <div className="flex items-start gap-2.5 text-sm text-zinc-800 dark:text-zinc-200">
               <AlertTriangle
@@ -523,36 +527,47 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 aria-hidden="true"
               />
               <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                    Saved locally. Notion wasn&apos;t updated:
-                  </span>
-                  <span className="text-xs text-zinc-700 dark:text-zinc-300 break-words">
-                    {errorBrief}
-                  </span>
-                  <Button variant="ghost" size="compact"
-                    type="button"
-                    onClick={() => setShowErrorDetails((prev) => !prev)}
-                    aria-expanded={showErrorDetails}
-                    className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
-                  >
-                    <span>Details</span>
-                    <ChevronDown
-                      aria-hidden="true"
-                      className={`w-3.5 h-3.5 transition-transform duration-150 ${
-                        showErrorDetails ? "rotate-180" : ""
-                      }`}
-                    />
-                  </Button>
-                </div>
+                {isPartial ? (
+                  <>
+                    <p className="font-semibold">Synced with problems</p>
+                    <ul aria-label="Failed sync steps" className="list-disc pl-4 text-xs">
+                      {failedSteps.map((step) => <li key={step}>{syncFailureLabel(step)}</li>)}
+                    </ul>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        Saved locally. Notion wasn&apos;t updated:
+                      </span>
+                      <span className="text-xs text-zinc-700 dark:text-zinc-300 break-words">
+                        {errorBrief}
+                      </span>
+                      <Button variant="ghost" size="compact"
+                        type="button"
+                        onClick={() => setShowErrorDetails((prev) => !prev)}
+                        aria-expanded={showErrorDetails}
+                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                      >
+                        <span>Details</span>
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                            showErrorDetails ? "rotate-180" : ""
+                          }`}
+                        />
+                      </Button>
+                    </div>
 
-                <Reveal show={showErrorDetails}>
-                  {showErrorDetails && (
-                    <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
-                      {errorFullText}
-                    </pre>
-                  )}
-                </Reveal>
+                    <Reveal show={showErrorDetails}>
+                      {showErrorDetails && (
+                        <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
+                          {errorFullText}
+                        </pre>
+                      )}
+                    </Reveal>
+                  </>
+                )}
               </div>
             </div>
 

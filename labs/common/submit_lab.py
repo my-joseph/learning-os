@@ -226,8 +226,8 @@ def evaluate_milestones(milestones: list, testcases: list):
     }
 
 
-def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict):
-    """Syncs lab grading results into Notion 'Learning Practice & Drills' database."""
+def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict) -> str | dict | None:
+    """Sync lab grading results and return the page URL or a partial write result."""
     if pilot_mode():
         print(f"[PILOT] skipped Notion write: lab result sync ({config.get('labId')})")
         return None
@@ -370,9 +370,13 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
         json.dump(id_map, f, ensure_ascii=False, indent=2)
 
     # Append-before-delete replacement so a failure mid-way never leaves an empty page.
-    replace_page_content(page_id, blocks, token, label=lab_id)
-
     page_url = f"https://notion.so/{page_id.replace('-', '')}"
+    try:
+        failed_step = "blockCleanup" if replace_page_content(page_id, blocks, token, label=lab_id) else None
+    except (OSError, RuntimeError):
+        failed_step = "pageContent"
+    if failed_step:
+        return {"pageUrl": page_url, "partial": True, "failedSteps": [failed_step]}
     return page_url
 
 
@@ -438,11 +442,18 @@ def main():
 
     # Step 4: Sync to Notion
     print(f"{CYAN}▶ Synchronizing Telemetry with Notion Database 'Learning Practice & Drills'...{RESET}")
+    partial_sync = False
     try:
-        notion_url = sync_to_notion(repo_root, lab_dir, config, eval_res, env)
-        if notion_url:
+        notion_result = sync_to_notion(repo_root, lab_dir, config, eval_res, env)
+        if isinstance(notion_result, dict):
+            partial_sync = True
+            failed_step = notion_result["failedSteps"][0]
+            label = "remove outdated blocks" if failed_step == "blockCleanup" else "write page content"
+            print(f"{YELLOW}Synced with problems. Could not {label}.{RESET}")
+            print(f"  {BOLD}Notion Page:{RESET} {CYAN}{notion_result['pageUrl']}{RESET}\n")
+        elif notion_result and not notion_result.startswith("https://notion.so/mock-"):
             print(f"{GREEN}✔ Successfully synced to Notion!{RESET}")
-            print(f"  {BOLD}Notion Page:{RESET} {CYAN}{notion_url}{RESET}\n")
+            print(f"  {BOLD}Notion Page:{RESET} {CYAN}{notion_result}{RESET}\n")
     except Exception as e:
         print(f"{RED}✗ Notion sync encountered an error: {e}{RESET}\n")
 
@@ -450,7 +461,7 @@ def main():
         sys.exit(1)
     else:
         print(f"{GREEN}{BOLD}🎉 ALL MILESTONES COMPLETED AND VERIFIED!{RESET}\n")
-        sys.exit(0)
+        sys.exit(1 if partial_sync else 0)
 
 
 if __name__ == "__main__":

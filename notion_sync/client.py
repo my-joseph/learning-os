@@ -194,27 +194,34 @@ def replace_page_content(page_id: str, new_blocks: list[dict], token: str, label
     """
     old_ids = [b["id"] for b in get_all_blocks(page_id, token)]
     append_blocks(page_id, new_blocks, token)
+    return delete_blocks(old_ids, token, label or page_id)
 
+
+def retry_page_cleanup(page_id: str, block_ids: list[str], token: str, label: str) -> list[tuple[str, str]]:
+    """Retry only obsolete blocks that are still present, including after a lost delete response."""
+    pending = set(block_ids)
+    return delete_blocks([b["id"] for b in get_all_blocks(page_id, token) if b["id"] in pending], token, label)
+
+
+def delete_blocks(block_ids: list[str], token: str, label: str) -> list[tuple[str, str]]:
     failed = []
 
     def _delete(b_id):
         try:
             _ensure_sync_time()
             notion_request("DELETE", f"blocks/{b_id}", token)
-        except TimeoutError:
-            raise
         except Exception as exc:  # noqa: BLE001 - collect and report below
             failed.append((b_id, str(exc)[:200]))
 
     if remaining_sync_seconds() is not None:
-        for b_id in old_ids:
+        for b_id in block_ids:
             _delete(b_id)
     else:
         with ThreadPoolExecutor(max_workers=5) as pool:
-            list(pool.map(_delete, old_ids))
+            list(pool.map(_delete, block_ids))
     if failed:
         print(
-            f"  WARNING [{label or page_id}]: {len(failed)} old block(s) could not be deleted:",
+            f"  WARNING [{label}]: {len(failed)} old block(s) could not be deleted:",
             file=sys.stderr,
         )
         for b_id, err in failed[:5]:

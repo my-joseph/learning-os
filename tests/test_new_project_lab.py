@@ -369,6 +369,40 @@ def test_lab_sync_pristine_mocked(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert copy.deepcopy(updated_map["LAB-PRG-T01-C01-99"])["id"] == "new-lab-page-123"
 
 
+@pytest.mark.parametrize("failing_method, failed_step", [("PATCH", "pageContent"), ("DELETE", "blockCleanup")])
+def test_lab_sync_reports_partial_page_writes(tmp_path, monkeypatch, failing_method, failed_step):
+    from labs.common import submit_lab
+    from notion_sync import client
+
+    lab_dir, _, id_map_path = _make_fixture_lab(tmp_path)
+    config = json.loads((lab_dir / "lab.config.json").read_text(encoding="utf-8"))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+    monkeypatch.setattr(lab_sync, "load_env", lambda: {"NOTION_TOKEN": "fake"})
+
+    def fake_request(method, endpoint, token, payload=None):
+        if endpoint.endswith("/query"):
+            return {"results": [{"id": "lab-page"}]}
+        if method == "GET":
+            return {"results": [{"id": "old-block"}]}
+        if method == failing_method and endpoint.startswith("blocks/"):
+            raise RuntimeError("block write failed")
+        return {}
+
+    for module in (client, lab_sync, submit_lab):
+        monkeypatch.setattr(module, "notion_request", fake_request)
+
+    result = lab_sync.sync_lab_to_notion(lab_dir, id_map_path=id_map_path)
+    assert result["synced"] is False
+    assert result["partial"] is True
+    assert result["failedSteps"] == [failed_step]
+    assert result["pageId"] == "lab-page"
+
+    evaluated = submit_lab.evaluate_milestones([], [])
+    result = submit_lab.sync_to_notion(id_map_path.parent, lab_dir, config, evaluated, {"NOTION_TOKEN": "fake"})
+    assert result["partial"] is True
+    assert result["failedSteps"] == [failed_step]
+
+
 def test_check_lab_ingested_mode_accepts_finalised_lab_provenance(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -38,6 +38,7 @@
 - Doc drift guards: `python -m scripts.doc_refs` checks doc/skill/rule paths, CLI flags, npm scripts, and skill names; `python -m scripts.doc_refs --changed origin/main` checks `docs/doc_map.json` on PRs.
 - Before calling work done: run the commands above that apply (lint/build/tests) and report failures honestly, separating pre-existing ones from new ones.
 - New drill/lab authoring: follow the relevant skill’s Notion sync step and task-specific instructions. From a worktree this works without copying `.env`: `notion_sync.client.load_env` reads the main checkout's `.env`.
+- A partial Notion sync reports `failedSteps`. Studio saves its retry checkpoint under `_notion_sync/` in the configured progress directory and advances the success stamp when every required step has completed. The Studio subprocess deadline sends SIGTERM to the process group and escalates to SIGKILL after one second if needed on macOS and Linux.
 
 ## Refactor history (historical)
 The following table records completed work from the earlier refactor; it is historical context, not an active phase plan.

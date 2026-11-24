@@ -11,6 +11,8 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 
 Review & Sync saves local progress before exporting results. Notion includes question and solution blocks for items with a saved check, test run, or review in the current attempt cycle. Skipped items appear as concept gaps. Pilot sync acknowledges locally.
 
+Review & Sync shows an amber **Synced with problems** banner when a Notion write is incomplete. It lists the affected steps and keeps the success indicator off. **Retry** resumes those steps for the same saved attempt, even after reloading Studio. Changes to the drill or its saved attempt start a fresh sync.
+
 ## UI proof of concept
 - The source-owned Radix + Tailwind primitives under `practice-studio/src/components/ui/shadcn/` are demonstrated at `/ui-poc`; keep showcase cards and their contents shrinkable and wrapped so the page has no horizontal overflow at 390 px.
 - `Button` supports compact controls with 44 px mobile targets and 32 px desktop height, plus compact icon controls with 44 px mobile targets and 36 px desktop targets. Native buttons default to `type="button"`; `asChild` links keep their element semantics. Primary buttons use indigo-600 with white text in both themes for AA contrast.

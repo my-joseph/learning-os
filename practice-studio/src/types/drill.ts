@@ -527,6 +527,7 @@ export interface DrillDocument {
   mistakeTags: MistakeTag[];
   problems: Problem[];
   sessionSummary: SessionSummary;
+  notionSyncProblems?: string[];
   localFilePath: string;
   labReadme?: string;
 }
@@ -543,7 +544,7 @@ export type RedactedDrillDocument = Omit<DrillDocument, "problems"> & {
 export interface RawDrillDocument
   extends Omit<
     DrillDocument,
-    "unitNotionUrl" | "mistakeTags" | "problems" | "sessionSummary" | "localFilePath"
+    "unitNotionUrl" | "mistakeTags" | "problems" | "sessionSummary" | "notionSyncProblems" | "localFilePath"
   > {
   unitNotionUrl?: string | null;
   mistakeTags?: MistakeTag[];

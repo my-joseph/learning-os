@@ -134,7 +134,7 @@ Report to the learner in polite Thai in a few lines, **without reference code or
    ```bash
    .venv/bin/python -m notion_sync.lab_sync labs/<LAB_ID>
    ```
-   (If `degraded: true`, report that Notion was not updated.)
+   Report a partial sync with the steps listed in `failedSteps`. A degraded result means registration could not be confirmed.
 2. Create a branch `lab/<LAB_ID>` (never on `main`), commit **only** `labs/<LAB_ID>/`, `labs/_reference/<LAB_ID>/`, and `id_map.json`, push, and open a PR (`gh pr create`).
 3. Verify the PR diff and CI result, then follow `rules/00_core.md` §10 for delivery. Do not repeat or expand the policy here.
 

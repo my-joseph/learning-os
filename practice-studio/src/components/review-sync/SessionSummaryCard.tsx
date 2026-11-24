@@ -29,6 +29,7 @@ export type EffectiveSyncPhase =
   | "syncing"
   | "synced"
   | "changed"
+  | "partial"
   | "degraded"
   | "error"
   | "offline"
@@ -94,8 +95,9 @@ function syncStatusLinkText(
         toneClass: warningTone.textLink,
       };
     case "degraded":
+    case "partial":
       return {
-        label: "Saved locally · retry",
+        label: phase === "partial" ? "Synced with problems" : "Saved locally · retry",
         showArrow: true,
         toneClass: warningTone.textLink,
       };
