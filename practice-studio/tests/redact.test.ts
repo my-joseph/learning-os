@@ -20,6 +20,8 @@ import {
   canRevealSteps,
   computeSafePlaceholder,
   isPartUnlocked,
+  projectReviewRunResponse,
+  projectTestRunReport,
   redactDrill,
   redactProblem,
   redactProblemStateForClient,
@@ -861,6 +863,134 @@ async function runRouteTests() {
     assert.equal(cleanedJson.includes("SECRET_RAW_OUTPUT_LEAK"), false);
     assert.equal("rawOutput" in (cleanedState?.lastTestReport ?? {}), false);
     assert.deepEqual(cleanedState?.reviews?.[0]?.tests?.failed, ["1 hidden check failed"]);
+
+    // 4j. Response projections drop synthetic extra/unknown fields, mask hidden results, and recompute counts
+    const projectedReport = projectTestRunReport(
+      {
+        allPassed: true,
+        score: 1,
+        passedCount: 99,
+        totalCount: 99,
+        hiddenPassed: 50,
+        hiddenTotal: 50,
+        executionTimeMs: 7.5,
+        rawOutput: "SECRET_RAW_OUTPUT",
+        extraTopSecret: "SECRET_EXTRA_TOP",
+        visibleResults: [
+          {
+            name: "visible check",
+            passed: false,
+            error: "AssertionError at /Users/Joseph/project/drills/workspace/DRL-1/Q01.ts:1",
+            expected: "SECRET_EXPECTED",
+            actual: "0",
+            extraNested: "SECRET_EXTRA_NESTED",
+          },
+          {
+            name: "[Q01-HIDDEN-02] SECRET_PASSING_HIDDEN_NAME",
+            passed: true,
+          },
+        ],
+      },
+      {
+        trustedVisibleCount: 1,
+        trustedHiddenTotal: 1,
+        recomputeFromRunnerResults: true,
+      }
+    );
+    assert.deepEqual(Object.keys(projectedReport).sort(), [
+      "allPassed",
+      "executionTimeMs",
+      "hiddenPassed",
+      "hiddenTotal",
+      "passedCount",
+      "score",
+      "totalCount",
+      "visibleResults",
+    ]);
+    assert.equal(projectedReport.allPassed, false);
+    assert.equal(projectedReport.hiddenTotal, 1);
+    assert.equal(projectedReport.hiddenPassed, 1);
+    assert.equal(projectedReport.passedCount, 1);
+    assert.equal(projectedReport.totalCount, 2);
+    assert.equal(projectedReport.score, 0.5);
+    assert.equal(projectedReport.visibleResults.length, 1);
+    assert.deepEqual(Object.keys(projectedReport.visibleResults[0]).sort(), [
+      "error",
+      "name",
+      "passed",
+    ]);
+    const projReportJson = JSON.stringify(projectedReport);
+    for (const secret of [
+      "SECRET_RAW_OUTPUT",
+      "SECRET_EXTRA_TOP",
+      "SECRET_EXPECTED",
+      "SECRET_EXTRA_NESTED",
+      "SECRET_PASSING_HIDDEN_NAME",
+      "/Users/Joseph/",
+    ]) {
+      assert.equal(projReportJson.includes(secret), false, `Must not contain ${secret}`);
+    }
+
+    const projectedReviewRun = projectReviewRunResponse(
+      {
+        drillId: "spoofed-id",
+        problemId: "Q99",
+        archetypeKey: "prg-test",
+        level: 2,
+        codeHash: "sha256:abc",
+        extraRunnerLeak: "SECRET_REVIEW_TOP",
+        rawOutput: "SECRET_REVIEW_RAW",
+        tests: {
+          passed: 2,
+          total: 2,
+          failed: ["[Q01-HIDDEN-01] SECRET_HIDDEN_FAIL_NAME"],
+          extraTestsProp: "SECRET_TESTS_EXTRA",
+        },
+        lint: [
+          {
+            file: "/Users/Joseph/project/drills/workspace/DRL-1/Q01.ts",
+            rule: "no-unused-vars",
+            line: 3,
+            message: "Unused var in /Users/Joseph/project/drills/workspace/DRL-1/Q01.ts",
+            extraLintProp: "SECRET_LINT_EXTRA",
+          },
+        ],
+        typecheck: [
+          {
+            file: "/Users/Joseph/project/drills/workspace/DRL-1/Q01.ts",
+            line: 4,
+            message: "TS2322 error",
+            extraTypeProp: "SECRET_TYPE_EXTRA",
+          },
+        ],
+        checks: [
+          {
+            id: "U-01",
+            check: "Check contracts",
+            why: "Prevent bugs",
+            severity: "must",
+            extraCheckProp: "SECRET_CHECK_EXTRA",
+          },
+        ],
+      },
+      { drillId: "DRL-PRG-T01-01", problemId: "Q01", isLab: false }
+    );
+    assert.equal(projectedReviewRun.drillId, "DRL-PRG-T01-01");
+    assert.equal(projectedReviewRun.problemId, "Q01");
+    assert.deepEqual(projectedReviewRun.tests.failed, ["1 hidden check failed"]);
+    const projRevJson = JSON.stringify(projectedReviewRun);
+    for (const secret of [
+      "SECRET_REVIEW_TOP",
+      "SECRET_REVIEW_RAW",
+      "SECRET_HIDDEN_FAIL_NAME",
+      "SECRET_TESTS_EXTRA",
+      "SECRET_LINT_EXTRA",
+      "SECRET_TYPE_EXTRA",
+      "SECRET_CHECK_EXTRA",
+      "/Users/Joseph/",
+    ]) {
+      assert.equal(projRevJson.includes(secret), false, `ReviewRun must not contain ${secret}`);
+    }
   } finally {
     if (prevProgressDir === undefined) {
       delete process.env.PROGRESS_DIR;

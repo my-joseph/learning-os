@@ -7,6 +7,7 @@ import type {
   TestCase,
 } from "@/types/drill";
 import { deriveReviewStatus, type ReviewStatus } from "@/lib/codeStatus";
+import { redactProblemStateForClient } from "@/lib/redact";
 import { plainTitle } from "@/lib/titleText";
 
 export const ALWAYS_STRIPPED_LAB_FIELDS = [
@@ -178,7 +179,7 @@ export function makeDefaultMilestoneState(
   rawState?: Record<string, unknown> | null
 ): ProblemState {
   const s = (rawState && typeof rawState === "object" ? rawState : {}) as Partial<ProblemState>;
-  return {
+  const base: ProblemState = {
     userInput: typeof s.userInput === "string" ? s.userInput : "",
     userCode: typeof s.userCode === "string" ? s.userCode : "",
     score: typeof s.score === "number" ? s.score : null,
@@ -196,6 +197,7 @@ export function makeDefaultMilestoneState(
     solutionRevealedBeforeAnswer: Boolean(s.solutionRevealedBeforeAnswer),
     durationMs: typeof s.durationMs === "number" ? s.durationMs : 0,
   };
+  return redactProblemStateForClient(base) ?? base;
 }
 
 export function lookupStateForMilestone(

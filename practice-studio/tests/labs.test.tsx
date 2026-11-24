@@ -680,6 +680,133 @@ async function testSyntheticLabAndProgress() {
       new NextRequest("http://127.0.0.1:3000/api/lab?id=LAB-DOES-NOT-EXIST")
     );
     assert.equal(notFoundRes.status, 404);
+
+    // 4. C06: Legacy lab review history with rawOutput, hidden test names, raw machine paths,
+    //    and extra/unknown fields is sanitized at read time on GET /api/lab and GET /api/labs
+    writeProgress({
+      drillId: labId,
+      unitCode: "PRG-T01-C01",
+      problems: [
+        {
+          id: "M1",
+          state: {
+            ...makeState(),
+            lastTestReport: {
+              allPassed: false,
+              score: 0.33,
+              passedCount: 1,
+              totalCount: 3,
+              visibleResults: [
+                { name: "registers listener", passed: true },
+                {
+                  name: "rejects bad handler",
+                  passed: false,
+                  error: "/Users/Joseph/secret/labs/src/emitter.ts:5 bad handler",
+                  extraReportField: "SECRET_LEGACY_RESULT_EXTRA",
+                },
+                {
+                  name: "[M1-HIDDEN-01] SECRET_LEGACY_HIDDEN_FAIL",
+                  passed: false,
+                  error: "Expected SECRET_HIDDEN_VAL",
+                },
+                {
+                  name: "[M1-HIDDEN-02] SECRET_LEGACY_HIDDEN_PASS",
+                  passed: true,
+                },
+              ],
+              hiddenPassed: 0,
+              hiddenTotal: 2,
+              executionTimeMs: 11,
+              rawOutput: "SECRET_LEGACY_RAW_OUTPUT",
+              extraLegacyTop: "SECRET_LEGACY_TOP_EXTRA",
+            },
+            reviews: [
+              {
+                ...makeReview("revise"),
+                tests: {
+                  passed: 1,
+                  total: 3,
+                  failed: [
+                    "rejects bad handler",
+                    "[M1-HIDDEN-01] SECRET_LEGACY_REVIEW_HIDDEN",
+                  ],
+                  extraTestsMeta: "SECRET_LEGACY_TESTS_META",
+                },
+                lint: [
+                  {
+                    file: "/Users/Joseph/secret/labs/src/emitter.ts",
+                    rule: "no-unused-vars",
+                    line: 2,
+                    message: "Unused x in /Users/Joseph/secret/labs/src/emitter.ts",
+                    extraLintMeta: "SECRET_LEGACY_LINT_META",
+                  },
+                ],
+                typecheck: [
+                  {
+                    file: "/Users/Joseph/secret/labs/src/emitter.ts",
+                    line: 3,
+                    message: "TS2322 type mismatch",
+                    extraTcMeta: "SECRET_LEGACY_TC_META",
+                  },
+                ],
+                findings: [
+                  {
+                    check: "U-01",
+                    severity: "must",
+                    line: 4,
+                    note: "Check edge case",
+                    internalOnly: "SECRET_LEGACY_FINDING_META",
+                  },
+                ],
+                secretReviewField: "SECRET_LEGACY_REVIEW_EXTRA",
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+    const sanitizedLabRes = await labGET(
+      new NextRequest(`http://127.0.0.1:3000/api/lab?id=${encodeURIComponent(labId)}`)
+    );
+    assert.equal(sanitizedLabRes.status, 200);
+    const sanitizedLabText = await sanitizedLabRes.text();
+    const sanitizedLab = JSON.parse(sanitizedLabText) as LabDetailResponse;
+    for (const secret of [
+      "SECRET_LEGACY_RAW_OUTPUT",
+      "SECRET_LEGACY_RESULT_EXTRA",
+      "SECRET_LEGACY_HIDDEN_FAIL",
+      "SECRET_HIDDEN_VAL",
+      "SECRET_LEGACY_HIDDEN_PASS",
+      "SECRET_LEGACY_TOP_EXTRA",
+      "SECRET_LEGACY_REVIEW_HIDDEN",
+      "SECRET_LEGACY_TESTS_META",
+      "SECRET_LEGACY_LINT_META",
+      "SECRET_LEGACY_TC_META",
+      "SECRET_LEGACY_FINDING_META",
+      "SECRET_LEGACY_REVIEW_EXTRA",
+      "M1-HIDDEN-01",
+      "M1-HIDDEN-02",
+      "/Users/Joseph/",
+    ]) {
+      assert.equal(sanitizedLabText.includes(secret), false, `GET /api/lab leaked ${secret}`);
+    }
+    const m1State = sanitizedLab.milestones[0].state;
+    assert.equal(m1State.lastTestReport?.passedCount, 1);
+    assert.equal(m1State.lastTestReport?.totalCount, 3);
+    assert.deepEqual(
+      m1State.lastTestReport?.visibleResults.map((r) => r.name),
+      ["registers listener", "rejects bad handler", "1 hidden check failed"]
+    );
+    assert.deepEqual(m1State.reviews?.at(-1)?.tests.failed, [
+      "rejects bad handler",
+      "1 hidden check failed",
+    ]);
+    assert.equal(sanitizedLab.progress.reviseCount, 2);
+    const sanitizedLabsListRes = await labsGET();
+    assert.equal(sanitizedLabsListRes.status, 200);
+    const sanitizedLabsListText = await sanitizedLabsListRes.text();
+    assert.equal(sanitizedLabsListText.includes("SECRET_LEGACY"), false);
   } finally {
     if (prevLabsDir === undefined) {
       delete process.env.LABS_DIR;

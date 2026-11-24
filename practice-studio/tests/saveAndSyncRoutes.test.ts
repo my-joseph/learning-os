@@ -1140,6 +1140,92 @@ async function main() {
       await new Promise((resolve) => setTimeout(resolve, Math.max(0, 3_250 - elapsedMs)));
       assert.ok(fs.existsSync(path.join(tmpRoot, "parent-terminated")));
       assert.equal(fs.existsSync(path.join(tmpRoot, "child-survived")), false);
+
+      // C05: Skip + opened solution in Studio (assisted) and untried items do not leak answer content to Notion
+      const c05DrillId = "DRL-MTH-T01-C01-78";
+      const c05Doc = {
+        ...canonicalDrillDoc,
+        drillId: c05DrillId,
+        chapterCode: "MTH-T01-C01",
+        topicCode: "MTH-T01",
+        problems: [
+          {
+            ...canonicalDrillDoc.problems[0],
+            id: "Q01",
+            levelLabel: "Level 1",
+            category: "Core Skill",
+          },
+          {
+            id: "Q02",
+            levelLabel: "Level 1",
+            category: "Core Skill",
+            prompt: "Solve $4x = 20$.",
+            answerPlain: "5",
+            answerDisplay: "5",
+            steps: [{ latex: "x = 5", explain: "SECRET_SKIPPED_STEP_EXPLAIN" }],
+          },
+          {
+            id: "Q03",
+            levelLabel: "Level 1",
+            category: "Core Skill",
+            prompt: "Solve $6x = 42$.",
+            answerPlain: "7",
+            answerDisplay: "7",
+            steps: [{ latex: "x = 7", explain: "SECRET_UNTRIED_STEP_EXPLAIN" }],
+          },
+        ],
+      };
+      fs.writeFileSync(path.join(drillsUnitDir, `${c05DrillId}.json`), JSON.stringify(c05Doc, null, 2));
+      const c05PracticeDoc = loadPracticeDocument(c05DrillId)!;
+      recordOriginalCheck(c05PracticeDoc, c05PracticeDoc.problems[0], null, "5", {
+        verdict: "correct",
+        message: "Correct",
+        components: [],
+        diagnostics: [],
+      });
+      await revealPOST(makePostReq("http://127.0.0.1:3000/api/reveal", {
+        drillId: c05DrillId,
+        qid: "Q02",
+        action: "skip",
+      }));
+      // Learner opens the solution in Studio after Skip (assisted)
+      await revealPOST(makePostReq("http://127.0.0.1:3000/api/reveal", {
+        drillId: c05DrillId,
+        qid: "Q02",
+        action: "steps",
+      }));
+      assert.equal(
+        (await revealGET(new NextRequest(`http://127.0.0.1:3000/api/reveal?drill=${c05DrillId}&q=Q02&part=steps`))).status,
+        200,
+        "Learner may open solution in Studio after Skip"
+      );
+
+      let pipedC05Doc: {
+        sessionSummary?: { skippedCount?: number; skippedProblems?: string[]; divergedStepsSummary?: string };
+        problems?: Array<{ id: string; state?: ProblemState }>;
+      } | undefined;
+      setNotionDrillSyncSpawnerForTests(async ({ stdinPayload }) => {
+        pipedC05Doc = JSON.parse(stdinPayload).doc;
+        return { code: 0, stdout: JSON.stringify({ ok: true, dryRun: true }), stderr: "" };
+      });
+      const c05SyncRes = await syncNotionPOST(
+        makePostReq("http://127.0.0.1:3000/api/sync-notion", {
+          drillId: c05DrillId,
+          unitCode,
+          dryRun: true,
+        })
+      );
+      assert.equal(c05SyncRes.status, 200);
+      assert.ok(pipedC05Doc);
+      assert.equal(pipedC05Doc.sessionSummary?.skippedCount, 1);
+      assert.deepEqual(pipedC05Doc.sessionSummary?.skippedProblems, ["Q02 (Core Skill)"]);
+      assert.equal(
+        pipedC05Doc.sessionSummary?.divergedStepsSummary?.includes("SECRET_"),
+        false,
+        "Session summary must not expose skipped/untried steps"
+      );
+      assert.equal(pipedC05Doc.problems?.find((p) => p.id === "Q02")?.state?.skipped, true);
+      assert.equal(pipedC05Doc.problems?.find((p) => p.id === "Q03")?.state?.attempts, undefined);
     }
 
     console.log("save-state and sync-notion route tests passed");

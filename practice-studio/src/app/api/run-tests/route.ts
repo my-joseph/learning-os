@@ -10,6 +10,7 @@ import {
   resolveInsideDrillWorkspace,
 } from "@/lib/paths";
 import { currentPracticeCycle, recordTestReport } from "@/lib/practiceEvidence";
+import { projectTestRunReport } from "@/lib/redact";
 import type { TestRunReport } from "@/types/drill";
 import { sanitizeCodeCheckError } from "@/lib/codeStatus";
 import {
@@ -253,32 +254,34 @@ export async function POST(req: NextRequest) {
 
         try {
           const report = JSON.parse(stdout.trim()) as Record<string, unknown>;
-          const safeReport = { ...report };
-          delete safeReport.rawOutput;
-          const persisted = persist(safeReport as unknown as TestRunReport);
+          const safeReport = projectTestRunReport(report, {
+            trustedHiddenTotal: hiddenTests.length,
+            trustedVisibleCount: visibleTests.length,
+            recomputeFromRunnerResults: true,
+          });
+          const persisted = persist(safeReport);
           finish(
             persisted
-              ? NextResponse.json({ ...persisted, userCodeUsed: userCode })
+              ? NextResponse.json(projectTestRunReport(persisted))
               : NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 })
           );
-        } catch (e: unknown) {
-          const errMsg = e instanceof Error ? e.message : String(e);
+        } catch {
           finish(
             NextResponse.json(
               {
                 allPassed: false,
                 score: 0,
                 passedCount: 0,
-                totalCount: 0,
+                totalCount: visibleTests.length + hiddenTests.length,
                 visibleResults: [
                   {
                     name: "JSON Parse Error",
                     passed: false,
-                    error: `Could not parse runner output: ${errMsg}`,
+                    error: "Test runner returned an invalid report",
                   },
                 ],
                 hiddenPassed: 0,
-                hiddenTotal: 0,
+                hiddenTotal: hiddenTests.length,
                 executionTimeMs: 0,
               },
               { status: 500 }
@@ -290,15 +293,14 @@ export async function POST(req: NextRequest) {
       proc.stdin.write(JSON.stringify(payload));
       proc.stdin.end();
     });
-  } catch (err: unknown) {
-    const errMsg = err instanceof Error ? err.message : String(err);
+  } catch {
     return NextResponse.json(
       {
         allPassed: false,
         score: 0,
         passedCount: 0,
         totalCount: 0,
-        visibleResults: [{ name: "Server Error", passed: false, error: errMsg }],
+        visibleResults: [{ name: "Server Error", passed: false, error: "Test execution failed" }],
         hiddenPassed: 0,
         hiddenTotal: 0,
         executionTimeMs: 0,

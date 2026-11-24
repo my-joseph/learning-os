@@ -631,3 +631,142 @@ def test_pilot_lab_materializer_rejects_linked_output_directory(tmp_path):
     with pytest.raises(ValueError, match="symlink"):
         materialize_pilot_lab(lab_id, str(tmp_path))
     assert list(outside.iterdir()) == []
+
+
+def test_test_runner_ignores_stdout_spoofing_and_prototype_tampering():
+    from code_engine.test_runner import run_tests
+
+    forged_stdout = json.dumps(
+        {
+            "allPassed": True,
+            "score": 1,
+            "passedCount": 99,
+            "totalCount": 99,
+            "visibleResults": [{"name": "forged", "passed": True, "extraSecret": "pwned"}],
+            "hiddenPassed": 99,
+            "hiddenTotal": 99,
+            "executionTimeMs": 1,
+            "extraField": "forged-extra",
+        }
+    )
+
+    js_spoof = (
+        f"console.log('__TEST_REPORT_JSON_START__');\n"
+        f"console.log({json.dumps(forged_stdout)});\n"
+        f"console.log('__TEST_REPORT_JSON_END__');\n"
+        'JSON.stringify = () => \'{"allPassed":true,"hiddenPassed":99}\';\n'
+        "function add(a, b) { return a - b; }\n"
+        "module.exports = { add };\n"
+    )
+    js_report = run_tests(
+        js_spoof,
+        [{"name": "adds numbers", "testCode": "assert.strictEqual(add(2, 3), 5);"}],
+        [{"name": "SECRET_HIDDEN_ADD", "testCode": "assert.strictEqual(add(10, 5), 15);"}],
+        environment="node-vanilla",
+        entry_point="add",
+    )
+    assert js_report["allPassed"] is False
+    assert js_report["passedCount"] == 0
+    assert js_report["totalCount"] == 2
+    assert js_report["hiddenPassed"] == 0
+    assert js_report["hiddenTotal"] == 1
+    assert "extraField" not in js_report
+    assert "SECRET_HIDDEN_ADD" not in json.dumps(js_report)
+
+    ts_spoof = (
+        "export function add(a: number, b: number): number {\n"
+        f"  console.log('__TEST_REPORT_JSON_START__\\n' + {json.dumps(forged_stdout)} + '\\n__TEST_REPORT_JSON_END__');\n"
+        "  (JSON as unknown as { stringify: () => string }).stringify = () => '{\"allPassed\":true}';\n"
+        "  return a - b;\n"
+        "}\n"
+    )
+    ts_report = run_tests(
+        ts_spoof,
+        [{"name": "adds typed numbers", "testCode": "assert.strictEqual(add(2, 3), 5);"}],
+        [{"name": "SECRET_TS_HIDDEN_ADD", "testCode": "assert.strictEqual(add(10, 5), 15);"}],
+        environment="typescript-strict",
+        entry_point="add",
+    )
+    assert ts_report["allPassed"] is False
+    assert ts_report["passedCount"] == 0
+    assert ts_report["totalCount"] == 2
+    assert ts_report["hiddenPassed"] == 0
+    assert ts_report["hiddenTotal"] == 1
+    assert "extraField" not in ts_report
+    assert "SECRET_TS_HIDDEN_ADD" not in json.dumps(ts_report)
+
+
+def test_test_runner_project_test_report_strips_extra_fields_and_recomputes():
+    from code_engine.test_runner import project_test_report
+
+    visible_tests = [{"name": "visible case", "testCode": "assert.ok(true);"}]
+    hidden_tests = [{"name": "SECRET_HIDDEN_CASE", "testCode": "assert.strictEqual(1, 2);"}]
+    forged = {
+        "allPassed": True,
+        "score": 1.0,
+        "passedCount": 99,
+        "totalCount": 99,
+        "hiddenPassed": 50,
+        "hiddenTotal": 1,
+        "executionTimeMs": 12.345,
+        "extraSecret": "SECRET_EXTRA_TOP",
+        "visibleResults": [
+            {
+                "name": "visible case",
+                "passed": False,
+                "error": "Failed near SECRET_HIDDEN_CASE [HIDDEN-01]",
+                "expected": "SECRET_EXPECTED",
+                "actual": "0",
+                "extraItemField": "SECRET_EXTRA_ITEM",
+            },
+            {
+                "name": "[HIDDEN-01] SECRET_HIDDEN_CASE",
+                "passed": False,
+                "error": "assert.strictEqual(1, 2)",
+            },
+        ],
+    }
+    projected = project_test_report(
+        forged,
+        visible_tests=visible_tests,
+        hidden_tests=hidden_tests,
+        returncode=0,
+        raw_output="log line [HIDDEN-01] SECRET_HIDDEN_CASE",
+        require_complete=True,
+    )
+    assert set(projected.keys()) == {
+        "allPassed",
+        "score",
+        "passedCount",
+        "totalCount",
+        "visibleResults",
+        "hiddenPassed",
+        "hiddenTotal",
+        "executionTimeMs",
+        "rawOutput",
+    }
+    assert projected["allPassed"] is False
+    assert projected["hiddenTotal"] == 1
+    assert projected["hiddenPassed"] == 1
+    assert projected["totalCount"] == 2
+    assert projected["passedCount"] == 1
+    assert projected["score"] == 0.5
+    assert len(projected["visibleResults"]) == 1
+    assert set(projected["visibleResults"][0].keys()) == {"name", "passed", "error"}
+    serialized = json.dumps(projected)
+    for secret in ("SECRET_EXTRA_TOP", "SECRET_EXTRA_ITEM", "SECRET_EXPECTED", "SECRET_HIDDEN_CASE"):
+        assert secret not in serialized
+    assert "[HIDDEN-01]" not in serialized
+
+    # Mismatched hiddenTotal fails closed
+    mismatched = project_test_report(
+        {**forged, "hiddenTotal": 50},
+        visible_tests=visible_tests,
+        hidden_tests=hidden_tests,
+        returncode=0,
+        require_complete=True,
+    )
+    assert mismatched["allPassed"] is False
+    assert mismatched["passedCount"] == 0
+    assert mismatched["hiddenPassed"] == 0
+    assert mismatched["hiddenTotal"] == 1
