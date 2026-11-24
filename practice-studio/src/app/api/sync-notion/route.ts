@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { NextRequest, NextResponse } from "next/server";
 import {
@@ -8,14 +9,24 @@ import {
   isPilotMode,
   isSafeId,
 } from "@/lib/paths";
-import { runNotionDrillSync } from "@/lib/notionSyncRunner";
-import { applyProgress, readProgress, stampSyncMetadata, writeProgress } from "@/lib/progress";
+import { runNotionDrillSync, type NotionSyncRetry } from "@/lib/notionSyncRunner";
+import {
+  applyProgress,
+  readPendingNotionSync,
+  readProgress,
+  stampSyncMetadata,
+  writePendingNotionSync,
+  writeProgress,
+} from "@/lib/progress";
 import { getNotionAttemptEvidence } from "@/lib/reviewGuard";
 import { isLabId } from "@/lib/routes";
 import { buildSessionSummary, getPersistedStatusOverride, summaryFingerprint } from "@/lib/sessionSummary";
 import type { DrillDocument } from "@/types/drill";
 
+const activeDrillSyncs = new Set<string>();
+
 export async function POST(req: NextRequest) {
+  let activeDrillId: string | undefined;
   try {
     const body = await req.json();
     const drillId = body?.drillId;
@@ -53,6 +64,11 @@ export async function POST(req: NextRequest) {
     if (isPilotMode()) {
       return NextResponse.json({ ok: true, pilotSkipped: true });
     }
+    if (activeDrillSyncs.has(drillId)) {
+      return NextResponse.json({ ok: false, error: "This drill is already syncing." }, { status: 409 });
+    }
+    activeDrillSyncs.add(drillId);
+    activeDrillId = drillId;
 
     // Only previously saved progress can supply evidence. Ignore embedded state in
     // content files and leave problem-state writes to the ordered autosave path.
@@ -82,11 +98,19 @@ export async function POST(req: NextRequest) {
     const sessionSummary = buildSessionSummary(
       mergedDoc, getPersistedStatusOverride(body.sessionSummary), { attemptDate }
     );
-    writeProgress({ drillId, unitCode, sessionSummary }, { allowSyncStampUpdate: false });
-    const rootDir = getWorkspaceRoot();
     const isDryRun =
       body.dryRun === true ||
       ["1", "true", "yes"].includes(process.env.NOTION_DRY_RUN?.toLowerCase() ?? "");
+    const fingerprint = summaryFingerprint(sessionSummary);
+    // Resume a checkpoint only for the same content and saved attempt evidence.
+    const checkpointFingerprint = createHash("sha256")
+      .update(JSON.stringify({ ...mergedDoc, sessionSummary: fingerprint }))
+      .digest("hex");
+    const pending = isDryRun ? null : readPendingNotionSync(drillId);
+    const retrying = pending?.fingerprint === checkpointFingerprint ? pending : null;
+    if (retrying?.attemptDate) sessionSummary.attemptDate = retrying.attemptDate;
+    writeProgress({ drillId, unitCode, sessionSummary }, { allowSyncStampUpdate: false });
+    const rootDir = getWorkspaceRoot();
 
     const { code, stdout, stderr, timedOut } = await runNotionDrillSync({
       mergedDoc: { ...mergedDoc, sessionSummary },
@@ -94,6 +118,7 @@ export async function POST(req: NextRequest) {
       pythonBin: getPythonBin(rootDir),
       dataDir: getDrillsDataDir(),
       isDryRun,
+      retry: retrying?.retry,
     });
 
     if (timedOut) {
@@ -121,30 +146,29 @@ export async function POST(req: NextRequest) {
         .filter(Boolean);
       const lastOutputLine = outputLines[outputLines.length - 1];
       if (!lastOutputLine) throw new Error("Sync helper produced no JSON output");
-      const res = JSON.parse(lastOutputLine) as Record<string, unknown>;
+      const { retry, ...res } = JSON.parse(lastOutputLine) as Record<string, unknown>;
 
-      // Server is the source of truth for sync stamps: stamp ONLY on a real
-      // (non-pilot, non-dry-run, non-degraded) successful sync and return them.
-      const isRealSuccess =
-        res &&
-        typeof res === "object" &&
-        res.ok === true &&
-        !isDryRun &&
-        !isPilotMode() &&
-        !res.dryRun &&
-        !res.pilotSkipped &&
-        !res.degraded;
+      const isRealSync = !isDryRun && !res.dryRun && !res.pilotSkipped && !res.degraded;
+      if (isRealSync && res.partial === true) {
+        if (!retry || typeof retry !== "object") throw new Error("Partial sync result has no retry plan");
+        writePendingNotionSync(drillId, {
+          fingerprint: checkpointFingerprint,
+          attemptDate: sessionSummary.attemptDate ?? undefined,
+          retry: retry as NotionSyncRetry,
+        });
+      }
 
-      if (isRealSuccess) {
+      if (isRealSync && res.ok === true && !res.partial) {
         const rawPageId =
           (typeof res.drillPageId === "string" && res.drillPageId.trim()) ||
           (typeof res.notionPageId === "string" && res.notionPageId.trim()) ||
           null;
         const stamped = stampSyncMetadata(drillId, {
           notionPageId: rawPageId,
-          syncedFingerprint: summaryFingerprint(sessionSummary),
+          syncedFingerprint: fingerprint,
           unitCode,
         });
+        if (pending) writePendingNotionSync(drillId, null);
         return NextResponse.json({
           ...res,
           syncedToNotionAt: stamped.syncedToNotionAt,
@@ -163,5 +187,7 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: errMsg }, { status: 500 });
+  } finally {
+    if (activeDrillId) activeDrillSyncs.delete(activeDrillId);
   }
 }

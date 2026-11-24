@@ -599,6 +599,26 @@ def test_prg_novelty_detects_exact_and_reworded_cores_with_ad_hoc_tags(tmp_path:
     assert not is_duplicate
 
 
+def test_prg_novelty_keeps_different_skills_separate_despite_generic_words() -> None:
+    existing = _prg_card(
+        "CORE-PRG-GENERIC-01",
+        skill="Validate request payload before storing user preferences",
+        concept="Check required fields and reject malformed input before writing preferences",
+        trap="validation-order",
+    )
+    different_skill = _prg_card(
+        "CORE-PRG-GENERIC-02",
+        skill="Process network request input and return a response after retrying failures",
+        concept="Handle request data and produce a result while limiting repeated attempts",
+        trap="retry-budget",
+    )
+
+    is_duplicate, details = source_gap.cards_are_fuzzy_duplicate(different_skill, existing)
+
+    assert not is_duplicate
+    assert details["reason"] == "distinct core"
+
+
 # ---------------------------------------------------------------------------
 # 5. Worker extraction prompt generation & --commit validation/ledger/DONE_FILE
 # ---------------------------------------------------------------------------

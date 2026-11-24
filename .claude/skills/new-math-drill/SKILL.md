@@ -138,7 +138,7 @@ Only after every test in step 8 (and any variant checks in step 9) passed: (1) s
 
 - Follow the canonical branch, PR, and merge policy in `rules/00_core.md` §10; task-specific instructions may narrow it.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
-- Register the new drill’s pristine overview and Practice Studio link in Notion once the tests pass. Question and solution blocks require saved attempt evidence. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root. A worktree reads the main checkout's `.env` automatically. Report a result with `degraded: true` as pending Notion sync.
+- Register the new drill’s pristine overview and Practice Studio link in Notion once the tests pass. Question and solution blocks require saved attempt evidence. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root. A worktree reads the main checkout's `.env` automatically. Report a result with `degraded: true` as pending Notion sync. Report a partial sync with the steps listed in `failedSteps`.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
 
 ## Final documentation check

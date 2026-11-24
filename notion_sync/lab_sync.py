@@ -41,6 +41,7 @@ def sync_lab_to_notion(
 
     Returns ``{"synced": True, "pageId": ..., "labId": ...}`` or
     ``{"synced": False, "degraded": True, "error": ...}`` on token/network failure.
+    A partial page write returns ``synced: False``, ``partial: True`` and ``failedSteps``.
     When ``dry_run=True`` or ``NOTION_DRY_RUN=1``, validates config and builds the
     payload without calling Notion or modifying ``id_map.json``.
     """
@@ -155,11 +156,17 @@ def sync_lab_to_notion(
 
         id_map[lab_id] = {"id": page_id, "title": title}
         save_id_map(id_map, im_path)
-
-        replace_page_content(page_id, blocks, token)
-        return {"synced": True, "degraded": False, "pageId": page_id, "labId": lab_id}
     except Exception as exc:  # noqa: BLE001
         return {"synced": False, "degraded": True, "labId": lab_id, "error": str(exc)}
+
+    result = {"synced": True, "degraded": False, "pageId": page_id, "labId": lab_id}
+    try:
+        failed_step = "blockCleanup" if replace_page_content(page_id, blocks, token) else None
+    except (OSError, RuntimeError):
+        failed_step = "pageContent"
+    if failed_step:
+        result.update(synced=False, partial=True, failedSteps=[failed_step])
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:

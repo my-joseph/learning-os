@@ -214,6 +214,7 @@ For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/ne
 ## PART 8 — Terminal Telemetry Engine (`submit_lab.py`)
 
 - **Standard Terminal Lifecycle:** Developer iterates locally with `npm test` (or `npm run test:watch`). Once milestones are implemented, developer runs `npm run submit`.
+- **Partial Notion sync:** Pristine lab registration reports the failed page-content or cleanup step. Terminal drill and lab submission print **Synced with problems** with the failed steps. These commands exit with a nonzero status on a partial sync.
 - **Runner-Agnostic JUnit XML Standard:** Telemetry engine parses standard JUnit XML (`--test-reporter=junit`), ensuring universal compatibility across Node, Vitest, Jest, Pytest, and Go.
 - **Automated Notion Database Sync:** Evaluates points per milestone, maps failures to sanitized Mistake Categories, and updates Notion page properties and expandable toggle blocks with error traces.
 

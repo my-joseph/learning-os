@@ -689,6 +689,9 @@ def main(argv: list[str] | None = None):
         print(f"{YELLOW}[PILOT] Saved locally to pilot/progress; Notion write skipped.{RESET}\n")
     elif sync_res.get("degraded"):
         print(f"{YELLOW}⚠ {sync_res.get('warning', 'Saved locally; Notion was not updated.')}{RESET}\n")
+    elif sync_res.get("partial"):
+        failed_steps = ", ".join(sync_res["failedSteps"])
+        print(f"{YELLOW}Synced with problems. Incomplete steps: {failed_steps}.{RESET}\n")
     elif sync_res.get("ok") and sync_res.get("drillPageId"):
         page_url = f"https://notion.so/{sync_res['drillPageId'].replace('-', '')}"
         print(f"{GREEN}✔ Successfully synced to Notion!{RESET}")
@@ -700,7 +703,7 @@ def main(argv: list[str] | None = None):
         sys.exit(1)
     else:
         print(f"{GREEN}{BOLD}🎉 ALL EXERCISES COMPLETED AND VERIFIED!{RESET}\n")
-        sys.exit(0)
+        sys.exit(1 if sync_res.get("partial") else 0)
 
 
 if __name__ == "__main__":

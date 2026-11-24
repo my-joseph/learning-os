@@ -5,10 +5,11 @@ import path from "node:path";
 import { NextRequest } from "next/server";
 import { POST as saveStatePOST } from "../src/app/api/save-state/route";
 import { POST as syncNotionPOST } from "../src/app/api/sync-notion/route";
+import { GET as drillGET } from "../src/app/api/drill/route";
 import {
   NotionDrillSyncSpawnArgs,
   setNotionDrillSyncSpawnerForTests,
-  setNotionDrillSyncTimeoutForTests,
+  spawnNotionDrillSync,
 } from "../src/lib/notionSyncRunner";
 import { redactProblemStateForClient } from "../src/lib/redact";
 import { summaryFingerprint } from "../src/lib/sessionSummary";
@@ -342,7 +343,7 @@ async function main() {
       assert.equal(spawnCall.env.NOTION_DRY_RUN, "1");
 
       // The helper receives canonical content and previously saved progress.
-      const pipedDoc = JSON.parse(spawnCall.stdinPayload) as {
+      const pipedDoc = JSON.parse(spawnCall.stdinPayload).doc as {
         drillId: string;
         unitCode: string;
         sessionSummary: { practiceStatus: string; score: number };
@@ -632,7 +633,7 @@ async function main() {
       // 3a. The Python bridge uses the Studio result path and does not save progress.
       assert.match(
         syncSpawns[0].args[1],
-        /sync_drill_to_notion\(doc, save_local=False, studio_results=True\)/,
+        /sync_drill_to_notion\(payload\["doc"\], save_local=False, studio_results=True,/,
         "Studio /api/sync-notion must pass save_local=False to avoid a second Python progress overwrite"
       );
 
@@ -681,7 +682,7 @@ async function main() {
       assert.equal(diskAfterSync.sessionSummary.score, 1.5);
 
       // 3c. The stdin payload sent to Python must also carry the merged server-side progress (not redacted client state)
-      const pipedMerged = JSON.parse(syncSpawns[0].stdinPayload) as {
+      const pipedMerged = JSON.parse(syncSpawns[0].stdinPayload).doc as {
         problems: Array<{ id: string; state?: ProblemState }>;
       };
       const pipedQ01 = pipedMerged.problems.find((p) => p.id === "Q01")?.state;
@@ -1050,32 +1051,62 @@ async function main() {
         "timed out sync must preserve existing server stamps"
       );
 
-      // 4f. Real child_process timeout in defaultDrillSyncSpawner kills a hanging subprocess promptly
-      setNotionDrillSyncSpawnerForTests(null);
-      setNotionDrillSyncTimeoutForTests(150);
-      const sleepBin = path.join(tmpRoot, "hang-python.sh");
-      fs.writeFileSync(sleepBin, "#!/bin/sh\nexec sleep 10\n", { mode: 0o755 });
-      const { runNotionDrillSync } = await import("../src/lib/notionSyncRunner");
+      // A failed cleanup must be preserved for Retry and must not advance the success stamp.
+      const failedSteps = ["blockCleanup", "mistakeLog"];
+      const retry = { failedSteps, cleanupBlockIds: ["old-block"], drillPageId: "real-notion-page-77" };
+      const syncPayload = { drillId: stampDrillId, unitCode, sessionSummary: updatedSummary };
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0, stderr: "", stdout: JSON.stringify({ ok: false, partial: true, failedSteps, retry }),
+      }));
+      const partialBody = await (await syncNotionPOST(makePostReq("http://localhost/api/sync-notion", syncPayload))).json();
+      assert.deepEqual(partialBody.failedSteps, failedSteps);
+      assert.equal(partialBody.retry, undefined, "internal block IDs must stay on the server");
+      assert.equal(partialBody.syncedToNotionAt, undefined);
+      const drillRequest = new NextRequest(`http://localhost/api/drill?id=${stampDrillId}`);
+      const pendingDrill = await (await drillGET(drillRequest)).json();
+      assert.deepEqual(pendingDrill.notionSyncProblems, failedSteps);
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, secondSuccessBody.syncedToNotionAt);
+
+      let retryInput: unknown;
+      setNotionDrillSyncSpawnerForTests(async ({ stdinPayload }) => {
+        retryInput = JSON.parse(stdinPayload).retry;
+        return { code: 0, stderr: "", stdout: JSON.stringify({ ok: true, drillPageId: retry.drillPageId }) };
+      });
+      const retried = await (await syncNotionPOST(makePostReq("http://localhost/api/sync-notion", syncPayload))).json();
+      assert.deepEqual(retryInput, retry);
+      assert.ok(retried.syncedToNotionAt > secondSuccessBody.syncedToNotionAt);
+      const syncedDrill = await (await drillGET(drillRequest)).json();
+      assert.equal(syncedDrill.notionSyncProblems, undefined);
+
+      // The parent can exit on SIGTERM while a descendant without inherited pipes ignores it.
       const startMs = Date.now();
-      const hangResult = await runNotionDrillSync({
-        mergedDoc: { drillId: stampDrillId },
-        rootDir: tmpRoot,
-        pythonBin: sleepBin,
-        dataDir: path.join(tmpRoot, "drills", "data"),
-        isDryRun: true,
+      const hangResult = await spawnNotionDrillSync({
+        pythonBin: "/bin/sh",
+        args: ["-c", `
+          trap ': > parent-terminated; exit' TERM
+          (trap '' TERM; : > child-started; sleep 3; : > child-survived) </dev/null >/dev/null 2>&1 &
+          wait
+        `],
+        cwd: tmpRoot,
+        env: { NOTION_DRY_RUN: "1" },
+        stdinPayload: "",
+        timeoutMs: 250,
       });
       const elapsedMs = Date.now() - startMs;
       assert.equal(hangResult.timedOut, true, "default spawner must report timedOut=true on hang");
       assert.equal(hangResult.code, null);
       assert.match(hangResult.stderr, /timed out/i);
       assert.ok(elapsedMs < 3_000, `hung subprocess must be killed promptly (took ${elapsedMs}ms)`);
-      setNotionDrillSyncTimeoutForTests(null);
+      assert.ok(fs.existsSync(path.join(tmpRoot, "child-started")), hangResult.stderr);
+      await new Promise((resolve) => setTimeout(resolve, Math.max(0, 3_250 - elapsedMs)));
+      assert.ok(fs.existsSync(path.join(tmpRoot, "parent-terminated")));
+      assert.equal(fs.existsSync(path.join(tmpRoot, "child-survived")), false);
     }
 
     console.log("save-state and sync-notion route tests passed");
   } finally {
     setNotionDrillSyncSpawnerForTests(null);
-    setNotionDrillSyncTimeoutForTests(null);
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;
     if (prevDrillsDir === undefined) delete process.env.DRILLS_DATA_DIR;
