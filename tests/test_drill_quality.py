@@ -310,6 +310,77 @@ def test_served_similar_slot_counts_as_opened(tmp_path, monkeypatch):
     assert report["similarNeverOpened"] == []
 
 
+def test_similar_slot_tokens_use_variant_records_and_ignore_stale_activity(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
+    drill_id = "DRL-MTH-T02-C01-U01-06"
+    _write(
+        tmp_path / "drills/variants/MTH-T02-C01-U01.json",
+        {
+            "unitCode": "MTH-T02-C01-U01",
+            "variants": [{"sourceArchetype": "powers"}, {"sourceArchetype": "roots"}],
+        },
+    )
+    _write(
+        tmp_path / f"drills/data/MTH-T02-C01-U01/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "unitCode": "MTH-T02-C01-U01",
+            "problems": [
+                {"id": "Q01", "level": 2, "archetypeKey": "powers"},
+                {"id": "Q02", "level": 2, "archetypeKey": "roots"},
+            ],
+        },
+    )
+    _write(
+        tmp_path / f"progress/{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {
+                # A prior-cycle serve flag overlaps with a current-cycle attempt record.
+                "Q01": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "similarSlots": ["tok-a", "tok-b"],
+                    "variants": {
+                        "tok-a": {
+                            "variantId": "VAR-OLD",
+                            "role": "try",
+                            "servedAt": "2026-11-19T12:00:00Z",
+                            "attempts": [{"ts": "2026-11-19T12:01:00Z", "verdict": "correct"}],
+                        },
+                        "tok-b": {
+                            "variantId": "VAR-CURRENT",
+                            "role": "try",
+                            "servedAt": "",
+                            "attempts": [{"ts": "2026-11-20T12:02:00Z", "verdict": "incorrect"}],
+                        },
+                    },
+                },
+                # Stale record plus overlapping booleans must not register as opened.
+                "Q02": {
+                    "cycleStartedAt": "2026-11-20T12:00:00Z",
+                    "similarSlots": ["tok-c"],
+                    "variants": {
+                        "tok-c": {
+                            "variantId": "VAR-STALE",
+                            "role": "try",
+                            "servedAt": "2026-11-19T12:00:00Z",
+                            "attempts": [],
+                        }
+                    },
+                    "attempts": [{"ts": "2026-11-20T12:03:00Z", "verdict": "correct"}],
+                    "similarOpened": False,
+                },
+            },
+        },
+    )
+
+    report = build_report("MTH-T02-C01-U01", repo_root=str(tmp_path))
+
+    assert report["archetypes"]["powers"]["similarOpened"] is True
+    assert report["archetypes"]["roots"]["similarOpened"] is False
+    assert report["similarNeverOpened"] == ["roots"]
+
+
 def test_level_ladder_gap_starts_at_archetype_base_level(tmp_path, monkeypatch):
     monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
     drill_id = "DRL-MTH-T02-C01-U01-03"
