@@ -934,7 +934,7 @@ async function runTests() {
     const reset = async () => {
       const res = await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
         method: "POST",
-        body: JSON.stringify({ drillId, qid: "Q01", action: "reset" }),
+        body: JSON.stringify({ drillId, qid: "Q01", action: "start-review" }),
       }));
       assert.equal(res.status, 200);
       const { cycleStartedAt } = await res.json();
