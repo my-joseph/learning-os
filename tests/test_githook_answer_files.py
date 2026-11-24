@@ -54,3 +54,32 @@ def test_hook_allows_normal_files(tmp_path):
     repo = _repo(tmp_path)
     assert _staged_hook(repo, "drills/data/U/D.json").returncode == 0
     assert _staged_hook(repo, "scripts/env_helper.py").returncode == 0
+
+
+def test_gitignore_matches_hook_for_env_and_dotted_variants():
+    root = HOOK.parents[1]
+    ignored_paths = (
+        ".env",
+        ".env.local",
+        ".env.production",
+        ".env.development.local",
+        "practice-studio/.env",
+        "practice-studio/.env.local",
+        "practice-studio/.env.production",
+        "nested/dir/.env.staging",
+    )
+    for rel in ignored_paths:
+        res = subprocess.run(
+            ["git", "-C", str(root), "check-ignore", "--no-index", "-q", rel],
+            capture_output=True,
+            text=True,
+        )
+        assert res.returncode == 0, f"expected .gitignore to ignore {rel}"
+
+    for rel in ("scripts/env_helper.py", "practice-studio/src/lib/env.ts"):
+        res = subprocess.run(
+            ["git", "-C", str(root), "check-ignore", "--no-index", "-q", rel],
+            capture_output=True,
+            text=True,
+        )
+        assert res.returncode == 1, f"expected .gitignore not to ignore {rel}"
