@@ -152,7 +152,7 @@ export function computeHintRevealTransition(
   const cycleStartedAt = target.state.cycleStartedAt;
   const nowIso = new Date().toISOString();
   const revealTs =
-    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+    cycleStartedAt && !isTimestampInCycle(nowIso, cycleStartedAt) ? cycleStartedAt : nowIso;
   return {
     ...currentDrill,
     problems: currentDrill.problems.map((p) =>
@@ -255,7 +255,7 @@ export function computeSetupRevealTransition(
   const shouldMarkAssisted = !hasSubstantiveAttempt(target.state) && !alreadyRevealedInCycle;
   const nowIso = new Date().toISOString();
   const revealTs =
-    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+    cycleStartedAt && !isTimestampInCycle(nowIso, cycleStartedAt) ? cycleStartedAt : nowIso;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
         ...currentDrill,
@@ -304,7 +304,7 @@ export function computeSolutionRevealTransition(
   const shouldMarkAssisted = !hasCorrect && !alreadyRevealedInCycle;
   const nowIso = new Date().toISOString();
   const revealTs =
-    cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+    cycleStartedAt && !isTimestampInCycle(nowIso, cycleStartedAt) ? cycleStartedAt : nowIso;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
         ...currentDrill,
@@ -357,7 +357,7 @@ export function computeSkipProblemTransition(
   const nowIso = new Date(now).toISOString();
   const hintRevealTs =
     opts.countHint && cycleStartedAt
-      ? nowIso < cycleStartedAt
+      ? !isTimestampInCycle(nowIso, cycleStartedAt)
         ? cycleStartedAt
         : nowIso
       : null;
@@ -642,8 +642,7 @@ export function useDrill({
                     ...p.state,
                     exampleViewedAt:
                       p.state.exampleViewedAt &&
-                      (!p.state.cycleStartedAt ||
-                        p.state.exampleViewedAt >= p.state.cycleStartedAt)
+                      isTimestampInCycle(p.state.exampleViewedAt, p.state.cycleStartedAt)
                         ? p.state.exampleViewedAt
                         : viewedAt,
                   },

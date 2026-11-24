@@ -17,7 +17,6 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -37,6 +36,7 @@ from notion_sync.id_map import save_id_map
 from progress_store import (
     apply_progress,
     has_practice,
+    is_timestamp_in_cycle,
     load_progress,
     merge_review_schedule,
     pilot_mode,
@@ -253,14 +253,7 @@ def _notion_attempt_evidence(state: dict | None, *, is_prg: bool) -> tuple[bool,
     cycle = state.get("cycleStartedAt")
 
     def in_cycle(ts: str | None) -> bool:
-        if not cycle:
-            return True
-        if not isinstance(ts, str) or not isinstance(cycle, str):
-            return False
-        try:
-            return datetime.fromisoformat(ts) >= datetime.fromisoformat(cycle)
-        except (TypeError, ValueError):
-            return False
+        return is_timestamp_in_cycle(ts, cycle if isinstance(cycle, str) else None)
 
     def records(key: str) -> list[dict]:
         raw = state.get(key)

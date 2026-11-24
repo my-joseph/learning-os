@@ -6,7 +6,7 @@ import type {
   TestRunReport,
   VariantSessionRecord,
 } from "../types/drill";
-import { isSubstantiveVerdict, isTimestampInCycle } from "./reviewGuard";
+import { compareIsoTimestamps, isSubstantiveVerdict, isTimestampInCycle } from "./reviewGuard";
 import type { StatusTone } from "./statusTone";
 
 export type ScoreValue = 1 | 0.5 | 0 | null;
@@ -202,7 +202,10 @@ function resolvePrgLatestTestsStatus(
   const revTestPass = latestRev ? reviewTestsPass(latestRev) : null;
 
   if (reportInfo.hasData && latestRev) {
-    if (reportInfo.ts && latestRevAt && latestRevAt > reportInfo.ts && revTestPass !== null) {
+    const revCmp =
+      reportInfo.ts && latestRevAt ? compareIsoTimestamps(latestRevAt, reportInfo.ts) : null;
+    const isNewerRev = revCmp !== null ? revCmp > 0 : latestRevAt > (reportInfo.ts ?? "");
+    if (reportInfo.ts && latestRevAt && isNewerRev && revTestPass !== null) {
       return revTestPass ? "pass" : "fail";
     }
     return reportInfo.allPassed ? "pass" : "fail";
@@ -426,11 +429,7 @@ export function scoreVariant(
   if (!record) {
     return { score: null, outcome: "notTried", firstTry: false, usedHelp: false };
   }
-  const inCurrentCycle =
-    !cycleStartedAt ||
-    (typeof record.servedAt === "string" &&
-      record.servedAt.length > 0 &&
-      record.servedAt >= cycleStartedAt);
+  const inCurrentCycle = isTimestampInCycle(record.servedAt, cycleStartedAt);
 
   const adaptedState: Partial<ProblemState> = {
     attempts: Array.isArray(record.attempts) ? record.attempts : [],
@@ -540,7 +539,8 @@ export function applySelfScore(
   }
   const finalScore = normalized > maxAllowed ? maxAllowed : normalized;
   const nowIso = new Date().toISOString();
-  const stamp = cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+  const stamp =
+    cycleStartedAt && !isTimestampInCycle(nowIso, cycleStartedAt) ? cycleStartedAt : nowIso;
   return {
     ...state,
     score: finalScore,

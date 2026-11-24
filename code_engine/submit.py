@@ -405,8 +405,8 @@ def evaluate_and_record_submission(
     now_iso: str | None = None,
 ) -> dict:
     """Record tests per QID and compute the session summary from current-cycle scores."""
-    # Use the same timestamp format as terminal review records for evidence ordering.
-    attempt_date = now_iso or datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace(
+    # Use the same millisecond UTC timestamp format as Studio and terminal review records for evidence ordering.
+    attempt_date = now_iso or datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds").replace(
         "+00:00", "Z"
     )
     q_groups = group_cases_by_qid(cases)

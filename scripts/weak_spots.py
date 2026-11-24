@@ -26,7 +26,15 @@ from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
 from math_engine.bridge import BRIDGE_SCOPE, problem_unit_codes
-from progress_store import find_repo_root, item_score, progress_root, score_problem
+from progress_store import (
+    compare_iso_timestamps,
+    find_repo_root,
+    is_timestamp_in_cycle,
+    item_score,
+    parse_iso_timestamp_ms,
+    progress_root,
+    score_problem,
+)
 from progress_store import labs_root as default_labs_root
 
 MIN_MATCHES = 2
@@ -151,8 +159,7 @@ def prior_review_evidence(state: dict, cycle: str) -> dict:
         field: [
             record
             for record in (state.get(field) or [])
-            if isinstance(record, dict)
-            and (not isinstance(recorded_at := record.get(timestamp) or record.get("ts"), str) or recorded_at < cycle)
+            if isinstance(record, dict) and not is_timestamp_in_cycle(record.get(timestamp) or record.get("ts"), cycle)
         ]
         for field, timestamp in (("attempts", "ts"), ("reviews", "at"))
     }
@@ -337,11 +344,13 @@ def trap_status(items: list[Item]) -> dict[str, dict]:
         n = sum(i.matched.count(trap) for i in hits)
         if n < MIN_MATCHES:
             continue
-        last_hit = max(i.ts for i in hits)
+        last_hit = max(hits, key=lambda i: (parse_iso_timestamp_ms(i.ts) or 0, i.ts)).ts
         # drills that contained the trap, after the last match, in order
         later: dict[str, list[Item]] = defaultdict(list)
         for i in mth_items:
-            if (i.trap == trap or trap in i.matched) and i.ts > last_hit and trap not in i.matched:
+            cmp_hit = compare_iso_timestamps(i.ts, last_hit) if (i.ts and last_hit) else None
+            is_later = (cmp_hit > 0) if cmp_hit is not None else (i.ts > last_hit)
+            if (i.trap == trap or trap in i.matched) and is_later and trap not in i.matched:
                 later[i.drill].append(i)
         clean = [d for d, its in later.items() if all(x.score == 1.0 for x in its)]
         out[trap] = {

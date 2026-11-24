@@ -4,6 +4,7 @@ import {
   canRevealVerifiedAnswer,
   canShowReferenceSolution,
   hasSubstantiveAttempt,
+  isTimestampInCycle,
   sanitizeCheckMessage,
 } from "../src/lib/reviewGuard";
 import type { ProblemState, ReviewRecord } from "../src/types/drill";
@@ -266,6 +267,33 @@ assert.strictEqual(
   }),
   false,
   "Pre-cycle testRuns must not count in a new cycle"
+);
+
+// 4. A8: Mixed-precision and timezone-offset timestamp boundary comparisons
+assert.strictEqual(
+  isTimestampInCycle("2026-11-20T10:00:00Z", "2026-11-20T10:00:00.900Z"),
+  false,
+  "10:00:00Z must NOT fall at or after 10:00:00.900Z"
+);
+assert.strictEqual(
+  isTimestampInCycle("2026-11-20T10:00:00Z", "2026-11-20T10:00:00.000Z"),
+  true,
+  "Equal instant with different fractional precision must be in cycle"
+);
+assert.strictEqual(
+  isTimestampInCycle("2026-11-20T17:00:00+07:00", "2026-11-20T10:00:00.000Z"),
+  true,
+  "Offset-bearing equal instant must be in cycle"
+);
+assert.strictEqual(
+  isTimestampInCycle("2026-11-20T10:00:00+07:00", "2026-11-20T04:00:00Z"),
+  false,
+  "10:00+07:00 (03:00Z) must NOT fall in a cycle starting at 04:00Z"
+);
+assert.strictEqual(
+  isTimestampInCycle("not-a-timestamp", "2026-11-20T10:00:00Z"),
+  false,
+  "Invalid timestamp must not count in cycle"
 );
 
 console.log("reviewGuard tests passed");

@@ -54,6 +54,7 @@ import {
   summarizeReviewSession,
 } from "@/lib/reviewSession";
 import type { SimilarProgressPatch } from "@/hooks/useSimilarTabs";
+import { isTimestampInCycle } from "@/lib/reviewGuard";
 import { isInCycle } from "@/lib/similarTabs";
 import { drillHref, isLabId } from "@/lib/routes";
 import {
@@ -994,7 +995,9 @@ export const DailyReviewPage: React.FC = () => {
         const cycleStartedAt = cycle;
         const nowIso = new Date().toISOString();
         const revealTs =
-          cycleStartedAt && nowIso < cycleStartedAt ? cycleStartedAt : nowIso;
+          cycleStartedAt && !isTimestampInCycle(nowIso, cycleStartedAt)
+            ? cycleStartedAt
+            : nowIso;
         return {
           ...p,
           state: {

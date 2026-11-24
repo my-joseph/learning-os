@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 from subprocess import CompletedProcess
@@ -617,8 +618,10 @@ def test_review_record_sets_state_score_via_shared_rule(tmp_path, monkeypatch):
     # 1. Clean first pass sets state.score = 1.0 even without prior Studio test run
     rec = review_record.add_record(drill_id, "Q01", [])
     assert rec["verdict"] == "pass"
+    assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$", rec["at"])
     prog = load_progress(drill_id)
     assert prog["problems"]["Q01"]["score"] == 1.0
+    assert prog["problems"]["Q01"]["lastTestReport"]["ts"] == rec["at"]
 
     # 2. Revise sets state.score = 0.0, then subsequent pass sets state.score = 0.5
     drill_doc_2 = _make_prg_drill(drill_id="DRL-PRG-T00-C03-98", level=1)

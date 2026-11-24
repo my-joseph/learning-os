@@ -25,9 +25,11 @@ from typing import Any
 from math_engine.bridge import BRIDGE_SCOPE, problem_unit_codes
 from math_engine.variant_bank import bank_path
 from progress_store import (
+    compare_iso_timestamps,
     cycle_evidence,
     find_repo_root,
     has_practice,
+    is_timestamp_in_cycle,
     progress_root,
     score_problem,
     score_variant,
@@ -55,9 +57,7 @@ def _resolve_today(today: datetime.date | str | None) -> datetime.date:
 
 
 def _in_cycle(ts: Any, cycle_started_at: str | None) -> bool:
-    if not cycle_started_at:
-        return True
-    return isinstance(ts, str) and len(ts) > 0 and ts >= cycle_started_at
+    return is_timestamp_in_cycle(ts, cycle_started_at)
 
 
 def _find_drill_doc(drill_id: str, data_root: str) -> dict[str, Any]:
@@ -584,8 +584,11 @@ def _build_unit_context(
             trap_matches_all[tag] += 1
             if it.drill not in trap_drills_all[tag]:
                 trap_drills_all[tag].append(it.drill)
-            if it.ts and (tag not in trap_last_all or it.ts > trap_last_all[tag]):
-                trap_last_all[tag] = it.ts
+            if it.ts:
+                prev_last = trap_last_all.get(tag)
+                cmp_ts = compare_iso_timestamps(it.ts, prev_last) if prev_last else None
+                if prev_last is None or (cmp_ts > 0 if cmp_ts is not None else it.ts > prev_last):
+                    trap_last_all[tag] = it.ts
 
     open_weak_spots: list[dict[str, Any]] = []
     closed_weak_spots: list[dict[str, Any]] = []
