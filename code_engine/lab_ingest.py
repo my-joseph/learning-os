@@ -31,7 +31,14 @@ from code_engine.examples_gate import (
     evaluate_lab_milestone_examples,
     validate_examples_and_constraints_schema,
 )
-from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries
+from code_engine.lint_check import (
+    TOOLS_LINT_DIR,
+    UNTRUSTED_TOOL_CONFIG_NAMES,
+    LintToolsMissingError,
+    build_trusted_eslint_config,
+    build_trusted_tsconfig,
+    get_lint_binaries,
+)
 from code_engine.quality_checks import load_universal
 from code_engine.sandbox import (
     DEFAULT_REACT_TIMEOUT_SEC,
@@ -69,46 +76,66 @@ def _resolve_ref_dir(lab_dir: Path, ref_dir: Path | None = None) -> Path:
     return lab_dir.parent / "_reference" / lab_dir.name
 
 
-def _run_node_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
+def _run_node_tests(
+    test_files: list[Path],
+    cwd: Path,
+    src_dir: Path,
+    *,
+    allowed_test_roots: tuple[Path, ...] | None = None,
+) -> list[dict[str, Any]]:
     if not test_files:
         return []
     if any(f.suffix == ".tsx" for f in test_files):
-        return _run_react_tests(test_files, cwd, src_dir)
-    is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
+        return _run_react_tests(test_files, cwd, src_dir, allowed_test_roots=allowed_test_roots)
     with create_sandbox_dir(prefix="prg_lab_ingest_") as sbx_str:
         sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
-        node_args: list[str] = []
-        if is_ts:
-            node_args.append("--experimental-strip-types")
-        node_args.extend(["--test", "--test-reporter=junit", *[str(f.relative_to(work_dir)) for f in staged_tests]])
-        proc = run_node_isolated(
-            node_args,
-            cwd=work_dir,
-            sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TIMEOUT_SEC,
-            env_extra={"LAB_SRC_DIR": str(staged_src.resolve())},
+        work_dir, staged_src, staged_tests = stage_lab_copy(
+            cwd,
+            src_dir,
+            test_files,
+            sbx_root / "work",
+            allowed_test_roots=allowed_test_roots,
         )
-        if proc.timed_out:
-            return [
-                {
-                    "name": "Lab test timeout",
-                    "passed": False,
-                    "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
-                }
-            ]
-        if proc.output_truncated:
-            return [
-                {
-                    "name": "Lab test output limit exceeded",
-                    "passed": False,
-                    "failure_msg": "Execution exceeded output size limit",
-                }
-            ]
-        return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False)
+        all_cases: list[dict[str, Any]] = []
+        for tf in staged_tests:
+            node_args: list[str] = []
+            if tf.suffix in (".ts", ".tsx"):
+                node_args.append("--experimental-strip-types")
+            node_args.extend(["--test", "--test-reporter=junit", str(tf.relative_to(work_dir))])
+            proc = run_node_isolated(
+                node_args,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=DEFAULT_TIMEOUT_SEC,
+                env_extra={"LAB_SRC_DIR": str(staged_src.resolve())},
+            )
+            if proc.timed_out:
+                return [
+                    {
+                        "name": "Lab test timeout",
+                        "passed": False,
+                        "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
+                    }
+                ]
+            if proc.output_truncated:
+                return [
+                    {
+                        "name": "Lab test output limit exceeded",
+                        "passed": False,
+                        "failure_msg": "Execution exceeded output size limit",
+                    }
+                ]
+            all_cases.extend(_parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False))
+        return all_cases
 
 
-def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
+def _run_react_tests(
+    test_files: list[Path],
+    cwd: Path,
+    src_dir: Path,
+    *,
+    allowed_test_roots: tuple[Path, ...] | None = None,
+) -> list[dict[str, Any]]:
     """Run lab TSX acceptance tests against React DOM inside an isolated per-run sandbox."""
     tools_dir = TOOLS_LINT_DIR.resolve()
     shared_modules = (tools_dir / "node_modules").resolve()
@@ -124,7 +151,13 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
     with create_sandbox_dir(prefix="prg_lab_vitest_") as sbx_str:
         sbx_root = Path(os.path.realpath(sbx_str))
         (sbx_root / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
+        work_dir, staged_src, staged_tests = stage_lab_copy(
+            cwd,
+            src_dir,
+            test_files,
+            sbx_root / "work",
+            allowed_test_roots=allowed_test_roots,
+        )
 
         test_root = staged_tests[0].parent if staged_tests else work_dir
         allowed_dirs = list(
@@ -173,13 +206,28 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
         return [{"name": "React test execution failure", "passed": False, "failure_msg": output}]
 
 
-def _run_eslint_dir(src_dir: Path, config_path: Path) -> list[dict[str, Any]]:
-    _, eslint_bin = get_lint_binaries()
+def _run_eslint_dir(src_dir: Path, config_path: Path | None = None) -> list[dict[str, Any]]:
+    del config_path  # Never execute learner/draft eslint.config.*; always generate a trusted config.
+    base_js, eslint_bin = get_lint_binaries()
+    shared_modules = (TOOLS_LINT_DIR / "node_modules").resolve()
     with create_sandbox_dir(prefix="prg_ingest_eslint_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = sbx_root / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
+        staged_src = stage_workspace_copy(src_dir, work_dir / "src", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
+        has_tsx = any(staged_src.rglob("*.tsx"))
+        cfg_path = work_dir / "eslint.config.mjs"
+        cfg_path.write_text(build_trusted_eslint_config(base_js), encoding="utf-8")
+        (work_dir / "tsconfig.json").write_text(
+            json.dumps(build_trusted_tsconfig(include=("src/**/*.ts", "src/**/*.tsx"), jsx=has_tsx), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
         proc = run_isolated(
-            [str(eslint_bin), "--config", str(config_path.resolve()), "--format", "json", src_dir.name],
-            cwd=src_dir.parent,
-            sandbox_root=Path(sbx_str),
+            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", "src"],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
             timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
             use_node_permission=False,
         )
@@ -211,10 +259,24 @@ def _run_tsc(tsconfig_path: Path) -> list[str]:
         raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
     with create_sandbox_dir(prefix="prg_ingest_tsc_") as sbx_str:
         sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = stage_workspace_copy(tsconfig_path.parent, sbx_root / "work")
+        work_dir = stage_workspace_copy(
+            tsconfig_path.parent, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES
+        )
+        has_tsx = any((work_dir / "src").rglob("*.tsx")) if (work_dir / "src").is_dir() else False
+        staged_tsconfig = work_dir / "tsconfig.json"
+        staged_tsconfig.write_text(
+            json.dumps(
+                build_trusted_tsconfig(
+                    include=("src/**/*.ts", "src/**/*.tsx", "tests/**/*.test-d.ts"),
+                    jsx=has_tsx,
+                ),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         if shared_modules.is_dir():
             (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-        staged_tsconfig = work_dir / tsconfig_path.name
         proc = run_isolated(
             [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(staged_tsconfig)],
             cwd=work_dir,

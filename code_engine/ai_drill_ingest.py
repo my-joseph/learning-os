@@ -15,7 +15,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -38,6 +37,7 @@ from code_engine.lint_check import (
     typecheck_drill_doc,
 )
 from code_engine.quality_checks import load_universal, validate_quality_checks, verify_known_bad_lint
+from code_engine.sandbox import create_sandbox_dir, run_node_isolated
 from code_engine.submit import run_tests_junit
 from code_engine.verify import run_node, verify_problem
 from code_engine.workspace import (
@@ -207,19 +207,17 @@ def _check_code_compiles(
 
     if shutil.which("node") is None:
         return
-    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
-        f.write(code)
-        tmp_path = f.name
-    try:
-        proc = subprocess.run(["node", "--check", tmp_path], capture_output=True, text=True, timeout=5.0)
+    with create_sandbox_dir(prefix="prg_syntax_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = sbx_root / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
+        (work_dir / "check.js").write_text(code, encoding="utf-8")
+        proc = run_node_isolated(["--check", "check.js"], cwd=work_dir, sandbox_root=sbx_root, timeout_sec=5.0)
+        if proc.timed_out:
+            raise AiContractError(f"[{pid}] {label} syntax check timed out.")
         if proc.returncode != 0:
             err = (proc.stderr or proc.stdout or "syntax error").strip().splitlines()[0]
             raise AiContractError(f"[{pid}] {label} failed syntax check: {err}")
-    finally:
-        try:
-            os.remove(tmp_path)
-        except OSError:
-            pass
 
 
 def _is_coding_problem(prob: Dict[str, Any]) -> bool:

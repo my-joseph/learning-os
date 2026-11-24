@@ -14,6 +14,7 @@ import json
 import os
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +22,14 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries  # noqa: E402
+from code_engine.lint_check import (  # noqa: E402
+    TOOLS_LINT_DIR,
+    UNTRUSTED_TOOL_CONFIG_NAMES,
+    LintToolsMissingError,
+    build_trusted_eslint_config,
+    build_trusted_tsconfig,
+    get_lint_binaries,
+)
 from code_engine.quality_checks import (  # noqa: E402
     _resolve_vault_dir,
     applicable_rubric,
@@ -32,6 +40,7 @@ from code_engine.quality_checks import (  # noqa: E402
 from code_engine.sandbox import (  # noqa: E402
     DEFAULT_TIMEOUT_SEC,
     DEFAULT_TOOL_TIMEOUT_SEC,
+    assert_safe_contained_path,
     create_sandbox_dir,
     run_isolated,
     run_node_isolated,
@@ -132,8 +141,8 @@ def _active_tools_lint_dir() -> Path:
     return TOOLS_LINT_DIR
 
 
-def _resolve_eslint_bin() -> Path | None:
-    """Return the active ESLint binary path, or `None` when `tools/lint` dependencies are not installed."""
+def _resolve_eslint_tools() -> tuple[Path, Path] | None:
+    """Return `(base_js, eslint_bin)` for the active lint toolkit, or `None` when not installed."""
     lint_dir = _active_tools_lint_dir()
     try:
         same_as_default = lint_dir.resolve() == TOOLS_LINT_DIR.resolve()
@@ -142,12 +151,17 @@ def _resolve_eslint_bin() -> Path | None:
     if not same_as_default:
         base_js = lint_dir / "base.js"
         eslint_bin = lint_dir / "node_modules" / ".bin" / "eslint"
-        return eslint_bin if (base_js.exists() and eslint_bin.exists()) else None
+        return (base_js, eslint_bin) if (base_js.exists() and eslint_bin.exists()) else None
     try:
-        _, eslint_bin = get_lint_binaries()
-        return eslint_bin
+        return get_lint_binaries()
     except LintToolsMissingError:
         return None
+
+
+def _resolve_eslint_bin() -> Path | None:
+    """Return the active ESLint binary path, or `None` when `tools/lint` dependencies are not installed."""
+    tools = _resolve_eslint_tools()
+    return tools[1] if tools is not None else None
 
 
 def _resolve_tsc_bin() -> Path | None:
@@ -167,29 +181,51 @@ def find_problem(drill_doc: dict[str, Any], qid: str) -> dict[str, Any]:
 
 
 def find_problem_source(ws_dir: Path, prob: dict[str, Any], preset_ext: str) -> Path:
-    """Locate the learner's source file for `prob` inside `ws_dir`."""
+    """Locate and validate the learner's non-symlink source file for `prob` inside `ws_dir`."""
+    if ws_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked workspace directory: {ws_dir}")
     pid = str(prob.get("id", "Q01"))
     entry = get_entry_name(prob)
     expected = ws_dir / f"{pid}_{entry}.{preset_ext}"
-    if expected.exists():
+    if expected.exists() or expected.is_symlink():
+        assert_safe_contained_path(expected, ws_dir, expect_file=True, label="source file")
         return expected
 
     for cand in sorted(ws_dir.glob(f"{pid}_*.*")):
         if ".test." not in cand.name and ".hidden." not in cand.name:
+            assert_safe_contained_path(cand, ws_dir, expect_file=True, label="source file")
             return cand
     raise FileNotFoundError(f"Source file for {pid} not found in {ws_dir} (expected {expected.name})")
 
 
-def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
-    """Run ESLint with the workspace config on `src_file` and return [{rule, line, message}]."""
-    eslint_bin = _resolve_eslint_bin()
-    if eslint_bin is None:
+def lint_workspace_file(
+    ws_dir: Path,
+    src_file: Path,
+    *,
+    lint_overrides: Sequence[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Run ESLint on a staged copy of `ws_dir` using a freshly generated trusted config."""
+    assert_safe_contained_path(src_file, ws_dir, expect_file=True, label="source file")
+    tools = _resolve_eslint_tools()
+    if tools is None:
         return []
+    base_js, eslint_bin = tools
+    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
+
     with create_sandbox_dir(prefix="prg_eslint_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(ws_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
+        cfg_path = work_dir / "eslint.config.mjs"
+        cfg_path.write_text(build_trusted_eslint_config(base_js, lint_overrides), encoding="utf-8")
+        if src_file.suffix in (".ts", ".tsx"):
+            tsconfig_data = build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=(src_file.suffix == ".tsx"))
+            (work_dir / "tsconfig.json").write_text(json.dumps(tsconfig_data), encoding="utf-8")
+            if src_file.suffix == ".tsx" and shared_modules.is_dir():
+                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
         proc = run_isolated(
-            [str(eslint_bin), "--format", "json", src_file.name],
-            cwd=ws_dir,
-            sandbox_root=Path(sbx_str),
+            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", src_file.name],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
             timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
             use_node_permission=False,
         )
@@ -217,18 +253,30 @@ def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
 
 
 def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> list[dict[str, Any]]:
-    """Run `tsc --noEmit` for TypeScript presets and return [{line, message}] for `src_file`."""
+    """Run `tsc --noEmit` on a staged copy of `ws_dir` with a trusted `tsconfig.json`."""
+    assert_safe_contained_path(src_file, ws_dir, expect_file=True, label="source file")
     if environment not in TS_PRESETS and src_file.suffix not in (".ts", ".tsx"):
         return []
     tsc_bin = _resolve_tsc_bin()
     if tsc_bin is None:
         return []
 
+    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
+    is_jsx = environment == "react-dom" or src_file.suffix == ".tsx"
     with create_sandbox_dir(prefix="prg_tsc_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(ws_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
+        tsconfig_path = work_dir / "tsconfig.json"
+        tsconfig_path.write_text(
+            json.dumps(build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=is_jsx), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
         proc = run_isolated(
-            [str(tsc_bin), "--noEmit", "--pretty", "false"],
-            cwd=ws_dir,
-            sandbox_root=Path(sbx_str),
+            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path)],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
             timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
             use_node_permission=False,
         )
@@ -261,9 +309,12 @@ def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[s
     env_root = os.environ.get("LEARNINGOS_ROOT")
     lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root(env_root))
     lab_dir = lroot / lab_id
+    if lab_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked lab directory: {lab_dir}")
     cfg_path = lab_dir / "lab.config.json"
     if not cfg_path.exists():
         raise FileNotFoundError(f"Lab '{lab_id}' not found at {cfg_path}")
+    assert_safe_contained_path(cfg_path, lab_dir, expect_file=True, label="lab.config.json")
     return json.loads(cfg_path.read_text(encoding="utf-8")), lab_dir
 
 
@@ -321,12 +372,47 @@ def _lab_rubric(
     return out
 
 
-def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hidden: bool) -> list[dict[str, Any]]:
+def _collect_safe_lab_sources(src_dir: Path) -> list[Path]:
+    """Collect `.tsx`/`.ts`/`.js` files under `src_dir`, failing closed on any symlink."""
+    if src_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked lab src directory: {src_dir}")
+    src_real = src_dir.resolve(strict=True)
+    collected: list[Path] = []
+    for root, dirs, files in os.walk(src_real, followlinks=False):
+        root_path = Path(root)
+        for dname in list(dirs):
+            cand_dir = root_path / dname
+            if cand_dir.is_symlink():
+                raise ValueError(f"Refusing symlinked directory inside lab src: {cand_dir}")
+        for fname in files:
+            cand_file = root_path / fname
+            if cand_file.is_symlink():
+                raise ValueError(f"Refusing symlinked file inside lab src: {cand_file}")
+            if cand_file.suffix in (".tsx", ".ts", ".js"):
+                assert_safe_contained_path(cand_file, src_real, expect_file=True, label="lab source file")
+                collected.append(cand_file)
+    return sorted(collected)
+
+
+def _run_lab_tests(
+    test_files: list[Path],
+    cwd: Path,
+    src_dir: Path,
+    *,
+    force_hidden: bool,
+    allowed_test_roots: Sequence[Path] | None = None,
+) -> list[dict[str, Any]]:
     if not test_files:
         return []
     with create_sandbox_dir(prefix="prg_lab_review_") as sbx_str:
         sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
+        work_dir, staged_src, staged_tests = stage_lab_copy(
+            cwd,
+            src_dir,
+            test_files,
+            sbx_root / "work",
+            allowed_test_roots=allowed_test_roots,
+        )
         env_extra = {"LAB_SRC_DIR": str(staged_src.resolve())}
         if any(f.suffix == ".tsx" for f in staged_tests):
             shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
@@ -340,53 +426,79 @@ def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hi
                 require_complete=True,
                 sandbox_root=sbx_root,
             )
-        is_ts = any(f.suffix in (".ts", ".tsx") for f in staged_tests)
-        node_args: list[str] = []
-        if is_ts:
-            node_args.append("--experimental-strip-types")
-        node_args.extend(["--test", "--test-reporter=junit", *[str(f.relative_to(work_dir)) for f in staged_tests]])
-        proc = run_node_isolated(
-            node_args,
+        all_cases: list[dict[str, Any]] = []
+        for tf in staged_tests:
+            node_args: list[str] = []
+            if tf.suffix in (".ts", ".tsx"):
+                node_args.append("--experimental-strip-types")
+            node_args.extend(["--test", "--test-reporter=junit", str(tf.relative_to(work_dir))])
+            proc = run_node_isolated(
+                node_args,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=DEFAULT_TIMEOUT_SEC,
+                env_extra=env_extra,
+            )
+            if proc.timed_out:
+                return [
+                    {
+                        "name": "Lab test timeout",
+                        "passed": False,
+                        "is_hidden": force_hidden,
+                        "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
+                    }
+                ]
+            if proc.output_truncated:
+                return [
+                    {
+                        "name": "Lab test output limit exceeded",
+                        "passed": False,
+                        "is_hidden": force_hidden,
+                        "failure_msg": "Execution exceeded output size limit",
+                    }
+                ]
+            file_cases = _parse_completed_junit_run(
+                proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden
+            )
+            if not file_cases:
+                return []
+            all_cases.extend(file_cases)
+        return all_cases
+
+
+def _lint_lab_src(
+    lab_dir: Path,
+    src_dir: Path,
+    *,
+    lint_overrides: Sequence[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Run ESLint on a staged copy of `src_dir` with a freshly generated trusted config."""
+    tools = _resolve_eslint_tools()
+    if tools is None:
+        return []
+    base_js, eslint_bin = tools
+    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
+
+    with create_sandbox_dir(prefix="prg_lab_eslint_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = sbx_root / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
+        staged_src = stage_workspace_copy(src_dir, work_dir / "src", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
+        has_tsx = any(staged_src.rglob("*.tsx"))
+
+        cfg_path = work_dir / "eslint.config.mjs"
+        cfg_path.write_text(build_trusted_eslint_config(base_js, lint_overrides), encoding="utf-8")
+        (work_dir / "tsconfig.json").write_text(
+            json.dumps(build_trusted_tsconfig(include=("src/**/*.ts", "src/**/*.tsx"), jsx=has_tsx), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+
+        proc = run_isolated(
+            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", "src"],
             cwd=work_dir,
             sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TIMEOUT_SEC,
-            env_extra=env_extra,
-        )
-        if proc.timed_out:
-            return [
-                {
-                    "name": "Lab test timeout",
-                    "passed": False,
-                    "is_hidden": force_hidden,
-                    "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
-                }
-            ]
-        if proc.output_truncated:
-            return [
-                {
-                    "name": "Lab test output limit exceeded",
-                    "passed": False,
-                    "is_hidden": force_hidden,
-                    "failure_msg": "Execution exceeded output size limit",
-                }
-            ]
-        return _parse_completed_junit_run(proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden)
-
-
-def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
-    eslint_bin = _resolve_eslint_bin()
-    if eslint_bin is None:
-        return []
-    cfg_path = lab_dir / "eslint.config.js"
-    cmd = [str(eslint_bin), "--format", "json"]
-    if cfg_path.exists():
-        cmd.extend(["--config", str(cfg_path.resolve())])
-    cmd.append(src_dir.name)
-    with create_sandbox_dir(prefix="prg_lab_eslint_") as sbx_str:
-        proc = run_isolated(
-            cmd,
-            cwd=src_dir.parent,
-            sandbox_root=Path(sbx_str),
             timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
             use_node_permission=False,
         )
@@ -419,11 +531,24 @@ def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]
     shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
     with create_sandbox_dir(prefix="prg_lab_tsc_") as sbx_str:
         sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = stage_workspace_copy(lab_dir, sbx_root / "work")
+        work_dir = stage_workspace_copy(lab_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
+        has_tsx = any((work_dir / "src").rglob("*.tsx")) if (work_dir / "src").is_dir() else False
+        tsconfig_path = work_dir / "tsconfig.json"
+        tsconfig_path.write_text(
+            json.dumps(
+                build_trusted_tsconfig(
+                    include=("src/**/*.ts", "src/**/*.tsx", "tests/**/*.test-d.ts"),
+                    jsx=has_tsx,
+                ),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         if shared_modules.is_dir():
             (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
         proc = run_isolated(
-            [str(tsc_bin), "--noEmit", "--pretty", "false"],
+            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path)],
             cwd=work_dir,
             sandbox_root=sbx_root,
             timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
@@ -462,26 +587,38 @@ def _run_lab_review_with_source(
     mid = str(ms["id"])
 
     src_dir = lab_dir / "src"
-    if not src_dir.is_dir():
+    if not src_dir.is_dir() and not src_dir.is_symlink():
         raise FileNotFoundError(f"Lab src directory not found: {src_dir}")
-    src_files = sorted(list(src_dir.rglob("*.tsx")) + list(src_dir.rglob("*.ts")) + list(src_dir.rglob("*.js")))
+    assert_safe_contained_path(src_dir, lab_dir, expect_file=False, label="lab src directory")
+    src_files = _collect_safe_lab_sources(src_dir)
     if not src_files:
         raise FileNotFoundError(f"No source files found in {src_dir}")
 
-    src_text = "\n".join(f"// === {f.relative_to(lab_dir)} ===\n{f.read_text(encoding='utf-8')}" for f in src_files)
+    lab_real = lab_dir.resolve()
+    src_text = "\n".join(f"// === {f.relative_to(lab_real)} ===\n{f.read_text(encoding='utf-8')}" for f in src_files)
     code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
+
+    lab_tests_dir = lab_dir / "tests"
+    if lab_tests_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked lab tests directory: {lab_tests_dir}")
 
     vis_pattern = ms.get("visibleTests")
     if isinstance(vis_pattern, str) and vis_pattern.strip():
+        if Path(vis_pattern).is_absolute() or ".." in Path(vis_pattern).parts:
+            raise ValueError(f"Refusing unsafe visibleTests pattern outside tests/: {vis_pattern!r}")
         vis_files = sorted(lab_dir.glob(vis_pattern))
     elif isinstance(ms.get("testPattern"), str) and ms["testPattern"].strip():
         vis_files = sorted(lab_dir.glob(f"tests/*{ms['testPattern']}*.test.*"))
     else:
         vis_files = []
+    for vf in vis_files:
+        assert_safe_contained_path(vf, lab_tests_dir, expect_file=True, label="visible test file")
 
     ref_hidden = lab_dir.parent / "_reference" / lab_id / "hidden"
     if not ref_hidden.is_dir() and pilot_mode():
         ref_hidden = Path(os.environ.get("LABS_DIR", "labs")) / "_reference" / lab_id / "hidden"
+    if ref_hidden.is_symlink():
+        raise ValueError(f"Refusing symlinked hidden tests directory: {ref_hidden}")
     all_hidden = sorted(
         list(ref_hidden.glob("*.test.tsx")) + list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js"))
     )
@@ -489,11 +626,22 @@ def _run_lab_review_with_source(
     hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)]
     if not hid_files and not any(_MILESTONE_TEST_PREFIX_RE.match(f.name) for f in all_hidden):
         hid_files = all_hidden  # Older labs can use one shared hidden suite.
+    for hf in hid_files:
+        assert_safe_contained_path(hf, ref_hidden, expect_file=True, label="hidden test file")
 
     cases = []
-    for files, cwd, hidden in ((vis_files, lab_dir, False), (hid_files, ref_hidden, True)):
+    for files, cwd, hidden, allowed_roots in (
+        (vis_files, lab_dir, False, (lab_tests_dir,)),
+        (hid_files, ref_hidden, True, (ref_hidden,)),
+    ):
         try:
-            suite_cases = _run_lab_tests(files, cwd, src_dir, force_hidden=hidden)
+            suite_cases = _run_lab_tests(
+                files,
+                cwd,
+                src_dir,
+                force_hidden=hidden,
+                allowed_test_roots=allowed_roots,
+            )
         except (OSError, UnicodeError):
             suite_cases = []
         cases.extend(
@@ -502,7 +650,12 @@ def _run_lab_review_with_source(
         )
 
     tests_summary = _summarize_test_cases(cases)
-    lint = _lint_lab_src(lab_dir, src_dir)
+    lab_lint_overrides = lab_cfg.get("lintOverrides")
+    lint = (
+        _lint_lab_src(lab_dir, src_dir, lint_overrides=lab_lint_overrides)
+        if lab_lint_overrides
+        else _lint_lab_src(lab_dir, src_dir)
+    )
     typecheck = _typecheck_lab(lab_dir, src_files)
 
     level = lab_cfg.get("level") if isinstance(lab_cfg.get("level"), int) else None
@@ -557,8 +710,11 @@ def run_review_with_source(
     env_root = os.environ.get("LEARNINGOS_ROOT")
     ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root(env_root))
     ws_dir = ws_root / drill_id
+    if ws_dir.is_symlink():
+        raise ValueError(f"Refusing symlinked workspace directory: {ws_dir}")
     if not ws_dir.is_dir():
         raise FileNotFoundError(f"Workspace directory not found: {ws_dir}")
+    assert_safe_contained_path(ws_dir, ws_root, expect_file=False, label="workspace directory")
 
     env_key = drill_doc.get("environment", "node-vanilla")
     preset = ENVIRONMENT_PRESETS.get(env_key, ENVIRONMENT_PRESETS["node-vanilla"])
@@ -569,7 +725,12 @@ def run_review_with_source(
     cases = run_tests_junit(ws_dir, drill_doc, problem_id=pid)
     tests_summary = _summarize_test_cases(cases)
 
-    lint = lint_workspace_file(ws_dir, src_file)
+    drill_lint_overrides = drill_doc.get("lintOverrides")
+    lint = (
+        lint_workspace_file(ws_dir, src_file, lint_overrides=drill_lint_overrides)
+        if drill_lint_overrides
+        else lint_workspace_file(ws_dir, src_file)
+    )
     typecheck = typecheck_workspace_file(ws_dir, src_file, env_key)
 
     archetype_key = prob.get("archetypeKey")

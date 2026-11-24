@@ -239,7 +239,10 @@ def run_tests_junit(
     When `problem_id` is given (e.g. 'Q01'), only that problem's visible test file and
     hiddenTests are executed.
     """
-    ws_dir = Path(ws_dir).resolve()
+    ws_path = Path(ws_dir)
+    if ws_path.is_symlink():
+        raise ValueError(f"Refusing symlinked workspace directory: {ws_path}")
+    ws_dir = ws_path.resolve()
     react_dom = (drill_doc or {}).get("environment") == "react-dom"
     shared_tools = (_REPO_ROOT / "tools" / "lint").resolve()
     shared_modules = (shared_tools / "node_modules").resolve()
@@ -320,20 +323,24 @@ def run_tests_junit(
                     )
                 )
             else:
-                cmd = ["node"]
-                if is_ts:
-                    cmd.append("--experimental-strip-types")
-                cmd.extend(["--test", "--test-reporter=junit", *[f.name for f in hidden_files]])
-                cases.extend(
-                    _run_node_junit_cmd(
-                        cmd,
-                        cwd=hidden_dir,
-                        sandbox_root=sbx_root,
-                        force_hidden=True,
-                        timeout_sec=timeout_sec,
-                        qid_hint=qid_hint,
+                for hf in hidden_files:
+                    stem_prefix = hf.name.split("_", 1)[0].upper()
+                    hf_qid = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else qid_hint
+                    cmd = ["node"]
+                    if is_ts:
+                        cmd.append("--experimental-strip-types")
+                    cmd.extend(["--test", "--test-reporter=junit", hf.name])
+                    cases.extend(
+                        _run_node_junit_cmd(
+                            cmd,
+                            cwd=hidden_dir,
+                            sandbox_root=sbx_root,
+                            force_hidden=True,
+                            timeout_sec=timeout_sec,
+                            file_hint=hf.name,
+                            qid_hint=hf_qid,
+                        )
                     )
-                )
 
     return cases
 

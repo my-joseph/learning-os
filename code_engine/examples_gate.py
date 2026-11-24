@@ -340,9 +340,15 @@ def evaluate_lab_milestone_examples(
     def _run_batch(batch: list[tuple[int, dict[str, Any]]]) -> list[dict[str, Any]]:
         content = _build_lab_example_test_source(batch, symbol_to_file, is_tsx=is_tsx, ref_src=ref_src)
         with tempfile.TemporaryDirectory(prefix=f"lab_ex_{mid}_") as tmp:
-            test_path = Path(tmp) / f"{mid.lower()}_examples.{ext}"
+            tmp_root = Path(tmp)
+            tmp_tests = tmp_root / "tests"
+            tmp_tests.mkdir(parents=True, exist_ok=True)
+            pkg_src = lab_dir / "package.json"
+            if pkg_src.is_file() and not pkg_src.is_symlink():
+                shutil.copy2(pkg_src, tmp_root / "package.json")
+            test_path = tmp_tests / f"{mid.lower()}_examples.{ext}"
             test_path.write_text(content, encoding="utf-8")
-            return run_node_tests_fn([test_path], lab_dir, ref_src)
+            return run_node_tests_fn([test_path], tmp_root, ref_src)
 
     indexed = list(enumerate(examples, 1))
     cases = _run_batch(indexed)
