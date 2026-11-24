@@ -151,12 +151,25 @@ const labAwaitingReviewDrill = { ...prgDrill, drillId: "LAB-PRG-T01-C02-01", pro
 })] };
 assert.equal(buildSessionSummary(labAwaitingReviewDrill, null, { attemptDate: "2026-11-19" }).score, 0, "lab with passing tests but no review must not score 1");
 const skippedDrill = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(), skipped: true, score: 0 })] };
-for (const [label, fixture] of [["math", mathDrill], ["PRG", prgDrill], ["lab", labDrill], ["skipped", skippedDrill]] as const) {
+for (const [label, fixture] of [["math", mathDrill], ["PRG", prgDrill], ["lab", labDrill]] as const) {
   const actual = JSON.stringify(buildSyncPayload(fixture, null, { attemptDate: "2026-11-19" }));
   const expected = JSON.stringify(oldInlinePayload(fixture, null));
   assert.equal(actual, expected, `${label} payload must stay byte-identical to the old builder`);
 }
-assert.equal(buildSessionSummary(skippedDrill, null, { attemptDate: "2026-11-19" }).skippedCount, 1);
+const skippedSummary = buildSessionSummary(skippedDrill, null, { attemptDate: "2026-11-19" });
+assert.equal(skippedSummary.skippedCount, 1);
+assert.deepEqual(skippedSummary.skippedProblems, ["Q01 (Complex Numbers)"]);
+const partialDrill = {
+  ...mathDrill,
+  problems: [
+    ...mathDrill.problems,
+    {
+      ...makeProblem("Q02", { ...baseState(), divergedStep: 0 }),
+      steps: [{ latex: "fixture", explain: "Unattempted fixture step" }],
+    },
+  ],
+};
+assert.doesNotMatch(buildSessionSummary(partialDrill).divergedStepsSummary, /Unattempted fixture step/);
 assert.equal(summaryFingerprint({ ...buildSessionSummary(mathDrill), attemptDate: "old", syncedToNotionAt: "x" }),
   summaryFingerprint({ ...buildSessionSummary(mathDrill), attemptDate: "new", syncedToNotionAt: "y" }));
 assert.equal(lastAnswerText(mathDrill.problems[0]), "2+16i", "the final substantive attempt is shown");

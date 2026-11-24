@@ -408,3 +408,100 @@ def test_sync_drill_to_notion_save_local_false_skips_second_save(tmp_path, monke
     doc["dryRun"] = True
     res = drill_sync.sync_drill_to_notion(doc, save_local=False)
     assert res["ok"] is True and res["dryRun"] is True
+
+
+@pytest.fixture
+def export_capture(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "id_map.json").write_text(json.dumps({"DRILLS_DB": {"id": "db"}}), encoding="utf-8")
+    calls, blocks = [], []
+
+    def request(method, path, token, payload=None):
+        calls.append((method, path, payload))
+        return {"results": []} if path.endswith("/query") else {"id": "mock-page"}
+
+    monkeypatch.setattr(drill_sync, "load_env", lambda: {})
+    monkeypatch.setattr(drill_sync, "notion_request", request)
+    monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda page, body, *args: blocks.extend(body))
+    return calls, blocks
+
+
+@pytest.mark.parametrize("mode", ["pristine", "partial", "completed", "skip-only", "pilot", "dry-run", "authoring"])
+def test_only_attempted_problem_content_leaves_the_result_writer(mode, export_capture, monkeypatch):
+    doc = _doc()
+    first = doc["problems"][0]
+    first["prompt"] = "Synthetic first prompt"
+    second = {
+        **first,
+        "id": "Q02",
+        "prompt": "Synthetic second prompt",
+        "steps": [{"latex": "synthetic-second-equation", "explain": "Synthetic second step"}],
+        "answerDisplay": "synthetic-second-answer",
+        "hiddenTests": [{"name": "synthetic-hidden-test"}],
+    }
+    doc["problems"].append(second)
+    if mode in ("partial", "completed", "dry-run"):
+        first["state"] = {"attempts": [{"verdict": "incorrect", "input": "synthetic"}]}
+    if mode == "partial":
+        second["state"] = {"attempts": [{"verdict": "parse_error"}], "userInput": "draft", "score": 0.5}
+    if mode == "completed":
+        second["state"] = {"lastCheck": {"verdict": "correct"}}
+    if mode == "skip-only":
+        second["state"] = {"skipped": True}
+    if mode == "dry-run":
+        monkeypatch.setenv("NOTION_DRY_RUN", "yes")
+    if mode == "pilot":
+        monkeypatch.setenv("LEARNINGOS_PILOT", "1")
+
+    res = drill_sync.sync_drill_to_notion(doc, save_local=False, studio_results=mode != "authoring")
+    calls, blocks = export_capture
+    if mode in ("pristine", "pilot", "dry-run"):
+        assert not calls and not blocks
+        assert res["ok"] is (mode != "pristine")
+        assert bool(res.get("pilotSkipped")) is (mode == "pilot")
+        assert bool(res.get("dryRun")) is (mode == "dry-run")
+        return
+
+    assert res["ok"] and calls
+    published = json.dumps(blocks)
+    assert ("Synthetic first prompt" in published) is (mode in ("partial", "completed"))
+    assert ("Synthetic second prompt" in published) is (mode == "completed")
+    assert ("Synthetic second step" in published) is (mode == "completed")
+    assert ("synthetic-second-answer" in published) is (mode == "completed")
+    assert "synthetic-hidden-test" not in published
+    assert ("Review Priority (Concept Gaps)" in published) is (mode == "skip-only")
+    props = next(payload["properties"] for _, path, payload in calls if path == "pages")
+    assert props["Question Count"]["number"] == 2
+
+
+@pytest.mark.parametrize(
+    ("state", "is_prg", "evidence"),
+    [
+        ({"attempts": [{"kind": "variant", "verdict": "correct"}]}, False, (False, False)),
+        ({"attempts": [{"verdict": "correct", "ts": "2026-11-21T10:00:00Z"}]}, False, (True, False)),
+        ({"lastCheck": {"verdict": "invalid input"}, "score": 1}, False, (False, False)),
+        ({"testRuns": [{"allPassed": True, "totalCount": 1}]}, False, (False, False)),
+        ({"testRuns": [{"allPassed": False, "totalCount": 1}]}, True, (True, False)),
+        ({"testRuns": [{"allPassed": False, "totalCount": 0}]}, True, (False, False)),
+        ({"reviews": [{"verdict": "revise"}]}, True, (True, False)),
+        (
+            {
+                "cycleStartedAt": "2026-11-21T10:00:00.900Z",
+                "reviews": [{"verdict": "pass", "at": "2026-11-21T10:00:00Z"}],
+                "lastTestReport": {"allPassed": True},
+            },
+            True,
+            (False, False),
+        ),
+        (
+            {
+                "cycleStartedAt": "2026-11-21T10:00:00.900Z",
+                "lastTestReport": {"allPassed": False, "totalCount": 1, "updatedAt": "2026-11-21T17:00:01+07:00"},
+            },
+            True,
+            (True, False),
+        ),
+    ],
+)
+def test_notion_attempt_evidence(state, is_prg, evidence):
+    assert drill_sync._notion_attempt_evidence(state, is_prg=is_prg) == evidence

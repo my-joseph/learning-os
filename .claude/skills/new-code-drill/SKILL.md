@@ -107,7 +107,7 @@ Report to the learner in polite Thai in a few lines, **without prompts, code, or
 
 ## 9. Sync, then ship (in this order)
 
-1. Sync the pristine drill record to Notion per this skill’s workflow from repo root:
+1. Register the pristine drill overview and Practice Studio link in Notion from the repo root. Question and solution blocks require saved attempt evidence.
    ```bash
    .venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json
    ```

@@ -1,31 +1,29 @@
+import fs from "node:fs";
 import { NextRequest, NextResponse } from "next/server";
 import {
+  findCanonicalDrillFilePath,
   getDrillsDataDir,
   getPythonBin,
   getWorkspaceRoot,
   isPilotMode,
   isSafeId,
-  loadDrillFromDisk,
 } from "@/lib/paths";
-import {
-  mergeDrillForNotionSync,
-  runNotionDrillSync,
-} from "@/lib/notionSyncRunner";
-import { readProgress, stampSyncMetadata, writeProgress } from "@/lib/progress";
+import { runNotionDrillSync } from "@/lib/notionSyncRunner";
+import { applyProgress, readProgress, stampSyncMetadata, writeProgress } from "@/lib/progress";
+import { getNotionAttemptEvidence } from "@/lib/reviewGuard";
 import { isLabId } from "@/lib/routes";
-import { summaryFingerprint } from "@/lib/sessionSummary";
-import type { SessionSummary } from "@/types/drill";
+import { buildSessionSummary, getPersistedStatusOverride, summaryFingerprint } from "@/lib/sessionSummary";
+import type { DrillDocument } from "@/types/drill";
 
 export async function POST(req: NextRequest) {
   try {
-    const drillDoc = await req.json();
-    const drillId = drillDoc.drillId;
-    const unitCode = drillDoc.unitCode || "MTH-T02-C01-U01";
+    const body = await req.json();
+    const drillId = body?.drillId;
 
     if (!drillId) {
       return NextResponse.json({ ok: false, error: "Missing drillId" }, { status: 400 });
     }
-    if (!isSafeId(drillId) || !isSafeId(unitCode)) {
+    if (!isSafeId(drillId) || (body.unitCode && !isSafeId(body.unitCode))) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
     if (isLabId(drillId)) {
@@ -38,34 +36,63 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Merge & persist learner progress once via the canonical TS merge path so redacted
-    // client state never overwrites server-owned fields (variantId, variantsSeen/Attempted,
-    // matchedTrap), concurrent reviews/attempts/testRuns, or existing sync stamps on disk.
-    writeProgress(drillDoc, { allowSyncStampUpdate: false });
-    const mergedProgress = readProgress(drillId);
+    const canonicalPath = findCanonicalDrillFilePath(drillId);
+    if (!canonicalPath) {
+      return NextResponse.json({ ok: false, error: "Drill not found" }, { status: 404 });
+    }
+    const canonical = JSON.parse(fs.readFileSync(canonicalPath, "utf-8")) as DrillDocument;
+    const { unitCode } = canonical;
+    const problemIds = Array.isArray(canonical.problems) ? canonical.problems.map((p) => p?.id) : [];
+    if (
+      canonical.drillId !== drillId || !isSafeId(unitCode) ||
+      problemIds.length === 0 || !problemIds.every(isSafeId) ||
+      new Set(problemIds).size !== problemIds.length
+    ) {
+      return NextResponse.json({ ok: false, error: "Drill content is incomplete" }, { status: 422 });
+    }
+    if (isPilotMode()) {
+      return NextResponse.json({ ok: true, pilotSkipped: true });
+    }
 
-    // Rehydrate canonical server drill content with the merged server-side progress.
-    const serverDoc = loadDrillFromDisk(drillId);
-    const mergedDoc = mergeDrillForNotionSync(serverDoc, drillDoc, mergedProgress);
+    // Only previously saved progress can supply evidence. Ignore embedded state in
+    // content files and leave problem-state writes to the ordered autosave path.
+    const progress = readProgress(drillId);
+    const mergedDoc = applyProgress<DrillDocument>({
+      ...canonical,
+      problems: canonical.problems.map((problem) => ({
+        ...problem,
+        state: { userInput: "", score: null, divergedStep: null, mistakes: [] },
+      })),
+    }, progress?.drillId === drillId ? progress : null);
+    const isPrg = mergedDoc.subject === "PRG";
+    if (!mergedDoc.problems.some(({ state }) => {
+      const { attempted, skipped } = getNotionAttemptEvidence(state, isPrg);
+      return attempted || skipped;
+    })) {
+      return NextResponse.json(
+        { ok: false, error: "Save an attempt or skip before syncing to Notion." },
+        { status: 409 }
+      );
+    }
 
-    // Progress is already saved above via writeProgress (progress/<DRILL_ID>.json);
-    // Python sync runs with save_local=False and never rewrites drill content.
-    const dataDir = getDrillsDataDir();
-
-    // Call python notion sync helper
+    const requestedDate = body.sessionSummary?.attemptDate;
+    const attemptDate = typeof requestedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+      ? requestedDate
+      : undefined;
+    const sessionSummary = buildSessionSummary(
+      mergedDoc, getPersistedStatusOverride(body.sessionSummary), { attemptDate }
+    );
+    writeProgress({ drillId, unitCode, sessionSummary }, { allowSyncStampUpdate: false });
     const rootDir = getWorkspaceRoot();
-    const pythonBin = getPythonBin(rootDir);
-
     const isDryRun =
-      Boolean(drillDoc.dryRun) ||
-      process.env.NOTION_DRY_RUN === "1" ||
-      process.env.NOTION_DRY_RUN === "true";
+      body.dryRun === true ||
+      ["1", "true", "yes"].includes(process.env.NOTION_DRY_RUN?.toLowerCase() ?? "");
 
     const { code, stdout, stderr, timedOut } = await runNotionDrillSync({
-      mergedDoc,
+      mergedDoc: { ...mergedDoc, sessionSummary },
       rootDir,
-      pythonBin,
-      dataDir,
+      pythonBin: getPythonBin(rootDir),
+      dataDir: getDrillsDataDir(),
       isDryRun,
     });
 
@@ -113,14 +140,9 @@ export async function POST(req: NextRequest) {
           (typeof res.drillPageId === "string" && res.drillPageId.trim()) ||
           (typeof res.notionPageId === "string" && res.notionPageId.trim()) ||
           null;
-        const syncedSummary =
-          mergedDoc.sessionSummary && typeof mergedDoc.sessionSummary === "object"
-            ? (mergedDoc.sessionSummary as Partial<SessionSummary>)
-            : null;
-        const fingerprint = summaryFingerprint(syncedSummary);
         const stamped = stampSyncMetadata(drillId, {
           notionPageId: rawPageId,
-          syncedFingerprint: fingerprint,
+          syncedFingerprint: summaryFingerprint(sessionSummary),
           unitCode,
         });
         return NextResponse.json({
@@ -134,7 +156,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(res);
     } catch {
       return NextResponse.json(
-        { ok: false, error: `Invalid response from sync helper: ${stdout}` },
+        { ok: false, error: "Invalid response from sync helper." },
         { status: 500 }
       );
     }
