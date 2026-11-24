@@ -379,4 +379,4 @@ def toggle_block(question_text, answer_blocks, id_map):
 
 def replace_page_blocks(page_id, new_blocks, label, token):
     validate_blocks_clean(new_blocks, label=label)
-    replace_page_content(page_id, new_blocks, token, label=label)
+    return replace_page_content(page_id, new_blocks, token, label=label)

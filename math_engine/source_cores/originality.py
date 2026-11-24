@@ -16,7 +16,6 @@ from __future__ import annotations
 import argparse
 import difflib
 import glob
-import hashlib
 import json
 import os
 import re
@@ -32,6 +31,7 @@ from math_engine.source_cores import (
     load_core_cards,
     resolve_sources_dir,
 )
+from scripts.source_find import classify_text_quality, ocr_cache_key
 
 DEFAULT_SHINGLE_SIZE = 8
 DEFAULT_SIMILARITY_THRESHOLD = 0.6
@@ -204,14 +204,20 @@ def load_located_source_pages(
     def _lookup_ocr_page_text(file_hash: str, page_num: int) -> str:
         if not file_hash:
             return ""
-        key = hashlib.sha256(f"{file_hash}:{page_num}".encode("utf-8")).hexdigest()
-        ocr_path = os.path.join(idx_dir, f"ocr_{key}_p{page_num}.json")
+        key = ocr_cache_key(file_hash, page_num)
+        ocr_path = os.path.join(idx_dir, f"ocr_{key}.json")
         try:
             with open(ocr_path, "r", encoding="utf-8") as fh:
                 ocr_doc = json.load(fh)
         except (OSError, ValueError):
             return ""
         return str(ocr_doc.get("text") or "") if isinstance(ocr_doc, dict) else ""
+
+    def _source_page_text(cache_doc: dict[str, Any], page_num: int) -> str:
+        text = _lookup_page_text(cache_doc, page_num)
+        if classify_text_quality(text) in {"empty", "garbled"}:
+            return _lookup_ocr_page_text(str(cache_doc.get("fileHash") or ""), page_num) or text
+        return text
 
     # 1. Located manifest from source_find
     located_path = os.path.join(idx_dir, f"located_{unit_code}.json")
@@ -242,7 +248,7 @@ def load_located_source_pages(
             for p_info in match.get("pages") or []:
                 pnum = p_info.get("page") if isinstance(p_info, dict) else p_info
                 if isinstance(pnum, int):
-                    text = _lookup_page_text(cache_doc, pnum)
+                    text = _source_page_text(cache_doc, pnum)
                     needs_ocr = isinstance(p_info, dict) and (
                         p_info.get("textSource") == "ocr" or p_info.get("textQuality") in {"empty", "garbled"}
                     )
@@ -263,7 +269,7 @@ def load_located_source_pages(
             continue
         for rel, cache_doc in by_rel.items():
             if rel == ref_file or rel.endswith("/" + ref_file) or os.path.basename(rel) == ref_file:
-                _add_page(rel, ref_page, _lookup_page_text(cache_doc, ref_page))
+                _add_page(rel, ref_page, _source_page_text(cache_doc, ref_page))
 
     # 3. Fallback: scan cached files with seeded unit terms (respecting track relevance)
     if not pages_out and by_rel:
@@ -273,10 +279,10 @@ def load_located_source_pages(
                 if not _family_relevant(rel, unit_code):
                     continue
                 for p in cache_doc.get("pages") or []:
-                    text = str(p.get("text") or "")
+                    pnum = p.get("page")
+                    text = _source_page_text(cache_doc, pnum) if isinstance(pnum, int) else str(p.get("text") or "")
                     low = text.lower()
                     if text.strip() and any(t in low for t in terms):
-                        pnum = p.get("page")
                         if isinstance(pnum, int):
                             _add_page(rel, pnum, text)
 

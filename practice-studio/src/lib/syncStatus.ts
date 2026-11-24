@@ -11,8 +11,10 @@ export function isSyncedUpToDate(
 ): boolean {
   if (
     isSyncing ||
+    Boolean(drill.notionSyncProblems?.length) ||
     syncState?.isPilot ||
     syncState?.phase === "syncing" ||
+    syncState?.phase === "partial" ||
     syncState?.phase === "degraded" ||
     syncState?.phase === "error" ||
     syncState?.phase === "offline" ||
@@ -31,4 +33,16 @@ export function isSyncedUpToDate(
   const savedFingerprint = persistedSummary?.syncedFingerprint ||
     summaryFingerprint(persistedSummary);
   return !savedFingerprint || summaryFingerprint(currentSummary) === savedFingerprint;
+}
+
+export function syncFailureLabel(step: string): string {
+  if (step.startsWith("unitReview:")) {
+    return `Unit review (${step.slice("unitReview:".length)})`;
+  }
+  switch (step) {
+    case "pageContent": return "Drill page content";
+    case "blockCleanup": return "Removal of outdated drill page blocks";
+    case "mistakeLog": return "Mistake Log";
+    default: return "Notion update";
+  }
 }

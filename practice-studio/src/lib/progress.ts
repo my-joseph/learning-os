@@ -5,6 +5,7 @@ import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
 import { generateVariantToken } from "@/lib/variants";
 import { AttemptRecord, ProblemState, VariantSessionRecord } from "@/types/drill";
+import type { NotionSyncRetry } from "@/lib/notionSyncRunner";
 
 /**
  * Learner progress is stored apart from drill content (mirrors progress_store.py):
@@ -29,6 +30,30 @@ type DocLike = {
 
 function progressFile(drillId: string): string {
   return path.join(getProgressDir(), `${drillId}.json`);
+}
+
+interface PendingNotionSync {
+  fingerprint: string;
+  attemptDate?: string;
+  retry: NotionSyncRetry;
+}
+
+// Keep sync checkpoints outside the autosaved learner record so an edit cannot overwrite them.
+function pendingNotionSyncFile(drillId: string): string {
+  if (!isSafeId(drillId)) throw new Error("Invalid drillId");
+  return path.join(getProgressDir(), "_notion_sync", `${drillId}.json`);
+}
+
+export function readPendingNotionSync(drillId: string): PendingNotionSync | null {
+  const file = pendingNotionSyncFile(drillId);
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, "utf-8")) as PendingNotionSync;
+}
+
+export function writePendingNotionSync(drillId: string, pending: PendingNotionSync | null): void {
+  const file = pendingNotionSyncFile(drillId);
+  if (pending) writeJsonAtomic(file, pending);
+  else fs.rmSync(file, { force: true });
 }
 
 /** Write JSON atomically using a unique sibling temp file + rename so concurrent readers never see a half-written file. */

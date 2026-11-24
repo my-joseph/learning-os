@@ -176,19 +176,25 @@ for MODEL in $MODELS; do
   record_usage "$MODEL" "$START_OFFSET" "rc=$RC${REASON:+ $REASON}"
 
   if job_done; then
-    log "done: PR exists (rc=$RC${REASON:+, $REASON})"
+    if [ -n "$DONE_FILE" ]; then
+      log "done: report written (rc=$RC${REASON:+, $REASON})"
+    else
+      log "done: PR exists (rc=$RC${REASON:+, $REASON})"
+    fi
     exit 0
   fi
+  artifact_label="PR"
+  [ -n "$DONE_FILE" ] && artifact_label="report"
   if [ -n "$REASON" ]; then
-    log "stopped ($REASON) without a PR; not starting a fallback model"
+    log "stopped ($REASON) without a $artifact_label; not starting a fallback model"
     exit 1
   fi
   if [ "$RC" -eq 0 ]; then
-    if [ "$INITIAL_PR_EXISTS" -eq 1 ]; then
+    if [ -z "$DONE_FILE" ] && [ "$INITIAL_PR_EXISTS" -eq 1 ]; then
       log "finished rc=0 without advancing the existing PR"
       exit 1
     fi
-    log "finished rc=0 without a PR"
+    log "finished rc=0 without a $artifact_label"
     exit 0
   fi
   # Fall back to the next model only for quota / rate-limit failures of THIS run.

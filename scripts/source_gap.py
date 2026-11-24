@@ -639,9 +639,10 @@ def cards_are_fuzzy_duplicate(
             )
         identity_sim = _jaccard(_prg_identity_tokens(candidate), _prg_identity_tokens(existing))
         content_sim = _jaccard(_prg_content_tokens(candidate), _prg_content_tokens(existing))
-        # Require overlap in the stated skill/concept as well as the broader card, so shared boilerplate alone
-        # cannot mark two cards as repeats. Tags are normalized but are not required to match.
-        if identity_sim >= 0.05 and content_sim >= 0.10:
+        # Require meaningful overlap in skill/concept as well as the broader card. The broader card often
+        # repeats generic extraction language, so a tiny identity overlap is not enough to call it a repeat.
+        # Tags are normalized but are not required to match because valid paraphrases often rename traps.
+        if identity_sim >= 0.15 and content_sim >= 0.20:
             return (
                 True,
                 {
