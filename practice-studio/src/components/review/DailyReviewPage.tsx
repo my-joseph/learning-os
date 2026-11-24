@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { sendPracticeAction } from "@/lib/practiceActions";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -50,7 +51,6 @@ import {
   ReviewSessionItemOutcome,
   ReviewSessionSummary,
   saveReviewProblemState,
-  startReviewItemCycle,
   summarizeReviewSession,
 } from "@/lib/reviewSession";
 import type { SimilarProgressPatch } from "@/hooks/useSimilarTabs";
@@ -788,11 +788,14 @@ export const DailyReviewPage: React.FC = () => {
           ? labToDrillDocument(raw as LabDetailResponse)
           : (raw as DrillDocument);
         const normalized = normalizeLoadedDrillDoc(doc);
+        if (cancelled) return;
+        const cycle = await sendPracticeAction(doc.drillId, currentItem.qid, { action: "reset" });
+        if (!cycle?.cycleStartedAt) throw new Error("Could not start the review cycle");
         const prepared: DrillDocument = {
           ...normalized,
           problems: normalized.problems.map((p) =>
             p.id === currentItem.qid
-              ? prepareProblemForReviewItem(p, currentItem)
+              ? prepareProblemForReviewItem(p, currentItem, cycle.cycleStartedAt)
               : p
           ),
         };
@@ -956,6 +959,8 @@ export const DailyReviewPage: React.FC = () => {
   const handleHintRevealed = useCallback(() => {
     if (!currentKey || !currentItem || !currentProblem) return;
     if (isLockedAfterCorrect(currentProblem.state)) return;
+    void sendPracticeAction(currentItem.drillId, currentItem.qid, { action: "hint" },
+      currentProblem.state.cycleStartedAt ?? null);
     timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
     incrementHintsUsed();
     updateCurrentProblem(
@@ -1053,6 +1058,10 @@ export const DailyReviewPage: React.FC = () => {
 
   const handleSetupRevealed = useCallback(async () => {
     if (!currentDrill || !currentItem || !currentKey) return;
+    const target = currentDrill.problems.find((p) => p.id === currentItem.qid);
+    const recorded = await sendPracticeAction(currentDrill.drillId, currentItem.qid,
+      { action: "setup" }, target?.state.cycleStartedAt ?? null);
+    if (!recorded) return;
     incrementHintsUsed();
     const transition = computeSetupRevealTransition(currentDrill, currentItem.qid);
     if (!transition) return;
@@ -1078,6 +1087,10 @@ export const DailyReviewPage: React.FC = () => {
 
   const handleSolutionRevealed = useCallback(async () => {
     if (!currentDrill || !currentItem || !currentKey) return;
+    const target = currentDrill.problems.find((p) => p.id === currentItem.qid);
+    const recorded = await sendPracticeAction(currentDrill.drillId, currentItem.qid,
+      { action: "steps" }, target?.state.cycleStartedAt ?? null);
+    if (!recorded) return;
     incrementHintsUsed();
     const transition = computeSolutionRevealTransition(currentDrill, currentItem.qid);
     if (!transition) return;
@@ -1163,29 +1176,19 @@ export const DailyReviewPage: React.FC = () => {
     setOutcomes((prev) => ({ ...prev, [currentKey]: res.outcome }));
   }, [currentDrill, currentItem, currentKey, hintsByKey, today, outcomes, commitTimerState]);
 
-  const handleResetProblem = useCallback(() => {
+  const handleResetProblem = useCallback(async () => {
     if (!currentDrill || !currentItem || !currentKey) return;
-    const now = Date.now();
-    const nextCycleAt = new Date(now).toISOString();
+    const reset = await sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "reset" });
+    if (!reset?.cycleStartedAt) return;
+    const now = Date.parse(reset.cycleStartedAt);
     const transition = computeResetProblemTransition(
       currentDrill,
       currentItem.qid,
       timerStateRef.current,
       now
     );
-    const updatedDoc: DrillDocument = {
-      ...transition.updatedDoc,
-      problems: transition.updatedDoc.problems.map((p) =>
-        p.id === currentItem.qid
-          ? { ...p, state: { ...p.state, cycleStartedAt: nextCycleAt } }
-          : p
-      ),
-    };
     commitTimerState(transition.nextTimerState, now);
-    setDrillsByKey((prev) => ({ ...prev, [currentKey]: updatedDoc }));
-    if (!isLabId(currentDrill.drillId)) {
-      void startReviewItemCycle(currentDrill.drillId, currentItem.qid, nextCycleAt);
-    }
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: transition.updatedDoc }));
   }, [currentDrill, currentItem, currentKey, commitTimerState]);
 
   const handleRevisitNoteChange = useCallback(
@@ -1303,12 +1306,15 @@ export const DailyReviewPage: React.FC = () => {
           { autoSave: true }
         )
       }
-      onSetScore={(score) =>
+      onSetScore={(score) => {
+        if (!currentDrill || !currentItem || !currentProblem) return;
+        void sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "self-score", score },
+          currentProblem.state.cycleStartedAt ?? null);
         updateCurrentProblem(
           (p) => ({ ...p, state: applySelfScore(p.state, score) }),
           { autoSave: true }
-        )
-      }
+        );
+      }}
       onToggleMistakeTag={(tagId) =>
         updateCurrentProblem(
           (p) => {

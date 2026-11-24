@@ -607,6 +607,58 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
   return file;
 }
 
+/** Persist only learner-owned fields from a client snapshot of a canonical drill. */
+export function writeLearnerProgress(canonical: DocLike, incoming: DocLike): string {
+  const drillId = canonical.drillId;
+  if (!isSafeId(drillId)) throw new Error("Invalid drillId");
+  const existing = readProgress(drillId);
+  const problems = { ...existing?.problems };
+  const allowed = new Set(canonical.problems?.map((p) => p.id));
+  for (const problem of Array.isArray(incoming.problems) ? incoming.problems : []) {
+    const qid = problem?.id;
+    if (!isSafeId(qid) || !allowed.has(qid)) continue;
+    const input = problem.state;
+    if (!input || typeof input !== "object" || Array.isArray(input)) continue;
+    const previous = problems[qid] as Partial<ProblemState> | undefined;
+    const state = { ...previous };
+    const draft = input as Record<string, unknown>;
+    const sameCycle = (previous?.cycleStartedAt ?? null) === (draft.cycleStartedAt ?? null);
+    for (const field of ["mistakeNote", "revisitNote"] as const) {
+      if (typeof draft[field] === "string" && (sameCycle || draft[field].trim())) {
+        state[field] = draft[field];
+      }
+    }
+    if (sameCycle) {
+      for (const field of ["userInput", "userCode"] as const) {
+        if (typeof draft[field] === "string") state[field] = draft[field];
+      }
+      if (draft.divergedStep === null || (
+        typeof draft.divergedStep === "number" && Number.isSafeInteger(draft.divergedStep) &&
+        draft.divergedStep >= 0
+      )) {
+        state.divergedStep = draft.divergedStep;
+      }
+    }
+    problems[qid] = state;
+  }
+
+  const sessions = { ...existing?.sessionSummary };
+  const summary = incoming.sessionSummary as { statusOverride?: unknown } | undefined;
+  const override = summary?.statusOverride;
+  if (override === "Graded" || override === "Needs Retry" || override === null) {
+    sessions.statusOverride = override;
+  }
+  const file = progressFile(drillId);
+  writeJsonAtomic(file, {
+    drillId,
+    unitCode: canonical.unitCode,
+    updatedAt: new Date().toISOString(),
+    sessionSummary: sessions,
+    problems,
+  } satisfies ProgressFile);
+  return file;
+}
+
 /**
  * Server-authoritative stamp write after a real (non-pilot, non-dry-run, non-degraded)
  * Notion sync succeeds. Reads the latest progress on disk so concurrent problem edits
@@ -671,11 +723,11 @@ export function stampSyncMetadata(
   };
 }
 
-function mutateProblemVariantState(
+export function mutateProblemState(
   drillId: string,
   unitCode: string | undefined,
   qid: string,
-  mutator: (state: ProblemState) => void
+  mutator: (state: ProblemState) => void | ProblemState
 ): ProblemState {
   if (!isSafeId(drillId) || !isSafeId(qid)) {
     throw new Error("Invalid drillId or qid");
@@ -684,7 +736,7 @@ function mutateProblemVariantState(
   const problems = {
     ...((existing?.problems || {}) as Record<string, Partial<ProblemState>>),
   };
-  const nextState: ProblemState = {
+  let nextState: ProblemState = {
     userInput: "",
     score: null,
     divergedStep: null,
@@ -694,7 +746,7 @@ function mutateProblemVariantState(
   if (nextState.variants) {
     nextState.variants = { ...nextState.variants };
   }
-  mutator(nextState);
+  nextState = mutator(nextState) ?? nextState;
 
   const derived = deriveVariantLists(
     nextState.variants,
@@ -767,7 +819,7 @@ export function allocateSimilarSlots(
     .slice(0, MAX_SIMILAR_TABS);
 
   let assignedSlots: string[] = [];
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const variants: Record<string, VariantSessionRecord> = st.variants
       ? { ...st.variants }
       : {};
@@ -833,7 +885,7 @@ export function startProblemCycle(
       ? cycleStartedAt.trim()
       : new Date().toISOString();
   let effectiveCycle = safeTs;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const prevCycle =
       typeof st.cycleStartedAt === "string" && st.cycleStartedAt
         ? st.cycleStartedAt
@@ -862,7 +914,7 @@ export function markVariantServed(
     return existing;
   }
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const inCurrentCycle = Boolean(
@@ -898,7 +950,7 @@ export function addVariantDuration(
       ? Math.min(Math.round(durationMs), 600_000)
       : 0;
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const nextRec: VariantSessionRecord = {
@@ -927,7 +979,7 @@ export function registerServedVariant(
     throw new Error("Invalid variantId");
   }
   let assignedToken = "";
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const variants = st.variants ? { ...st.variants } : {};
     assignedToken = generateVariantToken(variants);
     variants[assignedToken] = {
@@ -977,7 +1029,7 @@ export function recordVariantAttempt(
   durationMs?: number
 ): { record: VariantSessionRecord; state: ProblemState } | null {
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     const safeDuration =
@@ -1026,7 +1078,7 @@ export function updateVariantSession(
   }
 ): { record: VariantSessionRecord | null; state: ProblemState } {
   let updatedRecord: VariantSessionRecord | null = null;
-  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
     let nextRec: VariantSessionRecord = { ...prev };

@@ -11,7 +11,8 @@ import {
 } from "@/lib/paths";
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
-import type { ProblemState } from "@/types/drill";
+import { isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
+import type { AttemptRecord, ProblemState } from "@/types/drill";
 
 /**
  * Per-item review schedule (mirrors `scripts/review_items.py`):
@@ -46,6 +47,9 @@ export interface ParsedReviewScope {
 }
 
 export interface ReviewItem {
+  /** Server-only receipt for the latest scheduled practice cycle. */
+  completedCycle?: string;
+
   drillId: string;
   qid: string;
   unitCode: string;
@@ -484,6 +488,7 @@ export function redactReviewItem(
   if (unitCodes.length >= 2) {
     out.unitCodes = unitCodes;
   }
+  if (typeof rec.completedCycle === "string") out.completedCycle = rec.completedCycle;
   return out;
 }
 
@@ -1609,5 +1614,59 @@ export function recordReviewItemResult(
   const updated = redactReviewItem(base);
   schedule[key] = updated;
   writeReviewItemsStore(schedule, progressDir);
+  return updated;
+}
+
+/** Complete a Daily Review cycle from its first substantive server check or explicit skip. */
+export function completeReviewItem(
+  drillId: string,
+  qid: string,
+  eventId: string,
+  options?: ReviewStoreOptions
+): ReviewItem | null {
+  const progressDir = options?.progressDir ?? getProgressDir();
+  const { drills, statesByKey } = loadProgressContext({ ...options, progressDir });
+  const key = reviewItemKey(drillId, qid);
+  const meta = drills.get(drillId)?.problems.get(qid);
+  const state = statesByKey.get(key) as Partial<ProblemState> | undefined;
+  const cycle = state?.cycleStartedAt;
+  if (!meta || !cycle || !state || !Array.isArray(state.attempts)) return null;
+
+  const event = state.attempts.find((attempt) =>
+    attempt?.kind !== "variant" && attempt?.eventId &&
+    isTimestampInCycle(attempt.ts, cycle) && isSubstantiveVerdict(attempt.verdict)
+  );
+  if (event?.eventId !== eventId) return null;
+
+  const saved = loadSavedReviewItems(progressDir);
+  const previous = saved[key];
+  if (previous?.completedCycle === cycle) return previous;
+  const priorAttempts = state.attempts.filter((attempt: AttemptRecord) =>
+    !isTimestampInCycle(attempt.ts, cycle)
+  );
+  const priorReviews = (state.reviews || []).filter((review) =>
+    !isTimestampInCycle(review.at, cycle)
+  );
+  const prior = replayReviewEvents(extractReviewEvents({
+    attempts: priorAttempts,
+    reviews: priorReviews,
+  }));
+  const existing = previous && (!prior || previous.lastReviewed >= prior.lastReviewed)
+    ? previous
+    : prior;
+  const step = stepReviewSchedule(existing?.level ?? MIN_REVIEW_LEVEL, {
+    correct: event.verdict === "correct",
+    hintsUsed: event.hintsUsed,
+    date: normalizeReviewDate(event.ts),
+  });
+  const updated = redactReviewItem({
+    drillId, qid,
+    ...lookupProblemMetadata(drillId, qid, { ...options, progressDir }),
+    ...step,
+    lastWrong: event.verdict !== "correct",
+    completedCycle: cycle,
+  });
+  saved[key] = updated;
+  writeReviewItemsStore(saved, progressDir);
   return updated;
 }

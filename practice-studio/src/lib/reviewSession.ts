@@ -14,7 +14,8 @@ import { redactProblemForReview } from "@/lib/redact";
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
 import type { ReviewItem } from "@/lib/reviewItems";
 import { drillHref } from "@/lib/routes";
-import { TelemetryTimerState } from "@/lib/telemetryTimer";
+import { sendPracticeAction, waitForPracticeAction } from "@/lib/practiceActions";
+import { getAttemptElapsedMs, TelemetryTimerState } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
 
 export const CLIENT_REVIEW_INTERVALS: Record<number, number> = {
@@ -353,9 +354,8 @@ async function fetchRevealedParts(
  * 1. POST `/api/check-answer`
  * 2. Compute problem state transition (`computeCheckAnswerTransition`)
  * 3. If substantive verdict:
- *    - POST `/api/save-state` (`reviewMerge: true`) so drill progress stays consistent
+ *    - POST `/api/review-items` with the server's check event ID
  *    - GET `/api/reveal` for earned `steps` / `display`
- *    - POST `/api/review-items` `{ drillId, qid, correct, hintsUsed }`
  */
 export async function executeReviewItemCheck(params: {
   drillDoc: DrillDocument;
@@ -388,6 +388,8 @@ export async function executeReviewItemCheck(params: {
   const trimmed = inputVal.trim();
   if (!trimmed) return null;
 
+  const cycle = drillDoc.problems.find((p) => p.id === item.qid)?.state.cycleStartedAt ?? null;
+  await waitForPracticeAction(drillDoc.drillId, item.qid);
   const checkRes = await fetchFn("/api/check-answer", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -396,8 +398,11 @@ export async function executeReviewItemCheck(params: {
       problemId: item.qid,
       subject: drillDoc.subject,
       input: trimmed,
+      cycleStartedAt: cycle,
+      durationMs: getAttemptElapsedMs(timerState, item.qid, now),
     }),
   });
+  if (!checkRes.ok) return null;
   const rawResult: CheckResult = await checkRes.json();
 
   const transition = computeCheckAnswerTransition(
@@ -441,9 +446,7 @@ export async function executeReviewItemCheck(params: {
         body: JSON.stringify({
           drillId: drillDoc.drillId,
           qid: item.qid,
-          correct,
-          hintsUsed,
-          ...(today ? { date: today } : {}),
+          eventId: rawResult.eventId,
         }),
       });
       if (revRes.ok) {
@@ -511,8 +514,7 @@ export async function executeReviewItemCheck(params: {
 
 /**
  * Full skip wiring for a Daily Review item:
- * applies skip state, saves to `/api/save-state` (`reviewMerge: true`), keeps steps hidden,
- * and records `correct: false` via `POST /api/review-items`.
+ * records an explicit server skip, keeps steps closed, and completes the review from its event ID.
  */
 export async function executeReviewItemSkip(params: {
   drillDoc: DrillDocument;
@@ -538,6 +540,15 @@ export async function executeReviewItemSkip(params: {
     existingOutcome = null,
     fetchFn = fetch,
   } = params;
+
+  const problem = drillDoc.problems.find((p) => p.id === item.qid);
+  if (!problem) return null;
+  const event = await sendPracticeAction(drillDoc.drillId, item.qid, {
+    action: "skip",
+    input: problem.state.userInput,
+    durationMs: getAttemptElapsedMs(timerState, item.qid, now),
+  }, problem.state.cycleStartedAt ?? null, fetchFn);
+  if (!event?.eventId) return null;
 
   const transition = computeSkipProblemTransition(
     drillDoc,
@@ -568,9 +579,7 @@ export async function executeReviewItemSkip(params: {
         body: JSON.stringify({
           drillId: drillDoc.drillId,
           qid: item.qid,
-          correct: false,
-          hintsUsed,
-          ...(today ? { date: today } : {}),
+          eventId: event.eventId,
         }),
       });
       if (revRes.ok) {

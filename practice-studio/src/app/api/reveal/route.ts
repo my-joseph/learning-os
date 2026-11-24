@@ -7,6 +7,15 @@ import {
   isPartUnlocked,
   RevealPart,
 } from "@/lib/redact";
+import {
+  currentPracticeCycle,
+  loadPracticeDocument,
+  practiceDuration,
+  recordOriginalCheck,
+  recordPracticeHelp,
+  recordSelfScore,
+  resetPractice,
+} from "@/lib/practiceEvidence";
 import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
@@ -159,4 +168,58 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json(extractRevealedPart(loaded.problem as Partial<Problem>, part));
+}
+
+/** Record a deliberate learner action against canonical practice content. */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { drillId, qid, action } = body;
+    if (!isSafeId(drillId) || (action !== "reset-all" && !isSafeId(qid))) {
+      return NextResponse.json({ error: "Invalid drillId or qid" }, { status: 400 });
+    }
+    const doc = loadPracticeDocument(drillId);
+    const problem = doc?.problems.find((p) => p.id === qid);
+    if (!doc || (!problem && action !== "reset-all")) {
+      return NextResponse.json({ error: "Drill or problem not found" }, { status: 404 });
+    }
+    if (action === "reset-all" || action === "reset") {
+      return NextResponse.json({
+        cycleStartedAt: resetPractice(doc, problem ? [problem] : doc.problems),
+      });
+    }
+    if (!problem) return NextResponse.json({ error: "Problem not found" }, { status: 404 });
+    const cycle = currentPracticeCycle(drillId, qid);
+    if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== cycle) {
+      return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+    }
+    if (action === "skip") {
+      if (body.countHint === true) recordPracticeHelp(doc, qid, "hint");
+      const input = typeof body.input === "string" ? body.input : "";
+      const event = recordOriginalCheck(
+        doc, problem, cycle, input,
+        { verdict: "skipped", message: "", components: [], diagnostics: [] },
+        practiceDuration(body.durationMs)
+      );
+      if (!event.eventId) {
+        return NextResponse.json({ error: "This problem is already complete" }, { status: 409 });
+      }
+      return NextResponse.json(event);
+    }
+    if (action === "self-score" && (
+      body.score === null || (typeof body.score === "number" && Number.isFinite(body.score))
+    )) {
+      recordSelfScore(doc, qid, body.score);
+      return NextResponse.json({ ok: true });
+    }
+    if (action === "hint" || action === "setup" || action === "steps") {
+      if (!recordPracticeHelp(doc, qid, action)) {
+        return NextResponse.json({ error: "Requested part is locked until earned" }, { status: 403 });
+      }
+      return NextResponse.json({ ok: true });
+    }
+    return NextResponse.json({ error: "Invalid practice action" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Could not record practice action" }, { status: 500 });
+  }
 }

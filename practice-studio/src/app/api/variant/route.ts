@@ -321,8 +321,6 @@ const ALLOWED_ACTIONS = new Set([
   "reset-all",
 ]);
 
-const ISO_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
-
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, unknown>;
@@ -346,14 +344,10 @@ export async function POST(req: NextRequest) {
       if (!loaded) {
         return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
       }
-      const rawCycleTs =
-        typeof body.cycleStartedAt === "string" ? body.cycleStartedAt.trim() : "";
-      const cycleTs = ISO_TS_RE.test(rawCycleTs) ? rawCycleTs : new Date().toISOString();
       const { cycleStartedAt } = startProblemCycle(
         drillId,
         typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
-        qid,
-        cycleTs
+        qid
       );
       return NextResponse.json({ ok: true, cycleStartedAt });
     }

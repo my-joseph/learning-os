@@ -178,6 +178,8 @@ export interface CheckDiagnostic {
 }
 
 export interface CheckResult {
+  eventId?: string;
+  ts?: string;
   verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "invalid input" | "skipped";
   message: string;
   components: CheckComponent[];
@@ -229,6 +231,8 @@ export interface TestRunRecord {
 }
 
 export interface AttemptRecord {
+  eventId?: string;
+  hintsUsed?: boolean;
   input: string;
   ts: string;
   verdict: string;

@@ -360,6 +360,8 @@ def redact_review_item(entry: dict[str, Any]) -> dict[str, Any]:
         "revisitNote": _clean_revisit_note(entry.get("revisitNote")),
         "lastWrong": bool(entry.get("lastWrong", False)),
     }
+    if isinstance(entry.get("completedCycle"), str):
+        out["completedCycle"] = entry["completedCycle"]
     raw_multi = entry.get("unitCodes")
     if isinstance(raw_multi, (list, tuple)):
         cleaned_multi = list(dict.fromkeys(u.strip() for u in raw_multi if isinstance(u, str) and u.strip()))

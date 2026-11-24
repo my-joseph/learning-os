@@ -339,7 +339,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         const t = reviewRunData.tests;
         const safeFailed = maskHiddenTestFailures(t.failed || []);
         const allPassed = t.total > 0 && t.passed === t.total && safeFailed.length === 0;
-        const fallbackReport: TestRunReport = {
+        const fallbackReport: TestRunReport = reviewRunData.testReport ?? {
           allPassed,
           score: t.total > 0 ? t.passed / t.total : 0,
           passedCount: t.passed,

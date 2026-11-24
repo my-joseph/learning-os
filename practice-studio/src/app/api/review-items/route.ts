@@ -3,10 +3,26 @@ import { isSafeId } from "@/lib/paths";
 import {
   getDueReviewItems,
   parseReviewScope,
-  recordReviewItemResult,
+  completeReviewItem,
+  type ReviewItem,
 } from "@/lib/reviewItems";
 
 export const dynamic = "force-dynamic";
+
+function projectReviewItem(item: ReviewItem) {
+  return {
+    drillId: item.drillId,
+    qid: item.qid,
+    unitCode: item.unitCode,
+    subject: item.subject,
+    commonTrapTag: null,
+    archetypeKey: null,
+    level: item.level,
+    lastReviewed: item.lastReviewed,
+    dueDate: item.dueDate,
+    revisitNote: item.revisitNote,
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,24 +62,11 @@ export async function GET(req: NextRequest) {
     }
 
     const result = getDueReviewItems({ today, limit, scope });
-    // Never expose trap tags, archetype keys, or lastWrong before the learner answers (zero-leak rule).
-    const safeItems = result.items.map((item) => ({
-      drillId: item.drillId,
-      qid: item.qid,
-      unitCode: item.unitCode,
-      subject: item.subject,
-      commonTrapTag: null,
-      archetypeKey: null,
-      level: item.level,
-      lastReviewed: item.lastReviewed,
-      dueDate: item.dueDate,
-      revisitNote: item.revisitNote,
-    }));
     const { scope: _omittedScope, ...rest } = result;
     void _omittedScope;
     return NextResponse.json({
       ...rest,
-      items: safeItems,
+      items: result.items.map(projectReviewItem),
     });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
@@ -76,35 +79,15 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as Record<string, unknown>;
     const drillId = body?.drillId;
     const qid = body?.qid;
-    const correct = body?.correct;
-    const hintsUsed = body?.hintsUsed;
-    const date = body?.date;
-
-    if (!isSafeId(drillId) || !isSafeId(qid)) {
-      return NextResponse.json({ ok: false, error: "Invalid drillId or qid" }, { status: 400 });
+    const eventId = body?.eventId;
+    if (!isSafeId(drillId) || !isSafeId(qid) || !isSafeId(eventId)) {
+      return NextResponse.json({ ok: false, error: "Invalid drillId, qid, or eventId" }, { status: 400 });
     }
-    if (typeof correct !== "boolean") {
-      return NextResponse.json({ ok: false, error: "Field 'correct' must be a boolean" }, { status: 400 });
+    const item = completeReviewItem(drillId, qid, eventId);
+    if (!item) {
+      return NextResponse.json({ ok: false, error: "No matching check for the current review cycle" }, { status: 409 });
     }
-    if (
-      hintsUsed !== undefined &&
-      typeof hintsUsed !== "boolean" &&
-      (typeof hintsUsed !== "number" || !Number.isFinite(hintsUsed) || hintsUsed < 0)
-    ) {
-      return NextResponse.json({ ok: false, error: "Invalid 'hintsUsed' value" }, { status: 400 });
-    }
-    if (date !== undefined && (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}/.test(date.trim()))) {
-      return NextResponse.json({ ok: false, error: "Invalid 'date' format" }, { status: 400 });
-    }
-
-    const item = recordReviewItemResult({
-      drillId,
-      qid,
-      correct,
-      hintsUsed: hintsUsed as boolean | number | undefined,
-      date: typeof date === "string" ? date.trim().slice(0, 10) : undefined,
-    });
-    return NextResponse.json({ ok: true, item });
+    return NextResponse.json({ ok: true, item: projectReviewItem(item) });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: errMsg }, { status: 500 });

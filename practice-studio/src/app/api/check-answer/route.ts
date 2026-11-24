@@ -11,7 +11,8 @@ import {
 } from "@/lib/paths";
 import { readProgress, recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
 import { similarUnlock } from "@/lib/similarTabs";
-import { ProblemState } from "@/types/drill";
+import { currentPracticeCycle, practiceDuration, recordOriginalCheck } from "@/lib/practiceEvidence";
+import type { CheckResult, DrillDocument, Problem, ProblemState } from "@/types/drill";
 
 const TIMEOUT_MS = 5000;
 
@@ -68,6 +69,11 @@ export async function POST(req: NextRequest) {
 
     let engineModule = "math_engine.answer_check";
     let enginePayload: Record<string, unknown>;
+    let original: {
+      doc: DrillDocument;
+      problem: Problem;
+      cycle: string | null;
+    } | null = null;
     let variantMeta: {
       variantToken: string;
       variant: Record<string, unknown>;
@@ -187,12 +193,20 @@ export async function POST(req: NextRequest) {
       }
 
       const { doc, problem } = loaded;
+      original = {
+        doc: doc as unknown as DrillDocument,
+        problem: problem as unknown as Problem,
+        cycle: currentPracticeCycle(drillId, problemId),
+      };
+      if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== original.cycle) {
+        return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+      }
       // Server copy wins: ignore any answerSpec or trapValue sent by the client.
       const answerSpec = (problem.answerSpec || {}) as Record<string, unknown>;
       const subject =
         doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-")
           ? "PRG"
-          : body.subject || "MATH";
+          : "MATH";
 
       enginePayload = {
         subject,
@@ -286,11 +300,19 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-          const result = JSON.parse(stdout) as {
-            verdict?: string;
-            trapMatched?: boolean;
-            diagnostics?: Array<{ code?: string }>;
-          };
+          const result = JSON.parse(stdout) as CheckResult;
+          if (original) {
+            if (currentPracticeCycle(drillId, problemId) !== original.cycle) {
+              resolve(NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
+              return;
+            }
+            const event = recordOriginalCheck(
+              original.doc, original.problem, original.cycle, userInput, result,
+              practiceDuration(durationMs)
+            );
+            resolve(NextResponse.json({ ...result, ...event }));
+            return;
+          }
           if (variantMeta && userInput.trim()) {
             try {
               const diagCodes = Array.isArray(result.diagnostics)

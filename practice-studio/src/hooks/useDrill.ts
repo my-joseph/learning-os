@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DrillDocument, Problem, CheckResult, TestRunReport, VariantSessionRecord } from "@/types/drill";
+import { sendPracticeAction, waitForPracticeAction } from "@/lib/practiceActions";
 import { plainTitle } from "@/lib/titleText";
 import {
   applyCheckResult,
@@ -240,6 +241,7 @@ export function computeCheckAnswerTransition(
       state: applyCheckResult(prob, inputVal, result, currentDrill.mistakeTags || [], {
         durationMs,
         hintsRevealed: hintsCount,
+        ts: result.ts,
       }),
     };
   });
@@ -724,8 +726,12 @@ export function useDrill({
 
   const handleHintRevealed = useCallback(
     (probId: string) => {
+      const doc = drillRef.current;
+      const target = doc?.problems.find((p) => p.id === probId);
+      if (!doc || !target) return;
+      void sendPracticeAction(doc.drillId, probId, { action: "hint" }, target.state.cycleStartedAt ?? null);
       commitDrillUpdate(
-        null,
+        doc.drillId,
         (latest) => computeHintRevealTransition(latest, probId),
         "debounce"
       );
@@ -829,6 +835,7 @@ export function useDrill({
       if (!inputVal) return;
 
       try {
+        await waitForPracticeAction(targetDrillId, probId);
         const res = await fetch("/api/check-answer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -837,10 +844,15 @@ export function useDrill({
             problemId: p.id,
             subject: targetSubject,
             input: inputVal,
+            cycleStartedAt: p.state.cycleStartedAt ?? null,
+            durationMs: getAttemptElapsedMs(timerStateRef.current, probId, Date.now()),
           }),
         });
 
+        if (!res.ok) throw new Error("Could not record the answer check");
         const rawResult: CheckResult = await res.json();
+        if ((drillRef.current?.problems.find((item) => item.id === probId)?.state.cycleStartedAt ?? null)
+            !== (p.state.cycleStartedAt ?? null)) return;
         const now = Date.now();
         let computedTransition: ReturnType<typeof computeCheckAnswerTransition> = null;
         const nextDoc = commitDrillUpdate(
@@ -902,13 +914,16 @@ export function useDrill({
 
   // Equation set-up opened by the learner. Only counts as assistance before the first substantive check.
   const handleSetupRevealed = useCallback(
-    (probId: string) => {
+    async (probId: string) => {
       const latest = drillRef.current;
       if (!latest) return;
       const transition = computeSetupRevealTransition(latest, probId);
       if (!transition) return;
       let docForSave = latest;
       if (transition.shouldMarkAssisted) {
+        const cycle = latest.problems.find((p) => p.id === probId)?.state.cycleStartedAt ?? null;
+        const recorded = await sendPracticeAction(latest.drillId, probId, { action: "setup" }, cycle);
+        if (!recorded) return;
         const nextDoc = commitDrillUpdate(
           latest.drillId,
           (cur) => computeSetupRevealTransition(cur, probId)?.updatedDoc ?? null,
@@ -925,13 +940,16 @@ export function useDrill({
 
   // Step-by-step solution opened by the learner before their first correct answer.
   const handleSolutionRevealed = useCallback(
-    (probId: string) => {
+    async (probId: string) => {
       const latest = drillRef.current;
       if (!latest) return;
       const transition = computeSolutionRevealTransition(latest, probId);
       if (!transition) return;
       let docForSave = latest;
       if (transition.shouldMarkAssisted) {
+        const cycle = latest.problems.find((p) => p.id === probId)?.state.cycleStartedAt ?? null;
+        const recorded = await sendPracticeAction(latest.drillId, probId, { action: "steps" }, cycle);
+        if (!recorded) return;
         const nextDoc = commitDrillUpdate(
           latest.drillId,
           (cur) => computeSolutionRevealTransition(cur, probId)?.updatedDoc ?? null,
@@ -955,6 +973,10 @@ export function useDrill({
 
   const handleSetScore = useCallback(
     (probId: string, score: number | null) => {
+      const doc = drillRef.current;
+      const target = doc?.problems.find((p) => p.id === probId);
+      if (!doc || !target) return;
+      void sendPracticeAction(doc.drillId, probId, { action: "self-score", score }, target.state.cycleStartedAt ?? null);
       updateProblem(probId, (p) => ({
         ...p,
         state: applySelfScore(p.state, score),
@@ -989,11 +1011,21 @@ export function useDrill({
   );
 
   const handleSkipProblem = useCallback(
-    (probId: string, opts: SkipOptions = {}) => {
+    async (probId: string, opts: SkipOptions = {}) => {
+      const doc = drillRef.current;
+      const target = doc?.problems.find((p) => p.id === probId);
+      if (!doc || !target) return;
       const now = Date.now();
+      const event = await sendPracticeAction(doc.drillId, probId, {
+        action: "skip",
+        input: target.state.userInput,
+        durationMs: getAttemptElapsedMs(timerStateRef.current, probId, now),
+        ...opts,
+      }, target.state.cycleStartedAt ?? null);
+      if (!event?.eventId) return;
       let computed: ReturnType<typeof computeSkipProblemTransition> = null;
       const nextDoc = commitDrillUpdate(
-        null,
+        doc.drillId,
         (latest) => {
           const transition = computeSkipProblemTransition(
             latest,
@@ -1016,11 +1048,18 @@ export function useDrill({
   );
 
   const handleResetProblem = useCallback(
-    (probId: string) => {
-      const now = Date.now();
+    async (probId: string) => {
+      const doc = drillRef.current;
+      if (!doc) return false;
+      const reset = await sendPracticeAction(doc.drillId, probId, { action: "reset" });
+      if (!reset?.cycleStartedAt) {
+        setStatus({ text: "Reset could not be saved. Try again.", type: "fail" });
+        return false;
+      }
+      const now = Date.parse(reset.cycleStartedAt);
       let computed: ReturnType<typeof computeResetProblemTransition> | null = null;
       const nextDoc = commitDrillUpdate(
-        null,
+        doc.drillId,
         (latest) => {
           const transition = computeResetProblemTransition(
             latest,
@@ -1034,18 +1073,26 @@ export function useDrill({
         "immediate"
       );
       const applied = computed as ReturnType<typeof computeResetProblemTransition> | null;
-      if (!applied || !nextDoc) return;
+      if (!applied || !nextDoc) return false;
       commitTimerState(applied.nextTimerState, now);
+      return true;
     },
-    [commitDrillUpdate, commitTimerState]
+    [commitDrillUpdate, commitTimerState, setStatus]
   );
 
   const handleResetAll = useCallback(async () => {
-    const now = Date.now();
+    const doc = drillRef.current;
+    if (!doc) return;
+    const reset = await sendPracticeAction(doc.drillId, "", { action: "reset-all" });
+    if (!reset?.cycleStartedAt) {
+      setStatus({ text: "Reset could not be saved. Try again.", type: "fail" });
+      return false;
+    }
+    const now = Date.parse(reset.cycleStartedAt);
     const isVisible = typeof document !== "undefined" ? !document.hidden : true;
     let computed: ReturnType<typeof computeResetAllTransition> | null = null;
     const nextDoc = commitDrillUpdate(
-      null,
+      doc.drillId,
       (latest) => {
         const transition = computeResetAllTransition(
           latest,
@@ -1077,6 +1124,7 @@ export function useDrill({
     }
     setStatus(applied.statusMessage);
     await persistNow(nextDoc);
+    return true;
   }, [commitDrillUpdate, commitTimerState, onQuestionChange, persistNow, setStatus]);
 
   const selectQuestionIndex = useCallback(

@@ -13,6 +13,8 @@ import {
   isSafeId,
   loadProblemFromDisk,
 } from "@/lib/paths";
+import { currentPracticeCycle, recordTestReport } from "@/lib/practiceEvidence";
+import { loadLabDetailFromDisk } from "@/lib/labs";
 import { maskHiddenTestFailures, sanitizeCodeCheckError } from "@/lib/codeStatus";
 
 function formatServerCheckError(raw: string, rootDir: string): string {
@@ -203,6 +205,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const cycle = currentPracticeCycle(drillId, problemId);
+    const lab = drillId.startsWith("LAB-") ? loadLabDetailFromDisk(drillId) : null;
+    if (drillId.startsWith("LAB-") && !lab?.milestones.some((m) => m.id === problemId)) {
+      return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
+    }
+
     return new Promise<NextResponse>((resolve) => {
       const proc = spawn(
         pythonBin,
@@ -265,9 +273,26 @@ export async function POST(req: NextRequest) {
                     : [],
                 }
               : parsed?.tests;
+          const testReport = lab && safeTests ? recordTestReport(
+            drillId, problemId, lab.unitCode, cycle, {
+              allPassed: safeTests.total > 0 && safeTests.total === safeTests.passed && safeTests.failed.length === 0,
+              score: safeTests.total > 0 ? safeTests.passed / safeTests.total : 0,
+              passedCount: safeTests.passed,
+              totalCount: safeTests.total,
+              visibleResults: safeTests.failed.map((name: string) => ({ name, passed: false })),
+              hiddenPassed: 0,
+              hiddenTotal: 0,
+              executionTimeMs: 0,
+            }
+          ) : undefined;
+          if (testReport === null) {
+            resolve(NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
+            return;
+          }
           resolve(
             NextResponse.json({
               ...parsed,
+              ...(testReport ? { testReport } : {}),
               ...(safeTests !== undefined ? { tests: safeTests } : {}),
               types: parsed.typecheck ?? [],
             })
