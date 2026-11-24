@@ -17,6 +17,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -33,7 +34,15 @@ from notion_sync.blocks import (
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request, sync_deadline
 from notion_sync.id_map import save_id_map
-from progress_store import apply_progress, has_practice, load_progress, merge_review_schedule, pilot_mode, save_progress
+from progress_store import (
+    apply_progress,
+    has_practice,
+    load_progress,
+    merge_review_schedule,
+    pilot_mode,
+    save_progress,
+    strip_progress,
+)
 
 
 def get_data_root() -> str:
@@ -101,12 +110,21 @@ REQUIRED_PROBLEM_FIELDS = ("id", "levelLabel", "category", "prompt")
 def missing_sync_fields(drill_doc: dict) -> list[str]:
     """Fields the Notion page needs. Checked before any Notion call, so a gap never leaves a half-built page."""
     missing = [f"drill.{k}" for k in REQUIRED_DRILL_FIELDS if k != "problems" and not drill_doc.get(k)]
-    if not isinstance(drill_doc.get("problems"), list):
-        missing.append("drill.problems")
+    problems = drill_doc.get("problems")
+    if not isinstance(problems, list) or not problems:
+        return [*missing, "drill.problems"]
     is_prg = drill_doc.get("subject") == "PRG" or str(drill_doc.get("unitCode", "")).startswith("PRG-")
     step_keys = ("explain",) if is_prg else ("latex", "explain")
-    for i, p in enumerate(drill_doc.get("problems") or [], 1):
+    seen_ids: set[str] = set()
+    for i, p in enumerate(problems, 1):
+        if not isinstance(p, dict):
+            missing.append(f"#{i}")
+            continue
         pid = p.get("id") or f"#{i}"
+        if not isinstance(pid, str) or pid in seen_ids:
+            missing.append(f"#{i}.id (must be unique)")
+        else:
+            seen_ids.add(pid)
         missing += [f"{pid}.{k}" for k in REQUIRED_PROBLEM_FIELDS if not p.get(k)]
         for s_i, st in enumerate(p.get("steps") or [], 1):
             missing += [f"{pid}.steps[{s_i}].{k}" for k in step_keys if k not in st]
@@ -225,6 +243,60 @@ def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
 
+_NOTION_CHECK_VERDICTS = ("correct", "incorrect", "partial", "equivalent_not_in_form")
+
+
+def _notion_attempt_evidence(state: dict | None, *, is_prg: bool) -> tuple[bool, bool]:
+    """Return (attempted, skipped) for Notion disclosure and result eligibility."""
+    if not isinstance(state, dict):
+        return False, False
+    cycle = state.get("cycleStartedAt")
+
+    def in_cycle(ts: str | None) -> bool:
+        if not cycle:
+            return True
+        if not isinstance(ts, str) or not isinstance(cycle, str):
+            return False
+        try:
+            return datetime.fromisoformat(ts) >= datetime.fromisoformat(cycle)
+        except (TypeError, ValueError):
+            return False
+
+    def records(key: str) -> list[dict]:
+        raw = state.get(key)
+        return [r for r in raw if isinstance(r, dict)] if isinstance(raw, list) else []
+
+    current = [a.get("verdict") for a in records("attempts") if a.get("kind") != "variant" and in_cycle(a.get("ts"))]
+    last_check = state.get("lastCheck")
+    if not cycle and isinstance(last_check, dict):
+        current.append(last_check.get("verdict"))
+    skipped = "skipped" in current or (not cycle and state.get("skipped") is True)
+    checked = any(v in _NOTION_CHECK_VERDICTS for v in current)
+
+    def ran_tests(report: dict | None) -> bool:
+        if not isinstance(report, dict) or not isinstance(report.get("allPassed"), bool):
+            return False
+        total = report.get("totalCount")
+        if total is None:
+            total = report.get("total")
+        return (total is None or (type(total) in (int, float) and 0 < total < float("inf"))) and in_cycle(
+            report.get("ts") or report.get("updatedAt")
+        )
+
+    attempted = checked or (
+        is_prg
+        and (
+            any(ran_tests(run) for run in records("testRuns"))
+            or ran_tests(state.get("lastTestReport"))
+            or any(
+                r.get("verdict") in ("pass", "revise") and in_cycle(r.get("at") or r.get("ts"))
+                for r in records("reviews")
+            )
+        )
+    )
+    return attempted, skipped
+
+
 def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
     env = load_env()
     token = env.get("NOTION_TOKEN")
@@ -329,7 +401,7 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
     skipped_count = int(summary.get("skippedCount", sum(1 for p in problems if p.get("state", {}).get("skipped"))))
     skipped_problems = summary.get(
         "skippedProblems",
-        [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")],
+        [f"{p['id']} ({p.get('category')})" for p in problems if p.get("state", {}).get("skipped")],
     )
 
     skipped_str = f" | **Concept Gaps (Skipped):** `{skipped_count}`" if skipped_count > 0 else ""
@@ -351,7 +423,7 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
         h2("1. Drill Blueprint & Learning Focus", id_map),
         p_block(
             f"This drill tests foundational mastery for {_mention_or_code(unit_code, id_map)}. "
-            f"Solve each problem independently before consulting the step-by-step verification toggles below.",
+            "Open the drill in Practice Studio to solve each problem independently.",
             id_map,
         ),
         bullet(
@@ -376,14 +448,11 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
             )
         )
 
-    blocks.extend(
-        [
-            divider_block(),
-            h2("2. Question Inventory & Step-by-Step Solutions", id_map),
-        ]
-    )
+    attempted_problems = [p for p in problems if _notion_attempt_evidence(p.get("state"), is_prg=is_prg)[0]]
+    if attempted_problems:
+        blocks.extend([divider_block(), h2("2. Attempted Questions & Step-by-Step Solutions", id_map)])
 
-    for p in problems:
+    for p in attempted_problems:
         ref_str = " ".join(f"([[{r}]])" for r in p.get("references", []) if r in id_map)
         header_line = f"**{p['id']} ({p['levelLabel']} — {p['category']}):** {p['prompt']}" + (
             f" {ref_str}" if ref_str else ""
@@ -482,6 +551,7 @@ def sync_drill_to_notion(
     *,
     content_only: bool = False,
     save_local: bool = True,
+    studio_results: bool = False,
 ) -> dict:
     """Save locally (unless `content_only=True` or `save_local=False`), then sync to Notion.
 
@@ -490,16 +560,7 @@ def sync_drill_to_notion(
       locally (when not content-only) and the sync can simply be retried.
     - Any other error is a bug -> ok False (never reported as success).
     """
-    if content_only or not save_local:
-        path = _drill_content_path(drill_doc)
-        validate_and_sanitize_drill_doc(drill_doc)
-    else:
-        path = save_drill_doc(drill_doc)
-        drill_id = drill_doc.get("drillId")
-        if drill_id:
-            merged = load_progress(drill_id)
-            if merged:
-                apply_progress(drill_doc, merged)
+    path = _drill_content_path(drill_doc)
     missing = missing_sync_fields(drill_doc)
     if missing:
         return {
@@ -509,6 +570,21 @@ def sync_drill_to_notion(
             + ", ".join(missing[:12])
             + (f" (+{len(missing) - 12} more)" if len(missing) > 12 else ""),
         }
+    # Studio supplies a canonical snapshot with progress already loaded from
+    # disk. Pristine registration runs through the authoring CLI.
+    if content_only or studio_results or not save_local:
+        validate_and_sanitize_drill_doc(drill_doc)
+    else:
+        save_drill_doc(drill_doc)
+        apply_progress(drill_doc, load_progress(drill_doc["drillId"]))
+
+    if studio_results:
+        if pilot_mode():
+            return {"ok": True, "localFilePath": path, "pilotSkipped": True}
+        is_prg = drill_doc.get("subject") == "PRG" or drill_doc["unitCode"].startswith("PRG-")
+        if not any(any(_notion_attempt_evidence(p.get("state"), is_prg=is_prg)) for p in drill_doc["problems"]):
+            return {"ok": False, "localFilePath": path, "error": "Save an attempt or skip before syncing to Notion."}
+
     is_dry_run = os.environ.get("NOTION_DRY_RUN", "").lower() in ("1", "true", "yes") or drill_doc.get("dryRun")
     if is_dry_run:
         return {
@@ -579,7 +655,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     try:
         drill_path = _resolve_drill_path(args.target)
-        drill_doc = json.loads(drill_path.read_text(encoding="utf-8"))
+        drill_doc = strip_progress(json.loads(drill_path.read_text(encoding="utf-8")))
     except (OSError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
