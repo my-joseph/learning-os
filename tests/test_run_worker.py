@@ -167,12 +167,25 @@ def test_fresh_branch_completes_when_model_creates_pr(worker_env: dict[str, Path
     log = (Path(worker_env["tmp"]) / "worker.log").read_text()
     assert result.returncode == 0, result.stderr
     assert "done: PR exists" in log
+    assert "done: report written" not in log
 
 
-def test_read_only_done_file_completion_is_unchanged(worker_env: dict[str, Path | str]) -> None:
+def test_read_only_done_file_completion_logs_report_written(worker_env: dict[str, Path | str]) -> None:
     done_file = Path(worker_env["tmp"]) / "done.txt"
     done_file.write_text("report complete\n")
     result = invoke(worker_env, "readonly", models="model1", done_file=done_file)
     log = (Path(worker_env["tmp"]) / "worker.log").read_text()
     assert result.returncode == 0, result.stderr
-    assert "done: PR exists" in log
+    assert "done: report written" in log
+    assert "done: PR exists" not in log
+
+
+def test_read_only_missing_done_file_does_not_log_report_written(worker_env: dict[str, Path | str]) -> None:
+    done_file = Path(worker_env["tmp"]) / "missing-done.txt"
+    done_file.write_text("")
+    result = invoke(worker_env, "readonly", models="model1", done_file=done_file)
+    log = (Path(worker_env["tmp"]) / "worker.log").read_text()
+    assert result.returncode == 0, result.stderr
+    assert "finished rc=0 without a report" in log
+    assert "done: report written" not in log
+    assert "done: PR exists" not in log
