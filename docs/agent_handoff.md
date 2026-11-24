@@ -49,8 +49,9 @@ Read these in order before acting:
 
 ### ON HOLD — do not start without the learner
 
-- Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including `/api/generate-drill` validation); rename of `rules/06`; PRG Similar/variant bank.
-- Fix the case where a Worked Example can serve the same variant as an unopened Similar tab; this is tied to the “+” refactor.
+- Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including **C08** `/api/generate-drill` validation/bounds, which waits for the Similar/template refactor); rename of `rules/06`; PRG Similar/variant bank.
+- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” / template refactor.
+- **PR #305** status progress bars.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
 - PR B, PR C (including issue `0852fe`, Weak spots trap-name leak), Example redesign, and learning-feature Phases 3–5.
 - Engine roadmap Phase 2 (`pilot/improve-engine-2026-11-21/roadmap.md`, items 2.1–2.3): wait for quota reset and learner go-ahead.
