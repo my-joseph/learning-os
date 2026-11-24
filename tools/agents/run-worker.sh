@@ -11,7 +11,7 @@
 #     killed. Here the fallback model runs ONLY when the first run failed for quota /
 #     rate-limit reasons, never after a kill, a timeout, or once a PR exists.
 #
-# Env (optional): MODELS="gemini-4-neon-high gemini-4-argon-high gpt-6-luna",
+# Env (optional): MODELS="gemini-4-neon-high gpt-6.2-sol gpt-6-luna",
 #                 MAX_SECS=7200, IDLE_AFTER_PR=300, POLL=20,
 #                 DONE_FILE=<report path for read-only jobs>,
 #                 USAGE_LOG=<jsonl path; default <main checkout>/pilot/agent-usage.jsonl>
@@ -29,8 +29,8 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
-# Neon first; Argon (own quota pool) and GPT Luna (own Codex pool) are the quota fallbacks. Hydrogen shares Neon's
-# pool, so it is useless as a fallback for Neon. gpt-* models run through the Codex CLI, everything else through agy.
+# Neon first; GPT Luna (Codex pool) is the quota fallback. Hydrogen and Argon share Neon's agy pool, so they are
+# useless as fallbacks for Neon. gpt-* models run through the Codex CLI, everything else through agy.
 # A worker must never start another worker (nested dispatch burns quota and escapes review).
 if [ "${LEARNINGOS_ROLE:-}" = "worker" ]; then
   echo "run-worker.sh: refusing to start a worker from inside a worker (LEARNINGOS_ROLE=worker)" >&2
@@ -45,7 +45,7 @@ for _cli in agy codex claude; do
   printf '#!/bin/sh\necho "%s is blocked inside a LearningOS worker (LEARNINGOS_ROLE=worker): workers never dispatch other agents" >&2\nexit 64\n' "$_cli" >"$SHIM_DIR/$_cli"
   chmod +x "$SHIM_DIR/$_cli"
 done
-MODELS=${MODELS:-"gemini-4-neon-high gemini-4-argon-high gpt-6-luna"}
+MODELS=${MODELS:-"gemini-4-neon-high gpt-6.2-sol gpt-6-luna"}
 CODEX_BIN=${CODEX_BIN:-/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex}
 CODEX_EFFORT=${CODEX_EFFORT:-high}
 MAX_SECS=${MAX_SECS:-7200}
