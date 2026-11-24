@@ -58,30 +58,32 @@ export function buildPrgPythonEnv(
 }
 
 /**
- * Terminate a spawned runner and its entire POSIX process group when detached.
+ * Terminate a spawned runner and sweep its entire POSIX process group when detached.
  */
 export function killProcessTree(proc: ChildProcess): void {
-  if (proc.exitCode !== null || proc.signalCode !== null) return;
   const pid = proc.pid;
   if (pid && process.platform !== "win32") {
     try {
       process.kill(-pid, "SIGTERM");
     } catch {
-      try {
-        proc.kill("SIGTERM");
-      } catch {
-        // Process already exited.
+      if (proc.exitCode === null && proc.signalCode === null) {
+        try {
+          proc.kill("SIGTERM");
+        } catch {
+          // Process already exited.
+        }
       }
     }
     const escalate = setTimeout(() => {
-      if (proc.exitCode !== null || proc.signalCode !== null) return;
       try {
         process.kill(-pid, "SIGKILL");
       } catch {
-        try {
-          proc.kill("SIGKILL");
-        } catch {
-          // Process already exited.
+        if (proc.exitCode === null && proc.signalCode === null) {
+          try {
+            proc.kill("SIGKILL");
+          } catch {
+            // Process already exited.
+          }
         }
       }
     }, 250);
@@ -89,6 +91,7 @@ export function killProcessTree(proc: ChildProcess): void {
     return;
   }
 
+  if (proc.exitCode !== null || proc.signalCode !== null) return;
   try {
     proc.kill("SIGKILL");
   } catch {
