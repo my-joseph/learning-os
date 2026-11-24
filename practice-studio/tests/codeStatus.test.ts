@@ -814,5 +814,211 @@ runReviewRunRouteChecks().then(async () => {
     }
   }
 
+  // 13. C03: Stubbed reporter returning synthetic extra/unknown fields, rawOutput, hidden test names,
+  //     and forged pass counts is strictly projected by /api/run-tests and /api/review-run
+  {
+    const stubRoot = fs.mkdtempSync(path.join(os.tmpdir(), "studio-c03-stub-"));
+    const prevRoot = process.env.LEARNINGOS_ROOT;
+    const prevDrillsDir = process.env.DRILLS_DATA_DIR;
+    const prevProgressDir = process.env.PROGRESS_DIR;
+    const prevPilot = process.env.LEARNINGOS_PILOT;
+    try {
+      const unitCode = "PRG-T01-C03-U05";
+      const drillId = "DRL-PRG-C03-STUB-01";
+      const drillDir = path.join(stubRoot, "drills", "data", unitCode);
+      const wsDir = path.join(stubRoot, "drills", "workspace", drillId);
+      const venvBin = path.join(stubRoot, ".venv", "bin");
+      fs.mkdirSync(drillDir, { recursive: true });
+      fs.mkdirSync(wsDir, { recursive: true });
+      fs.mkdirSync(venvBin, { recursive: true });
+      fs.writeFileSync(path.join(stubRoot, "id_map.json"), "{}", "utf-8");
+      fs.writeFileSync(
+        path.join(drillDir, `${drillId}.json`),
+        JSON.stringify({
+          drillId,
+          subject: "PRG",
+          unitCode,
+          chapterCode: "PRG-T01-C03",
+          topicCode: "PRG-T01",
+          unitTitle: "Stub Projection Fixture",
+          environment: "node-vanilla",
+          problems: [
+            {
+              id: "Q01",
+              level: 1,
+              levelLabel: "Foundation",
+              category: "Core Skill",
+              entryPoint: "solve",
+              prompt: "Implement `solve()`.",
+              starterCode: "function solve() { return 1; }\nmodule.exports = { solve };\n",
+              visibleTests: [{ name: "visible check", testCode: "assert.strictEqual(solve(), 1);" }],
+              hiddenTests: [{ name: "SECRET_STUB_HIDDEN_CASE", testCode: "assert.strictEqual(solve(), 1);" }],
+              steps: [{ explain: "Return 1." }],
+            },
+          ],
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(wsDir, "Q01_solve.js"),
+        "function solve() { return 1; }\nmodule.exports = { solve };\n",
+        "utf-8"
+      );
+
+      // Stub python binary returning synthetic extra/unknown fields, rawOutput, hidden test name, and forged score
+      const stubPython = path.join(venvBin, "python");
+      fs.writeFileSync(
+        stubPython,
+        [
+          "#!/bin/sh",
+          'if [ "$2" = "code_engine.test_runner" ]; then',
+          '  cat <<\'EOF\'',
+          '{"allPassed":true,"score":1,"passedCount":99,"totalCount":99,"hiddenPassed":99,"hiddenTotal":99,"executionTimeMs":5,"rawOutput":"SECRET_STUB_RAW","extraStubField":"SECRET_STUB_EXTRA","visibleResults":[{"name":"visible check","passed":false,"error":"Assertion failed","expected":"SECRET_EXPECTED","extraRes":"SECRET_RES_EXTRA"},{"name":"[Q01-HIDDEN-01] SECRET_STUB_HIDDEN_CASE","passed":false}]}',
+          "EOF",
+          "  exit 0",
+          "fi",
+          'if [ "$2" = "code_engine.review_run" ]; then',
+          '  cat <<\'EOF\'',
+          '{"drillId":"SPOOFED","problemId":"Q99","archetypeKey":"prg-stub","level":1,"codeHash":"sha256:stub","extraReviewTop":"SECRET_REV_EXTRA","rawOutput":"SECRET_REV_RAW","tests":{"passed":1,"total":2,"failed":["[Q01-HIDDEN-01] SECRET_STUB_HIDDEN_CASE"],"extraTests":"SECRET_TESTS_EXTRA"},"lint":[{"file":"/Users/Joseph/drills/workspace/Q01.js","rule":"semi","line":1,"message":"Missing semi","extraLint":"SECRET_LINT_EXTRA"}],"typecheck":[{"file":"/Users/Joseph/drills/workspace/Q01.ts","line":2,"message":"TS2322 bad","extraTc":"SECRET_TC_EXTRA"}],"checks":[{"id":"U-01","check":"Check","why":"Why","severity":"must","extraChk":"SECRET_CHK_EXTRA"}]}',
+          "EOF",
+          "  exit 0",
+          "fi",
+          "exit 1",
+        ].join("\n"),
+        "utf-8"
+      );
+      fs.chmodSync(stubPython, 0o755);
+
+      process.env.LEARNINGOS_ROOT = stubRoot;
+      delete process.env.DRILLS_DATA_DIR;
+      process.env.PROGRESS_DIR = path.join(stubRoot, "progress");
+      delete process.env.LEARNINGOS_PILOT;
+
+      const stubTestRes = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId, problemId: "Q01", userCode: "function solve() { return 0; }" }),
+        })
+      );
+      assert.equal(stubTestRes.status, 200);
+      const stubTestText = await stubTestRes.text();
+      const stubTestBody = JSON.parse(stubTestText) as Record<string, unknown>;
+      assert.deepEqual(Object.keys(stubTestBody).sort(), [
+        "allPassed",
+        "executionTimeMs",
+        "hiddenPassed",
+        "hiddenTotal",
+        "passedCount",
+        "score",
+        "totalCount",
+        "ts",
+        "visibleResults",
+      ]);
+      assert.equal(stubTestBody.allPassed, false);
+      assert.equal(stubTestBody.hiddenTotal, 1);
+      assert.equal(stubTestBody.hiddenPassed, 0);
+      assert.equal(stubTestBody.totalCount, 2);
+      assert.equal(stubTestBody.passedCount, 0);
+      assert.equal("userCodeUsed" in stubTestBody, false);
+      assert.equal("rawOutput" in stubTestBody, false);
+      for (const secret of [
+        "SECRET_STUB_RAW",
+        "SECRET_STUB_EXTRA",
+        "SECRET_EXPECTED",
+        "SECRET_RES_EXTRA",
+        "SECRET_STUB_HIDDEN_CASE",
+      ]) {
+        assert.equal(stubTestText.includes(secret), false, `/api/run-tests leaked ${secret}`);
+      }
+
+      // Case B: valid visible count (1) with forged hiddenPassed=99 and extra fields -> clamps hiddenPassed=1, drops extras
+      fs.writeFileSync(
+        stubPython,
+        [
+          "#!/bin/sh",
+          'if [ "$2" = "code_engine.test_runner" ]; then',
+          '  cat <<\'EOF\'',
+          '{"allPassed":true,"score":1,"passedCount":99,"totalCount":99,"hiddenPassed":99,"hiddenTotal":99,"executionTimeMs":5,"rawOutput":"SECRET_STUB_RAW","extraStubField":"SECRET_STUB_EXTRA","visibleResults":[{"name":"visible check","passed":false,"error":"Assertion failed","extraRes":"SECRET_RES_EXTRA"}]}',
+          "EOF",
+          "  exit 0",
+          "fi",
+          'if [ "$2" = "code_engine.review_run" ]; then',
+          '  cat <<\'EOF\'',
+          '{"drillId":"SPOOFED","problemId":"Q99","archetypeKey":"prg-stub","level":1,"codeHash":"sha256:stub","extraReviewTop":"SECRET_REV_EXTRA","rawOutput":"SECRET_REV_RAW","tests":{"passed":1,"total":2,"failed":["[Q01-HIDDEN-01] SECRET_STUB_HIDDEN_CASE"],"extraTests":"SECRET_TESTS_EXTRA"},"lint":[{"file":"/Users/Joseph/drills/workspace/Q01.js","rule":"semi","line":1,"message":"Missing semi","extraLint":"SECRET_LINT_EXTRA"}],"typecheck":[{"file":"/Users/Joseph/drills/workspace/Q01.ts","line":2,"message":"TS2322 bad","extraTc":"SECRET_TC_EXTRA"}],"checks":[{"id":"U-01","check":"Check","why":"Why","severity":"must","extraChk":"SECRET_CHK_EXTRA"}]}',
+          "EOF",
+          "  exit 0",
+          "fi",
+          "exit 1",
+        ].join("\n"),
+        "utf-8"
+      );
+      const stubTestResB = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId, problemId: "Q01", userCode: "function solve() { return 0; }" }),
+        })
+      );
+      assert.equal(stubTestResB.status, 200);
+      const stubTestBodyB = (await stubTestResB.json()) as Record<string, unknown>;
+      assert.equal(stubTestBodyB.allPassed, false);
+      assert.equal(stubTestBodyB.hiddenTotal, 1);
+      assert.equal(stubTestBodyB.hiddenPassed, 1);
+      assert.equal(stubTestBodyB.totalCount, 2);
+      assert.equal(stubTestBodyB.passedCount, 1);
+      assert.equal(stubTestBodyB.score, 0.5);
+      assert.equal("extraStubField" in stubTestBodyB, false);
+
+      const stubRevRes = await reviewRunPOST(
+        new NextRequest("http://127.0.0.1:3000/api/review-run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId, problemId: "Q01" }),
+        })
+      );
+      assert.equal(stubRevRes.status, 200);
+      const stubRevText = await stubRevRes.text();
+      const stubRevBody = JSON.parse(stubRevText) as ReviewRunResult;
+      assert.equal(stubRevBody.drillId, drillId);
+      assert.equal(stubRevBody.problemId, "Q01");
+      assert.deepEqual(stubRevBody.tests.failed, ["1 hidden check failed"]);
+      assert.deepEqual(Object.keys(stubRevBody).sort(), [
+        "archetypeKey",
+        "checks",
+        "codeHash",
+        "drillId",
+        "level",
+        "lint",
+        "problemId",
+        "tests",
+        "typecheck",
+        "types",
+      ]);
+      for (const secret of [
+        "SECRET_REV_EXTRA",
+        "SECRET_REV_RAW",
+        "SECRET_STUB_HIDDEN_CASE",
+        "SECRET_TESTS_EXTRA",
+        "SECRET_LINT_EXTRA",
+        "SECRET_TC_EXTRA",
+        "SECRET_CHK_EXTRA",
+        "/Users/Joseph/",
+      ]) {
+        assert.equal(stubRevText.includes(secret), false, `/api/review-run leaked ${secret}`);
+      }
+    } finally {
+      if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
+      else process.env.LEARNINGOS_ROOT = prevRoot;
+      if (prevDrillsDir === undefined) delete process.env.DRILLS_DATA_DIR;
+      else process.env.DRILLS_DATA_DIR = prevDrillsDir;
+      if (prevProgressDir === undefined) delete process.env.PROGRESS_DIR;
+      else process.env.PROGRESS_DIR = prevProgressDir;
+      if (prevPilot === undefined) delete process.env.LEARNINGOS_PILOT;
+      else process.env.LEARNINGOS_PILOT = prevPilot;
+      fs.rmSync(stubRoot, { recursive: true, force: true });
+    }
+  }
+
   console.log("codeStatus tests passed");
 });
