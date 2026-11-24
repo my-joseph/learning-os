@@ -586,3 +586,17 @@ def test_is_timestamp_in_cycle_handles_mixed_precision_and_zones():
     assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00+07:00", "2026-11-20T04:00:00Z") is False
     assert ps.is_timestamp_in_cycle("2026-11-20T10:00:00.123Z", "2026-11-20T10:00:00.123456Z") is True
     assert ps.is_timestamp_in_cycle("not-a-timestamp", "2026-11-20T10:00:00Z") is False
+
+
+def test_linked_progress_file_is_neither_loaded_nor_saved(tmp_path):
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}", encoding="utf-8")
+    progress_dir = tmp_path / "progress"
+    progress_dir.mkdir()
+    drill_id = "DRL-MTH-LINK"
+    (progress_dir / f"{drill_id}.json").symlink_to(outside)
+
+    assert ps.load_progress(drill_id) is None
+    with pytest.raises(ValueError, match="symlink"):
+        ps.save_progress({"drillId": drill_id})
+    assert outside.read_text(encoding="utf-8") == "{}"

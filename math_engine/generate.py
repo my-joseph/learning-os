@@ -15,7 +15,9 @@ import json
 import logging
 import os
 import random
+from pathlib import Path
 
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.templates import load_unit
 from math_engine.verify import verify_problem, verify_tags
@@ -55,8 +57,11 @@ def notion_url_for(code, id_map):
 def next_drill_id(unit_code, data_root=None):
     if data_root is None:
         data_root = os.environ.get("DRILLS_DATA_DIR", "drills/data")
-    unit_dir = os.path.join(data_root, unit_code)
-    os.makedirs(unit_dir, exist_ok=True)
+    root = Path(data_root)
+    boundary = Path.cwd() if root == Path("drills/data") else root
+    root = assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
+    unit_dir = assert_safe_contained_path(unit_code, root, expect_file=False, relative=True, allow_missing=True)
+    unit_dir.mkdir(parents=True, exist_ok=True)
     existing = sorted(glob.glob(os.path.join(unit_dir, f"DRL-{unit_code}-*.json")))
     max_num = 0
     for p in existing:
@@ -376,9 +381,14 @@ def generate_drill_set(
 
     topic_code, chapter_code = unit_hierarchy(unit_code)
 
-    unit_dir = os.path.join(data_root, unit_code)
-    os.makedirs(unit_dir, exist_ok=True)
-    file_path = os.path.join(unit_dir, f"{drill_id}.json")
+    root = Path(data_root)
+    boundary = Path.cwd() if root == Path("drills/data") else root
+    root = assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
+    output = assert_safe_contained_path(
+        f"{unit_code}/{drill_id}.json", root, relative=True, allow_missing=True, suffixes=JSON_SUFFIXES
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    file_path = os.path.join(data_root, unit_code, f"{drill_id}.json")
 
     drill_doc = {
         "schemaVersion": "2.0-math",
@@ -400,7 +410,7 @@ def generate_drill_set(
         "localFilePath": file_path,
     }
 
-    with open(file_path, "w", encoding="utf-8") as f:
+    with output.open("w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
 
     print(f"  [Verified & Saved] {file_path} ({count} problems, {DIFFICULTY_MODES[difficulty]})")

@@ -24,12 +24,19 @@ if str(_REPO_ROOT) not in sys.path:
 from code_engine.sandbox import (  # noqa: E402
     DEFAULT_REACT_TIMEOUT_SEC,
     DEFAULT_TIMEOUT_SEC,
+    JSON_SUFFIXES,
+    assert_safe_contained_path,
     create_sandbox_dir,
     run_node_isolated,
     run_vitest_isolated,
     stage_workspace_copy,
 )
-from code_engine.workspace import build_react_test_header, resolve_test_imports  # noqa: E402
+from code_engine.workspace import (  # noqa: E402
+    build_react_test_header,
+    find_drill_json,
+    resolve_test_imports,
+    resolve_workspace_source,
+)
 from notion_sync.drill_sync import sync_drill_to_notion  # noqa: E402
 from progress_store import cycle_evidence, score_problem  # noqa: E402
 
@@ -60,13 +67,21 @@ def find_repo_root(start_dir: Path) -> Path:
 
 def resolve_workspace(drill_id: str, cwd: Path | None = None) -> tuple[Path, Path]:
     """Resolve checkout and workspace paths from the caller's directory."""
-    current = (cwd or Path.cwd()).resolve()
+    current = (cwd or Path.cwd()).absolute()
     repo_root = find_repo_root(current)
     if current.name == drill_id and (current / "package.json").exists():
-        return repo_root, current
+        boundary = repo_root if current.is_relative_to(repo_root) else current.parent
+        return repo_root, assert_safe_contained_path(current, boundary, expect_file=False)
     pilot = os.environ.get("LEARNINGOS_PILOT", "").strip().lower() in ("1", "true", "yes")
     base = "pilot/workspace" if pilot else "drills/workspace"
-    workspace = Path(os.environ.get("WORKSPACE_DIR", str(repo_root / base / drill_id))).resolve()
+    override = os.environ.get("WORKSPACE_DIR")
+    if override:
+        workspace = Path(override)
+        workspace = assert_safe_contained_path(workspace, workspace.parent, expect_file=False, allow_missing=True)
+    else:
+        workspace = assert_safe_contained_path(
+            f"{base}/{drill_id}", repo_root, expect_file=False, relative=True, allow_missing=True
+        )
     return repo_root, workspace
 
 
@@ -133,11 +148,12 @@ def _parse_completed_junit_run(raw: str, returncode: int, *, force_hidden: bool)
     return cases
 
 
-def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool, react_dom: bool = False) -> Path:
+def _write_hidden_test_file(
+    tmp_dir: Path, ws_dir: Path, drill_id: str, prob: dict, is_ts: bool, react_dom: bool = False
+) -> Path:
     pid = prob.get("id", "Q01")
-    entry_name = prob.get("entryPoint") or pid.lower()
     ext = "tsx" if react_dom else ("ts" if is_ts else "js")
-    src_abs = (ws_dir / f"{pid}_{entry_name}.{ext}").resolve()
+    src_abs = resolve_workspace_source(ws_dir, drill_id, prob, ext, allow_missing=True)
 
     hidden_tests = prob.get("hiddenTests", [])
     hidden_code = "\n".join(ht.get("testCode", "") for ht in hidden_tests)
@@ -166,7 +182,7 @@ def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool
             f"const {{ {import_list} }} = require({json.dumps(str(src_abs))});\n\n"
         )
 
-    out_path = tmp_dir / f"{pid}_{entry_name}.hidden.test.{ext}"
+    out_path = tmp_dir / f"{pid}_{src_abs.stem}.hidden.test.{ext}"
     out_path.write_text((header + "".join(blocks)).strip() + "\n", encoding="utf-8")
     return out_path
 
@@ -308,8 +324,10 @@ def run_tests_junit(
             hidden_dir.mkdir(parents=True, exist_ok=True)
             if react_dom and shared_modules.is_dir():
                 (hidden_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+            drill_id = (drill_doc or {}).get("drillId") or ws_dir.name
             hidden_files = [
-                _write_hidden_test_file(hidden_dir, work_dir, prob, is_ts, react_dom=react_dom) for prob in hidden_probs
+                _write_hidden_test_file(hidden_dir, work_dir, drill_id, prob, is_ts, react_dom=react_dom)
+                for prob in hidden_probs
             ]
             qid_hint = str(hidden_probs[0].get("id") or problem_id or "Q01").upper()
             if react_dom:
@@ -625,16 +643,14 @@ def main(argv: list[str] | None = None):
         sys.path.insert(0, str(repo_root))
     from progress_store import apply_progress, load_progress
 
-    # Locate drill JSON doc
-    data_files = list(repo_root.glob(f"drills/data/**/{drill_id}.json"))
-    drill_doc = None
-    if data_files:
-        data_path = data_files[0]
-        with open(data_path, "r", encoding="utf-8") as f:
-            drill_doc = json.load(f)
-        apply_progress(drill_doc, load_progress(drill_id, str(repo_root)))
-    else:
-        raise SystemExit(f"Drill '{drill_id}' not found under {repo_root / 'drills' / 'data'}")
+    data_root = assert_safe_contained_path("drills/data", repo_root, expect_file=False, relative=True)
+    data_path = find_drill_json(drill_id, data_root)
+    drill_doc = json.loads(
+        assert_safe_contained_path(data_path, data_root, suffixes=JSON_SUFFIXES).read_text(encoding="utf-8")
+    )
+    if drill_doc.get("drillId", drill_id) != drill_id:
+        raise SystemExit("Drill ID does not match its filename")
+    apply_progress(drill_doc, load_progress(drill_id, str(repo_root)))
 
     print(f"\n{BOLD}{CYAN}========================================================================={RESET}")
     print(f"{BOLD}  DRILL SUBMISSION ENGINE: {drill_id}{RESET}")

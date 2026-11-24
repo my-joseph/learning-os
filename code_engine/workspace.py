@@ -21,7 +21,8 @@ import shutil
 import sys
 from pathlib import Path
 
-from progress_store import pilot_mode, workspace_root
+from code_engine.sandbox import JSON_SUFFIXES, SOURCE_SUFFIXES, assert_safe_contained_path
+from progress_store import pilot_mode
 
 ARCHETYPE_LABELS = {
     "problem-solving": "Problem Solving (Logic & Algorithm)",
@@ -323,8 +324,47 @@ def build_starter_header(prob: dict, drill_id: str) -> str:
     return header
 
 
+def _validate_id(value: str, label: str) -> None:
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", value):
+        raise ValueError(f"Invalid {label}")
+
+
+def _workspace_source_filename(prob: dict, ext: str) -> str:
+    pid = prob.get("id", "Q01")
+    _validate_id(pid, "problem ID")
+    entry = get_entry_name(prob)
+    if not isinstance(entry, str) or not re.fullmatch(r"[A-Za-z0-9_$-]+", entry):
+        raise ValueError(f"Invalid entry point for {pid}")
+    return f"{pid}_{entry}.{ext}"
+
+
+def resolve_workspace_source(
+    ws_dir: Path, drill_id: str, prob: dict, preset_ext: str, *, allow_missing: bool = False
+) -> Path:
+    """Locate the manifest source, or the generated filename for a legacy drill."""
+    _validate_id(prob.get("id", "Q01"), "problem ID")
+    workspace_file = prob.get("workspaceFile")
+    if workspace_file:
+        if not isinstance(workspace_file, str):
+            raise ValueError("Invalid workspace file in drill manifest")
+        workspace_file = workspace_file.replace("\\", "/")
+        prefixes = (f"drills/workspace/{drill_id}/", f"pilot/workspace/{drill_id}/")
+        prefix = next((value for value in prefixes if workspace_file.startswith(value)), None)
+        if not prefix:
+            raise ValueError("Workspace file is outside the drill manifest directory")
+        filename = workspace_file[len(prefix) :]
+    else:
+        filename = _workspace_source_filename(prob, preset_ext)
+    if any(part in ("_reference", ".canonical") or ".hidden." in part for part in filename.split("/")):
+        raise ValueError("Invalid workspace source file")
+    return assert_safe_contained_path(
+        filename, ws_dir, relative=True, allow_missing=allow_missing, label="source file", suffixes=SOURCE_SUFFIXES
+    )
+
+
 def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     drill_id = drill_doc.get("drillId", "UNKNOWN_DRILL")
+    _validate_id(drill_id, "drill ID")
     unit_code = drill_doc.get("unitCode", "PRG")
     unit_title = drill_doc.get("unitTitle", "Programming Practice")
     preset_key = drill_doc.get("environment", "node-vanilla")
@@ -334,18 +374,34 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     # Workspace scripts/configs use stable relative paths from the repo root.
     # When callers materialize into an external root (for tests or a custom
     # workspace), expose the shared lint toolkit at that same relative path.
-    external_root = Path(root_dir).resolve()
-    shared_lint = Path(__file__).resolve().parents[1] / "tools" / "lint"
-    local_lint = external_root / "tools" / "lint"
-    if local_lint.is_symlink() and not local_lint.exists():
-        local_lint.unlink()
-    if not local_lint.exists() and not local_lint.is_symlink():
-        local_lint.parent.mkdir(parents=True, exist_ok=True)
-        local_lint.symlink_to(shared_lint, target_is_directory=True)
+    external_root = Path(root_dir).absolute()
+    shared_tools = Path(__file__).resolve().parents[1] / "tools"
+    shared_lint = shared_tools / "lint"
+    tools_path = external_root / "tools"
+    # A checkout wrapper can link the entire trusted tools directory.
+    if not (tools_path.is_symlink() and tools_path.resolve() == shared_tools):
+        tools_dir = assert_safe_contained_path(
+            "tools", external_root, expect_file=False, relative=True, allow_missing=True
+        )
+        local_lint = tools_dir / "lint"
+        if local_lint.is_symlink():
+            if not local_lint.exists():
+                local_lint.unlink()
+            elif local_lint.resolve() != shared_lint:
+                raise ValueError("Refusing unexpected shared lint toolkit link")
+        if not local_lint.exists() and not local_lint.is_symlink():
+            tools_dir.mkdir(parents=True, exist_ok=True)
+            local_lint.symlink_to(shared_lint, target_is_directory=True)
 
     ws_base = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
-    ws_dir = os.path.join(workspace_root(root_dir), drill_id)
-    os.makedirs(ws_dir, exist_ok=True)
+    ws_dir = assert_safe_contained_path(
+        f"{ws_base}/{drill_id}", external_root, expect_file=False, relative=True, allow_missing=True
+    )
+    ws_dir.mkdir(parents=True, exist_ok=True)
+
+    def output_file(filename: str, suffixes: frozenset[str]) -> Path:
+        return assert_safe_contained_path(filename, ws_dir, relative=True, allow_missing=True, suffixes=suffixes)
+
     if preset_key == "react-dom":
         shared_node_modules = Path(__file__).resolve().parents[1] / "tools" / "lint" / "node_modules"
         if shared_node_modules.is_dir():
@@ -354,11 +410,17 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
                 modules_link.unlink()
             if not modules_link.exists() and not modules_link.is_symlink():
                 modules_link.symlink_to(shared_node_modules, target_is_directory=True)
-    package_link = os.path.join(ws_dir, "code_engine")
-    if not os.path.lexists(package_link):
-        os.symlink(str(Path(__file__).resolve().parent), package_link, target_is_directory=True)
-    stale_canonical = os.path.join(ws_dir, ".canonical")
-    if os.path.exists(stale_canonical):
+    package_link = ws_dir / "code_engine"
+    trusted_package = Path(__file__).resolve().parent
+    if package_link.is_symlink():
+        if package_link.resolve() != trusted_package:
+            raise ValueError("Refusing unexpected workspace engine link")
+    elif not package_link.exists():
+        package_link.symlink_to(trusted_package, target_is_directory=True)
+    stale_canonical = assert_safe_contained_path(
+        ".canonical", ws_dir, expect_file=False, relative=True, allow_missing=True
+    )
+    if stale_canonical.exists():
         shutil.rmtree(stale_canonical)
 
     manifest = {
@@ -394,10 +456,10 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
 
         pid = prob.get("id", "Q01")
         entry_name = get_entry_name(prob)
-        src_filename = f"{pid}_{entry_name}.{ext}"
+        src_filename = _workspace_source_filename(prob, ext)
         test_filename = f"{pid}_{entry_name}.test.{ext}"
-        src_path = os.path.join(ws_dir, src_filename)
-        test_path = os.path.join(ws_dir, test_filename)
+        src_path = output_file(src_filename, SOURCE_SUFFIXES)
+        test_path = output_file(test_filename, SOURCE_SUFFIXES)
 
         # 1. Author Starter Code
         starter_body = (
@@ -409,9 +471,12 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
         else:
             starter_content = starter_body.strip() + "\n"
 
-        if not os.path.exists(src_path):
-            with open(src_path, "w", encoding="utf-8") as f:
-                f.write(starter_content)
+        if not src_path.exists():
+            try:
+                with src_path.open("x", encoding="utf-8") as f:
+                    f.write(starter_content)
+            except FileExistsError:
+                src_path = output_file(src_filename, SOURCE_SUFFIXES)
 
         # 2. Write Visible Test File
         test_blocks = []
@@ -499,7 +564,7 @@ test({t_name}, {fn_prefix} {{
         )
 
     # 4. Write package.json in workspace
-    pkg_json_path = os.path.join(ws_dir, "package.json")
+    pkg_json_path = output_file("package.json", JSON_SUFFIXES)
     pkg_data = {
         "name": f"{drill_id.lower()}-workspace",
         "version": "1.0.0",
@@ -514,19 +579,19 @@ test({t_name}, {fn_prefix} {{
 
     # 4b. Write eslint.config.mjs (and tsconfig.json for TS presets) in workspace
     lint_overrides = drill_doc.get("lintOverrides") or []
-    eslint_cfg_path = os.path.join(ws_dir, "eslint.config.mjs")
+    eslint_cfg_path = output_file("eslint.config.mjs", SOURCE_SUFFIXES)
     eslint_cfg_content = (
         'import { prgConfig } from "../../../tools/lint/base.js";\n\n'
         f"export default prgConfig({{ overrides: {json.dumps(lint_overrides)} }});\n"
     )
     with open(eslint_cfg_path, "w", encoding="utf-8") as f:
         f.write(eslint_cfg_content)
-    stale_cfg = os.path.join(ws_dir, "eslint.config.js")  # older generator; ESLint would pick it before .mjs
+    stale_cfg = output_file("eslint.config.js", SOURCE_SUFFIXES)  # older generator; ESLint would pick it before .mjs
     if os.path.exists(stale_cfg):
         os.remove(stale_cfg)
 
     if preset_key in ("typescript-strict", "backend-sqlite", "react-dom"):
-        tsconfig_path = os.path.join(ws_dir, "tsconfig.json")
+        tsconfig_path = output_file("tsconfig.json", JSON_SUFFIXES)
         tsconfig_data = {
             "compilerOptions": {
                 "target": "ES2024",
@@ -545,14 +610,14 @@ test({t_name}, {fn_prefix} {{
             json.dump(tsconfig_data, f, indent=2)
             f.write("\n")
     if preset_key == "react-dom":
-        (Path(ws_dir) / "vitest.config.ts").write_text(
+        output_file("vitest.config.ts", SOURCE_SUFFIXES).write_text(
             "import { defineConfig } from 'vitest/config';\n"
             "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
             encoding="utf-8",
         )
 
     # 5. Write README.md in workspace
-    readme_path = os.path.join(ws_dir, "README.md")
+    readme_path = output_file("README.md", frozenset({".md"}))
     readme_lines = [
         f"# {drill_id} — {unit_code}: {unit_title}",
         "",
@@ -628,13 +693,6 @@ test({t_name}, {fn_prefix} {{
     return manifest
 
 
-def read_workspace_code(abs_or_rel_path: str) -> str:
-    if os.path.exists(abs_or_rel_path):
-        with open(abs_or_rel_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return ""
-
-
 def _rewrite_pilot_lab_relpaths(text: str) -> str:
     """Adjust relative paths from `labs/<LAB_ID>/` (depth 2) to `pilot/labs/<LAB_ID>/` (depth 3)."""
     text = text.replace("../../tools/lint/", "../../../tools/lint/")
@@ -646,52 +704,66 @@ def _rewrite_pilot_lab_relpaths(text: str) -> str:
 
 def materialize_pilot_lab(lab_id: str, root_dir: str = ".", *, force: bool = False) -> Path:
     """Create a pilot copy of `labs/<lab_id>` under `pilot/labs/<lab_id>` without touching the real lab."""
-    root = Path(root_dir)
-    src_lab = root / "labs" / lab_id
-    if not (src_lab / "lab.config.json").is_file():
-        raise FileNotFoundError(f"Lab '{lab_id}' not found at {src_lab}")
-
-    dst_lab = root / "pilot" / "labs" / lab_id
+    _validate_id(lab_id, "lab ID")
+    root = Path(root_dir).absolute()
+    src_lab = assert_safe_contained_path(f"labs/{lab_id}", root, expect_file=False, relative=True)
+    assert_safe_contained_path("lab.config.json", src_lab, relative=True, suffixes=JSON_SUFFIXES)
+    dst_lab = assert_safe_contained_path(
+        f"pilot/labs/{lab_id}", root, expect_file=False, relative=True, allow_missing=True
+    )
     dst_lab.mkdir(parents=True, exist_ok=True)
 
-    for fname in ("lab.config.json", "tsconfig.json", "README.md"):
-        src_file = src_lab / fname
-        if src_file.is_file():
-            shutil.copy2(src_file, dst_lab / fname)
+    for fname in ("lab.config.json", "tsconfig.json", "README.md", "eslint.config.js", "package.json"):
+        suffixes = frozenset({Path(fname).suffix})
+        src_file = assert_safe_contained_path(fname, src_lab, relative=True, allow_missing=True, suffixes=suffixes)
+        if not src_file.exists():
+            continue
+        dst_file = assert_safe_contained_path(fname, dst_lab, relative=True, allow_missing=True, suffixes=suffixes)
+        if fname in ("eslint.config.js", "package.json"):
+            dst_file.write_text(_rewrite_pilot_lab_relpaths(src_file.read_text(encoding="utf-8")), encoding="utf-8")
+        else:
+            shutil.copyfile(src_file, dst_file)
 
-    for fname in ("eslint.config.js", "package.json"):
-        src_file = src_lab / fname
-        if src_file.is_file():
-            (dst_lab / fname).write_text(
-                _rewrite_pilot_lab_relpaths(src_file.read_text(encoding="utf-8")), encoding="utf-8"
-            )
-
-    tests_src = src_lab / "tests"
-    if tests_src.is_dir():
-        shutil.copytree(tests_src, dst_lab / "tests", dirs_exist_ok=True)
-
-    src_dir = src_lab / "src"
-    if src_dir.is_dir():
-        dst_src = dst_lab / "src"
-        for item in src_dir.rglob("*"):
-            if item.is_dir():
-                continue
-            rel = item.relative_to(src_dir)
-            target = dst_src / rel
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if force or not target.exists():
-                shutil.copy2(item, target)
+    for folder in ("tests", "src"):
+        src_dir = assert_safe_contained_path(folder, src_lab, expect_file=False, relative=True, allow_missing=True)
+        if not src_dir.exists():
+            continue
+        suffixes = SOURCE_SUFFIXES | JSON_SUFFIXES
+        for walk_root, dirs, files in os.walk(src_dir, followlinks=False):
+            walk_path = Path(walk_root)
+            for dirname in dirs:
+                assert_safe_contained_path(walk_path / dirname, src_dir, expect_file=False)
+            for filename in files:
+                item = walk_path / filename
+                if item.suffix not in suffixes:
+                    continue
+                source = assert_safe_contained_path(item, src_dir, suffixes=suffixes)
+                target = assert_safe_contained_path(
+                    f"{folder}/{item.relative_to(src_dir).as_posix()}",
+                    dst_lab,
+                    relative=True,
+                    allow_missing=True,
+                    suffixes=suffixes,
+                )
+                if folder == "tests" or force or not target.exists():
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(source, target)
 
     return dst_lab
 
 
-def _find_drill_json(drill_id: str, data_root: Path) -> Path:
-    matches = sorted(data_root.glob(f"*/{drill_id}.json"))
-    if not matches:
-        matches = sorted(data_root.glob(f"**/{drill_id}.json"))
-    if not matches:
-        raise FileNotFoundError(f"Drill '{drill_id}' not found under {data_root}")
-    return matches[0]
+def find_drill_json(drill_id: str, data_root: Path) -> Path:
+    """Find a drill by ID while retaining support for nested legacy content directories."""
+    _validate_id(drill_id, "drill ID")
+    root = assert_safe_contained_path(data_root, data_root, expect_file=False)
+    patterns = (f"*/{drill_id}.json", f"**/{drill_id}.json")
+    for pattern in patterns:
+        for candidate in sorted(root.glob(pattern)):
+            try:
+                return assert_safe_contained_path(candidate, root, suffixes=JSON_SUFFIXES)
+            except (ValueError, FileNotFoundError):
+                continue
+    raise FileNotFoundError(f"Drill '{drill_id}' not found under {data_root}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -707,8 +779,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.drill:
-            data_root = Path(os.environ.get("DRILLS_DATA_DIR", "drills/data"))
-            drill_path = _find_drill_json(args.drill, data_root)
+            data_dir = os.environ.get("DRILLS_DATA_DIR")
+            data_root = (
+                Path(data_dir)
+                if data_dir
+                else assert_safe_contained_path("drills/data", Path.cwd(), expect_file=False, relative=True)
+            )
+            drill_path = find_drill_json(args.drill, data_root)
             doc = json.loads(drill_path.read_text(encoding="utf-8"))
             if not doc.get("drillId"):
                 doc["drillId"] = drill_path.stem
@@ -717,7 +794,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             dst = materialize_pilot_lab(args.pilot_lab, force=args.force)
             print(dst.resolve())
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
     return 0

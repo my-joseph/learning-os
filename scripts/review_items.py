@@ -16,7 +16,6 @@ Read-only unless `--rebuild` is passed.
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import math
 import os
@@ -24,8 +23,10 @@ import re
 import tempfile
 from collections import Counter
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from progress_store import find_repo_root, is_timestamp_in_cycle, progress_root, review_items_path
 from scripts import weak_spots
 
@@ -520,7 +521,11 @@ def estimate_review_minutes(item_count: int, median_duration_ms: int = DEFAULT_I
 
 def _store_path(progress_dir: str | None = None, repo_root: str | None = None) -> str:
     if progress_dir:
-        return os.path.join(progress_dir, "review_items.json")
+        return str(
+            assert_safe_contained_path(
+                "review_items.json", Path(progress_dir), relative=True, allow_missing=True, suffixes=JSON_SUFFIXES
+            )
+        )
     return review_items_path(repo_root)
 
 
@@ -529,10 +534,8 @@ def load_saved_review_items(
     repo_root: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Read `review_items.json` from disk, or `{}` if absent/invalid (read-only)."""
-    path = _store_path(progress_dir, repo_root)
-    if not os.path.exists(path):
-        return {}
     try:
+        path = _store_path(progress_dir, repo_root)
         with open(path, encoding="utf-8") as f:
             raw = json.load(f)
     except (OSError, ValueError):
@@ -635,32 +638,30 @@ def _prune_saved_items(
     labs_root: str | None,
 ) -> dict[str, dict[str, Any]]:
     """Ignore cached results for retired problems and use the latest saved learner notes."""
-    repo_root = find_repo_root()
-    drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
-    lab_root = labs_root or os.path.join(repo_root, "labs")
-    progress_root_dir = progress_dir or progress_root(repo_root)
+    progress_root_dir = progress_dir or progress_root()
     problem_ids: dict[str, set[str]] = {}
-    for pattern in (os.path.join(drill_root, "**", "*.json"), os.path.join(lab_root, "LAB-*", "lab.config.json")):
-        for file_path in glob.glob(pattern, recursive=True):
-            try:
-                with open(file_path, encoding="utf-8") as file:
-                    doc = json.load(file)
-                drill_id = str(doc.get("drillId") or doc.get("labId") or "")
-                problems = doc.get("problems") or doc.get("milestones") or []
-                ids = {str(problem.get("id") or "") for problem in problems if isinstance(problem, dict)}
-                if drill_id:
-                    problem_ids[drill_id] = ids
-            except (OSError, ValueError):
-                continue
+    for file_path in _iter_review_content(data_root, labs_root):
+        try:
+            with file_path.open(encoding="utf-8") as file:
+                doc = json.load(file)
+            drill_id = str(doc.get("drillId") or doc.get("labId") or "")
+            problems = doc.get("problems") or doc.get("milestones") or []
+            ids = {str(problem.get("id") or "") for problem in problems if isinstance(problem, dict)}
+            if drill_id:
+                problem_ids[drill_id] = ids
+        except (OSError, ValueError):
+            continue
 
     active: dict[str, dict[str, Any]] = {}
     for key, item in saved.items():
         drill_id, _, qid = key.partition("/")
         if qid not in problem_ids.get(drill_id, set()):
             continue
-        progress_path = os.path.join(progress_root_dir, f"{drill_id}.json")
         try:
-            with open(progress_path, encoding="utf-8") as file:
+            progress_path = assert_safe_contained_path(
+                f"{drill_id}.json", Path(progress_root_dir), relative=True, suffixes=JSON_SUFFIXES
+            )
+            with progress_path.open(encoding="utf-8") as file:
                 progress_doc = json.load(file)
             state = (progress_doc.get("problems") or {}).get(qid) or {}
             if "revisitNote" in state:
@@ -671,16 +672,34 @@ def _prune_saved_items(
     return active
 
 
+def _iter_review_content(data_root: str | None, labs_root: str | None):
+    repo_root = Path(find_repo_root())
+    paths = (
+        (data_root or os.environ.get("DRILLS_DATA_DIR"), "drills/data", "**/*.json"),
+        (labs_root, "labs", "LAB-*/lab.config.json"),
+    )
+    for configured, relative, pattern in paths:
+        try:
+            root = (
+                Path(configured)
+                if configured
+                else assert_safe_contained_path(relative, repo_root, expect_file=False, relative=True)
+            )
+            root = assert_safe_contained_path(root, root, expect_file=False)
+        except (OSError, ValueError):
+            continue
+        for candidate in root.glob(pattern):
+            try:
+                yield assert_safe_contained_path(candidate, root, suffixes=JSON_SUFFIXES)
+            except (OSError, ValueError):
+                continue
+
+
 def _lookup_problem_units(
     drill_id: str, qid: str, data_root: str | None = None, labs_root: str | None = None
 ) -> tuple[str, list[str]]:
     """Resolve primary unitCode and optional multi-unit list for a newly reviewed item."""
-    repo_root = find_repo_root()
-    drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
-    lab_root = labs_root or os.path.join(repo_root, "labs")
-    candidates = glob.glob(os.path.join(drill_root, "**", "*.json"), recursive=True)
-    candidates += glob.glob(os.path.join(lab_root, "LAB-*", "lab.config.json"))
-    for file_path in candidates:
+    for file_path in _iter_review_content(data_root, labs_root):
         try:
             with open(file_path, encoding="utf-8") as file:
                 doc = json.load(file)
@@ -881,10 +900,12 @@ def record_review_result(
     key = item_key(drill_id, qid)
     existing = schedule.get(key)
     if not existing:
-        prog_file = os.path.join(resolved_progress, f"{drill_id}.json")
         raw_state: dict[str, Any] | None = None
         try:
-            with open(prog_file, encoding="utf-8") as file:
+            prog_file = assert_safe_contained_path(
+                f"{drill_id}.json", Path(resolved_progress), relative=True, suffixes=JSON_SUFFIXES
+            )
+            with prog_file.open(encoding="utf-8") as file:
                 prog_doc = json.load(file)
             candidate = (prog_doc.get("problems") or {}).get(qid)
             if isinstance(candidate, dict):

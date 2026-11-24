@@ -30,8 +30,10 @@ import random
 import re
 import tempfile
 from collections import Counter
+from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.ai_drill_ingest import (
     AiContractError,
     autofill_problem_figure,
@@ -70,19 +72,32 @@ def variants_root(repo_root: Optional[str] = None) -> str:
     return os.path.join(repo_root or find_repo_root(), "drills", "variants")
 
 
+def _bank_root(variants_dir: Optional[str] = None) -> Path:
+    configured = variants_dir or os.environ.get("VARIANTS_DIR")
+    repo = Path(find_repo_root())
+    root = Path(configured) if configured else repo / "drills" / "variants"
+    return assert_safe_contained_path(root, root if configured else repo, expect_file=False, allow_missing=True)
+
+
 def bank_path(unit_code: str, variants_dir: Optional[str] = None) -> str:
     """Return the JSON path for ``unit_code``'s variant bank."""
-    base = variants_dir or variants_root()
-    return os.path.join(base, f"{unit_code}.json")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", unit_code):
+        raise ValueError("Invalid variant bank unit code")
+    return str(
+        assert_safe_contained_path(
+            f"{unit_code}.json", _bank_root(variants_dir), relative=True, allow_missing=True, suffixes=JSON_SUFFIXES
+        )
+    )
 
 
 def load_bank(unit_code_or_path: str, variants_dir: Optional[str] = None) -> Dict[str, Any]:
-    """Load a variant bank from a file path or a unit code."""
-    if unit_code_or_path.endswith(".json") and os.path.exists(unit_code_or_path):
-        path = unit_code_or_path
+    """Load a variant bank from an explicit local file or a unit code."""
+    requested = Path(unit_code_or_path)
+    if requested.suffix == ".json":
+        path = assert_safe_contained_path(requested, requested.parent, suffixes=JSON_SUFFIXES)
     else:
-        path = bank_path(unit_code_or_path, variants_dir=variants_dir)
-    with open(path, "r", encoding="utf-8") as fh:
+        path = Path(bank_path(unit_code_or_path, variants_dir=variants_dir))
+    with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -125,8 +140,11 @@ def find_variant(
     """Locate ``(bank_doc, variant)`` for ``variant_id`` under ``variants_dir``."""
     if not isinstance(variant_id, str) or not variant_id.strip():
         return None
-    base = variants_dir or variants_root()
-    if not os.path.isdir(base):
+    try:
+        base = _bank_root(variants_dir)
+    except (OSError, ValueError):
+        return None
+    if not base.is_dir():
         return None
 
     files = sorted(glob.glob(os.path.join(base, "*.json")))
@@ -137,7 +155,8 @@ def find_variant(
 
     for path in files:
         try:
-            with open(path, "r", encoding="utf-8") as fh:
+            bank = assert_safe_contained_path(path, base, suffixes=JSON_SUFFIXES)
+            with bank.open("r", encoding="utf-8") as fh:
                 doc = json.load(fh)
         except (OSError, ValueError):
             continue
@@ -152,7 +171,8 @@ def _drills_data_root(data_root: Optional[str] = None) -> str:
         return data_root
     if os.environ.get("DRILLS_DATA_DIR"):
         return os.environ["DRILLS_DATA_DIR"]
-    return os.path.join(find_repo_root(), "drills", "data")
+    repo = Path(find_repo_root())
+    return str(assert_safe_contained_path("drills/data", repo, relative=True, expect_file=False, allow_missing=True))
 
 
 def load_scope_drill_problems(
@@ -186,7 +206,8 @@ def load_scope_drill_problems(
     for d in candidate_dirs:
         for path in sorted(glob.glob(os.path.join(d, "*.json"))):
             try:
-                with open(path, "r", encoding="utf-8") as fh:
+                file = assert_safe_contained_path(path, Path(root), suffixes=JSON_SUFFIXES)
+                with file.open("r", encoding="utf-8") as fh:
                     doc = json.load(fh)
             except (OSError, ValueError):
                 continue
@@ -858,7 +879,8 @@ def compute_coverage(
     for d in candidate_dirs:
         for path in sorted(glob.glob(os.path.join(d, "*.json"))):
             try:
-                with open(path, "r", encoding="utf-8") as fh:
+                file = assert_safe_contained_path(path, Path(root), suffixes=JSON_SUFFIXES)
+                with file.open("r", encoding="utf-8") as fh:
                     doc = json.load(fh)
             except (OSError, ValueError):
                 continue

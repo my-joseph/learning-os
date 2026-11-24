@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from notion_sync.blocks import (
     bullet,
     callout_block,
@@ -88,6 +89,10 @@ def _drill_content_path(drill_doc: dict) -> str:
     if not drill_id:
         raise ValueError("Missing drillId")
     unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
+    data_root = _contained_data_root()
+    assert_safe_contained_path(
+        f"{unit_code}/{drill_id}.json", data_root, relative=True, allow_missing=True, suffixes=JSON_SUFFIXES
+    )
     return os.path.join(get_data_root(), unit_code, f"{drill_id}.json")
 
 
@@ -653,14 +658,30 @@ def sync_drill_to_notion(
         return {"ok": False, "localFilePath": path, "error": f"Notion sync failed: {type(err).__name__}: {err}"}
 
 
+def _contained_data_root() -> Path:
+    configured = os.environ.get("DRILLS_DATA_DIR")
+    root = Path(configured) if configured else Path.cwd()
+    if configured:
+        return assert_safe_contained_path(root, root, expect_file=False, allow_missing=True)
+    return assert_safe_contained_path("drills/data", root, relative=True, expect_file=False, allow_missing=True)
+
+
 def _resolve_drill_path(target: str) -> Path:
     """Resolve a drill JSON path from a file path or a DRILL_ID under get_data_root()."""
     candidate = Path(target)
-    if candidate.is_file():
-        return candidate
+    data_root = _contained_data_root()
+    if candidate.suffix == ".json":
+        boundary = data_root if candidate.absolute().is_relative_to(data_root) else candidate.parent
+        return assert_safe_contained_path(candidate, boundary, suffixes=JSON_SUFFIXES)
 
-    data_root = Path(get_data_root())
-    matches = sorted(data_root.rglob(f"{target}.json")) if not target.endswith(".json") else []
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", target):
+        raise ValueError("Invalid drill ID")
+    matches = []
+    for item in sorted(data_root.rglob(f"{target}.json")):
+        try:
+            matches.append(assert_safe_contained_path(item, data_root, suffixes=JSON_SUFFIXES))
+        except (OSError, ValueError):
+            continue
     if len(matches) == 1:
         return matches[0]
     if len(matches) > 1:
