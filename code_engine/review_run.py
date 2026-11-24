@@ -13,7 +13,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -29,6 +28,15 @@ from code_engine.quality_checks import (  # noqa: E402
     effective_severity,
     load_archetype,
     load_universal,
+)
+from code_engine.sandbox import (  # noqa: E402
+    DEFAULT_TIMEOUT_SEC,
+    DEFAULT_TOOL_TIMEOUT_SEC,
+    create_sandbox_dir,
+    run_isolated,
+    run_node_isolated,
+    stage_lab_copy,
+    stage_workspace_copy,
 )
 from code_engine.submit import _parse_completed_junit_run, _run_vitest_junit, run_tests_junit  # noqa: E402
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name  # noqa: E402
@@ -177,12 +185,16 @@ def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
     eslint_bin = _resolve_eslint_bin()
     if eslint_bin is None:
         return []
-    proc = subprocess.run(
-        [str(eslint_bin), "--format", "json", src_file.name],
-        cwd=str(ws_dir),
-        capture_output=True,
-        text=True,
-    )
+    with create_sandbox_dir(prefix="prg_eslint_") as sbx_str:
+        proc = run_isolated(
+            [str(eslint_bin), "--format", "json", src_file.name],
+            cwd=ws_dir,
+            sandbox_root=Path(sbx_str),
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
+        )
+    if proc.timed_out:
+        raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
     try:
@@ -212,12 +224,16 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
     if tsc_bin is None:
         return []
 
-    proc = subprocess.run(
-        [str(tsc_bin), "--noEmit", "--pretty", "false"],
-        cwd=str(ws_dir),
-        capture_output=True,
-        text=True,
-    )
+    with create_sandbox_dir(prefix="prg_tsc_") as sbx_str:
+        proc = run_isolated(
+            [str(tsc_bin), "--noEmit", "--pretty", "false"],
+            cwd=ws_dir,
+            sandbox_root=Path(sbx_str),
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
+        )
+    if proc.timed_out:
+        return [{"line": 0, "message": f"Typecheck timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"}]
     if proc.returncode == 0:
         return []
 
@@ -308,29 +324,53 @@ def _lab_rubric(
 def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hidden: bool) -> list[dict[str, Any]]:
     if not test_files:
         return []
-    if any(f.suffix == ".tsx" for f in test_files):
-        shared_modules = TOOLS_LINT_DIR / "node_modules"
-        linked: list[Path] = []
-        for project_dir in dict.fromkeys((cwd.resolve(), src_dir.resolve().parent)):
-            link = project_dir / "node_modules"
-            if not link.exists() and not link.is_symlink():
-                link.symlink_to(shared_modules, target_is_directory=True)
-                linked.append(link)
-        env = {**os.environ, "LAB_SRC_DIR": str(src_dir.resolve())}
-        try:
-            return _run_vitest_junit(test_files, cwd, force_hidden=force_hidden, env=env, require_complete=True)
-        finally:
-            for link in linked:
-                link.unlink(missing_ok=True)
-    is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
-    cmd = ["node"]
-    if is_ts:
-        cmd.append("--experimental-strip-types")
-    cmd.extend(["--test", "--test-reporter=junit", *[str(f.resolve()) for f in test_files]])
-    env = dict(os.environ)
-    env["LAB_SRC_DIR"] = str(src_dir.resolve())
-    proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
-    return _parse_completed_junit_run(proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden)
+    with create_sandbox_dir(prefix="prg_lab_review_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
+        env_extra = {"LAB_SRC_DIR": str(staged_src.resolve())}
+        if any(f.suffix == ".tsx" for f in staged_tests):
+            shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
+            if shared_modules.is_dir():
+                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+            return _run_vitest_junit(
+                staged_tests,
+                work_dir,
+                force_hidden=force_hidden,
+                env=env_extra,
+                require_complete=True,
+                sandbox_root=sbx_root,
+            )
+        is_ts = any(f.suffix in (".ts", ".tsx") for f in staged_tests)
+        node_args: list[str] = []
+        if is_ts:
+            node_args.append("--experimental-strip-types")
+        node_args.extend(["--test", "--test-reporter=junit", *[str(f.relative_to(work_dir)) for f in staged_tests]])
+        proc = run_node_isolated(
+            node_args,
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TIMEOUT_SEC,
+            env_extra=env_extra,
+        )
+        if proc.timed_out:
+            return [
+                {
+                    "name": "Lab test timeout",
+                    "passed": False,
+                    "is_hidden": force_hidden,
+                    "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
+                }
+            ]
+        if proc.output_truncated:
+            return [
+                {
+                    "name": "Lab test output limit exceeded",
+                    "passed": False,
+                    "is_hidden": force_hidden,
+                    "failure_msg": "Execution exceeded output size limit",
+                }
+            ]
+        return _parse_completed_junit_run(proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden)
 
 
 def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
@@ -342,7 +382,16 @@ def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
     if cfg_path.exists():
         cmd.extend(["--config", str(cfg_path.resolve())])
     cmd.append(src_dir.name)
-    proc = subprocess.run(cmd, cwd=str(src_dir.parent), capture_output=True, text=True)
+    with create_sandbox_dir(prefix="prg_lab_eslint_") as sbx_str:
+        proc = run_isolated(
+            cmd,
+            cwd=src_dir.parent,
+            sandbox_root=Path(sbx_str),
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
+        )
+    if proc.timed_out:
+        raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
     results = json.loads(proc.stdout or "[]")
@@ -367,19 +416,21 @@ def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]
     tsc_bin = _resolve_tsc_bin()
     if tsc_bin is None:
         return []
-    modules_link = lab_dir / "node_modules"
-    created_link = False
-    shared_modules = _active_tools_lint_dir() / "node_modules"
-    if shared_modules.is_dir() and not modules_link.exists() and not modules_link.is_symlink():
-        modules_link.symlink_to(shared_modules, target_is_directory=True)
-        created_link = True
-    try:
-        proc = subprocess.run(
-            [str(tsc_bin), "--noEmit", "--pretty", "false"], cwd=str(lab_dir), capture_output=True, text=True
+    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
+    with create_sandbox_dir(prefix="prg_lab_tsc_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(lab_dir, sbx_root / "work")
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+        proc = run_isolated(
+            [str(tsc_bin), "--noEmit", "--pretty", "false"],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
         )
-    finally:
-        if created_link:
-            modules_link.unlink(missing_ok=True)
+    if proc.timed_out:
+        return [{"line": 0, "message": f"Typecheck timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"}]
     if proc.returncode == 0:
         return []
     diagnostics: list[dict[str, Any]] = []

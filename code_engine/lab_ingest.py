@@ -21,7 +21,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -34,6 +33,17 @@ from code_engine.examples_gate import (
 )
 from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries
 from code_engine.quality_checks import load_universal
+from code_engine.sandbox import (
+    DEFAULT_REACT_TIMEOUT_SEC,
+    DEFAULT_TIMEOUT_SEC,
+    DEFAULT_TOOL_TIMEOUT_SEC,
+    create_sandbox_dir,
+    run_isolated,
+    run_node_isolated,
+    run_vitest_isolated,
+    stage_lab_copy,
+    stage_workspace_copy,
+)
 from code_engine.submit import _parse_junit_xml
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.code_originality import check_lab_originality
@@ -65,19 +75,44 @@ def _run_node_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[di
     if any(f.suffix == ".tsx" for f in test_files):
         return _run_react_tests(test_files, cwd, src_dir)
     is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
-    cmd = ["node"]
-    if is_ts:
-        cmd.append("--experimental-strip-types")
-    cmd.extend(["--test", "--test-reporter=junit", *[str(f.resolve()) for f in test_files]])
-    env = dict(os.environ)
-    env["LAB_SRC_DIR"] = str(src_dir.resolve())
-    proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
-    return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False)
+    with create_sandbox_dir(prefix="prg_lab_ingest_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
+        node_args: list[str] = []
+        if is_ts:
+            node_args.append("--experimental-strip-types")
+        node_args.extend(["--test", "--test-reporter=junit", *[str(f.relative_to(work_dir)) for f in staged_tests]])
+        proc = run_node_isolated(
+            node_args,
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TIMEOUT_SEC,
+            env_extra={"LAB_SRC_DIR": str(staged_src.resolve())},
+        )
+        if proc.timed_out:
+            return [
+                {
+                    "name": "Lab test timeout",
+                    "passed": False,
+                    "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
+                }
+            ]
+        if proc.output_truncated:
+            return [
+                {
+                    "name": "Lab test output limit exceeded",
+                    "passed": False,
+                    "failure_msg": "Execution exceeded output size limit",
+                }
+            ]
+        return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False)
 
 
 def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
-    """Run lab TSX acceptance tests against React DOM with the shared test installation."""
-    vitest = TOOLS_LINT_DIR / "node_modules" / ".bin" / "vitest"
+    """Run lab TSX acceptance tests against React DOM inside an isolated per-run sandbox."""
+    tools_dir = TOOLS_LINT_DIR.resolve()
+    shared_modules = (tools_dir / "node_modules").resolve()
+    vitest = shared_modules / ".bin" / "vitest"
     if not vitest.is_file():
         return [
             {
@@ -86,73 +121,70 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
                 "failure_msg": f"Vitest is missing at {vitest}; run npm ci in tools/lint.",
             }
         ]
-    cwd = cwd.resolve()
-    src_dir = src_dir.resolve()
-    shared_modules = TOOLS_LINT_DIR / "node_modules"
-    linked: list[Path] = []
-    for project_dir in dict.fromkeys((cwd, src_dir.parent)):
-        link = project_dir / "node_modules"
-        if link.is_symlink() and link.resolve() == shared_modules.resolve():
-            continue
-        if link.exists() or link.is_symlink():
-            continue
-        link.symlink_to(shared_modules, target_is_directory=True)
-        linked.append(link)
-    test_root = Path(os.path.commonpath([str(f.resolve().parent) for f in test_files]))
-    allowed_dirs = list(
-        dict.fromkeys(
-            (
-                str(cwd),
-                str(src_dir),
-                str(test_root),
-                str(Path(__file__).resolve().parents[1]),
-            )
+    with create_sandbox_dir(prefix="prg_lab_vitest_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        (sbx_root / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+        work_dir, staged_src, staged_tests = stage_lab_copy(cwd, src_dir, test_files, sbx_root / "work")
+
+        test_root = staged_tests[0].parent if staged_tests else work_dir
+        allowed_dirs = list(
+            dict.fromkeys(str(d) for d in (sbx_root, work_dir, staged_src, test_root, shared_modules, tools_dir))
         )
-    )
-    try:
-        with tempfile.TemporaryDirectory(prefix="lab_vitest_", dir=TOOLS_LINT_DIR) as tmp:
-            tmp_dir = Path(tmp)
-            config = tmp_dir / "vitest.config.ts"
-            report = tmp_dir / "junit.xml"
-            allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
-            config.write_text(
-                "import { defineConfig } from 'vitest/config';\n"
-                f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
-                encoding="utf-8",
-            )
-            env = dict(os.environ)
-            env["LAB_SRC_DIR"] = str(src_dir)
-            cmd = [
-                str(vitest),
-                "run",
-                *[str(f.resolve()) for f in test_files],
-                "--config",
-                str(config),
-                "--environment",
-                "jsdom",
-                "--reporter=junit",
-                f"--outputFile={report}",
+        config = sbx_root / "vitest.config.ts"
+        report = sbx_root / "junit.xml"
+        allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
+        config.write_text(
+            "import { defineConfig } from 'vitest/config';\n"
+            f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
+            encoding="utf-8",
+        )
+        proc = run_vitest_isolated(
+            staged_tests,
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            config_path=config,
+            report_path=report,
+            reporter="junit",
+            timeout_sec=DEFAULT_REACT_TIMEOUT_SEC,
+            env_extra={"LAB_SRC_DIR": str(staged_src.resolve())},
+            tools_lint_dir=tools_dir,
+        )
+        if proc.timed_out:
+            return [
+                {
+                    "name": "React test timeout",
+                    "passed": False,
+                    "failure_msg": f"Execution exceeded {DEFAULT_REACT_TIMEOUT_SEC}s limit",
+                }
             ]
-            proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
-            if report.is_file():
-                cases = _parse_junit_xml(report.read_text(encoding="utf-8"), force_hidden=False)
-                if cases:
-                    return cases
-            output = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
-            return [{"name": "React test execution failure", "passed": False, "failure_msg": output}]
-    finally:
-        for link in linked:
-            link.unlink(missing_ok=True)
+        if proc.output_truncated:
+            return [
+                {
+                    "name": "React test output limit exceeded",
+                    "passed": False,
+                    "failure_msg": "Execution exceeded output size limit",
+                }
+            ]
+        if report.is_file():
+            cases = _parse_junit_xml(report.read_text(encoding="utf-8"), force_hidden=False)
+            if cases:
+                return cases
+        output = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
+        return [{"name": "React test execution failure", "passed": False, "failure_msg": output}]
 
 
 def _run_eslint_dir(src_dir: Path, config_path: Path) -> list[dict[str, Any]]:
     _, eslint_bin = get_lint_binaries()
-    proc = subprocess.run(
-        [str(eslint_bin), "--config", str(config_path.resolve()), "--format", "json", src_dir.name],
-        cwd=str(src_dir.parent),
-        capture_output=True,
-        text=True,
-    )
+    with create_sandbox_dir(prefix="prg_ingest_eslint_") as sbx_str:
+        proc = run_isolated(
+            [str(eslint_bin), "--config", str(config_path.resolve()), "--format", "json", src_dir.name],
+            cwd=src_dir.parent,
+            sandbox_root=Path(sbx_str),
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
+        )
+    if proc.timed_out:
+        raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
     results = json.loads(proc.stdout or "[]")
@@ -172,24 +204,26 @@ def _run_eslint_dir(src_dir: Path, config_path: Path) -> list[dict[str, Any]]:
 
 
 def _run_tsc(tsconfig_path: Path) -> list[str]:
-    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
+    tools_dir = TOOLS_LINT_DIR.resolve()
+    shared_modules = (tools_dir / "node_modules").resolve()
+    tsc_bin = shared_modules / ".bin" / "tsc"
     if not tsc_bin.exists():
         raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
-    project_modules = tsconfig_path.parent / "node_modules"
-    created_link = False
-    if not project_modules.exists() and not project_modules.is_symlink():
-        project_modules.symlink_to(TOOLS_LINT_DIR / "node_modules", target_is_directory=True)
-        created_link = True
-    try:
-        proc = subprocess.run(
-            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path.resolve())],
-            cwd=str(tsconfig_path.parent),
-            capture_output=True,
-            text=True,
+    with create_sandbox_dir(prefix="prg_ingest_tsc_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(tsconfig_path.parent, sbx_root / "work")
+        if shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+        staged_tsconfig = work_dir / tsconfig_path.name
+        proc = run_isolated(
+            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(staged_tsconfig)],
+            cwd=work_dir,
+            sandbox_root=sbx_root,
+            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
+            use_node_permission=False,
         )
-    finally:
-        if created_link:
-            project_modules.unlink(missing_ok=True)
+    if proc.timed_out:
+        return [f"tsc timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"]
     if proc.returncode == 0:
         return []
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")

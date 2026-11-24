@@ -13,9 +13,7 @@ import datetime
 import json
 import os
 import re
-import subprocess
 import sys
-import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -23,6 +21,14 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from code_engine.sandbox import (  # noqa: E402
+    DEFAULT_REACT_TIMEOUT_SEC,
+    DEFAULT_TIMEOUT_SEC,
+    create_sandbox_dir,
+    run_node_isolated,
+    run_vitest_isolated,
+    stage_workspace_copy,
+)
 from code_engine.workspace import build_react_test_header, resolve_test_imports  # noqa: E402
 from notion_sync.drill_sync import sync_drill_to_notion  # noqa: E402
 from progress_store import cycle_evidence, score_problem  # noqa: E402
@@ -169,24 +175,39 @@ def _run_node_junit_cmd(
     cmd: list[str],
     *,
     cwd: Path,
+    sandbox_root: Path,
     force_hidden: bool,
     timeout_sec: float | None = None,
     file_hint: str = "",
     qid_hint: str = "Q01",
 ) -> list[dict]:
-    run_kwargs: dict = {"cwd": cwd, "capture_output": True, "text": True}
-    if timeout_sec is not None:
-        run_kwargs["timeout"] = timeout_sec
-    try:
-        proc = subprocess.run(cmd, **run_kwargs)
-    except subprocess.TimeoutExpired:
+    eff_timeout = timeout_sec if timeout_sec is not None else DEFAULT_TIMEOUT_SEC
+    node_args = cmd[1:] if cmd and Path(cmd[0]).name == "node" else list(cmd)
+    proc = run_node_isolated(
+        node_args,
+        cwd=cwd,
+        sandbox_root=sandbox_root,
+        timeout_sec=eff_timeout,
+    )
+    if proc.timed_out:
         return [
             {
                 "name": f"[{qid_hint}] Timeout",
                 "file": file_hint,
                 "classname": "",
                 "passed": False,
-                "failure_msg": f"Execution exceeded {timeout_sec}s limit",
+                "failure_msg": f"Execution exceeded {eff_timeout}s limit",
+                "is_hidden": force_hidden,
+            }
+        ]
+    if proc.output_truncated:
+        return [
+            {
+                "name": f"[{qid_hint}] Output limit exceeded",
+                "file": file_hint,
+                "classname": "",
+                "passed": False,
+                "failure_msg": "Execution exceeded output size limit",
                 "is_hidden": force_hidden,
             }
         ]
@@ -213,71 +234,101 @@ def run_tests_junit(
     *,
     timeout_sec: float | None = None,
 ) -> list:
-    """Executes visible tests in ws_dir and hidden tests from a temporary dir outside ws_dir.
+    """Executes visible and hidden tests against a per-run isolated temp copy of `ws_dir`.
 
     When `problem_id` is given (e.g. 'Q01'), only that problem's visible test file and
     hiddenTests are executed.
     """
     ws_dir = Path(ws_dir).resolve()
     react_dom = (drill_doc or {}).get("environment") == "react-dom"
-    tsx_files = sorted(ws_dir.glob("*.test.tsx"))
-    ts_files = sorted(ws_dir.glob("*.test.ts"))
-    js_files = sorted(ws_dir.glob("*.test.js"))
-    is_ts = bool(ts_files or tsx_files)
-    visible_files = tsx_files if react_dom or tsx_files else (ts_files if is_ts else js_files)
-    if problem_id is not None:
-        target = problem_id.upper()
-        visible_files = [f for f in visible_files if f.name.split("_", 1)[0].upper() == target]
+    shared_tools = (_REPO_ROOT / "tools" / "lint").resolve()
+    shared_modules = (shared_tools / "node_modules").resolve()
 
-    cases = []
-    if react_dom or any(vf.suffix == ".tsx" for vf in visible_files):
-        cases.extend(_run_vitest_junit(visible_files, ws_dir, timeout_sec=timeout_sec))
-    else:
-        for vf in visible_files:
-            cmd = ["node"]
-            if is_ts:
-                cmd.append("--experimental-strip-types")
-            cmd.extend(["--test", "--test-reporter=junit", str(vf)])
-            stem_prefix = vf.name.split("_", 1)[0].upper()
-            qid_hint = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else (problem_id or "Q01").upper()
-            parsed = _run_node_junit_cmd(
-                cmd,
-                cwd=ws_dir,
-                force_hidden=False,
-                timeout_sec=timeout_sec,
-                file_hint=vf.name,
-                qid_hint=qid_hint,
-            )
-            if re.match(r"^Q\d+$", stem_prefix):
-                for tc in parsed:
-                    if not tc.get("file"):
-                        tc["file"] = vf.name
-            cases.extend(parsed)
+    cases: list[dict] = []
+    with create_sandbox_dir(prefix="prg_junit_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(ws_dir, sbx_root / "work")
 
-    hidden_probs = [
-        p
-        for p in (drill_doc or {}).get("problems", [])
-        if p.get("hiddenTests") and (problem_id is None or str(p.get("id", "")).upper() == problem_id.upper())
-    ]
-    if hidden_probs:
-        shared_tools = _REPO_ROOT / "tools" / "lint"
-        with tempfile.TemporaryDirectory(prefix="prg_hidden_", dir=shared_tools if react_dom else None) as tmp_str:
-            tmp_dir = Path(tmp_str)
+        tsx_files = sorted(work_dir.glob("*.test.tsx"))
+        ts_files = sorted(work_dir.glob("*.test.ts"))
+        js_files = sorted(work_dir.glob("*.test.js"))
+        is_ts = bool(ts_files or tsx_files)
+        visible_files = tsx_files if react_dom or tsx_files else (ts_files if is_ts else js_files)
+        if problem_id is not None:
+            target = problem_id.upper()
+            visible_files = [f for f in visible_files if f.name.split("_", 1)[0].upper() == target]
+
+        needs_react = react_dom or any(vf.suffix == ".tsx" for vf in visible_files)
+        if needs_react and shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+
+        if needs_react:
+            if visible_files:
+                cases.extend(
+                    _run_vitest_junit(
+                        visible_files,
+                        work_dir,
+                        timeout_sec=timeout_sec,
+                        sandbox_root=sbx_root,
+                    )
+                )
+        else:
+            for vf in visible_files:
+                cmd = ["node"]
+                if is_ts:
+                    cmd.append("--experimental-strip-types")
+                cmd.extend(["--test", "--test-reporter=junit", vf.name])
+                stem_prefix = vf.name.split("_", 1)[0].upper()
+                qid_hint = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else (problem_id or "Q01").upper()
+                parsed = _run_node_junit_cmd(
+                    cmd,
+                    cwd=work_dir,
+                    sandbox_root=sbx_root,
+                    force_hidden=False,
+                    timeout_sec=timeout_sec,
+                    file_hint=vf.name,
+                    qid_hint=qid_hint,
+                )
+                if re.match(r"^Q\d+$", stem_prefix):
+                    for tc in parsed:
+                        if not tc.get("file"):
+                            tc["file"] = vf.name
+                cases.extend(parsed)
+
+        hidden_probs = [
+            p
+            for p in (drill_doc or {}).get("problems", [])
+            if p.get("hiddenTests") and (problem_id is None or str(p.get("id", "")).upper() == problem_id.upper())
+        ]
+        if hidden_probs:
+            hidden_dir = sbx_root / "hidden"
+            hidden_dir.mkdir(parents=True, exist_ok=True)
+            if react_dom and shared_modules.is_dir():
+                (hidden_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
             hidden_files = [
-                _write_hidden_test_file(tmp_dir, ws_dir, prob, is_ts, react_dom=react_dom) for prob in hidden_probs
+                _write_hidden_test_file(hidden_dir, work_dir, prob, is_ts, react_dom=react_dom) for prob in hidden_probs
             ]
             qid_hint = str(hidden_probs[0].get("id") or problem_id or "Q01").upper()
             if react_dom:
-                cases.extend(_run_vitest_junit(hidden_files, tmp_dir, timeout_sec=timeout_sec, force_hidden=True))
+                cases.extend(
+                    _run_vitest_junit(
+                        hidden_files,
+                        hidden_dir,
+                        timeout_sec=timeout_sec,
+                        force_hidden=True,
+                        sandbox_root=sbx_root,
+                    )
+                )
             else:
                 cmd = ["node"]
                 if is_ts:
                     cmd.append("--experimental-strip-types")
-                cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in hidden_files]])
+                cmd.extend(["--test", "--test-reporter=junit", *[f.name for f in hidden_files]])
                 cases.extend(
                     _run_node_junit_cmd(
                         cmd,
-                        cwd=tmp_dir,
+                        cwd=hidden_dir,
+                        sandbox_root=sbx_root,
                         force_hidden=True,
                         timeout_sec=timeout_sec,
                         qid_hint=qid_hint,
@@ -295,9 +346,12 @@ def _run_vitest_junit(
     force_hidden: bool = False,
     env: dict[str, str] | None = None,
     require_complete: bool = False,
+    sandbox_root: Path | None = None,
 ) -> list[dict]:
-    """Run React component tests with shared Vitest and return the standard JUnit cases."""
-    vitest = _REPO_ROOT / "tools" / "lint" / "node_modules" / ".bin" / "vitest"
+    """Run React component tests with shared Vitest inside the sandbox and return JUnit cases."""
+    tools_dir = (_REPO_ROOT / "tools" / "lint").resolve()
+    shared_modules = (tools_dir / "node_modules").resolve()
+    vitest = shared_modules / ".bin" / "vitest"
     if not vitest.is_file():
         return [
             {
@@ -309,42 +363,70 @@ def _run_vitest_junit(
                 "is_hidden": force_hidden,
             }
         ]
-    config_path = cwd / "vitest.config.ts"
-    generated_config = not config_path.is_file()
-    if generated_config:
-        config_path = cwd / ".codex.vitest.config.ts"
+
+    eff_timeout = timeout_sec if timeout_sec is not None else DEFAULT_REACT_TIMEOUT_SEC
+    cwd_real = Path(os.path.realpath(cwd))
+    test_files_real = [Path(os.path.realpath(f)) for f in test_files]
+    test_root = Path(os.path.commonpath([str(f.parent) for f in test_files_real])) if test_files_real else cwd_real
+
+    own_sbx = create_sandbox_dir(prefix="prg_vitest_") if sandbox_root is None else None
+    try:
+        sbx_root = Path(os.path.realpath(own_sbx.name)) if own_sbx is not None else Path(os.path.realpath(sandbox_root))
+        sbx_nm = sbx_root / "node_modules"
+        if shared_modules.is_dir() and not sbx_nm.exists() and not sbx_nm.is_symlink():
+            sbx_nm.symlink_to(shared_modules, target_is_directory=True)
+        allowed_dirs = list(
+            dict.fromkeys(
+                str(d)
+                for d in (
+                    sbx_root,
+                    cwd_real,
+                    test_root,
+                    shared_modules,
+                    tools_dir,
+                )
+            )
+        )
+        config_path = sbx_root / f"vitest.config.{os.getpid()}.{id(test_files)}.ts"
+        report_path = sbx_root / f"vitest-junit-{os.getpid()}-{id(test_files)}.xml"
+        allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
         config_path.write_text(
             "import { defineConfig } from 'vitest/config';\n"
-            "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+            f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
             encoding="utf-8",
         )
-    with tempfile.NamedTemporaryFile(prefix="prg_vitest_", suffix=".xml", delete=False) as out:
-        report_path = Path(out.name)
-    try:
-        cmd = [
-            str(vitest),
-            "run",
-            *[str(f) for f in test_files],
-            "--config",
-            str(config_path),
-            "--environment",
-            "jsdom",
-            "--reporter=junit",
-            f"--outputFile={report_path}",
-        ]
-        run_kwargs: dict = {"cwd": cwd, "capture_output": True, "text": True}
-        if timeout_sec is not None:
-            run_kwargs["timeout"] = timeout_sec
-        try:
-            proc = subprocess.run(cmd, env=env, **run_kwargs)
-        except subprocess.TimeoutExpired:
+        # Forward only explicit non-secret overrides (e.g. LAB_SRC_DIR).
+        env_extra = {k: v for k, v in (env or {}).items() if k in ("LAB_SRC_DIR",)}
+        proc = run_vitest_isolated(
+            test_files_real,
+            cwd=cwd_real,
+            sandbox_root=sbx_root,
+            config_path=config_path,
+            report_path=report_path,
+            reporter="junit",
+            timeout_sec=eff_timeout,
+            env_extra=env_extra,
+            tools_lint_dir=tools_dir,
+        )
+        if proc.timed_out:
             return [
                 {
                     "name": "React test timeout",
                     "file": "",
                     "classname": "",
                     "passed": False,
-                    "failure_msg": f"Execution exceeded {timeout_sec}s limit",
+                    "failure_msg": f"Execution exceeded {eff_timeout}s limit",
+                    "is_hidden": force_hidden,
+                }
+            ]
+        if proc.output_truncated:
+            return [
+                {
+                    "name": "React test output limit exceeded",
+                    "file": "",
+                    "classname": "",
+                    "passed": False,
+                    "failure_msg": "Execution exceeded output size limit",
                     "is_hidden": force_hidden,
                 }
             ]
@@ -366,9 +448,8 @@ def _run_vitest_junit(
             ]
         return cases
     finally:
-        report_path.unlink(missing_ok=True)
-        if generated_config:
-            config_path.unlink(missing_ok=True)
+        if own_sbx is not None:
+            own_sbx.cleanup()
 
 
 def extract_qid(tc: dict, default: str = "Q01") -> str:

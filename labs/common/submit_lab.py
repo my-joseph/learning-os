@@ -7,9 +7,10 @@ to the Notion database 'Learning Practice & Drills' (Format: "Code Test Suite").
 """
 
 import datetime
+import glob
 import json
 import os
-import subprocess
+import shlex
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,6 +19,13 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from code_engine.sandbox import (  # noqa: E402
+    DEFAULT_REACT_TIMEOUT_SEC,
+    create_sandbox_dir,
+    run_isolated,
+    run_node_isolated,
+    stage_workspace_copy,
+)
 from notion_sync.blocks import bullet, callout_block, code_block, divider_block, h2, toggle_block  # noqa: E402
 from notion_sync.client import (  # noqa: E402
     MissingNotionToken,
@@ -51,33 +59,80 @@ def find_repo_root(start_dir: str = ".") -> Path:
     return _REPO_ROOT
 
 
-def run_tests_and_parse(lab_dir: Path, config: dict):
-    """Executes the test command and parses JUnit XML test results."""
+_SHELL_META_CHARS = frozenset(";|&><`$\n")
+
+
+def _try_simple_node_args(test_cmd: str, work_dir: Path) -> list[str] | None:
+    """Parse a plain `node ...` command and expand relative globs inside `work_dir`."""
+    if any(ch in test_cmd for ch in _SHELL_META_CHARS):
+        return None
+    try:
+        tokens = shlex.split(test_cmd)
+    except ValueError:
+        return None
+    if not tokens or Path(tokens[0]).name != "node":
+        return None
+    expanded: list[str] = []
+    for tok in tokens[1:]:
+        if any(ch in tok for ch in ("*", "?", "[")):
+            matches = sorted(glob.glob(tok, root_dir=str(work_dir)))
+            if matches:
+                expanded.extend(matches)
+            else:
+                expanded.append(tok)
+        else:
+            expanded.append(tok)
+    return expanded
+
+
+def run_tests_and_parse(lab_dir: Path, config: dict, *, timeout_sec: float = DEFAULT_REACT_TIMEOUT_SEC):
+    """Executes the lab test command in an isolated temp copy and parses JUnit XML test results."""
     test_cmd = config.get("testCommand", "node --experimental-strip-types --test --test-reporter=junit tests/*.test.ts")
 
     print(f"{CYAN}▶ Executing Test Suite:{RESET} {test_cmd}")
-    shared_modules = _REPO_ROOT / "tools" / "lint" / "node_modules"
+    shared_modules = (_REPO_ROOT / "tools" / "lint" / "node_modules").resolve()
     uses_react = "vitest" in test_cmd or any(lab_dir.glob("tests/**/*.test.tsx"))
-    modules_link = lab_dir / "node_modules"
-    created_link = False
-    env = dict(os.environ)
-    if uses_react and shared_modules.is_dir():
-        env["PATH"] = str(shared_modules / ".bin") + os.pathsep + env.get("PATH", "")
-        if not modules_link.exists() and not modules_link.is_symlink():
-            modules_link.symlink_to(shared_modules, target_is_directory=True)
-            created_link = True
-    try:
-        proc = subprocess.run(
-            test_cmd,
-            shell=True,
-            cwd=lab_dir,
-            env=env,
-            capture_output=True,
-            text=True,
-        )
-    finally:
-        if created_link:
-            modules_link.unlink(missing_ok=True)
+
+    with create_sandbox_dir(prefix="prg_submit_lab_") as sbx_str:
+        sbx_root = Path(os.path.realpath(sbx_str))
+        work_dir = stage_workspace_copy(lab_dir, sbx_root / "work")
+        extra_path_dirs: tuple[Path, ...] = ()
+        if uses_react and shared_modules.is_dir():
+            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
+            extra_path_dirs = (shared_modules / ".bin",)
+
+        node_args = _try_simple_node_args(test_cmd, work_dir)
+        if node_args is not None:
+            proc = run_node_isolated(
+                node_args,
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=timeout_sec,
+            )
+        else:
+            proc = run_isolated(
+                ["/bin/sh", "-c", test_cmd],
+                cwd=work_dir,
+                sandbox_root=sbx_root,
+                timeout_sec=timeout_sec,
+                extra_path_dirs=extra_path_dirs,
+                use_node_permission=False,
+            )
+
+    if proc.timed_out:
+        return {
+            "success": False,
+            "error": f"Lab test execution exceeded {timeout_sec}s limit.",
+            "testcases": [],
+            "raw_output": "",
+        }
+    if proc.output_truncated:
+        return {
+            "success": False,
+            "error": "Lab test execution exceeded output size limit.",
+            "testcases": [],
+            "raw_output": proc.stdout[:1000],
+        }
     raw_output = proc.stdout + "\n" + proc.stderr
 
     # Locate XML content
