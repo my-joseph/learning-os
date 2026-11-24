@@ -29,8 +29,8 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
-# Neon first; GPT Luna (Codex pool) is the quota fallback. Hydrogen and Argon share Neon's agy pool, so they are
-# useless as fallbacks for Neon. gpt-* models run through the Codex CLI, everything else through agy.
+# Neon first; GPT Luna (Codex pool) is the quota fallback. Hydrogen and Carbon share Neon's agy pool, so they are
+# useless as fallbacks for Neon. Argon is retired. gpt-* models run through the Codex CLI, everything else through agy.
 # A worker must never start another worker (nested dispatch burns quota and escapes review).
 if [ "${LEARNINGOS_ROLE:-}" = "worker" ]; then
   echo "run-worker.sh: refusing to start a worker from inside a worker (LEARNINGOS_ROLE=worker)" >&2
