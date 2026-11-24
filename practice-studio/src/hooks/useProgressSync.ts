@@ -19,6 +19,7 @@ export type SyncPhase =
   | "idle"
   | "syncing"
   | "synced"
+  | "partial"
   | "degraded"
   | "error"
   | "offline"
@@ -37,6 +38,7 @@ export interface SyncState {
   unitReviews?: Record<string, UnitReviewResult>;
   drillPageId?: string | null;
   message?: string | null;
+  failedSteps?: string[];
   isPilot?: boolean;
 }
 
@@ -71,6 +73,7 @@ export function mergeSyncStampIntoLatestDrill(
   return {
     ...latestDrill,
     sessionSummary: stampedSummary,
+    notionSyncProblems: undefined,
   };
 }
 
@@ -79,6 +82,8 @@ export interface SyncResponseLike {
   dryRun?: boolean;
   pilotSkipped?: boolean;
   degraded?: boolean;
+  partial?: boolean;
+  failedSteps?: string[];
   timedOut?: boolean;
   warning?: string;
   error?: string;
@@ -106,6 +111,9 @@ export function formatSyncToast(
     };
   }
   const cleanTitle = plainTitle(drillTitle) || unitCode;
+  if (data.partial) {
+    return { text: `Synced with problems. Retry to finish syncing ${cleanTitle}.`, type: "warn" };
+  }
   if (data.degraded) {
     // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
     return {
@@ -279,7 +287,7 @@ export async function executeNotionSync(options: {
     };
   }
 
-  if (!res.ok || !data.ok) {
+  if (!res.ok || (!data.ok && !data.partial)) {
     const errMsg = data.error || `Notion Sync failed (HTTP ${res.status})`;
     return {
       syncState: {
@@ -315,6 +323,15 @@ export async function executeNotionSync(options: {
           ? "Pilot mode: nothing was written to Notion."
           : "Dry run: nothing was written to Notion.",
       },
+      toast,
+      stampedDoc: null,
+      postedPayload: fullDocToSync,
+    };
+  }
+
+  if (data.partial) {
+    return {
+      syncState: { phase: "partial", failedSteps: data.failedSteps },
       toast,
       stampedDoc: null,
       postedPayload: fullDocToSync,
@@ -368,6 +385,7 @@ export async function executeNotionSync(options: {
     : {
         ...fullDocToSync,
         sessionSummary: stampedSummary,
+        notionSyncProblems: undefined,
       };
 
   // Learner switched to a different drill while the sync was in flight: ignore UI update
@@ -507,6 +525,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         }
         if (
           result.stampedDoc ||
+          result.syncState.phase === "partial" ||
           result.syncState.phase === "degraded" ||
           result.syncState.phase === "dryRun"
         ) {

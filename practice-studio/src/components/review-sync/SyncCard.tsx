@@ -21,6 +21,7 @@ import {
   type SyncPreview,
 } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
+import { syncFailureLabel } from "@/lib/syncStatus";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -36,6 +37,7 @@ export interface SyncCardProps {
   syncedAt?: string | null;
   drillPageId?: string | null;
   changedCount: number;
+  failedSteps?: string[];
   isLab: boolean;
   labId?: string;
   labSummary?: {
@@ -75,6 +77,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
   syncedAt,
   drillPageId,
   changedCount,
+  failedSteps = [],
   isLab,
   labId,
   labSummary,
@@ -183,6 +186,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
   const toggleLabel = isGraded ? "Mark as needs retry" : "Mark as graded";
 
   const isSyncing = effectiveSyncPhase === "syncing";
+  const isPartial = effectiveSyncPhase === "partial";
   const syncTime = formatSyncTimestamp(syncedAt || syncState.at);
   const notionUrl = notionPageUrl(drillPageId || syncState.drillPageId);
 
@@ -514,8 +518,8 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
 
-        {/* Degraded / saved locally (warning tint) */}
-        {effectiveSyncPhase === "degraded" && (
+        {/* Incomplete Notion sync (warning tint) */}
+        {(effectiveSyncPhase === "degraded" || isPartial) && (
           <div className={`rounded-xl ${warningTone.softCard} p-4 space-y-3`}>
             <div className="flex items-start gap-2.5 text-sm text-zinc-800 dark:text-zinc-200">
               <AlertTriangle
@@ -523,6 +527,14 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 aria-hidden="true"
               />
               <div className="min-w-0 flex-1 space-y-1.5">
+                {isPartial ? (
+                  <>
+                    <p className="font-semibold">Synced with problems</p>
+                    <ul aria-label="Failed sync steps" className="list-disc pl-4 text-xs">
+                      {failedSteps.map((step) => <li key={step}>{syncFailureLabel(step)}</li>)}
+                    </ul>
+                  </>
+                ) : <>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                     Saved locally. Notion wasn&apos;t updated:
@@ -553,6 +565,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                     </pre>
                   )}
                 </Reveal>
+                </>}
               </div>
             </div>
 

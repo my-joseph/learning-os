@@ -231,6 +231,21 @@ async function verifyStamping() {
     assert.equal(Boolean(result.stampedDoc), shouldStamp, `${label} must not stamp sync metadata`);
   }
 
+  const partial = await executeNotionSync({
+    currentDrill: mathDrill,
+    statusOverride: null,
+    fetchFn: async () => reply({ ok: true, partial: true, failedSteps: ["mistakeLog", "unitReview:MTH-T01-C01-U01"] }),
+  });
+  assert.equal(partial.syncState.phase, "partial");
+  assert.equal(partial.toast?.type, "warn");
+  assert.equal(partial.stampedDoc, null);
+  const partialHtml = render(mathDrill, { syncState: partial.syncState });
+  assert.match(partialHtml, /Synced with problems/);
+  assert.match(partialHtml, /Mistake Log/);
+  assert.match(partialHtml, /Unit review \(MTH-T01-C01-U01\)/);
+  assert.match(partialHtml, /<span>Retry<\/span>/);
+  assert.doesNotMatch(partialHtml, /Synced to Notion/);
+
   // Hang path: a fetch that never settles aborts and enters error phase with Retry enabled
   let abortSignalAborted = false;
   const hungResult = await executeNotionSync({
@@ -409,6 +424,9 @@ const syncedFingerprint = summaryFingerprint(buildSessionSummary(mathDrill));
 const syncedDrill = { ...mathDrill, sessionSummary: { ...mathDrill.sessionSummary,
   syncedToNotionAt: "2026-11-19T10:00:00.000Z", syncedFingerprint } };
 assert.match(render(syncedDrill, { syncState: { phase: "synced", at: "2026-11-19T10:00:00.000Z" } }), /Synced to Notion/);
+const pendingHtml = render({ ...syncedDrill, notionSyncProblems: ["blockCleanup"] });
+assert.match(pendingHtml, /Synced with problems/);
+assert.doesNotMatch(pendingHtml, /Synced to Notion/);
 const changedSinceSync = { ...syncedDrill, problems: syncedDrill.problems.map((problem, i) =>
   i === 0 ? { ...problem, state: { ...problem.state, mistakeNote: "Updated after sync" } } : problem) };
 assert.match(render(changedSinceSync), /You changed/);

@@ -295,7 +295,7 @@ async function main() {
       assert.equal(spawnCall.env.NOTION_DRY_RUN, "1");
 
       // Verify stdin payload rehydrated canonical server steps & answerPlain while merging client state
-      const pipedDoc = JSON.parse(spawnCall.stdinPayload) as {
+      const pipedDoc = JSON.parse(spawnCall.stdinPayload).doc as {
         drillId: string;
         sessionSummary: { practiceStatus: string };
         problems: Array<{
@@ -623,7 +623,7 @@ async function main() {
       assert.equal(diskAfterSync.sessionSummary.score, 1.5);
 
       // 3c. The stdin payload sent to Python must also carry the merged server-side progress (not redacted client state)
-      const pipedMerged = JSON.parse(syncSpawns[0].stdinPayload) as {
+      const pipedMerged = JSON.parse(syncSpawns[0].stdinPayload).doc as {
         problems: Array<{ id: string; state?: ProblemState }>;
       };
       const pipedQ01 = pipedMerged.problems.find((p) => p.id === "Q01")?.state;
@@ -978,11 +978,38 @@ async function main() {
         "timed out sync must preserve existing server stamps"
       );
 
-      // 4f. Real child_process timeout in defaultDrillSyncSpawner kills a hanging subprocess promptly
+      // A failed cleanup must be preserved for Retry and must not advance the success stamp.
+      const failedSteps = ["blockCleanup", "mistakeLog"];
+      const retry = { failedSteps, cleanupBlockIds: ["old-block"], drillPageId: "real-notion-page-77" };
+      const syncPayload = { drillId: stampDrillId, unitCode, sessionSummary: updatedSummary };
+      setNotionDrillSyncSpawnerForTests(async () => ({
+        code: 0, stderr: "", stdout: JSON.stringify({ ok: true, partial: true, failedSteps, retry }),
+      }));
+      const partialBody = await (await syncNotionPOST(makePostReq("http://localhost/api/sync-notion", syncPayload))).json();
+      assert.deepEqual(partialBody.failedSteps, failedSteps);
+      assert.equal(partialBody.retry, undefined, "internal block IDs must stay on the server");
+      assert.equal(partialBody.syncedToNotionAt, undefined);
+      diskStamp = JSON.parse(fs.readFileSync(stampProgressPath, "utf-8"));
+      assert.equal(diskStamp.sessionSummary.syncedToNotionAt, secondSuccessBody.syncedToNotionAt);
+
+      let retryInput: unknown;
+      setNotionDrillSyncSpawnerForTests(async ({ stdinPayload }) => {
+        retryInput = JSON.parse(stdinPayload).retry;
+        return { code: 0, stderr: "", stdout: JSON.stringify({ ok: true, drillPageId: retry.drillPageId }) };
+      });
+      const retried = await (await syncNotionPOST(makePostReq("http://localhost/api/sync-notion", syncPayload))).json();
+      assert.deepEqual(retryInput, retry);
+      assert.ok(retried.syncedToNotionAt > secondSuccessBody.syncedToNotionAt);
+
+      // The parent can exit on SIGTERM while a descendant without inherited pipes ignores it.
       setNotionDrillSyncSpawnerForTests(null);
-      setNotionDrillSyncTimeoutForTests(150);
+      setNotionDrillSyncTimeoutForTests(250);
       const sleepBin = path.join(tmpRoot, "hang-python.sh");
-      fs.writeFileSync(sleepBin, "#!/bin/sh\nsleep 10\n", { mode: 0o755 });
+      fs.writeFileSync(sleepBin, `#!/bin/sh
+        trap 'touch parent-terminated; exit' TERM
+        (trap '' TERM; touch child-started; sleep 2; touch child-survived) </dev/null >/dev/null 2>&1 &
+        wait
+      `, { mode: 0o755 });
       const { runNotionDrillSync } = await import("../src/lib/notionSyncRunner");
       const startMs = Date.now();
       const hangResult = await runNotionDrillSync({
@@ -997,6 +1024,10 @@ async function main() {
       assert.equal(hangResult.code, null);
       assert.match(hangResult.stderr, /timed out/i);
       assert.ok(elapsedMs < 3_000, `hung subprocess must be killed promptly (took ${elapsedMs}ms)`);
+      assert.ok(fs.existsSync(path.join(tmpRoot, "child-started")));
+      await new Promise((resolve) => setTimeout(resolve, Math.max(0, 2_250 - elapsedMs)));
+      assert.ok(fs.existsSync(path.join(tmpRoot, "parent-terminated")));
+      assert.equal(fs.existsSync(path.join(tmpRoot, "child-survived")), false);
       setNotionDrillSyncTimeoutForTests(null);
     }
 

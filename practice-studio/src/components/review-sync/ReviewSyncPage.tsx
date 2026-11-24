@@ -242,15 +242,17 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
 
   const effectiveSyncPhase: EffectiveSyncPhase = useMemo(() => {
     if (isSyncing || syncState.phase === "syncing") return "syncing";
+    if (syncState.phase === "partial") return "partial";
     if (syncState.phase === "degraded") return "degraded";
     if (syncState.phase === "error") return "error";
     if (syncState.phase === "offline") return "offline";
     if (syncState.phase === "dryRun") return "dryRun";
+    if (currentDrill.notionSyncProblems?.length) return "partial";
     if (effectiveSyncedAt) {
       return syncedUpToDate ? "synced" : "changed";
     }
     return "idle";
-  }, [effectiveSyncedAt, isSyncing, syncState.phase, syncedUpToDate]);
+  }, [currentDrill.notionSyncProblems, effectiveSyncedAt, isSyncing, syncState.phase, syncedUpToDate]);
 
   const changedCount = useMemo(() => {
     if (effectiveSyncPhase !== "changed") return 0;
@@ -482,6 +484,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
         syncedAt={effectiveSyncedAt}
         drillPageId={syncState.drillPageId || currentDrill.sessionSummary?.notionPageId}
         changedCount={changedCount}
+        failedSteps={syncState.failedSteps ?? currentDrill.notionSyncProblems}
         isLab={isLab}
         labId={currentDrill.drillId}
         labSummary={labSummary}

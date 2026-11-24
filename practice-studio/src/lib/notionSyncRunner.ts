@@ -19,6 +19,12 @@ export interface NotionDrillSyncProcessResult {
   timedOut?: boolean;
 }
 
+export interface NotionSyncRetry {
+  drillPageId: string;
+  failedSteps: string[];
+  cleanupBlockIds: string[];
+}
+
 export type NotionDrillSyncSpawner = (
   spawnArgs: NotionDrillSyncSpawnArgs
 ) => Promise<NotionDrillSyncProcessResult>;
@@ -34,10 +40,13 @@ const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
   timeoutMs = activeTimeoutMs,
 }) =>
   new Promise<NotionDrillSyncProcessResult>((resolve) => {
-    const proc = spawn(pythonBin, args, { cwd, env });
+    const useProcessGroup = process.platform !== "win32";
+    const proc = spawn(pythonBin, args, { cwd, env, detached: useProcessGroup });
     let stdout = "";
     let stderr = "";
     let settled = false;
+    let closed = false;
+    let timeoutMessage: string | null = null;
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
     let killHandle: ReturnType<typeof setTimeout> | null = null;
 
@@ -59,32 +68,46 @@ const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
       resolve(result);
     };
 
+    const signalTree = (signal: NodeJS.Signals) => {
+      try {
+        if (useProcessGroup && proc.pid) process.kill(-proc.pid, signal);
+        else proc.kill(signal);
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ESRCH") {
+          stderr += `${String(err)}\n`;
+        }
+      }
+    };
+
+    const processGroupExists = () => {
+      if (!useProcessGroup || !proc.pid) return false;
+      try {
+        process.kill(-proc.pid, 0);
+        return true;
+      } catch (err) {
+        return (err as NodeJS.ErrnoException).code !== "ESRCH";
+      }
+    };
+
+    const finishTimeout = () => finish({
+      code: null,
+      stdout,
+      stderr: [stderr.trim(), timeoutMessage].filter(Boolean).join("\n"),
+      timedOut: true,
+    });
+
     if (typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0) {
       timeoutHandle = setTimeout(() => {
         timeoutHandle = null;
-        try {
-          proc.kill("SIGTERM");
-        } catch {
-          // Process may have already exited.
-        }
-        killHandle = setTimeout(() => {
-          killHandle = null;
-          try {
-            proc.kill("SIGKILL");
-          } catch {
-            // Process may have already exited.
-          }
-        }, 1_000);
-        killHandle.unref?.();
         const timeoutLabel =
           timeoutMs >= 1_000 ? `${Math.round(timeoutMs / 1_000)}s` : `${timeoutMs}ms`;
-        const timeoutMsg = `Notion sync timed out after ${timeoutLabel}.`;
-        finish({
-          code: null,
-          stdout,
-          stderr: stderr ? `${stderr.trim()}\n${timeoutMsg}` : timeoutMsg,
-          timedOut: true,
-        });
+        timeoutMessage = `Notion sync timed out after ${timeoutLabel}.`;
+        signalTree("SIGTERM");
+        killHandle = setTimeout(() => {
+          killHandle = null;
+          signalTree("SIGKILL");
+          if (closed) finishTimeout();
+        }, 1_000);
       }, timeoutMs);
     }
 
@@ -97,6 +120,7 @@ const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
     });
 
     proc.on("error", (err) => {
+      if (timeoutMessage) return;
       const msg = err instanceof Error ? err.message : String(err);
       finish({
         code: null,
@@ -106,7 +130,10 @@ const defaultDrillSyncSpawner: NotionDrillSyncSpawner = ({
     });
 
     proc.on("close", (code) => {
-      finish({ code, stdout, stderr });
+      closed = true;
+      if (!timeoutMessage) finish({ code, stdout, stderr });
+      // A descendant may survive its parent and close its own streams early.
+      else if (!killHandle || !processGroupExists()) finishTimeout();
     });
 
     proc.stdin.on("error", () => {
@@ -204,8 +231,8 @@ export function mergeDrillForNotionSync(
 export const DRILL_SYNC_INLINE_SCRIPT = `
 import json, sys
 from notion_sync.drill_sync import sync_drill_to_notion
-doc = json.loads(sys.stdin.read())
-res = sync_drill_to_notion(doc, save_local=False)
+payload = json.loads(sys.stdin.read())
+res = sync_drill_to_notion(payload["doc"], save_local=False, retry=payload.get("retry"))
 print(json.dumps(res))
 `;
 
@@ -216,6 +243,7 @@ export async function runNotionDrillSync(options: {
   dataDir: string;
   isDryRun: boolean;
   timeoutMs?: number;
+  retry?: NotionSyncRetry;
 }): Promise<NotionDrillSyncProcessResult> {
   const { mergedDoc, rootDir, pythonBin, dataDir, isDryRun, timeoutMs } = options;
   return activeSpawner({
@@ -228,7 +256,7 @@ export async function runNotionDrillSync(options: {
       DRILLS_DATA_DIR: dataDir,
       NOTION_DRY_RUN: isDryRun ? "1" : process.env.NOTION_DRY_RUN || "",
     },
-    stdinPayload: JSON.stringify(mergedDoc),
+    stdinPayload: JSON.stringify({ doc: mergedDoc, retry: options.retry }),
     timeoutMs: timeoutMs ?? activeTimeoutMs,
   });
 }

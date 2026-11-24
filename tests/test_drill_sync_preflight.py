@@ -7,7 +7,7 @@ import pytest
 
 from code_engine import fmt as code_fmt
 from math_engine import fmt as math_fmt
-from notion_sync import drill_sync
+from notion_sync import client, drill_sync, unit_page
 
 
 def _doc(**overrides):
@@ -58,6 +58,74 @@ def test_missing_fields_listed_before_any_notion_call(no_disk, monkeypatch):
 
 def test_complete_drill_passes_preflight():
     assert drill_sync.missing_sync_fields(_doc()) == []
+
+
+def test_partial_sync_retries_only_failed_writes(no_disk, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    doc = _doc(sessionSummary={"attemptDate": "2026-11-24", "score": 1, "maxScore": 1})
+    first_unit = doc["unitCode"]
+    second_unit = "MTH-T02-C01-U02"
+    doc["problems"][0]["unitCode"] = second_unit
+    (tmp_path / "id_map.json").write_text(
+        json.dumps({"DRILLS_DB": {"id": "db"}, first_unit: {"id": "unit-1"}, second_unit: {"id": "unit-2"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(drill_sync, "load_env", lambda: {"NOTION_TOKEN": "fake"})
+    monkeypatch.setattr(
+        "scripts.weak_spots.review_update",
+        lambda *args: {"mastery": 2, "lastReviewed": "2026-11-24", "nextReview": "2026-11-29"},
+    )
+    calls = []
+    old_blocks = [{"id": "old-1"}, {"id": "old-2"}]
+    log_blocks = []
+    fail_writes = True
+
+    def fake_request(method, endpoint, token, payload=None):
+        calls.append((method, endpoint))
+        if endpoint == "databases/db/query":
+            return {"results": [{"id": "drill-page"}]}
+        if method == "GET" and endpoint.startswith("pages/unit-"):
+            return {"properties": {"Mastery (0-4)": {"number": 1}, "Last Reviewed": {}, "Next Review": {}}}
+        if endpoint.startswith("blocks/drill-page/children"):
+            if method == "GET":
+                return {"results": old_blocks.copy()}
+            old_blocks.extend({"id": f"new-{i}"} for i, _ in enumerate(payload["children"]))
+        if method == "DELETE":
+            block_id = endpoint.rsplit("/", 1)[-1]
+            if fail_writes and block_id == "old-2":
+                raise RuntimeError("cleanup failed")
+            old_blocks[:] = [block for block in old_blocks if block["id"] != block_id]
+        if endpoint == "pages/unit-1" and method == "PATCH" and fail_writes:
+            raise RuntimeError("review failed")
+        if endpoint.startswith("blocks/unit-1/children"):
+            if method == "GET":
+                return {"results": log_blocks.copy()}
+            log_blocks.extend(payload["children"])
+            if fail_writes:
+                # The write happened, but the response was lost.
+                raise OSError("append response lost")
+        return {}
+
+    for module in (client, drill_sync, unit_page):
+        monkeypatch.setattr(module, "notion_request", fake_request)
+    partial = drill_sync.sync_drill_to_notion(doc, save_local=False)
+    failed_steps = ["blockCleanup", f"unitReview:{first_unit}", "mistakeLog"]
+    assert partial["partial"] is True
+    assert partial["failedSteps"] == failed_steps
+    assert list(partial["unitReviews"]) == [second_unit]
+    assert len(log_blocks) == 1
+
+    calls.clear()
+    fail_writes = False
+    done = drill_sync.sync_drill_to_notion(doc, save_local=False, retry=partial["retry"])
+    assert done["ok"] and not done.get("partial")
+    assert ("DELETE", "blocks/old-2") in calls
+    assert ("PATCH", "blocks/drill-page/children") not in calls
+    assert ("PATCH", "pages/drill-page") not in calls
+    assert ("PATCH", "pages/unit-1") in calls
+    assert ("PATCH", "pages/unit-2") not in calls
+    assert ("PATCH", "blocks/unit-1/children") not in calls
+    assert len(log_blocks) == 1
 
 
 def test_notion_outage_is_degraded_not_failed(no_disk, monkeypatch):
@@ -214,6 +282,7 @@ def test_cli_sync_preserves_practised_progress_and_id_map_newline(tmp_path, monk
     monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda *a, **k: None)
     monkeypatch.setattr(drill_sync, "update_unit_reviews", lambda *a, **k: {})
     monkeypatch.setattr(drill_sync, "get_all_blocks", lambda *a, **k: [])
+    monkeypatch.setattr(unit_page, "notion_request", lambda *a, **k: {"results": []})
 
     assert drill_sync.main(["DRL-MTH-T02-C01-U01-99"]) == 0
     out = json.loads(capsys.readouterr().out)

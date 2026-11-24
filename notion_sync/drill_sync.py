@@ -31,7 +31,7 @@ from notion_sync.blocks import (
     replace_page_blocks,
     toggle_block,
 )
-from notion_sync.client import get_all_blocks, load_env, notion_request, sync_deadline
+from notion_sync.client import get_all_blocks, load_env, notion_request, retry_page_cleanup, sync_deadline
 from notion_sync.id_map import save_id_map
 from progress_store import apply_progress, has_practice, load_progress, merge_review_schedule, pilot_mode, save_progress
 
@@ -225,7 +225,9 @@ def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
 
-def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
+def _sync_drill_to_notion_with_deadline(
+    drill_doc: dict, path: str, *, content_only: bool = False, retry: dict | None = None
+) -> dict:
     env = load_env()
     token = env.get("NOTION_TOKEN")
     with open("id_map.json", "r", encoding="utf-8") as f:
@@ -253,14 +255,6 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
     mistake_cats = summary.get("mistakeCategories", [])
     diverged_summary = summary.get("divergedStepsSummary", "No diverged steps logged.")
     attempt_date = summary.get("attemptDate")
-
-    q = notion_request(
-        "POST",
-        f"databases/{drills_db_id}/query",
-        token,
-        {"filter": {"property": "Drill ID", "rich_text": {"equals": drill_id}}},
-    )
-    results = q.get("results", [])
 
     is_prg = drill_doc.get("subject") == "PRG" or unit_code.startswith("PRG-")
     drill_kind = "Programming" if is_prg else "Math"
@@ -296,20 +290,30 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
 
     icon_color = "blue" if is_prg else "purple"
     icon_payload = {"type": "icon", "icon": {"name": "code" if is_prg else "target", "color": icon_color}}
-    if results:
-        page_id = results[0]["id"]
-        notion_request("PATCH", f"pages/{page_id}", token, {"icon": icon_payload, "properties": props})
+    if retry:
+        page_id = retry["drillPageId"]
+        id_map[drill_id] = {"id": page_id, "title": title}
     else:
-        created = notion_request(
+        q = notion_request(
             "POST",
-            "pages",
+            f"databases/{drills_db_id}/query",
             token,
-            {"parent": {"database_id": drills_db_id}, "icon": icon_payload, "properties": props},
+            {"filter": {"property": "Drill ID", "rich_text": {"equals": drill_id}}},
         )
-        page_id = created["id"]
-
-    id_map[drill_id] = {"id": page_id, "title": title}
-    save_id_map(id_map)
+        results = q.get("results", [])
+        if results:
+            page_id = results[0]["id"]
+            notion_request("PATCH", f"pages/{page_id}", token, {"icon": icon_payload, "properties": props})
+        else:
+            created = notion_request(
+                "POST",
+                "pages",
+                token,
+                {"parent": {"database_id": drills_db_id}, "icon": icon_payload, "properties": props},
+            )
+            page_id = created["id"]
+        id_map[drill_id] = {"id": page_id, "title": title}
+        save_id_map(id_map)
 
     # Populate Notion Drill Page Body with clean 100% English formatting
     player_url = f"http://localhost:3000/?drill={drill_id}"
@@ -425,18 +429,38 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
 
         blocks.append(toggle_block(header_line, children, id_map))
 
-    replace_page_blocks(page_id, blocks, drill_id, token)
+    pending = set(retry["failedSteps"]) if retry else None
+    failed_steps = []
+    cleanup_ids = []
+    if pending is None or "pageContent" in pending:
+        try:
+            cleanup_ids = [block_id for block_id, _ in (replace_page_blocks(page_id, blocks, drill_id, token) or [])]
+        except (OSError, RuntimeError):
+            failed_steps.append("pageContent")
+    elif "blockCleanup" in pending:
+        cleanup_ids = retry["cleanupBlockIds"]
+        try:
+            cleanup_ids = [block_id for block_id, _ in retry_page_cleanup(page_id, cleanup_ids, token, drill_id)]
+        except (OSError, RuntimeError):
+            # A failed read cannot tell us which of the pending deletions already happened.
+            pass
+    if cleanup_ids:
+        failed_steps.append("blockCleanup")
 
     # Also append attempt log to parent Unit or Chapter page if an attempt was made
     parent_entry = id_map.get(unit_code) or id_map.get(chapter_code)
     parent_page_id = parent_entry["id"] if isinstance(parent_entry, dict) else parent_entry
     reviews = {}
     if attempt_date and not content_only:
-        try:
-            reviews = update_unit_reviews(covered_units(drill_doc, unit_code, id_map), attempt_date, id_map, token)
-        except Exception:  # noqa: BLE001 - review scheduling must never fail the drill sync
-            reviews = {}
-    if attempt_date and parent_page_id and not content_only:
+        for unit in covered_units(drill_doc, unit_code, id_map):
+            step = f"unitReview:{unit}"
+            if pending is not None and step not in pending:
+                continue
+            try:
+                reviews.update(update_unit_reviews([unit], attempt_date, id_map, token))
+            except (OSError, RuntimeError, ValueError):
+                failed_steps.append(step)
+    if attempt_date and parent_page_id and not content_only and (pending is None or "mistakeLog" in pending):
         if pilot_mode():
             print(f"[PILOT] skipped Notion write: unit Mistake Log append ({unit_code})", file=sys.stderr)
         else:
@@ -456,15 +480,22 @@ def _sync_drill_to_notion_with_deadline(drill_doc: dict, path: str, *, content_o
                 anchor = section_end(unit_blocks, "Mistake Log")
                 if not _has_mistake_log_entry(unit_blocks, attempt_date, drill_id, id_map):
                     insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
-            except TimeoutError:
-                raise
-            except Exception:
-                pass
+            except (OSError, RuntimeError):
+                failed_steps.append("mistakeLog")
 
-    return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
+    result = {"ok": not failed_steps, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
+    if failed_steps:
+        result.update(
+            partial=True,
+            failedSteps=failed_steps,
+            retry={"drillPageId": page_id, "failedSteps": failed_steps, "cleanupBlockIds": cleanup_ids},
+        )
+    return result
 
 
-def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
+def _sync_drill_to_notion_inner(
+    drill_doc: dict, path: str, *, content_only: bool = False, retry: dict | None = None
+) -> dict:
     """Run all Notion work under one bounded deadline (default 75s, always < 90s)."""
     try:
         deadline_s = float(os.environ.get("NOTION_SYNC_DEADLINE_S", "75"))
@@ -474,6 +505,8 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
         deadline_s = 0.001
     deadline_s = min(deadline_s, 89.0)
     with sync_deadline(deadline_s):
+        if retry:
+            return _sync_drill_to_notion_with_deadline(drill_doc, path, content_only=content_only, retry=retry)
         return _sync_drill_to_notion_with_deadline(drill_doc, path, content_only=content_only)
 
 
@@ -482,12 +515,14 @@ def sync_drill_to_notion(
     *,
     content_only: bool = False,
     save_local: bool = True,
+    retry: dict | None = None,
 ) -> dict:
     """Save locally (unless `content_only=True` or `save_local=False`), then sync to Notion.
 
     - Incomplete drill data -> ok False with the missing fields; nothing is sent to Notion.
     - Notion/network unavailable (incl. missing token) -> ok True, degraded: the file is saved
       locally (when not content-only) and the sync can simply be retried.
+    - Incomplete remote writes -> partial with failedSteps and a server-side retry plan.
     - Any other error is a bug -> ok False (never reported as success).
     """
     if content_only or not save_local:
@@ -528,6 +563,8 @@ def sync_drill_to_notion(
             "pilotSkipped": True,
         }
     try:
+        if retry:
+            return _sync_drill_to_notion_inner(drill_doc, path, content_only=content_only, retry=retry)
         return (
             _sync_drill_to_notion_inner(drill_doc, path, content_only=True)
             if content_only
