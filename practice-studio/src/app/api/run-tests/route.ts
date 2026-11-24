@@ -10,6 +10,12 @@ import {
   resolveInsideDrillWorkspace,
 } from "@/lib/paths";
 import { sanitizeCodeCheckError } from "@/lib/codeStatus";
+import {
+  appendBoundedOutput,
+  buildPrgPythonEnv,
+  killProcessTree,
+  RUN_TESTS_TIMEOUT_MS,
+} from "@/lib/runnerEnv";
 
 export async function POST(req: NextRequest) {
   try {
@@ -104,24 +110,118 @@ export async function POST(req: NextRequest) {
     return new Promise<NextResponse>((resolve) => {
       const proc = spawn(pythonBin, ["-m", "code_engine.test_runner"], {
         cwd: rootDir,
-        env: { ...process.env, PYTHONPATH: pythonPath },
+        env: buildPrgPythonEnv(rootDir, pythonPath, { includeWorkspaceHints: false }),
+        detached: process.platform !== "win32",
       });
 
       let stdout = "";
       let stderr = "";
+      let settled = false;
+      let outputExceeded = false;
+
+      const finish = (response: NextResponse) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(response);
+      };
+
+      const timer = setTimeout(() => {
+        killProcessTree(proc);
+        finish(
+          NextResponse.json(
+            {
+              allPassed: false,
+              score: 0,
+              passedCount: 0,
+              totalCount: visibleTests.length + hiddenTests.length,
+              visibleResults: [
+                {
+                  name: "Timeout",
+                  passed: false,
+                  error: `Test runner exceeded ${Math.round(RUN_TESTS_TIMEOUT_MS / 1000)}s limit`,
+                },
+              ],
+              hiddenPassed: 0,
+              hiddenTotal: hiddenTests.length,
+              executionTimeMs: RUN_TESTS_TIMEOUT_MS,
+            },
+            { status: 504 }
+          )
+        );
+      }, RUN_TESTS_TIMEOUT_MS);
 
       proc.stdout.on("data", (data) => {
-        stdout += data.toString();
+        const next = appendBoundedOutput(stdout, data);
+        stdout = next.value;
+        if (next.exceeded && !outputExceeded) {
+          outputExceeded = true;
+          killProcessTree(proc);
+        }
       });
 
       proc.stderr.on("data", (data) => {
-        stderr += data.toString();
+        const next = appendBoundedOutput(stderr, data);
+        stderr = next.value;
+        if (next.exceeded && !outputExceeded) {
+          outputExceeded = true;
+          killProcessTree(proc);
+        }
+      });
+
+      proc.on("error", (err) => {
+        finish(
+          NextResponse.json(
+            {
+              allPassed: false,
+              score: 0,
+              passedCount: 0,
+              totalCount: visibleTests.length + hiddenTests.length,
+              visibleResults: [
+                {
+                  name: "Test Runner Process Error",
+                  passed: false,
+                  error: sanitizeCodeCheckError(err.message),
+                },
+              ],
+              hiddenPassed: 0,
+              hiddenTotal: hiddenTests.length,
+              executionTimeMs: 0,
+            },
+            { status: 500 }
+          )
+        );
       });
 
       proc.on("close", (code) => {
+        if (settled) return;
+        if (outputExceeded) {
+          finish(
+            NextResponse.json(
+              {
+                allPassed: false,
+                score: 0,
+                passedCount: 0,
+                totalCount: visibleTests.length + hiddenTests.length,
+                visibleResults: [
+                  {
+                    name: "Output limit exceeded",
+                    passed: false,
+                    error: "Test runner exceeded output size limit",
+                  },
+                ],
+                hiddenPassed: 0,
+                hiddenTotal: hiddenTests.length,
+                executionTimeMs: 0,
+              },
+              { status: 200 }
+            )
+          );
+          return;
+        }
         if (code !== 0) {
           const rawErr = (stderr || `Exited with code ${code}`).split(`${rootDir}/`).join("");
-          resolve(
+          finish(
             NextResponse.json(
               {
                 allPassed: false,
@@ -149,10 +249,10 @@ export async function POST(req: NextRequest) {
           const report = JSON.parse(stdout.trim()) as Record<string, unknown>;
           const safeReport = { ...report };
           delete safeReport.rawOutput;
-          resolve(NextResponse.json({ ...safeReport, userCodeUsed: userCode }));
+          finish(NextResponse.json({ ...safeReport, userCodeUsed: userCode }));
         } catch (e: unknown) {
           const errMsg = e instanceof Error ? e.message : String(e);
-          resolve(
+          finish(
             NextResponse.json(
               {
                 allPassed: false,
