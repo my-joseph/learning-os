@@ -44,6 +44,8 @@ from code_engine.sandbox import (
     DEFAULT_REACT_TIMEOUT_SEC,
     DEFAULT_TIMEOUT_SEC,
     DEFAULT_TOOL_TIMEOUT_SEC,
+    JSON_SUFFIXES,
+    assert_safe_contained_path,
     create_sandbox_dir,
     run_isolated,
     run_node_isolated,
@@ -343,8 +345,10 @@ def _extract_notion_status(page: dict[str, Any]) -> str:
 def _validate_config_and_layout(lab_dir: Path, ref_dir: Path) -> tuple[dict[str, Any] | None, list[str]]:
     errors: list[str] = []
     cfg_path = lab_dir / "lab.config.json"
-    if not cfg_path.exists():
-        return None, [f"Missing {cfg_path}"]
+    try:
+        cfg_path = assert_safe_contained_path(cfg_path, lab_dir, suffixes=JSON_SUFFIXES)
+    except (OSError, ValueError) as exc:
+        return None, [f"Invalid lab configuration path: {exc}"]
     try:
         cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -898,7 +902,7 @@ def finalise_lab(
     if errors:
         raise ValueError("\n".join(errors))
 
-    cfg_path = lab_dir / "lab.config.json"
+    cfg_path = assert_safe_contained_path("lab.config.json", lab_dir, relative=True, suffixes=JSON_SUFFIXES)
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     final_cfg = copy.deepcopy(cfg)
 

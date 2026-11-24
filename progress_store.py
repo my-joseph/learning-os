@@ -86,11 +86,10 @@ def find_repo_root(start: str | os.PathLike[str] | None = None) -> str:
 def progress_root(repo_root: str | None = None) -> str:
     """PROGRESS_DIR, else `pilot/progress/` in pilot mode, else `progress/` relative to `repo_root`."""
     configured = os.environ.get("PROGRESS_DIR")
-    root = Path(repo_root or find_repo_root())
+    root = Path(repo_root or find_repo_root()).absolute()
     directory = Path(configured) if configured else root / ("pilot/progress" if pilot_mode() else "progress")
-    return str(
-        assert_safe_contained_path(directory, directory if configured else root, expect_file=False, allow_missing=True)
-    )
+    boundary = root if directory.absolute().is_relative_to(root) else directory
+    return str(assert_safe_contained_path(directory, boundary, expect_file=False, allow_missing=True))
 
 
 def workspace_root(repo_root: str | None = None) -> str:

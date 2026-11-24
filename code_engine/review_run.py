@@ -114,13 +114,11 @@ def sanitize_tests_summary(tests: dict[str, Any]) -> dict[str, Any]:
 
 def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[str, Any], Path]:
     """Locate and load the drill JSON document for `drill_id`."""
-    if data_root is not None:
-        root = Path(data_root)
-    elif os.environ.get("DRILLS_DATA_DIR"):
-        root = Path(os.environ["DRILLS_DATA_DIR"])
-    else:
-        repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd())
-        root = assert_safe_contained_path("drills/data", repo, expect_file=False, relative=True)
+    repo = Path(os.environ.get("LEARNINGOS_ROOT") or Path.cwd()).absolute()
+    configured = data_root or os.environ.get("DRILLS_DATA_DIR")
+    root = Path(configured) if configured else repo / "drills" / "data"
+    boundary = repo if root.absolute().is_relative_to(repo) else root
+    root = assert_safe_contained_path(root, boundary, expect_file=False)
     path = find_drill_json(drill_id, root)
     doc = json.loads(path.read_text(encoding="utf-8"))
     if doc.get("drillId") not in (None, "", drill_id):

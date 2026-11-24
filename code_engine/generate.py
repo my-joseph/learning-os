@@ -49,7 +49,8 @@ def next_drill_id(unit_code, data_root=None):
     if data_root is None:
         data_root = os.environ.get("DRILLS_DATA_DIR", "drills/data")
     root = Path(data_root)
-    boundary = Path.cwd() if root == Path("drills/data") else root
+    checkout = Path.cwd()
+    boundary = checkout if root.absolute().is_relative_to(checkout) else root
     root = assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
     unit_dir = assert_safe_contained_path(unit_code, root, expect_file=False, relative=True, allow_missing=True)
     unit_dir.mkdir(parents=True, exist_ok=True)
@@ -309,7 +310,8 @@ def generate_drill_set(
     topic_code, chapter_code = unit_hierarchy(unit_code)
 
     root = Path(data_root)
-    boundary = Path.cwd() if root == Path("drills/data") else root
+    checkout = Path.cwd()
+    boundary = checkout if root.absolute().is_relative_to(checkout) else root
     root = assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
     output = assert_safe_contained_path(
         f"{unit_code}/{drill_id}.json", root, relative=True, allow_missing=True, suffixes=JSON_SUFFIXES

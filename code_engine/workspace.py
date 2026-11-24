@@ -780,11 +780,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.drill:
             data_dir = os.environ.get("DRILLS_DATA_DIR")
-            data_root = (
-                Path(data_dir)
-                if data_dir
-                else assert_safe_contained_path("drills/data", Path.cwd(), expect_file=False, relative=True)
-            )
+            checkout = Path.cwd()
+            data_root = Path(data_dir) if data_dir else checkout / "drills" / "data"
+            boundary = checkout if data_root.absolute().is_relative_to(checkout) else data_root
+            data_root = assert_safe_contained_path(data_root, boundary, expect_file=False)
             drill_path = find_drill_json(args.drill, data_root)
             doc = json.loads(drill_path.read_text(encoding="utf-8"))
             if not doc.get("drillId"):

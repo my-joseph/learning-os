@@ -76,7 +76,8 @@ def _bank_root(variants_dir: Optional[str] = None) -> Path:
     configured = variants_dir or os.environ.get("VARIANTS_DIR")
     repo = Path(find_repo_root())
     root = Path(configured) if configured else repo / "drills" / "variants"
-    return assert_safe_contained_path(root, root if configured else repo, expect_file=False, allow_missing=True)
+    boundary = repo if root.absolute().is_relative_to(repo) else root
+    return assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
 
 
 def bank_path(unit_code: str, variants_dir: Optional[str] = None) -> str:

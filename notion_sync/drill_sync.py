@@ -660,10 +660,10 @@ def sync_drill_to_notion(
 
 def _contained_data_root() -> Path:
     configured = os.environ.get("DRILLS_DATA_DIR")
-    root = Path(configured) if configured else Path.cwd()
-    if configured:
-        return assert_safe_contained_path(root, root, expect_file=False, allow_missing=True)
-    return assert_safe_contained_path("drills/data", root, relative=True, expect_file=False, allow_missing=True)
+    checkout = Path.cwd()
+    root = Path(configured) if configured else checkout / "drills" / "data"
+    boundary = checkout if root.absolute().is_relative_to(checkout) else root
+    return assert_safe_contained_path(root, boundary, expect_file=False, allow_missing=True)
 
 
 def _resolve_drill_path(target: str) -> Path:

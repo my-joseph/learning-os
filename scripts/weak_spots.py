@@ -167,7 +167,8 @@ def prior_review_evidence(state: dict, cycle: str) -> dict:
     }
 
 
-def _load_contained_records(directory: Path, pattern: str, boundary: Path):
+def _load_contained_records(directory: Path, pattern: str, checkout: Path):
+    boundary = checkout if directory.absolute().is_relative_to(checkout) else directory
     try:
         root = assert_safe_contained_path(directory, boundary, expect_file=False)
     except (OSError, ValueError):
@@ -197,10 +198,10 @@ def load_items(
     progress_dir = Path(progress_dir or progress_root(repo_root))
     drills = {}
     for pattern in ("MTH-*/*.json", "PRG-*/*.json"):
-        for doc in _load_contained_records(data_dir, pattern, data_dir if configured_data else repo):
+        for doc in _load_contained_records(data_dir, pattern, repo):
             if doc.get("drillId"):
                 drills[doc["drillId"]] = doc
-    for cfg in _load_contained_records(lab_dir, "LAB-*/lab.config.json", lab_dir if configured_labs else repo):
+    for cfg in _load_contained_records(lab_dir, "LAB-*/lab.config.json", repo):
         lab_id = cfg.get("labId")
         if not lab_id:
             continue
@@ -242,7 +243,7 @@ def load_items(
     universal_ids = {c["id"] for c in load_universal() if isinstance(c, dict) and c.get("id")}
 
     items: list[Item] = []
-    for prog in _load_contained_records(progress_dir, "*.json", progress_dir):
+    for prog in _load_contained_records(progress_dir, "*.json", repo):
         if not isinstance(prog, dict):
             continue
         doc = drills.get(prog.get("drillId"))
