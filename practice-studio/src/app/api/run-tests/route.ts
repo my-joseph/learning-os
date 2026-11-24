@@ -9,6 +9,8 @@ import {
   loadProblemFromDisk,
   resolveInsideDrillWorkspace,
 } from "@/lib/paths";
+import { currentPracticeCycle, recordTestReport } from "@/lib/practiceEvidence";
+import type { TestRunReport } from "@/types/drill";
 import { sanitizeCodeCheckError } from "@/lib/codeStatus";
 
 export async function POST(req: NextRequest) {
@@ -33,6 +35,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { doc, problem } = loaded;
+    const cycle = currentPracticeCycle(drillId, problemId);
+    if (body.cycleStartedAt !== undefined && body.cycleStartedAt !== cycle) {
+      return NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 });
+    }
+    const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
+    const persist = (report: TestRunReport) => recordTestReport(drillId, problemId, unitCode, cycle, report);
     // Server copy wins: load visibleTests, hiddenTests, environment, entryPoint, and workspaceFile from drills/data.
     const visibleTests = Array.isArray(problem.visibleTests) ? problem.visibleTests : [];
     const hiddenTests = Array.isArray(problem.hiddenTests) ? problem.hiddenTests : [];
@@ -63,8 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!userCode.trim()) {
-      return NextResponse.json(
-        {
+      return NextResponse.json({
           allPassed: false,
           score: 0,
           passedCount: 0,
@@ -79,9 +86,7 @@ export async function POST(req: NextRequest) {
           hiddenPassed: 0,
           hiddenTotal: hiddenTests.length,
           executionTimeMs: 0,
-        },
-        { status: 200 }
-      );
+      });
     }
 
     const repoParent = path.resolve(process.cwd(), "..");
@@ -147,9 +152,10 @@ export async function POST(req: NextRequest) {
 
         try {
           const report = JSON.parse(stdout.trim()) as Record<string, unknown>;
-          const safeReport = { ...report };
-          delete safeReport.rawOutput;
-          resolve(NextResponse.json({ ...safeReport, userCodeUsed: userCode }));
+          delete report.rawOutput;
+          const persisted = persist(report as unknown as TestRunReport);
+          resolve(persisted ? NextResponse.json({ ...persisted, userCodeUsed: userCode }) :
+            NextResponse.json({ error: "The practice cycle has changed" }, { status: 409 }));
         } catch (e: unknown) {
           const errMsg = e instanceof Error ? e.message : String(e);
           resolve(

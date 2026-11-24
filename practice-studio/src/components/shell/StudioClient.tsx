@@ -44,7 +44,7 @@ import {
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
-import { resetAnswerForReviewRetry, resetDrillForRetry } from "@/lib/applyCheckResult";
+import { sendPracticeAction } from "@/lib/practiceActions";
 import { getPersistedStatusOverride } from "@/lib/sessionSummary";
 
 interface StudioClientProps {
@@ -273,7 +273,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     try {
       if (currentDrill?.drillId === targetId) {
         setResetTargetId(null);
-        await handleResetAll();
+        if (!(await handleResetAll())) return;
+        setStatusOverride(null);
         setResetAllVersion((version) => version + 1);
         const url = new URL(window.location.href);
         if (url.searchParams.has("similar") || url.searchParams.has("tab")) {
@@ -283,12 +284,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         }
       } else {
         await flushAutoSave();
-        const response = await fetch(`/api/drill?id=${encodeURIComponent(targetId)}`);
-        if (!response.ok) throw new Error("Drill could not be loaded.");
-        const targetDoc = (await response.json()) as DrillDocument;
-        if (targetDoc.drillId !== targetId) throw new Error("Drill could not be loaded.");
-        const resetDoc = resetDrillForRetry(targetDoc);
-        if (!(await saveNow(resetDoc))) throw new Error("Reset could not be saved. Try again.");
+        const reset = await sendPracticeAction(targetId, "", { action: "reset-all" });
+        if (!reset?.cycleStartedAt) throw new Error("Reset could not be saved. Try again.");
         setStatus({ text: "Drill reset to initial state.", type: "pass" });
         setResetTargetId(null);
         await loadDrillsList();
@@ -329,25 +326,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     }
   };
 
-  const handleReviewRetry = () => {
+  const handleReviewRetry = async () => {
     const problem = currentDrill?.problems[currentProblemIndex];
     if (!currentDrill || !problem) return;
-    let updatedDoc: DrillDocument | null = null;
-    setCurrentDrill((prev) => {
-      if (!prev) return prev;
-      updatedDoc = {
-        ...prev,
-        problems: prev.problems.map((candidate) =>
-          candidate.id === problem.id
-            ? { ...candidate, state: resetAnswerForReviewRetry(candidate.state) }
-            : candidate
-        ),
-      };
-      return updatedDoc;
-    });
-    if (updatedDoc) {
-      void saveNow(updatedDoc);
-    }
+    if (!(await handleResetProblem(problem.id))) return;
     setReviewRetryStarted(true);
     requestAnimationFrame(() => {
       document.querySelector<HTMLElement>('[aria-label^="Answer for"]')?.focus();

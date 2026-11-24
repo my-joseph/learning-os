@@ -138,38 +138,6 @@ def _normalize_date(raw: str | None, fallback: str | None = None) -> str:
     return date.today().isoformat()
 
 
-def _cycle_started_after_evidence(state: dict[str, Any], evidence_date: str) -> bool:
-    cycle = state.get("cycleStartedAt")
-    if not isinstance(cycle, str) or not cycle:
-        return False
-
-    def instant(value: Any) -> datetime | None:
-        if not isinstance(value, str) or not value:
-            return None
-        try:
-            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-            return parsed.astimezone()
-        except ValueError:
-            return None
-
-    cycle_at = instant(cycle)
-    evidence_at = []
-    for field, time_field in (("attempts", "ts"), ("reviews", "at")):
-        records = state.get(field) or []
-        if not isinstance(records, list):
-            continue
-        evidence_at.extend(
-            parsed
-            for record in records
-            if isinstance(record, dict)
-            if field != "attempts" or record.get("kind") != "variant"
-            if (parsed := instant(record.get(time_field)))
-        )
-    if cycle_at and evidence_at:
-        return cycle_at > max(evidence_at)
-    return _normalize_date(cycle) > evidence_date
-
-
 def add_days(date_str: str, days: int) -> str:
     """Return `YYYY-MM-DD` shifted by `days` calendar days."""
     base = date.fromisoformat(_normalize_date(date_str))
@@ -360,6 +328,8 @@ def redact_review_item(entry: dict[str, Any]) -> dict[str, Any]:
         "revisitNote": _clean_revisit_note(entry.get("revisitNote")),
         "lastWrong": bool(entry.get("lastWrong", False)),
     }
+    if isinstance(entry.get("completedCycle"), str):
+        out["completedCycle"] = entry["completedCycle"]
     raw_multi = entry.get("unitCodes")
     if isinstance(raw_multi, (list, tuple)):
         cleaned_multi = list(dict.fromkeys(u.strip() for u in raw_multi if isinstance(u, str) and u.strip()))
@@ -373,8 +343,13 @@ def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict
     for item in loaded:
         if not item.drill or not item.pid:
             continue
-        events = extract_review_events(item.state, fallback_ts=item.ts)
+        cycle = item.state.get("cycleStartedAt")
+        in_review = isinstance(cycle, str) and cycle and item.state.get("reviewBaseLevel") is not None
+        state = weak_spots.prior_review_evidence(item.state, cycle) if in_review else item.state
+        events = extract_review_events(state, fallback_ts=item.ts)
         if not events:
+            if in_review:
+                continue
             # Fallback to item summary if load_items produced an Item without raw state events
             events = [
                 {
@@ -385,8 +360,6 @@ def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict
             ]
         replayed = replay_events(events)
         if not replayed:
-            continue
-        if _cycle_started_after_evidence(item.state, replayed["lastReviewed"]):
             continue
         trap_tag = item.trap or (item.matched[-1] if item.matched else None)
         key = item_key(item.drill, item.pid)
@@ -415,7 +388,9 @@ def build_schedule_from_progress(
     labs_root: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Build the full review schedule map (`{ "<drillId>/<qid>": ReviewItem }`) from progress via `weak_spots.load_items`."""
-    loaded = weak_spots.load_items(data_root=data_root, progress_dir=progress_dir, labs_root=labs_root)
+    loaded = weak_spots.load_items(
+        data_root=data_root, progress_dir=progress_dir, labs_root=labs_root, for_review_schedule=True
+    )
     return _build_schedule_from_loaded(loaded)
 
 
@@ -597,7 +572,7 @@ def _prune_saved_items(
     progress_dir: str | None,
     labs_root: str | None,
 ) -> dict[str, dict[str, Any]]:
-    """Ignore cached results for retired problems or problems reset after their last evidence."""
+    """Ignore cached results for retired problems and use the latest saved learner notes."""
     repo_root = find_repo_root()
     drill_root = data_root or os.environ.get("DRILLS_DATA_DIR") or os.path.join(repo_root, "drills", "data")
     lab_root = labs_root or os.path.join(repo_root, "labs")
@@ -626,8 +601,8 @@ def _prune_saved_items(
             with open(progress_path, encoding="utf-8") as file:
                 progress_doc = json.load(file)
             state = (progress_doc.get("problems") or {}).get(qid) or {}
-            if _cycle_started_after_evidence(state, item.get("lastReviewed", "")):
-                continue
+            if "revisitNote" in state:
+                item = dict(item, revisitNote=_clean_revisit_note(state["revisitNote"]))
         except (OSError, ValueError, AttributeError):
             pass
         active[key] = item
@@ -792,7 +767,9 @@ def get_due_items(
     parsed_scope = parse_scope(scope)
     today_str = _normalize_date(today)
     resolved_progress = progress_dir or progress_root(repo_root)
-    loaded = weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root)
+    loaded = weak_spots.load_items(
+        data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root, for_review_schedule=True
+    )
     open_weak_traps = get_open_weak_traps(loaded)
     backfilled = _build_schedule_from_loaded(loaded)
     saved = _prune_saved_items(
@@ -959,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
     resolved_progress = args.progress_dir or progress_root(repo_root)
     today_str = _normalize_date(args.today)
 
-    loaded = weak_spots.load_items(data_root=args.data_root, progress_dir=resolved_progress)
+    loaded = weak_spots.load_items(data_root=args.data_root, progress_dir=resolved_progress, for_review_schedule=True)
     open_weak_traps = get_open_weak_traps(loaded)
     backfilled = _build_schedule_from_loaded(loaded)
 

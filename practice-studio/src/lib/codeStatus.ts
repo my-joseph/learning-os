@@ -30,6 +30,7 @@ export interface ReviewRunTypecheckItem {
 }
 
 export interface ReviewRunResult {
+  testReport?: import("../types/drill").TestRunReport;
   drillId: string;
   problemId: string;
   labId?: string;
