@@ -520,6 +520,23 @@ async function runTests() {
     assert.doesNotMatch(prgPredictHtml, /Open in drill/);
     assert.doesNotMatch(prgPredictHtml, /SECRET_OUTPUT_3/);
 
+    const prgSkippedHtml = renderToStaticMarkup(
+      <DailyReviewView
+        items={sampleItems}
+        currentIndex={1}
+        currentProblem={{
+          ...prgPredictProblem,
+          state: { ...prgPredictProblem.state, skipped: true, score: 0 },
+        }}
+        currentOutcome={{
+          drillId: sampleItems[1].drillId, qid: "Q01", initialLevel: 3,
+          newLevel: 1, correct: false, skipped: true, hintsUsed: 0, dueDate: "2026-11-20",
+        }}
+      />
+    );
+    assert.match(prgSkippedHtml, /Show steps/, "B4: Skip unlocks the closed Steps panel");
+    assert.doesNotMatch(prgSkippedHtml, /Hide steps/);
+
     // 1i. End screen: count correct / total, moved up / down a level, next due date, link back to last drill
     const outcomes: Record<string, ReviewSessionItemOutcome> = {
       "DRL-MTH-T01-C04-U01-01/Q01": {

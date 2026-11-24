@@ -196,9 +196,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
-  const [showSolution, setShowSolution] = useState(() =>
-    hasSubstantiveAttempt(problem.state)
-  );
+  const autoOpenSolution = isReviewSession
+    ? problem.state.lastCheck?.verdict === "correct"
+    : hasSubstantiveAttempt(problem.state);
+  const [showSolution, setShowSolution] = useState(autoOpenSolution);
   const [revealedSolutionCode, setRevealedSolutionCode] = useState<string | undefined>(
     problem.solutionCode
   );
@@ -224,8 +225,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     enabled: !isKata,
   });
 
-  const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
-
   useEffect(() => {
     setUserCode(problem.state?.userCode || problem.starterCode || problem.codeSnippet || "");
     setTestReport(problem.state?.lastTestReport || null);
@@ -235,7 +234,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     setOpenExplain(false);
     setOpenReference(false);
     setShowHint(false);
-    setShowSolution(hasSubstantiveState);
+    setShowSolution(autoOpenSolution);
     setRevealedSolutionCode(problem.solutionCode);
   }, [
     problem.id,
@@ -244,7 +243,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.codeSnippet,
     problem.state?.lastTestReport,
     problem.solutionCode,
-    hasSubstantiveState,
+    autoOpenSolution,
   ]);
 
   const effectiveState = {
