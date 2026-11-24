@@ -20,8 +20,9 @@ A problem is **passed** only when all three layers agree:
 | 2. Lint & types | Measurable smells: see rule set below; TypeScript also `tsc --strict --noEmit` | ESLint, tsc | yes |
 | 3. Design review | What a tool cannot judge, against the archetype's rubric | Claude (`review-code` skill) | rubric-bound |
 
-Otherwise the verdict is **revise**: the learner fixes and resubmits, like a real pull request. Each submission is one
-attempt.
+For a lab milestone, the visible and hidden suites each need a complete passing report. A missing suite or a runner
+failure blocks the verdict, and hidden failures appear only in aggregate. When any layer fails, the verdict is
+**revise**. Each submission is one attempt.
 
 ## Layer 2 — lint rule set (one config, repo root)
 
