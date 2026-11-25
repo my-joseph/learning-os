@@ -50,6 +50,8 @@ const iconButtonVariants = cva(
       hitArea: {
         expanded: "expand-touch-target hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent data-[selected=true]:bg-surface-selected/60",
         padded: "max-sm:min-h-touch max-sm:min-w-touch [@media(any-pointer:coarse)]:min-h-touch [@media(any-pointer:coarse)]:min-w-touch outline-none before:absolute before:inset-0 before:m-auto before:rounded-md hover:before:bg-surface-hover-strong/70 dark:hover:before:bg-surface-hover-strong/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-accent data-[selected=true]:before:bg-surface-selected/60 [&>svg]:relative",
+        sidebarToggle: "size-touch rounded-lg transition-colors hover:bg-surface-selected/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none lg:size-control-sm dark:hover:bg-surface-selected/50",
+        sidebarAction: "mr-space-0_5 size-touch rounded-full opacity-visible transition-colors hover:text-foreground focus:outline-none before:absolute before:inset-space-2 before:rounded-full before:transition-colors hover:before:bg-surface-hover-strong/70 dark:hover:before:bg-surface-hover-strong/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-muted lg:size-control-xs lg:before:inset-space-0 lg:before:hidden lg:focus-visible:before:block lg:opacity-hidden lg:group-hover/leaf:opacity-visible lg:focus-visible:opacity-visible [&>svg]:relative",
       },
     },
     compoundVariants: [
@@ -84,7 +86,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
-    if (icon) return <button ref={ref} type={type ?? "button"} className={classes} {...props} />;
+    if (icon && icon.hitArea !== "sidebarToggle") {
+      return <button ref={ref} type={type ?? "button"} className={classes} {...props} />;
+    }
 
     return (
       <m.button

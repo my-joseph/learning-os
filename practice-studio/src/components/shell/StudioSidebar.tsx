@@ -8,7 +8,7 @@ import type { LabListItem } from "@/lib/labModel";
 import { Workspace } from "@/lib/routes";
 import { settle } from "@/lib/motion";
 import { cn } from "@/lib/cn";
-import { Button } from "@/components/ui/shadcn/Button";
+import { IconButton } from "@/components/ui/shadcn/Button";
 import {
   Tooltip,
   TooltipContent,
@@ -112,7 +112,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
   if (embedded) {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden bg-surface-panel">
-        <div className="min-h-[56px] shrink-0 px-3 pr-14 flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800">
+        <div className="min-h-space-14 shrink-0 px-space-3 pr-space-14 flex items-center justify-between border-b border-border/80 dark:border-border">
           <WorkspaceSwitch
             variant="sidebar"
             workspace={workspace}
@@ -122,7 +122,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             codeHref={codeHref}
           />
         </div>
-        <div className="shrink-0 pl-2.5 pr-3.5 pt-2.5">
+        <div className="shrink-0 pl-space-2_5 pr-space-3_5 pt-space-2_5">
           <StudioSearchTrigger shortcut={searchShortcut} onClick={onOpenSearch} />
         </div>
         <div className="flex-1 min-h-0 flex flex-col">
@@ -152,32 +152,34 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
       aria-label="Practice navigation"
       aria-hidden={!isOpen || undefined}
       initial={false}
-      animate={{ width: isOpen ? 287 : 0, opacity: isOpen ? 1 : 0 }}
+      animate={{
+        width: isOpen ? "var(--panel-left)" : "var(--space-0)",
+        opacity: isOpen ? "var(--opacity-visible)" : "var(--opacity-hidden)",
+      }}
       transition={settle}
       onAnimationComplete={() => {
         if (!isOpen) setSettledClosed(true);
       }}
       className={cn(
         "hidden lg:flex flex-col shrink-0 overflow-hidden bg-surface-panel motion-reduce:transition-none",
-        isOpen && "border-r border-zinc-200/80 dark:border-zinc-800",
+        isOpen && "border-r border-border/80 dark:border-border",
         !isOpen && "pointer-events-none select-none",
         settledClosed && !isOpen && "invisible"
       )}
     >
-      <div className="w-[287px] h-full flex flex-col">
+      <div className="w-panel-left h-full flex flex-col">
         {/* Top bar inside Left Sidebar: seamless top-to-tree flow (no horizontal border-b) */}
-        <div className="h-11 shrink-0 px-2.5 flex items-center justify-between gap-2">
+        <div className="h-touch shrink-0 px-space-2_5 flex items-center justify-between gap-space-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="iconSm"
+              <IconButton
+                tone="secondary"
+                hitArea="sidebarToggle"
                 onClick={onToggle}
                 aria-label="Collapse sidebar"
-                className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/50 shrink-0"
               >
-                <PanelLeft className="w-4 h-4" aria-hidden="true" />
-              </Button>
+                <PanelLeft className="size-space-4" aria-hidden="true" />
+              </IconButton>
             </TooltipTrigger>
             <TooltipContent side="bottom">Close sidebar</TooltipContent>
           </Tooltip>
@@ -193,7 +195,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
         </div>
 
         {/* Curriculum Tree body */}
-        <div className="shrink-0 pl-2.5 pr-3.5 pt-2.5">
+        <div className="shrink-0 pl-space-2_5 pr-space-3_5 pt-space-2_5">
           <StudioSearchTrigger shortcut={searchShortcut} onClick={onOpenSearch} />
         </div>
         <div className="flex-1 min-h-0 flex flex-col">

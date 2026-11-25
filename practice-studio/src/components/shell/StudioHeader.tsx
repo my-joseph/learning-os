@@ -15,7 +15,7 @@ import { statusTone } from "@/lib/statusTone";
 import { plainTitle } from "@/lib/titleText";
 import { EASE_OUT, quick } from "@/lib/motion";
 import { cn } from "@/lib/cn";
-import { Button } from "@/components/ui/shadcn/Button";
+import { Button, IconButton } from "@/components/ui/shadcn/Button";
 import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import {
   Tooltip,
@@ -93,15 +93,15 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
       <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="iconSm"
+            <IconButton
+              tone="secondary"
+              hitArea="sidebarToggle"
               onClick={onOpenSidebarDrawer}
               aria-label="Open navigation sidebar"
-              className="min-h-[44px] min-w-[44px] lg:hidden inline-flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
+              className="lg:hidden dark:hover:bg-surface-hover"
             >
-              <PanelLeft className="w-4 h-4" aria-hidden="true" />
-            </Button>
+              <PanelLeft className="size-space-4" aria-hidden="true" />
+            </IconButton>
           </TooltipTrigger>
           <TooltipContent side="bottom">Open sidebar</TooltipContent>
         </Tooltip>
@@ -121,15 +121,14 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="iconSm"
+                  <IconButton
+                    tone="secondary"
+                    hitArea="sidebarToggle"
                     onClick={onOpenDesktopSidebar}
                     aria-label="Expand sidebar"
-                    className="lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 shrink-0"
                   >
-                    <PanelLeft className="w-4 h-4" aria-hidden="true" />
-                  </Button>
+                    <PanelLeft className="size-space-4" aria-hidden="true" />
+                  </IconButton>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Open sidebar</TooltipContent>
               </Tooltip>
