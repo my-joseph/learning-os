@@ -10,6 +10,7 @@ Use this skill for Claude's worker delegation. The learner does not need a trigg
 ## 1. Prepare the job
 
 - Read the applicable rules and task-specific instructions. Make the spec the concatenation of `.claude/skills/dispatch-worker/common.md` and a job file.
+- UI jobs: read [design principles](../../../docs/design/principles.md) and the [reference gallery](../../../docs/design/references/README.md) first; build with shared components and their variants.
 - Write the job file and `.prompt` with a quoted heredoc (`<<'EOF'`) so backticks and shell substitutions remain literal. Include scope, acceptance criteria, verification, report expectations, and absolute paths for main-checkout-only `sources/` or `pilot/` data.
 - Keep each job to one concern. Split a spec that names multiple subsystems or more than about eight files to change into independent jobs; do not split tightly coupled work that cannot be reviewed or verified separately.
 - Put exact file paths and the relevant evidence with line numbers near the start of the job spec. Give enough existing behavior and code context for the worker to make the change without repeating repository exploration.
