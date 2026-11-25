@@ -32,7 +32,7 @@
 
   /* Focus can land on a leaf's button, but its visible surface is the whole row. */
   :is(button[data-sidebar-row]:focus-visible, [data-sidebar-row]:has(> [role="treeitem"]:focus-visible)) {
-    @apply ring-2 ring-inset ring-zinc-500 dark:ring-zinc-400;
+    @apply ring-2 ring-inset ring-muted;
   }
 
   [data-sidebar-tree] [role="treeitem"]:focus-visible [data-sidebar-row-code] {
@@ -76,6 +76,8 @@ html.light {
   --muted: 113 113 122;
   --foreground-control: 63 63 70;
   --foreground-menu: var(--foreground-control);
+  --foreground-faint: 161 161 170;
+  --foreground-section-hover: 39 39 42;
   --surface-hover-strong: var(--border-control);
   --foreground-subtle: 82 82 91;
   --border: 228 228 231;
@@ -120,6 +122,8 @@ html.dark,
   --muted: 161 161 170;
   --foreground-control: 212 212 216;
   --foreground-menu: 228 228 231;
+  --foreground-faint: 113 113 122;
+  --foreground-section-hover: var(--foreground-menu);
   --surface-hover-strong: 82 82 91;
   --foreground-subtle: 161 161 170;
   --border: 39 39 42;
@@ -192,12 +196,18 @@ html.dark,
   --control-xs: 28px;
   --control-sm: 32px;
   --control-md: 36px;
+  --tree-depth-3: calc(var(--space-4) + var(--space-2-5));
   --touch: 44px;
   --panel-left: 287px;
   --panel-right: 276px;
   --control-lg: 48px;
   --width-search: 671px;
   --height-search: 40rem;
+  --width-picker: 460px;
+  --height-picker: 72vh;
+  --width-picker-title-sm: 220px;
+  --width-picker-title-md: 300px;
+  --width-picker-title-lg: 360px;
   --width-practice: 720px;
   --text-2xs: 11px;
   --text-caption: 13px;

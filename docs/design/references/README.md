@@ -6,14 +6,14 @@ These references capture the learner's preferred interaction feel. Use them to u
 
 | Image | What it shows | What the learner wanted | Studio component / variant |
 | :--- | :--- | :--- | :--- |
-| [PRG sidebar chevron](prg-sidebar-chevron.png) | A muted collapsible section heading with a trailing chevron. | Keep section controls quiet; put the chevron after the label and make the whole heading reveal a tree. | `DrillSwitcher` — collapsible Labs / Drills section header. |
-| [PRG sidebar sections](prg-sidebar-sections.png) | Labs and Drills as sections in one sidebar list, with nested folders. | Use a tree, not a flat list; preserve a single scrolling surface with collapsible sections. | `DrillSwitcher` — Programming sidebar tree and section-header variant. |
+| [PRG sidebar chevron](prg-sidebar-chevron.png) | A muted collapsible section heading with a trailing chevron. | Keep section controls quiet; put the chevron after the label and make the whole heading reveal a tree. | `SectionHeader` — collapsible Labs and Drills headings. |
+| [PRG sidebar sections](prg-sidebar-sections.png) | Labs and Drills as sections in one sidebar list, with nested folders. | Use a tree, not a flat list; preserve a single scrolling surface with collapsible sections. | `ListRow` tree variant and `SectionHeader`. |
 | [Search row hover](search-row-hover.png) | The sidebar Search row with its shortcut hint visible in its hover state. | Make Search easy to find without leaving a permanent shortcut label in a quiet sidebar. | `StudioSearchTrigger` — sidebar row, default and hover/focus states. |
 | [Search palette](search-palette.png) | A command palette with type chips and grouped results. | Keep the palette compact and scannable, with tight chip spacing and a clear result hierarchy. | `StudioSearchPalette` — Dialog/cmdk palette and filter-chip variants. |
-| [Search row menu](search-row-menu.png) | A row-level ellipsis menu opened from a sidebar item. | Keep secondary actions out of the way until hover or focus, and attach them to the row they affect. | `DrillSwitcher` — drill leaf row and trailing `⋯` action-menu variant. |
+| [Search row menu](search-row-menu.png) | A row-level ellipsis menu opened from a sidebar item. | Keep secondary actions out of the way until hover or focus, and attach them to the row they affect. | `ListRow` tree leaf with a trailing `RowMenu`. |
 | [Approved Studio search palette](studio-search-palette-approved.png) | The approved Studio search palette in the light theme. | Keep the palette focused and readable while the rest of the interface recedes. | `StudioSearchPalette` — open, light-theme state. |
 | [Approved Studio search hover](studio-search-hover-approved.png) | The approved Studio sidebar with Search highlighted on hover. | Use a quiet row highlight and expose the shortcut only when the user is engaging with Search. | `StudioSearchTrigger` — hovered sidebar-row state. |
-| [Approved Studio row menu](studio-row-menu-approved.png) | The approved Studio sidebar with a drill's row menu open. | Reveal row actions in context without adding persistent toolbar clutter. | `DrillSwitcher` — hovered drill leaf with its action menu open. |
+| [Approved Studio row menu](studio-row-menu-approved.png) | The approved Studio sidebar with a drill's row menu open. | Reveal row actions in context without adding persistent toolbar clutter. | `ListRow` tree leaf with its `RowMenu` open. |
 
 ## Adding a reference
 

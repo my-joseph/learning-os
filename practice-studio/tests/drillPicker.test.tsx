@@ -398,7 +398,7 @@ assert.match(mathHtml, />U01</);
 assert.match(mathHtml, />U02</);
 assert.match(mathHtml, />Set 3</);
 assert.match(mathHtml, /Due today/);
-assert.match(mathHtml, /bg-indigo-600 dark:bg-indigo-400/);
+assert.match(mathHtml, /title="In progress"><span class="[^"]*\bbg-accent\b/);
 assert.ok(mathHtml.includes(statusTone.wrong.dot));
 // MTH-T01 starts collapsed so Fractions drills inside aren't expanded
 assert.match(mathHtml, /Prealgebra/);

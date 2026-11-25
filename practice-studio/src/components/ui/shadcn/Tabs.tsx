@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cva, type VariantProps } from "class-variance-authority";
+import { m } from "motion/react";
 import { cn } from "@/lib/cn";
+import { settle } from "@/lib/motion";
 
 export type TabsVariant = "default" | "underline";
 
@@ -13,6 +16,9 @@ const segmentedListVariants = cva("", {
       default: "inline-flex min-h-[44px] items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900",
       underline: "inline-flex items-center gap-1 rounded-none bg-transparent p-0",
       chips: "flex shrink-0 gap-space-0_5",
+      rail: "fixed left-space-3 top-1/2 z-sticky hidden -translate-y-1/2 grid-rows-2 items-center rounded-xl border border-border bg-surface-hover/95 p-space-1 shadow-ui-sm backdrop-blur-glass dark:bg-surface-hover/80 lg:grid",
+      header: "relative grid shrink-0 grid-cols-2 items-center rounded-lg border border-border bg-surface-hover p-space-0_5 dark:bg-surface-hover/80 lg:hidden",
+      sidebar: "relative grid shrink-0 grid-cols-2 rounded-lg bg-surface-selected/70 p-space-0_5 dark:bg-surface-raised/75 lg:p-space-0",
     },
   },
   defaultVariants: { variant: "default" },
@@ -86,6 +92,62 @@ export const TabsContent = React.forwardRef<
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
+type SegmentedNavVariant = "rail" | "header" | "sidebar";
+const SegmentedNavContext = React.createContext<SegmentedNavVariant>("sidebar");
+
+/** Two segments for navigation links, with a sliding indicator. */
+export function SegmentedNav({ variant, activeIndex, className, children, ...props }:
+  React.ComponentPropsWithoutRef<"nav"> & { variant: SegmentedNavVariant; activeIndex: 0 | 1 }
+) {
+  const rail = variant === "rail";
+  const offset = activeIndex === 1 ? "100%" : "0%";
+  return (
+    <SegmentedNavContext.Provider value={variant}>
+      <nav {...props} className={className ?? segmentedListVariants({ variant })}>
+        <m.span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute bg-surface-raised shadow-ui-sm",
+            rail
+              ? "left-space-1 right-space-1 top-space-1 h-[calc(50%-var(--space-1))] rounded-lg"
+              : "bottom-space-0_5 left-space-0_5 top-space-0_5 w-[calc(50%-var(--space-0-5))] rounded-md",
+            variant === "sidebar" && "dark:bg-surface-selected/80"
+          )}
+          initial={false}
+          animate={rail ? { y: offset } : { x: offset }}
+          transition={settle}
+        />
+        {children}
+      </nav>
+    </SegmentedNavContext.Provider>
+  );
+}
+
+const segmentedNavItemSize = {
+  rail: "size-control-sm rounded-lg",
+  header: "size-control-xs rounded-md sm:size-control-sm",
+  sidebar: "size-touch rounded-md focus-visible:ring-inset lg:size-control-sm",
+};
+
+export const SegmentedNavItem = React.forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof Slot> & { selected: boolean }
+>(({ selected, className, ...props }, ref) => {
+  const variant = React.useContext(SegmentedNavContext);
+  return (
+    <Slot
+      {...props}
+      ref={ref}
+      className={cn(
+        "relative z-local inline-flex items-center justify-center transition-colors duration-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-disabled",
+        segmentedNavItemSize[variant],
+        selected ? "text-foreground" : "text-muted hover:text-foreground dark:hover:text-foreground-menu",
+        className
+      )}
+    />
+  );
+});
+SegmentedNavItem.displayName = "SegmentedNavItem";
 
 type SegmentedChipsProps<T extends string> = VariantProps<typeof chipVariants> & {
   label: string;

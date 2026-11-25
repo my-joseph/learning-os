@@ -25,6 +25,8 @@ import {
   readSidebarSectionExpanded,
   writeSidebarSectionExpanded,
 } from "../src/components/shell/DrillSwitcher";
+import { ListRow } from "../src/components/ui/ListRow";
+import { SectionHeader } from "../src/components/ui/SectionHeader";
 import { WorkspaceSwitch } from "../src/components/workspace/WorkspaceSwitch";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
@@ -359,7 +361,7 @@ assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^
 //    status dot precedes any note/due icon so dots stay vertically aligned.
 assert.doesNotMatch(
   mathTreeHtml,
-  /<span class="w-3\.5 h-3\.5 shrink-0" aria-hidden="true"><\/span>/,
+  /<span class="size-space-3_5 shrink-0" aria-hidden="true"><\/span>/,
   "leaf rows without notes/due must not render an empty note slot"
 );
 // Set 3 (current, no notes, not due) renders StatusDot directly followed by label "Set 3"
@@ -371,8 +373,7 @@ assert.match(
 assert.match(mathTreeHtml, /<span class="sr-only">Needs retry<\/span>/);
 const noteBadgeClasses =
   mathTreeHtml.match(/<span class="([^"]*)" title="Has notes or mistake tags">/)?.[1] ?? "";
-assert.match(noteBadgeClasses, /w-3\.5/);
-assert.match(noteBadgeClasses, /h-3\.5/);
+assert.match(noteBadgeClasses, /size-space-3_5/);
 assert.doesNotMatch(noteBadgeClasses, /bg-/);
 
 // 3) All type icons (Sigma, Code2, FlaskConical, Shuffle) removed; only Layers kept on Topic rows
@@ -436,12 +437,6 @@ assert.doesNotMatch(sidebarTreeHtml, /border-l/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
 assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
-assert.match(sidebarTreeHtml, /h-11 w-11/);
-assert.match(sidebarTreeHtml, /lg:h-7 lg:w-7/);
-const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
-assert.match(sidebarActionSource, /data-menu-open=\{openActionNodeId === item\.id/);
-assert.match(sidebarActionSource, /isCurrent \|\| openActionNodeId === item\.id/);
-assert.match(sidebarActionSource, /<DrillRowActions/);
 const drillRowActionsSource = readFileSync("src/components/shell/DrillRowActions.tsx", "utf8");
 assert.match(drillRowActionsSource, /<RowMenuItem\b[\s\S]*?Copy ID/);
 assert.match(drillRowActionsSource, /<RowMenuItem\b[\s\S]*?Reset/);
@@ -455,7 +450,7 @@ assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
 const sidebarRows = [...sidebarTreeHtml.matchAll(/data-sidebar-row="([^"]+)"[^>]*class="([^"]+)"/g)];
 assert.ok(sidebarRows.length > 4, "sidebar renders folder and leaf surfaces");
 for (const [, row, classes] of sidebarRows) {
-  assert.match(classes, /\bh-8 rounded-md\b/, `${row} uses the shared 32 px surface and radius`);
+  assert.match(classes, /\bh-control-sm\b/, `${row} uses the shared 32 px surface and radius`);
   assert.doesNotMatch(classes, /focus-within:|ring-indigo/, `${row} has no pointer-focus ring`);
 }
 const sidebarCodes = [...sidebarTreeHtml.matchAll(/data-sidebar-row-code="true" aria-hidden="true" class="([^"]+)"[^>]*>([^<]+)/g)];
@@ -463,28 +458,61 @@ for (const code of ["MTH-T02", "C01", "U01", "U01-03", "U01-04"]) {
   assert.ok(sidebarCodes.some(([, , label]) => label === code), `sidebar has a row-owned badge for ${code}`);
 }
 assert.ok(sidebarCodes.every(([, classes]) => !classes.includes("group-hover")));
-assert.match(selectedLeafMarkup, /bg-zinc-200\/70/);
+assert.match(selectedLeafMarkup, /bg-surface-selected\/70/);
 assert.match(selectedLeafMarkup, /aria-current="true"/);
-assert.match(selectedLeafMarkup, /h-11 w-11/);
-assert.match(selectedLeafMarkup, /lg:h-7 lg:w-7/);
+assert.match(selectedLeafMarkup, /size-touch/);
+assert.match(selectedLeafMarkup, /lg:size-control-xs/);
 assert.match(
   selectedLeafMarkup,
   /<\/button><button[^>]*aria-label="Actions for DRL-MTH-T02-C01-U01-03"/,
   "drill selection and action targets are sibling buttons, never nested"
 );
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="topic"[^>]*class="[^"]*w-full h-8[^"]*px-1\.5/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="chapter"[^>]*class="[^"]*w-full h-8[^"]*pl-4/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="unit"[^>]*class="[^"]*w-full h-8[^"]*pl-\[26px\]/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"[^>]*class="[^"]*w-full[^\"]*h-8/);
-assert.match(sidebarTreeHtml, /pl-\[36px\]/, "deep drill contents indent independently of the full-width row");
-assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-3/, "sidebar branches keep a shared left edge");
+assert.match(sidebarTreeHtml, /data-sidebar-row="topic"[^>]*class="[^"]*pl-space-1_5/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="chapter"[^>]*class="[^"]*pl-space-4/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="unit"[^>]*class="[^"]*pl-tree-depth-3/);
+assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"[^>]*class="[^"]*h-control-sm w-full[^"]*"[^>]*><button[^>]*class="[^"]*pl-control-md/);
+assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-space-3/, "sidebar branches keep a shared left edge");
 assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
-assert.ok(
-  (sidebarTreeHtml.match(/h-8/g) ?? []).length >= 10,
-  "sidebar branch and leaf rows use fixed 32px classes"
-);
+
+const depthTokens = ["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"];
+for (const depth of [1, 2, 3, 4] as const) {
+  const row = renderToStaticMarkup(<ListRow variant="tree" treeDepth={depth} label="Curriculum row" />);
+  const classes = row.match(/class="([^"]+)"/)?.[1].split(" ") ?? [];
+  assert.deepEqual(classes.filter((name) => name.startsWith("pl-")), [depthTokens[depth - 1]]);
+  assert.ok(classes.includes("w-full") && classes.includes("h-control-sm") && classes.includes("rounded-md"));
+}
+
+const leafLayout = (selected: boolean, actionOpen: boolean) => {
+  const markup = renderToStaticMarkup(
+    <ListRow
+      variant="tree"
+      treeDepth={4}
+      selected={selected}
+      label="Drill"
+      treeLeaf={{ action: <button type="button">Actions</button>, actionOpen }}
+    />
+  );
+  if (actionOpen) assert.match(markup, /data-menu-open="true"/);
+  const [surface, button] = Array.from(markup.matchAll(/class="([^"]+)"/g), ([, classes]) => classes);
+  return {
+    surface: surface.split(" ").filter((name) => !name.includes("bg-")),
+    button: button.split(" ").filter((name) => !name.startsWith("text-foreground")),
+  };
+};
+const idleLeaf = leafLayout(false, false);
+assert.deepEqual(leafLayout(true, false), idleLeaf, "selection preserves the leaf box");
+assert.deepEqual(leafLayout(false, true), idleLeaf, "opening actions preserves the leaf box");
+
+const sectionClass = (expanded: boolean) => {
+  const html = renderToStaticMarkup(
+    <SectionHeader expanded={expanded} controls="labs-panel">Labs</SectionHeader>
+  );
+  assert.match(html, new RegExp(`aria-expanded="${expanded}" aria-controls="labs-panel"`));
+  assert.equal(html.includes("rotate-90"), expanded);
+  return html.match(/class="([^"]+)"/)?.[1];
+};
+assert.equal(sectionClass(true), sectionClass(false), "section header preserves its box when toggled");
 
 for (const workspace of ["math", "code"] as const) {
   const workspaceSwitchHtml = renderToStaticMarkup(
@@ -502,11 +530,11 @@ for (const workspace of ["math", "code"] as const) {
   const tabs = [...workspaceSwitchHtml.matchAll(/<a aria-label="(Math|Programming)"([^>]*)>/g)];
   assert.equal(tabs.length, 2);
   for (const [, name, attributes] of tabs) {
-    assert.match(attributes, /\bsize-11 lg:size-8\b/);
+    assert.match(attributes, /\bsize-touch\b.*\blg:size-control-sm\b/);
     assert.equal(attributes.includes('aria-current="page"'), name === (workspace === "math" ? "Math" : "Programming"));
   }
   const track = workspaceSwitchHtml.match(/<nav aria-label="Workspace" class="([^"]+)"/)?.[1];
-  assert.match(track ?? "", /grid-cols-2.*p-0\.5 lg:p-0/);
+  assert.match(track ?? "", /grid-cols-2.*p-space-0_5.*lg:p-space-0/);
   assert.match(track ?? "", /rounded-lg/);
   assert.doesNotMatch(track ?? "", /\b(?:min-h-|h-)/, "cell size and padding determine track height");
 }

@@ -13,6 +13,8 @@ const config: Config = {
       colors: {
         "foreground-control": "rgb(var(--foreground-control) / <alpha-value>)",
         "foreground-menu": "rgb(var(--foreground-menu) / <alpha-value>)",
+        "foreground-faint": "rgb(var(--foreground-faint) / <alpha-value>)",
+        "foreground-section-hover": "rgb(var(--foreground-section-hover) / <alpha-value>)",
         "surface-hover-strong": "rgb(var(--surface-hover-strong) / <alpha-value>)",
         "muted": "rgb(var(--muted) / <alpha-value>)",
         "foreground-subtle": "rgb(var(--foreground-subtle) / <alpha-value>)",
@@ -82,6 +84,7 @@ const config: Config = {
         "control-xs": "var(--control-xs)",
         "control-sm": "var(--control-sm)",
         "control-md": "var(--control-md)",
+        "tree-depth-3": "var(--tree-depth-3)",
         "touch": "var(--touch)",
         "panel-left": "var(--panel-left)",
         "panel-right": "var(--panel-right)",
@@ -94,10 +97,15 @@ const config: Config = {
       },
       maxHeight: {
         search: "min(var(--height-search), 100%)",
+        picker: "var(--height-picker)",
       },
       maxWidth: {
         "practice": "var(--width-practice)",
         "search": "var(--width-search)",
+        "picker": "var(--width-picker)",
+        "picker-title-sm": "var(--width-picker-title-sm)",
+        "picker-title-md": "var(--width-picker-title-md)",
+        "picker-title-lg": "var(--width-picker-title-lg)",
       },
       fontSize: {
         "2xs": "var(--text-2xs)",

@@ -23,6 +23,8 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--muted` | `colors.muted` | `113 113 122` | `161 161 170` | Legacy muted labels where that exact light/dark pair is needed. |
 | `--foreground-control` | `colors.foreground-control` | `63 63 70` | `212 212 216` | Neutral labels on sidebar controls. |
 | `--foreground-menu` | `colors.foreground-menu` | `var(--foreground-control)` | `228 228 231` | Menu action labels. |
+| `--foreground-faint` | `colors.foreground-faint` | `161 161 170` | `113 113 122` | Secondary tree glyphs and empty section labels. |
+| `--foreground-section-hover` | `colors.foreground-section-hover` | `39 39 42` | `var(--foreground-menu)` | Section header label on hover. |
 | `--foreground-subtle` | `colors.foreground-subtle` | `82 82 91` | `161 161 170` | Descriptions and supporting labels currently using zinc-600 and zinc-400. |
 | `--border` | `colors.border` | `228 228 231` | `39 39 42` | Hairline dividers and card framing. |
 | `--border-control` | `colors.border-control` | `212 212 216` | `63 63 70` | Form and outline-control borders. |
@@ -84,12 +86,18 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--control-xs` | `spacing.control-xs` | `28px` | `28px` | Compact filter chips and desktop search close control. |
 | `--control-sm` | `spacing.control-sm` | `32px` | `32px` | Sidebar rows and compact desktop controls. |
 | `--control-md` | `spacing.control-md` | `36px` | `36px` | Desktop action icons and roomy search result rows. |
+| `--tree-depth-3` | `spacing.tree-depth-3` | `calc(var(--space-4) + var(--space-2-5))` | `calc(var(--space-4) + var(--space-2-5))` | Content inset at the third depth of a tree row. |
 | `--touch` | `spacing.touch` | `44px` | `44px` | Minimum touch targets. |
 | `--panel-left` | `spacing.panel-left` | `287px` | `287px` | Open desktop navigation pane. |
 | `--panel-right` | `spacing.panel-right` | `276px` | `276px` | Open desktop review pane. |
 | `--control-lg` | `spacing.control-lg` | `48px` | `48px` | Large buttons. |
 | `--width-search` | `maxWidth.search` | `671px` | `671px` | Search palette maximum width. |
 | `--height-search` | `maxHeight.search` | `40rem` | `40rem` | Search palette maximum height, capped by the available space. |
+| `--width-picker` | `maxWidth.picker` | `460px` | `460px` | Drill picker dropdown maximum width. |
+| `--height-picker` | `maxHeight.picker` | `72vh` | `72vh` | Drill picker dropdown maximum height. |
+| `--width-picker-title-sm` | `maxWidth.picker-title-sm` | `220px` | `220px` | Base width limit for the drill picker trigger title. |
+| `--width-picker-title-md` | `maxWidth.picker-title-md` | `300px` | `300px` | Drill picker trigger title width limit from the `sm` breakpoint. |
+| `--width-picker-title-lg` | `maxWidth.picker-title-lg` | `360px` | `360px` | Drill picker trigger title width limit from the `md` breakpoint. |
 | `--width-practice` | `maxWidth.practice` | `720px` | `720px` | Centered practice and review canvas. |
 
 ### Type
@@ -267,12 +275,12 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
-| arbitrary utilities | 314 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
-| raw neutral text utilities | 1085 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| arbitrary utilities | 277 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
+| raw neutral text utilities | 973 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 50 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
 | other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
-| inline values | 397 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
+| inline values | 393 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
 | CSS literals | 23 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1881** | |
+| **Total** | **1728** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.

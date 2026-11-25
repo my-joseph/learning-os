@@ -51,14 +51,14 @@ export function DrillRowActions({
           <MoreHorizontal className="size-space-4" aria-hidden="true" />
         </IconButton>
       ) : (
-        <button
+        <IconButton
           {...triggerProps}
-          type="button"
+          tone="secondary"
+          hitArea="sidebarAction"
           title="More actions"
-          className="relative mr-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-500 opacity-100 transition-colors hover:text-zinc-900 focus:outline-none dark:text-zinc-400 dark:hover:text-zinc-100 before:content-[''] before:absolute before:inset-2 before:rounded-full before:transition-colors hover:before:bg-zinc-300/70 dark:hover:before:bg-zinc-600/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-zinc-500 dark:focus-visible:before:ring-zinc-400 lg:h-7 lg:w-7 lg:before:inset-0 lg:before:hidden lg:focus-visible:before:block lg:opacity-0 lg:group-hover/leaf:opacity-100 lg:focus-visible:opacity-100"
         >
-          <MoreHorizontal className="relative h-4 w-4" aria-hidden="true" />
-        </button>
+          <MoreHorizontal className="size-space-4" aria-hidden="true" />
+        </IconButton>
       )}
     </RowMenuTrigger>
   );
