@@ -25,7 +25,7 @@ Record sources, pinned SHA, and freshness in `context.md`.
 
 ## 3. Assess one area
 
-- Read `areas/<area>.md`. As coordinator, delegate bounded read-only assessments through `.claude/skills/dispatch-worker/SKILL.md`, pinned to `AUDIT_SHA`, using isolated worktrees, unique reports, and English output. If already in an isolated read-only worker or doing a focused single-area verification, inspect directly; do not spawn nested worktrees. Use Argon as an independent verifier when available, separate from the original assessor. Workers must not edit product files.
+- Read `areas/<area>.md`. As coordinator, delegate bounded read-only assessments through `.claude/skills/dispatch-worker/SKILL.md`, pinned to `AUDIT_SHA`, using isolated worktrees, unique reports, and English output. If already in an isolated read-only worker or doing a focused single-area verification, inspect directly; do not spawn nested worktrees. Use a different model from the original assessor as the independent verifier (Carbon for high-risk areas, Sol otherwise; Argon is retired). Workers must not edit product files.
 - Save `assessment.md` with current state, strengths worth preserving, exact `file:line` evidence, and relevant measurements (size, complexity, duplication, coverage, timings, or per-stage cost). Separate measured facts from hypotheses.
 
 ## 4. Verify findings and filter stale or deferred items
@@ -35,7 +35,7 @@ Record sources, pinned SHA, and freshness in `context.md`.
 
 ## 5. Propose the roadmap and stop for the learner
 
-- Write `roadmap.md` with phases as useful: quick wins/debt, structural improvements, and new or topic-gated capability. Each item states goal, exact evidence, measurable expected benefit, risk, size (`S`/`M`/`L`), model (`Luna`, `Hydrogen`, `Neon`, or `Argon` per dispatch-worker), dependencies (including open PRs touching the files), and a test-first plan. Refactors start with characterization tests and before/after measures.
+- Write `roadmap.md` with phases as useful: quick wins/debt, structural improvements, and new or topic-gated capability. Each item states goal, exact evidence, measurable expected benefit, risk, size (`S`/`M`/`L`), model (`Luna`, `Sol`, `Hydrogen`, `Neon`, or `Carbon` per dispatch-worker), dependencies (including open PRs touching the files), and a test-first plan. Refactors start with characterization tests and before/after measures.
 - List learner decisions, open-PR exclusions, and standing ON HOLD/deferred items separately; distinguish decisions needed now from standing decisions. Do not execute roadmap items before approval.
 - Give the learner a concise Thai summary of evidence, phases, trade-offs, and decisions needed. **Stop after read-only steps 1–5.** Continue to step 6 only with approved scope.
 
