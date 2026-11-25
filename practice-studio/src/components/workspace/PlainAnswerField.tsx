@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/shadcn/Input";
 import { cn } from "@/lib/cn";
 
 export const ANSWER_FIELD_CONTAINER_CLASS =
-  "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
+  "relative flex items-center min-h-[46px] sm:min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
 
 export interface InlineCheckButtonProps {
   onClick: () => void;
@@ -22,7 +22,7 @@ export const InlineCheckButton: React.FC<InlineCheckButtonProps> = ({
   isChecking,
   embedded = true,
 }) => {
-  const posCls = embedded ? "absolute right-1.5 top-1/2 -translate-y-1/2 " : "";
+  const posCls = embedded ? "absolute right-0 sm:right-1.5 top-1/2 -translate-y-1/2 " : "";
   return (
     <button
       type="button"
@@ -30,7 +30,7 @@ export const InlineCheckButton: React.FC<InlineCheckButtonProps> = ({
       disabled={disabled}
       aria-label="Check answer"
       title="Check (Enter)"
-      className={`${posCls}inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1`}
+      className={`${posCls}inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-8 sm:h-8 rounded-[11px] sm:rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1`}
     >
       {isChecking ? (
         <Loader2 className="w-4 h-4 animate-spin" />

@@ -81,7 +81,7 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                   disabled={btnDisabled}
                   onClick={() => onSetScore(btn.val)}
                   aria-pressed={score === btn.val}
-                  className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-0 px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                     score === btn.val
                       ? btn.activeCls
                       : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -106,7 +106,7 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                   disabled={disabled}
                   onClick={() => onToggleMistakeTag(t.id)}
                   aria-pressed={hasTag}
-                  className={`min-h-[44px] sm:min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-0 py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasTag
                       ? statusTone.wrong.selfScoreActive
                       : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"

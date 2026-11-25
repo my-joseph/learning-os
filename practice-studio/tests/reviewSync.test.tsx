@@ -373,7 +373,7 @@ setNotionDrillSyncSpawnerForTests(null);
 // State render coverage, zero-leak assertions, and PRG/lab variants.
 const idleHtml = render(mathDrill, { initialExpandedIds: ["Q01", "Q02", "Q03"] });
 assert.match(idleHtml, /Not synced yet/);
-assert.match(idleHtml, /Level 1/, "the question level remains a secondary row label");
+assert.doesNotMatch(idleHtml, /Level 1/, "Review & Sync row headers must hide Level N labels");
 assert.match(idleHtml, /Your answer:/);
 assert.match(idleHtml, /2\+16i/);
 assert.match(idleHtml, /Trap:.*Positive last term/);

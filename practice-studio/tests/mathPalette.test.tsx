@@ -441,6 +441,9 @@ async function main() {
   assert.doesNotMatch(focusRingHtml, /Math symbol palette/, "Expanded palette must live outside the focused field");
 
   assert.match(mathWorkspaceHtml, /class="space-y-2"/, "Field and toolbar row should use tight 8px spacing");
+  assert.match(mathToolbarHtml, /min-h-\[44px\] min-w-\[44px\][^"]*sm:h-7/, "Math/Plain mode buttons must keep >=44px mobile target height");
+  assert.match(mathToolbarHtml, /min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-7 sm:h-7/, "Quick palette keys must keep 44x44px mobile hit targets");
+  assert.match(openNoTrigHtml, /min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8/, "Expanded palette keys must keep 44x44px mobile hit targets");
 
   console.log("mathPalette tests passed");
 }

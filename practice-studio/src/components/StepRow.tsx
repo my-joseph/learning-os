@@ -65,7 +65,7 @@ export const StepRow: React.FC<StepRowProps> = ({
               e.stopPropagation();
               onMarkDiverged();
             }}
-            className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
+            className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
               isDiverged
                 ? `opacity-100 ${statusTone.wrong.border} ${statusTone.wrong.text} bg-surface-panel`
                 : `opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} ${statusTone.wrong.hoverBorderSoft}`

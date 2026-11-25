@@ -202,28 +202,30 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
       <div className="mx-auto w-full max-w-[720px] space-y-4">
         {/* Slim header row: one h1 ("Daily review"), progress "3 of 8", back link, theme toggle */}
-        <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-sm flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-3 min-w-0">
-            <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+        <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 sm:px-3.5 py-1.5 sm:py-2.5 shadow-sm flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-baseline gap-2 sm:gap-3 min-w-0">
+            <h1 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight whitespace-nowrap">
               Daily review
             </h1>
             {showProgressCounter && (
               <span
                 aria-label="Review progress"
-                className="text-sm font-display tabular-nums text-zinc-500 dark:text-zinc-400"
+                className="text-xs sm:text-sm font-display tabular-nums text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
               >
                 Review {currentIndex + 1} of {items.length}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <Link
               href={resolvedBackHref}
-              className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label="Back to drill"
+              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-8 px-2 sm:px-2.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap"
             >
-              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Back to drill</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="sm:hidden">Back</span>
+              <span className="hidden sm:inline">Back to drill</span>
             </Link>
 
             {onToggleTheme && (
@@ -349,7 +351,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                             <li key={`${missed.drillId}/${missed.qid}`}>
                               <Link
                                 href={`${missed.href}&review=missed`}
-                                className="flex items-start justify-between gap-3 px-3.5 py-2.5 text-xs hover:bg-zinc-100/80 dark:hover:bg-zinc-900 transition-colors"
+                                className="flex min-h-[44px] items-center justify-between gap-3 px-3.5 py-2.5 text-xs hover:bg-zinc-100/80 dark:hover:bg-zinc-900 transition-colors"
                               >
                                 <span className="min-w-0 whitespace-normal text-zinc-800 dark:text-zinc-200">
                                   <span className="block font-medium leading-snug">{missed.unitTitle}</span>
@@ -375,7 +377,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     <button
                       type="button"
                       onClick={onReviewMore}
-                      className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                      className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                     >
                       <span>
                         Review {Math.min(REVIEW_BATCH_SIZE, stillDueCount)} more
@@ -384,7 +386,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     </button>
                     <Link
                       href={resolvedBackHref}
-                      className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-3 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                       <span>Back to drill</span>
                     </Link>
@@ -392,7 +394,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 ) : (
                   <Link
                     href={resolvedBackHref}
-                    className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
                     <span>Back to drill</span>
                     <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
