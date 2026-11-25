@@ -3,14 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeftRight,
-  BookOpen,
   CalendarDays,
   ClipboardCheck,
-  FlaskConical,
-  NotebookPen,
+  Code2,
   Search,
+  Sigma,
 } from "lucide-react";
-import { Badge } from "@/components/ui/shadcn/Badge";
 import {
   Command,
   CommandGroup,
@@ -43,7 +41,7 @@ const types = [
   { value: "unit", label: "Units" },
 ] as const;
 
-const icons = { drill: NotebookPen, lab: FlaskConical, unit: BookOpen };
+const workspaceIcons = { math: Sigma, code: Code2 };
 
 export function useStudioSearchShortcut(onOpen: () => void) {
   const [isMac, setIsMac] = useState(false);
@@ -93,15 +91,18 @@ export function StudioSearchTrigger({
         "inline-flex shrink-0 items-center gap-2 rounded-md text-sm text-zinc-700 transition-colors hover:bg-zinc-200/50 focus-visible:outline-none motion-reduce:transition-none dark:text-zinc-300 dark:hover:bg-zinc-700/40",
         compact
           ? "size-11 justify-center focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 lg:size-8"
-          : "h-8 w-full px-1.5 text-left",
+          : "group/search h-8 w-full px-1.5 text-left",
         className
       )}
     >
       <Search aria-hidden="true" className="size-4 shrink-0" />
       {!compact && (
         <>
-          <span className="flex-1">Search</span>
-          <kbd aria-hidden="true" className="font-sans text-xs text-zinc-600 dark:text-zinc-400">
+          <span>Search</span>
+          <kbd
+            aria-hidden="true"
+            className="ml-auto shrink-0 font-sans text-xs text-zinc-600 opacity-0 group-focus-visible/search:opacity-100 [@media(hover:hover)]:group-hover/search:opacity-100 dark:text-zinc-400"
+          >
             {shortcut}
           </kbd>
         </>
@@ -140,14 +141,6 @@ interface StudioSearchPaletteProps {
   switchHref: string | null;
   onReviewSync?: () => void;
   onNavigate: (href: string) => void;
-}
-
-function EnterHint() {
-  return (
-    <kbd aria-hidden="true" className="invisible ml-auto shrink-0 font-sans text-xs text-zinc-600 group-data-[selected=true]:visible dark:text-zinc-400">
-      ↵
-    </kbd>
-  );
 }
 
 function SearchResults({
@@ -238,22 +231,11 @@ function SearchResults({
   };
 
   const renderEntry = (entry: SearchEntry) => {
-    const Icon = icons[entry.kind];
+    const Icon = workspaceIcons[entry.workspace];
     return (
       <CommandItem key={entry.id} value={entry.id} onSelect={() => navigate(entry.href)}>
         <Icon aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{entry.title}</span>
-          <span className="block truncate font-display text-xs text-zinc-600 dark:text-zinc-400">
-            {entry.context}
-          </span>
-        </span>
-        {entry.workspace !== workspace && (
-          <Badge variant="outline" className="shrink-0 text-zinc-600 dark:text-zinc-300">
-            {searchWorkspaceLabel[entry.workspace]}
-          </Badge>
-        )}
-        <EnterHint />
+        <span className="min-w-0 flex-1 truncate font-medium">{entry.title}</span>
       </CommandItem>
     );
   };
@@ -281,7 +263,7 @@ function SearchResults({
         selectType(types[(index + delta + types.length) % types.length].value);
       }}
     >
-      <div className="flex min-h-12 shrink-0 items-center gap-3 pl-4 pr-16">
+      <div className="flex min-h-12 shrink-0 items-center gap-3 pl-4 pr-12">
         <Search aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
         <CommandInput
           ref={inputRef}
@@ -294,7 +276,7 @@ function SearchResults({
           }}
         />
       </div>
-      <div role="group" aria-label="Result type" className="flex shrink-0 gap-1 border-b border-zinc-200 px-3 pb-2 dark:border-zinc-800 sm:gap-2">
+      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-3 pb-2 dark:border-zinc-800">
         {types.map(({ value, label }) => (
           <button
             key={value}
@@ -304,7 +286,7 @@ function SearchResults({
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") event.stopPropagation();
             }}
-            className="min-h-11 rounded-md px-3 text-sm text-zinc-600 transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium aria-pressed:text-zinc-900 motion-reduce:transition-none dark:text-zinc-400 dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70 dark:aria-pressed:text-zinc-100 sm:min-h-8"
+            className="h-7 rounded-md px-2 text-sm text-zinc-600 transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium aria-pressed:text-zinc-900 motion-reduce:transition-none dark:text-zinc-400 dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70 dark:aria-pressed:text-zinc-100"
           >
             {label}
           </button>
@@ -325,7 +307,6 @@ function SearchResults({
               <CommandItem key={id} value={id} onSelect={run}>
                 <Icon aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
                 {title}
-                <EnterHint />
               </CommandItem>
             ))}
           </CommandGroup>
@@ -365,7 +346,9 @@ export function StudioSearchPalette({ open, onClose, onCloseAutoFocus, ...props 
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent
         position="top"
-        className="flex max-h-[min(40rem,100%)] max-w-xl flex-col overflow-hidden bg-white p-0 dark:bg-background [&>button]:right-2 [&>button]:top-0.5"
+        className="flex max-h-[min(40rem,100%)] max-w-xl flex-col overflow-hidden bg-white p-0 dark:bg-background"
+        closeButtonClassName="right-2 top-2.5 min-h-7 min-w-7"
+        overlayClassName="bg-black/25 dark:bg-black/40"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogTitle className="sr-only">Search Practice Studio</DialogTitle>
