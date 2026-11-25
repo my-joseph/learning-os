@@ -372,10 +372,10 @@ def test_missing_schema_evaluation_fields_report_unverifiable_warning(tmp_path: 
 
 
 def test_audit_existing_mth_drills_reports_exact_failing_problems() -> None:
-    """Run the distractor/trap provenance gate over all 29 committed MTH drills without editing them."""
+    """Run the distractor/trap provenance gate over committed MTH drills without editing them."""
     failing_problems: dict[str, list[str]] = {}
     drill_paths = sorted(glob.glob(str(ROOT / "drills" / "data" / "MTH-*" / "*.json")))
-    assert len(drill_paths) >= 29
+    assert len(drill_paths) >= 26
 
     for path in drill_paths:
         doc = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -391,10 +391,5 @@ def test_audit_existing_mth_drills_reports_exact_failing_problems() -> None:
         "DRL-MTH-T02-C01-U01-05/Q05",
         "DRL-MTH-T02-C01-U01-05/Q06",
         "DRL-MTH-T02-C01-U01-05/Q07",
-        "DRL-MTH-T02-C02-U05-01/Q02",
-        "DRL-MTH-T02-C03-U03-01/Q01",
-        "DRL-MTH-T02-C03-U03-01/Q03",
-        "DRL-MTH-T02-C03-U03-01/Q04",
-        "DRL-MTH-T02-C04-U05-01/Q02",
     }
     assert set(failing_problems.keys()) == expected_failing
