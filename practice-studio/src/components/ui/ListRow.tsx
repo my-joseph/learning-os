@@ -4,7 +4,7 @@ import * as React from "react";
 import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
-import { HoverCard, HoverCardContent, HoverCardRowTrigger } from "./shadcn/HoverCard";
+import { HoverCard, HoverCardContent, HoverCardRowTrigger, useWarmHoverCard } from "./shadcn/HoverCard";
 
 const rowVariants = cva(
   "items-center rounded-md data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-disabled aria-busy:pointer-events-none aria-busy:opacity-disabled",
@@ -157,7 +157,7 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
       );
       if (!preview) return surface;
       return (
-        <HoverCard openDelay={500} closeDelay={100}>
+        <WarmHoverCard>
           {surface}
           {!actionOpen && (
             <HoverCardContent
@@ -171,7 +171,7 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
               {preview}
             </HoverCardContent>
           )}
-        </HoverCard>
+        </WarmHoverCard>
       );
     }
 
@@ -187,3 +187,13 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
   }
 );
 ListRow.displayName = "ListRow";
+
+/** Sidebar tree hover card: 500 ms for the first card, then instant while sweeping (useWarmHoverCard). */
+function WarmHoverCard({ children }: { children: React.ReactNode }) {
+  const { openDelay, onOpenChange } = useWarmHoverCard(500);
+  return (
+    <HoverCard openDelay={openDelay} closeDelay={100} onOpenChange={onOpenChange}>
+      {children}
+    </HoverCard>
+  );
+}

@@ -423,7 +423,7 @@ assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"].size-touch'));
 assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"]')?.classList.contains("lg:size-control-xs"));
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
 assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-space-3/, "sidebar branches keep a shared left edge");
-assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
+assert.doesNotMatch(sidebarTreeHtml, /tabular-nums[^>]*>2<\/span>/, "sidebar tree rows show no child counts");
 
 const depthTokens = ["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"];
 for (const depth of [1, 2, 3, 4] as const) {

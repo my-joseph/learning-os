@@ -829,7 +829,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           className={kind === "topic" ? "text-foreground" : undefined}
           leading={leading}
           label={label}
-          trailing={trailing}
           treeRow={{
             ...sidebarRowDetails(nodeId, code, label),
             surfaceProps: { "data-sidebar-row": kind },
