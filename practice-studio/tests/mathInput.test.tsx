@@ -253,7 +253,7 @@ const mathEntryHtml = renderToStaticMarkup(
 assert.match(mathEntryHtml, />Plain text</, "Supported math entry should expose Plain text toggle");
 assert.match(
   mathEntryHtml,
-  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 
 const unsupportedFallbackHtml = renderToStaticMarkup(
@@ -279,7 +279,7 @@ assert.match(
 );
 assert.match(
   unsupportedFallbackHtml,
-  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(
   unsupportedFallbackHtml,

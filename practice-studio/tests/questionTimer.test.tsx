@@ -39,6 +39,7 @@ assert.match(runningHtml, /text-zinc-500/);
 assert.match(runningHtml, />01:15</);
 assert.match(runningHtml, /Total 03:15/);
 assert.match(runningHtml, /aria-label="Pause timer"/);
+assert.match(runningHtml, /min-h-\[44px\][^"]*min-w-\[44px\][^"]*sm:w-6 sm:h-6/, "Pause timer must keep a 44x44px mobile hit target");
 assert.match(runningHtml, /aria-pressed="false"/);
 assert.match(runningHtml, /lucide-pause/);
 assert.doesNotMatch(runningHtml, />Paused</);

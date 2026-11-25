@@ -460,7 +460,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                       </code>
                       <CopyButton
                         text={problem.plainText}
-                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 bg-surface-panel transition-colors shrink-0"
+                        className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 bg-surface-panel transition-colors shrink-0"
                         copiedContent={
                           <>
                             <Check className="w-3.5 h-3.5" />

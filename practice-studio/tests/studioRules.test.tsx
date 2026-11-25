@@ -452,7 +452,11 @@ assert.match(
 assert.match(codeInitialHtml, /Open in VS Code/);
 assert.match(codeInitialHtml, /Run checks/);
 assert.doesNotMatch(codeInitialHtml, /Open in Cursor/);
-assert.match(codeInitialHtml, /title="Level 1"[^>]*>Level 1<\/span>/);
+assert.doesNotMatch(
+  codeInitialHtml,
+  /Level 1/,
+  "PRG/Lab problem header must not show Level N (matches Math drills)"
+);
 assert.match(codeInitialHtml, /Unlocks after review passes/);
 assert.match(codeInitialHtml, /\(not requested\)/);
 
@@ -544,7 +548,7 @@ assert.match(beforeAttemptHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear E
 assert.match(beforeAttemptHtml, /class="text-base leading-relaxed[^"]*">[^]*Solve/);
 assert.match(
   beforeAttemptHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(beforeAttemptHtml, />Check<\/span>/);
 
@@ -577,7 +581,7 @@ assert.match(inBrowserCodeHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Output P
 assert.match(inBrowserCodeHtml, /class="text-base leading-relaxed[^"]*"/);
 assert.match(
   inBrowserCodeHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(inBrowserCodeHtml, />Check<\/span>/);
 
@@ -693,7 +697,7 @@ assert.match(codeGenerateHtml, />Level 5<\/option>/);
 // no CAS copy row on choice questions (their plain text is only the prompt).
 const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
 const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8");
-assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-700\/70/);
+assert.match(mathPaletteSrc, /justify-center min-h-\[44px\] min-w-\[44px\] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-8 sm:h-8 rounded-lg bg-white dark:bg-zinc-700\/70/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
 assert.match(mathItemView, /problem\.plainText && !isChoice/);

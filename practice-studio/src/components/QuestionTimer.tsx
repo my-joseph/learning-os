@@ -77,7 +77,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
             onClick={onTogglePause}
             aria-label={pauseActionLabel}
             aria-pressed={isPaused}
-            className={`inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60 ${
+            className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 -my-2.5 -mr-2.5 sm:min-h-0 sm:min-w-0 sm:w-6 sm:h-6 sm:my-0 sm:mr-0 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60 ${
               isPaused
                 ? `${warningTone.text} hover:bg-zinc-100 dark:hover:bg-zinc-800`
                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"

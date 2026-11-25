@@ -356,11 +356,8 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
               <span className="font-display text-xs font-semibold tabular-nums text-zinc-900 dark:text-zinc-100 shrink-0">
                 {qLabel}
               </span>
-              <span className="min-w-0 flex items-center gap-2 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                <span className="truncate"><FormattedText text={title} /></span>
-                <span className="shrink-0 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                  {problem.levelLabel || `Level ${problem.level}`}
-                </span>
+              <span className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                <FormattedText text={title} />
               </span>
             </div>
 

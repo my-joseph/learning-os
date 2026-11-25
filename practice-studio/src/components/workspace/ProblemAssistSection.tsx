@@ -88,12 +88,12 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
 }) => {
   const canShowHint = Boolean(problem.hasHint || hasCheckpointHint(problem.checkpointHint));
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+    <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-0 sm:gap-y-2 pt-1">
       {hasAttempt && (
         <button
           type="button"
           onClick={onReset}
-          className="order-1 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+          className="order-1 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
         >
           <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Reset</span>
@@ -117,7 +117,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                     ? "Opening before checking counts as assisted"
                     : undefined
                 }
-                className="order-2 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                className="order-2 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
               >
                 <ChevronDown
                   aria-hidden="true"
@@ -148,7 +148,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="order-3 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              className="order-3 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
             >
               <ChevronDown
                 aria-hidden="true"
@@ -188,7 +188,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                   ? "Opening before checking counts as assisted"
                   : undefined
               }
-              className="order-4 inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              className="order-4 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
             >
               <ChevronDown
                 aria-hidden="true"
@@ -250,7 +250,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
         <button
           type="button"
           onClick={onSkip}
-          className="order-5 inline-flex min-h-[44px] sm:min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
+          className="order-5 inline-flex min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-0 items-center justify-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
         >
           <span>{skipLabel}</span>
         </button>

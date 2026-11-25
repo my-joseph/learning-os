@@ -170,7 +170,9 @@ async function runTests() {
         onNextItem={() => {}}
       />
     );
-    assert.match(activeHtml, /<h1[^>]*>Daily review<\/h1>/);
+    assert.match(activeHtml, /<h1[^>]*whitespace-nowrap[^>]*>Daily review<\/h1>/);
+    assert.match(activeHtml, /aria-label="Review progress"[^>]*whitespace-nowrap[^>]*>Review 1 of 3/);
+    assert.match(activeHtml, /aria-label="Back to drill"[^>]*min-h-\[44px\] min-w-\[44px\]/);
     assert.equal(
       (activeHtml.match(/<h1\b/g) || []).length,
       1,

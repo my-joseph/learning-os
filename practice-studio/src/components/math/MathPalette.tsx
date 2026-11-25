@@ -58,7 +58,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             type="button"
             onClick={() => onModeChange("math")}
             aria-pressed={inputMode === "math"}
-            className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-md h-7 min-h-[32px] sm:min-h-0 px-2.5 text-xs font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
+            className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-7 px-2.5 text-xs font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
               inputMode === "math"
                 ? "text-zinc-900 dark:text-zinc-100"
                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -71,7 +71,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             type="button"
             onClick={() => onModeChange("plain")}
             aria-pressed={inputMode === "plain"}
-            className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-md h-7 min-h-[32px] sm:min-h-0 px-2.5 text-xs font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
+            className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-7 px-2.5 text-xs font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${
               inputMode === "plain"
                 ? "text-zinc-900 dark:text-zinc-100"
                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -100,7 +100,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                     title={key.label}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => onInsertLatex(key.insertLatex)}
-                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-7 sm:h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
                   >
                     <MathKeyIcon
                       iconId={key.iconId}
@@ -127,7 +127,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                   aria-pressed={panelOpen}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={onTogglePanel}
-                  className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40 ${
+                  className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-7 sm:h-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40 ${
                     panelOpen
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -168,7 +168,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                           aria-label={key.label}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => onInsertLatex(key.insertLatex)}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white dark:bg-zinc-700/70 border border-zinc-200 dark:border-zinc-600/70 shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-800 dark:text-zinc-100 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
+                          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-8 sm:h-8 rounded-lg bg-white dark:bg-zinc-700/70 border border-zinc-200 dark:border-zinc-600/70 shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-800 dark:text-zinc-100 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
                         >
                           <MathKeyIcon
                             iconId={key.iconId}

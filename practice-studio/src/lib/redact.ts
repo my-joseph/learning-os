@@ -131,8 +131,8 @@ const DEFAULT_MATH_PLACEHOLDER_BY_TYPE: Record<string, string> = {
   interval: "Enter interval, e.g. [a, b) or (-inf, a) U (a, inf)...",
 };
 
-const DEFAULT_MATH_PLACEHOLDER = "Enter final answer (press Enter to check)...";
-const DEFAULT_CODE_PLACEHOLDER = "Enter predicted terminal output (press Enter to check)...";
+const DEFAULT_MATH_PLACEHOLDER = "Enter your answer…";
+const DEFAULT_CODE_PLACEHOLDER = "Enter predicted output…";
 
 /**
  * Unlock rule for math/code step-by-step derivations (`steps`, `answerDisplay`, `answerPlain`):

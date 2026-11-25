@@ -93,8 +93,8 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
             onClick={() => onSelect(opt.id)}
             className={
               layout === "stack"
-                ? `w-full text-left p-3.5 rounded-xl border transition-colors flex items-center justify-between gap-3 ${buttonCls} ${disabledCls}`
-                : `min-h-[40px] px-3.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center gap-2 ${buttonCls} ${disabledCls}`
+                ? `w-full min-h-[44px] text-left p-3.5 rounded-xl border transition-colors flex items-center justify-between gap-3 ${buttonCls} ${disabledCls}`
+                : `min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-0 px-3.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center gap-2 ${buttonCls} ${disabledCls}`
             }
           >
             <div className="flex items-center gap-2.5 min-w-0 flex-1">

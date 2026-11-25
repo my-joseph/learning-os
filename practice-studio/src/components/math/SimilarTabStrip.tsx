@@ -296,7 +296,7 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
               type="button"
               onClick={onRetryList}
               disabled={loadingList}
-              className="inline-flex items-center gap-1 shrink-0 min-h-[32px] sm:min-h-0 px-1.5 py-0.5 rounded font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1 shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 px-2 sm:px-1.5 py-0.5 rounded font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3 h-3 ${loadingList ? "animate-spin" : ""}`}

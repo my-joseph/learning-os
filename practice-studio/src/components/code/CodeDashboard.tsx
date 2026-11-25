@@ -118,7 +118,7 @@ const DEFAULT_EXPLAIN_QUESTION =
 
 const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
   if (problem?.placeholder) return problem.placeholder;
-  return hint || "Enter predicted terminal output (press Enter to check)...";
+  return hint || "Enter predicted output…";
 };
 
 function formatReviewDate(iso?: string): string {
@@ -524,24 +524,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   )}
                 </>
               ) : (
-                <>
-                  <span className="font-display tabular-nums">
-                    {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
-                    {typeof totalQuestions === "number" && totalQuestions > 0
-                      ? isLab
-                        ? ` (${index + 1} of ${totalQuestions})`
-                        : ` of ${totalQuestions}`
-                      : ""}
-                  </span>
-                  {typeof problem.level === "number" && problem.level > 0 && (
-                    <span
-                      className="font-display tabular-nums"
-                      title={problem.levelLabel?.trim() || undefined}
-                    >
-                      Level {problem.level}
-                    </span>
-                  )}
-                </>
+                <span className="font-display tabular-nums">
+                  {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
+                  {typeof totalQuestions === "number" && totalQuestions > 0
+                    ? isLab
+                      ? ` (${index + 1} of ${totalQuestions})`
+                      : ` of ${totalQuestions}`
+                    : ""}
+                </span>
               )}
               {problem.entryPoint && (
                 isLab ? (
@@ -649,10 +639,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onOpenChange={handleHintOpenChange}
               className="space-y-3"
             >
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-2">
                 <Link
                   href={openInDrillHref}
-                  className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                 >
                   <span>Open in drill</span>
                   <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -662,7 +652,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                     >
                       <ChevronDown
                         aria-hidden="true"
@@ -677,7 +667,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onSkip()}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
+                    className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-0 items-center justify-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
                   >
                     <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
                   </button>
@@ -847,12 +837,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onOpenChange={handleHintOpenChange}
               className="space-y-2.5"
             >
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-2">
                 {primaryAction.kind === "open_vscode" && (
                   <a
                     href={vscodeFolderUrl || "#"}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -861,7 +851,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {primaryAction.kind === "copy_review" && (
                   <CopyButton
                     text={reviewRequestText}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                     timeoutMs={1500}
                     copiedContent={
                       <>
@@ -881,7 +871,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={handleNextProblem}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
                     <span>{isLab ? "Next milestone" : "Next problem"}</span>
                     <ChevronRight className="w-4 h-4" />
@@ -893,7 +883,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={handleRunChecks}
                   disabled={isRunningChecks}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center justify-center sm:justify-start gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
                 >
                   {isRunningChecks ? (
                     <>
@@ -909,7 +899,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={vscodeFolderUrl}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -918,7 +908,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {vscodeUrl && problem.mainFile && (
                   <a
                     href={vscodeUrl}
-                    className="inline-flex items-center gap-1 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open {problem.mainFile}</span>
                   </a>
@@ -928,7 +918,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                     >
                       <ChevronDown
                         aria-hidden="true"
