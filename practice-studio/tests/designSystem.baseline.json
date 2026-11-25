@@ -1,0 +1,11 @@
+{
+  "total": 1906,
+  "counts": {
+    "arbitrary utilities": 315,
+    "raw neutral text utilities": 1109,
+    "raw hex colours": 50,
+    "other raw colours": 12,
+    "inline values": 397,
+    "CSS literals": 23
+  }
+}

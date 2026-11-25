@@ -1,6 +1,6 @@
 # Practice Studio UX assessment playbook
 
-Before assessing or proposing a Studio UI change, read [design principles](../../../docs/design/principles.md) and the [reference gallery](../../../docs/design/references/README.md). Treat them as behavior and feel guidance; each surface has a different job.
+Before assessing or proposing a Studio UI change, read [design principles](../../../../docs/design/principles.md) and the [reference gallery](../../../../docs/design/references/README.md). Use the [design tokens](../../../../docs/design/system.md) and [component catalog](../../../../docs/design/components.md) to evaluate shared roles and variants.
 
 Assess one Studio journey at a time against `docs/studio_design.md`. Use pilot/mock data only (`LEARNINGOS_PILOT=1`); never show learner progress in screenshots and never write to Notion.
 

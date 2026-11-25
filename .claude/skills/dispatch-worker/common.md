@@ -6,7 +6,7 @@
 - Put exact file paths and evidence with line numbers near the start of every job spec so the worker can act without re-exploring the repository.
 - Every spec lists concrete acceptance criteria and the exact tests to add or run.
 - For UI or flow features, specify expected screens and states, including loading, empty, error, and success states where relevant.
-- UI jobs: read `docs/design/principles.md` and the reference gallery first; build with shared components and their variants.
+- UI jobs: read `docs/design/principles.md` and the reference gallery first; follow [design tokens](../../../docs/design/system.md) and [component governance](../../../docs/design/components.md).
 - Route each sub-slice to the lightest model capable of meeting its acceptance criteria; narrow the scope when choosing a lighter model.
 
 - Work only on the assigned branch; never commit or push on `main`; never use `--no-verify`.

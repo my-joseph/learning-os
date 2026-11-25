@@ -11,7 +11,7 @@ license: Complete terms in LICENSE.txt
 LearningOS adds this guard and the Self-review section; the original guidance below remains intact. `docs/studio_design.md`, `practice-studio/src/lib/statusTone.ts`, `rules/00_core.md` §5, and `docs/agent_handoff.md` ALWAYS take precedence over generic color or font invention.
 
 - **Locked fonts:** Geist / Geist Fallback (`font-sans`), Roboto Slab (`font-display`), Geist Mono (`font-mono`, code only), and KaTeX (math). Never introduce font families without learner approval.
-- **Locked colors:** use existing neutral `zinc`, accent `indigo`, `statusTone` for answer status, and `warningTone` for operational warnings only. Never use amber/yellow for answer status or add colors without learner approval.
+- **Locked colors:** use the [design tokens](../../../docs/design/system.md) and [component catalog](../../../docs/design/components.md) for shared variants, `statusTone` for answer status, and `warningTone` for operational warnings only. Never use amber/yellow for answer status or add colors without learner approval.
 - **Locked Studio invariants:** 100% English UI, Lucide icons only (zero emojis), 44 px mobile touch targets, one filled primary action per screen/state, zero-leak, and `prefers-reduced-motion`.
 - **Consistency over redesign:** during shadcn/ui migration or UI polish, use this skill for hierarchy, spacing rhythm, alignment, focus/keyboard polish, and micro-interactions—not unsolicited visual redesigns.
 
