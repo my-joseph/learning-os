@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { JSDOM } from "jsdom";
 import React, { act, useState } from "react";
 
-test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", async () => {
+test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", async (t) => {
   const { window } = new JSDOM("<div id='root'></div>", {
     url: "http://localhost/",
     pretendToBeVisual: true,
@@ -108,10 +108,13 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
 
   const root = createRoot(window.document.getElementById("root")!);
   const press = async (target: EventTarget, key: string, options: KeyboardEventInit = {}) => {
+    const event = new window.KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...options });
     await act(async () => {
-      target.dispatchEvent(new window.KeyboardEvent("keydown", { key, bubbles: true, ...options }));
+      target.dispatchEvent(event);
     });
+    return event.defaultPrevented;
   };
+  const activeType = () => window.document.querySelector("button[aria-pressed=true]")?.textContent;
 
   try {
     await act(async () => root.render(<Harness />));
@@ -121,17 +124,52 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
     const list = window.document.querySelector("[role=listbox]")!;
     assert.match(list.textContent ?? "", /Needs attention.*Array Utilities.*Recents.*Array Utilities Lab.*Actions.*Daily review/);
 
-    await press(input, "ArrowRight");
-    await press(input, "ArrowRight");
-    assert.equal(
-      window.document.querySelector("button[aria-pressed=true]")?.textContent,
-      "Labs"
-    );
+    await t.test("Search dialog is anchored to the top on phones and desktop", () => {
+      const position = input.closest("[role=dialog]")?.parentElement?.classList;
+      assert.ok(position?.contains("items-start"));
+      assert.ok(position.contains("pt-[max(1rem,env(safe-area-inset-top))]"));
+      assert.ok(position.contains("lg:pt-[max(12dvh,env(safe-area-inset-top))]"));
+      assert.equal(position.contains("items-center"), false);
+    });
+
+    await t.test("Horizontal arrows cycle types when the input is empty", async () => {
+      assert.equal(await press(input, "ArrowLeft"), true);
+      assert.equal(activeType(), "Units");
+      assert.equal(await press(input, "ArrowRight"), true);
+      assert.equal(activeType(), "All");
+      await press(input, "ArrowRight");
+      await press(input, "ArrowRight");
+      assert.equal(activeType(), "Labs");
+    });
+
     await act(async () => {
       const setValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
       setValue.call(input, "arry utl lab");
       input.dispatchEvent(new window.Event("input", { bubbles: true }));
     });
+
+    await t.test("A nonempty query keeps native editing until the matching caret edge", async () => {
+      const end = input.value.length;
+      input.setSelectionRange(2, 2);
+      assert.equal(await press(input, "ArrowLeft"), false);
+      assert.equal(await press(input, "ArrowRight"), false);
+      input.setSelectionRange(0, end);
+      assert.equal(await press(input, "ArrowLeft"), false);
+      assert.equal(await press(input, "ArrowRight"), false);
+      assert.equal(activeType(), "Labs");
+
+      input.setSelectionRange(0, 0);
+      assert.equal(await press(input, "ArrowRight"), false);
+      assert.equal(await press(input, "ArrowLeft", { shiftKey: true }), false);
+      assert.equal(await press(input, "ArrowLeft"), true);
+      assert.equal(activeType(), "Drills");
+
+      input.setSelectionRange(end, end);
+      assert.equal(await press(input, "ArrowLeft"), false);
+      assert.equal(await press(input, "ArrowRight"), true);
+      assert.equal(activeType(), "Labs");
+    });
+
     assert.equal(list.querySelectorAll("[role=option]").length, 1);
     assert.match(list.querySelector("[aria-selected=true]")?.textContent ?? "", /Array Utilities Lab/);
 

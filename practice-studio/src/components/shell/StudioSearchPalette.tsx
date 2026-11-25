@@ -271,9 +271,13 @@ function SearchResults({
         if (event.nativeEvent.isComposing || event.altKey || event.ctrlKey ||
             event.metaKey || event.shiftKey) return;
         if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        const delta = event.key === "ArrowRight" ? 1 : -1;
+        const edge = delta === 1 ? query.length : 0;
+        const input = inputRef.current;
+        if (query && (event.target !== input || input?.selectionStart !== edge ||
+            input.selectionEnd !== edge)) return;
         event.preventDefault();
         const index = types.findIndex(({ value }) => value === type);
-        const delta = event.key === "ArrowRight" ? 1 : -1;
         selectType(types[(index + delta + types.length) % types.length].value);
       }}
     >
@@ -343,7 +347,7 @@ function SearchResults({
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-4 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
         {[
           ["Close", "Esc"],
-          ["Change type", "← →"],
+          [query ? "Change type at text edges" : "Change type", "← →"],
           ["Open", "↵"],
         ].map(([label, key]) => (
           <span key={label} className="inline-flex items-center gap-1.5">
@@ -360,7 +364,8 @@ export function StudioSearchPalette({ open, onClose, onCloseAutoFocus, ...props 
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent
-        className="flex max-h-[min(40rem,calc(100dvh-2rem))] max-w-xl flex-col overflow-hidden bg-white p-0 dark:bg-background [&>button]:right-2 [&>button]:top-0.5"
+        position="top"
+        className="flex max-h-[min(40rem,100%)] max-w-xl flex-col overflow-hidden bg-white p-0 dark:bg-background [&>button]:right-2 [&>button]:top-0.5"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogTitle className="sr-only">Search Practice Studio</DialogTitle>
