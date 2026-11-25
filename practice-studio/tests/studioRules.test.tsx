@@ -718,15 +718,14 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
 // Learner 2026-11-22: Geist / Geist Fallback (font-sans), Roboto Slab (font-display accent), Geist Mono (code only), KaTeX (math).
 {
   const layoutSrc = readFileSync("src/app/layout.tsx", "utf8");
-  const tw = readFileSync("tailwind.config.ts", "utf8");
   const packageJson = readFileSync("package.json", "utf8");
   assert.match(layoutSrc, /GeistVF\.woff/);
   assert.match(layoutSrc, /--font-geist-sans/);
   assert.match(layoutSrc, /@fontsource-variable\/roboto-slab/);
   assert.doesNotMatch(layoutSrc, /@fontsource\/source-sans-pro/);
   assert.doesNotMatch(packageJson, /@fontsource\/source-sans-pro/);
-  assert.match(tw, /sans: \[\s*"var\(--font-geist-sans\)",\s*'"Geist"',\s*'"Geist Fallback"'/);
-  assert.match(tw, /display: \['"Roboto Slab Variable"'/);
+  assert.match(globalsCss, /--font-sans:\s*var\(--font-geist-sans\),\s*"Geist",\s*"Geist Fallback"/);
+  assert.match(globalsCss, /--font-display:\s*"Roboto Slab Variable"/);
 }
 
 // Rev 2 Flat 3-pane Sidebar + Header + Frameless workspace SSR & invariant checks

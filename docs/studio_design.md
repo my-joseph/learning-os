@@ -1,6 +1,6 @@
 # Practice Studio — design guide (v2, 2026-11-18)
 
-For the learner's cross-screen taste and visual examples, read [design principles](design/principles.md) and the [reference gallery](design/references/README.md) before changing Studio UI. Build with shared components and their variants.
+For the learner's cross-screen taste and visual examples, read [design principles](design/principles.md) and the [reference gallery](design/references/README.md) before changing Studio UI. Use the [design tokens](design/system.md) and [component catalog](design/components.md) to extend shared components.
 
 The learner's brief: clean, few tags, easy to work a problem, no confusing buttons, no visual noise or text that does not help, a clear hierarchy, and colour and type chosen for ease of use. Every Studio PR follows this file.
 
@@ -39,31 +39,12 @@ Review & Sync shows an amber **Synced with problems** banner when a Notion write
 - Default theme syncs live with `prefers-color-scheme`; the toggle acts as a temporary override that yields when OS preference changes or when toggled back. Contrast AA (`>= 4.5:1`) everywhere.
 
 ## Colour tokens
-- **Rule (enforced by `practice-studio/tests/statusTokens.test.tsx`):** never hard-code a status colour (`emerald-*`, `amber-*`, `yellow-*`, `rose-*`); import recipes from `practice-studio/src/lib/statusTone.ts` (`statusTone` for answer/progress status, `warningTone` for non-status warnings). Diagram/figure palettes (`Interactive*`, `MathFigure/*`, `VisualRenderer`, `VSCodeBlock`) are out of scope.
-- Single source of truth: RGB channel custom properties in `practice-studio/src/app/globals.css` (`:root, html.light` and `html.dark, .dark`), exposed in `practice-studio/tailwind.config.ts` with `rgb(var(--x) / <alpha-value>)` so opacity modifiers work. Changing a colour requires editing one variable in `globals.css`.
 
-| CSS token | Tailwind key | Meaning | Light (RGB / hex) | Dark (RGB / hex) |
-| :--- | :--- | :--- | :--- | :--- |
-| `--status-correct` | `status-correct` | Clean first-try correct fill (stepper, tab mark, tile, dot, choice badge) | `5 150 105` (`#059669`, emerald-600) | `16 185 129` (`#10b981`, emerald-500) |
-| `--status-correct-text` | `status-correct-text` | Clean correct text, icons, and left-borders (`>= 4.5:1` AA) | `4 120 87` (`#047857`, emerald-700) | `52 211 153` (`#34d399`, emerald-400) |
-| `--status-correct-soft` | `status-correct-soft` | Soft tint for correct result cards, synced banner, selected choices | `236 253 245` (`#ecfdf5`, emerald-50) | `23 40 37` (`#172825`, ~emerald-500/10) |
-| `--status-on-correct` | `status-on-correct` | Icon/text colour on `status-correct` fills | `255 255 255` (`#ffffff`, white) | `9 9 11` (`#09090b`, zinc-950) |
-| `--status-assisted` | `status-assisted` | Assisted / partial / score-0.5: same green as correct but an **outline, no fill** (never amber) | `5 150 105` (`#059669`, emerald-600) | `16 185 129` (`#10b981`, emerald-500) |
-| `--status-assisted-soft` | `status-assisted-soft` | Reserved (assisted has no fill) | `236 253 245` | `23 40 37` |
-| `--status-on-assisted` | `status-on-assisted` | Assisted text/icon colour (AA) | `4 120 87` (`#047857`, emerald-700) | `52 211 153` (`#34d399`, emerald-400) |
-| `--status-wrong` | `status-wrong` | Wrong / failing / regressed fill, border, and AA text | `225 29 72` (`#e11d48`, rose-600) | `251 113 133` (`#fb7185`, rose-400) |
-| `--status-wrong-soft` | `status-wrong-soft` | Soft tint for wrong result cards, error sync card, wrong choices | `255 241 242` (`#fff1f2`, rose-50) | `46 28 34` (`#2e1c22`, ~rose-500/10) |
-| `--status-on-wrong` | `status-on-wrong` | Icon/text colour on `status-wrong` fills | `255 255 255` (`#ffffff`, white) | `9 9 11` (`#09090b`, zinc-950) |
-| `--status-skipped` | `status-skipped` | Dashed outline for skipped items and active untried tab border | `161 161 170` (`#a1a1aa`, zinc-400) | `113 113 122` (`#71717a`, zinc-500) |
-| `--status-neutral` | `status-neutral` | Plain outline and neutral dot for untried / unanswered items | `212 212 216` (`#d4d4d8`, zinc-300) | `63 63 70` (`#3f3f46`, zinc-700) |
-| `--warning` | `warning` | Non-status warning text/icon (paused timer, pending/warn toast, degraded sync) | `180 83 9` (`#b45309`, amber-700) | `251 191 36` (`#fbbf24`, amber-400) |
-| `--warning-soft` | `warning-soft` | Soft banner tint for degraded sync warning card | `255 251 235` (`#fffbeb`, amber-50) | `46 37 22` (`#2e2516`, ~amber-500/10) |
-| `--warning-border` | `warning-border` | Left-border accent for checkpoint hints and weak-spot trap notes | `217 119 6` (`#d97706`, amber-600) | `251 191 36` (`#fbbf24`, amber-400) |
-| `--accent` | `accent` | Brand primary accent (exposed for gradual migration; used on active step highlight) | `79 70 229` (`#4f46e5`, indigo-600) | `129 140 248` (`#818cf8`, indigo-400) |
+Use the [token reference](design/system.md) for the light and dark values. Get learner approval for new colours. Import `statusTone` for answer and progress status and `warningTone` for operational warnings. The existing status-token test enforces this contract, with exceptions for diagram and renderer palettes.
 
 ## Type
 - Geist / Geist Fallback (`font-sans`) for UI and prose, Roboto Slab (`font-display`) for non-code labels and numbers, Geist Mono (`font-mono`) only for code, and KaTeX for math (learner decision 2026-11-22).
-- Scale: question prompt `text-base` (16 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). No uppercase/all-caps labels; at most two font weights on screen.
+- Scale: question prompt `text-base` (15 px) / `leading-relaxed`; body `text-base`; secondary `text-sm text-zinc-500`. One `h1` per page (drill/lab title or not-found heading, `text-lg font-semibold`, 18 px). No uppercase/all-caps labels; at most two font weights on screen.
 
 ## Spacing and motion
 - 8 px rhythm (`gap-2/4/6/8`), generous padding inside the question card (`p-6`, `p-4` on mobile).

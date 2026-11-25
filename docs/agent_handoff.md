@@ -47,13 +47,12 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 - Practice Studio standardises on **shadcn/ui** (source copied into the repo, Radix primitives) on the CURRENT stack: Tailwind 3.4, React 18, Next 14 — no framework/Tailwind upgrades as part of this work. FlyonUI, daisyUI, HeroUI, Mantine were considered and rejected (research: `pilot/ui-library-research-2026-11-22/report.md`).
 - Order: one-day proof of concept on a throwaway route (Button, Tabs, Dialog, Popover/Tooltip, Drawer) → learner looks at the real screen → then migrate one component family per PR (buttons → tabs/popovers → dialogs/drawers → tooltips/toasts); delete old local primitives only after parity.
 - Keep behaviour identical (zero-leak, progress/reset flows, keyboard/focus, 44 px targets, reduced motion); existing Studio tests must pass; each UI PR includes before/after screenshots (desktop + phone width) for the learner.
-- Colours are flexible during the migration and settled later, but any NEW colour still needs the learner's approval.
+- Use the [design tokens](design/system.md) and [component catalog](design/components.md). Follow the learner's 2026-11-25 extend-before-create decision and get approval for new colours.
 
 ### ON HOLD — do not start without the learner
 
 - Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including **C08** `/api/generate-drill` validation/bounds, which waits for the Similar/template refactor); rename of `rules/06`; PRG Similar/variant bank.
 - **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” / template refactor.
-- **PR #305** status progress bars.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
 - PR B, PR C (including issue `0852fe`, Weak spots trap-name leak), Example redesign, and learning-feature Phases 3–5.
 - Engine roadmap Phase 2 (`pilot/improve-engine-2026-11-21/roadmap.md`, items 2.1–2.3): wait for quota reset and learner go-ahead.
