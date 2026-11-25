@@ -164,10 +164,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     labs,
     workspaceDrills,
     workspaceLabs,
-    drillSearch,
-    setDrillSearch,
-    drillFilter,
-    setDrillFilter,
+    catalogLoading,
+    catalogError,
     loadDrillsList,
   } = useDrillList({
     workspace,
@@ -348,7 +346,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       ? currentDrill.drillId
       : lastCodeId && isLabId(lastCodeId) && labs.some((l) => l.id === lastCodeId)
       ? lastCodeId
-      : resolveWorkspaceDrill(drills, "code", lastCodeId);
+      : resolveWorkspaceDrill(drills, "code", lastCodeId) ?? labs[0]?.id;
 
   const activeProblemId = currentDrill?.problems[currentProblemIndex]?.id;
   const mathHref = mathTargetId
@@ -379,13 +377,16 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         }
       }}
       drills={workspaceDrills}
-      allWorkspaceDrills={workspaceDrills}
       labs={workspaceLabs}
       selectedDrillId={drillId}
-      drillSearch={drillSearch}
-      onSearchChange={setDrillSearch}
-      drillFilter={drillFilter}
-      onFilterChange={setDrillFilter}
+      searchDrills={drills}
+      searchLabs={labs}
+      searchLoading={catalogLoading}
+      searchLoadError={catalogError}
+      onSearchNavigate={(href) => {
+        if (href === drillHref(drillId)) setViewMode("quiz");
+        router.push(href);
+      }}
       onSelectDrill={handleSelectDrill}
       onResetDrill={(targetId) => {
         setResetTargetId(targetId);
