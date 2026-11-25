@@ -132,6 +132,40 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
       assert.equal(position.contains("items-center"), false);
     });
 
+    await t.test("Type chips gate hover on device capability and keep keyboard focus visible", async () => {
+      const chips = window.document.querySelectorAll<HTMLButtonElement>("[aria-label='Result type'] button");
+      assert.equal(chips.length, 4);
+      for (const chip of chips) {
+        const hoverClasses = [...chip.classList].filter((name) => name.split(":").includes("hover"));
+        assert.deepEqual(hoverClasses, [
+          "[@media(hover:hover)]:hover:bg-zinc-100",
+          "dark:[@media(hover:hover)]:hover:bg-zinc-800",
+        ]);
+        assert.ok(chip.classList.contains("focus-visible:ring-2"));
+        assert.equal([...chip.classList].some((name) => name.split(":").includes("focus")), false);
+      }
+      const pressedTypes = () => [...chips].filter((chip) => chip.getAttribute("aria-pressed") === "true")
+        .map((chip) => chip.textContent);
+      assert.deepEqual(pressedTypes(), ["All"]);
+      await act(async () => chips[2].click());
+      assert.deepEqual(pressedTypes(), ["Labs"]);
+      assert.equal(window.document.activeElement, input);
+      await act(async () => chips[0].click());
+    });
+
+    await t.test("Keyboard help starts at sm and the close button remains usable", async () => {
+      const dialog = input.closest("[role=dialog]")!;
+      const footer = [...dialog.querySelectorAll("kbd")].find((key) => key.textContent === "Esc")?.parentElement?.parentElement;
+      assert.ok(footer?.classList.contains("hidden"));
+      assert.ok(footer.classList.contains("sm:flex"));
+
+      const close = dialog.querySelector<HTMLButtonElement>("button[aria-label='Close dialog']")!;
+      await act(async () => close.click());
+      assert.equal(window.document.querySelector("[role=dialog]"), null);
+      await press(window, "k", { ctrlKey: true });
+      input = window.document.querySelector<HTMLInputElement>("[role=combobox]")!;
+    });
+
     await t.test("Horizontal arrows cycle types when the input is empty", async () => {
       assert.equal(await press(input, "ArrowLeft"), true);
       assert.equal(activeType(), "Units");
@@ -170,8 +204,9 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
       assert.equal(activeType(), "Labs");
     });
 
-    assert.equal(list.querySelectorAll("[role=option]").length, 1);
-    assert.match(list.querySelector("[aria-selected=true]")?.textContent ?? "", /Array Utilities Lab/);
+    const filteredList = window.document.querySelector("[role=listbox]")!;
+    assert.equal(filteredList.querySelectorAll("[role=option]").length, 1);
+    assert.match(filteredList.querySelector("[aria-selected=true]")?.textContent ?? "", /Array Utilities Lab/);
 
     await press(input, "Enter");
     assert.deepEqual(navigations, [`/code/lab/${labId}`]);

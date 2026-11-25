@@ -304,7 +304,7 @@ function SearchResults({
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") event.stopPropagation();
             }}
-            className="min-h-11 rounded-md px-3 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium aria-pressed:text-zinc-900 motion-reduce:transition-none dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70 dark:aria-pressed:text-zinc-100 sm:min-h-8"
+            className="min-h-11 rounded-md px-3 text-sm text-zinc-600 transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium aria-pressed:text-zinc-900 motion-reduce:transition-none dark:text-zinc-400 dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70 dark:aria-pressed:text-zinc-100 sm:min-h-8"
           >
             {label}
           </button>
@@ -344,7 +344,7 @@ function SearchResults({
           </p>
         )}
       </CommandList>
-      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-4 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+      <div className="hidden shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-4 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:flex">
         {[
           ["Close", "Esc"],
           [query ? "Change type at text edges" : "Change type", "← →"],
