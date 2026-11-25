@@ -170,7 +170,8 @@ async function runTests() {
         onNextItem={() => {}}
       />
     );
-    assert.match(activeHtml, /<p[^>]*font-mono[^>]*>DRL-MTH-T01-C04-U01-01<\/p><h1[^>]*font-heading[^>]*>Daily review<\/h1>/);
+    assert.match(activeHtml, /<h1[^>]*font-heading[^>]*>Daily review<\/h1>/);
+    assert.doesNotMatch(activeHtml, /font-mono[^>]*>DRL-MTH-T01-C04-U01-01</);
     assert.match(activeHtml, /aria-label="Review progress"[^>]*whitespace-nowrap[^>]*>Review 1 of 3/);
     assert.match(activeHtml, /aria-label="Back to drill"[^>]*min-h-\[44px\] min-w-\[44px\]/);
     assert.equal(
