@@ -109,3 +109,5 @@ One canonical rule drives every score, status, stepper circle, result card, Revi
 4. **Mark diverged step**: a learning note only — it never changes a `null` score into `0.5` and never lowers a first-try `1`.
 5. **PRG drills and labs**: all tests passing **and** latest review in the cycle is `pass` → `1` only on a clean first passing run with no hints and no earlier failing run or `revise` review in the cycle; otherwise `0.5`. Passing tests with no review yet → `score: null`, shown as **Awaiting review** consistently across stepper, tiles, rows, and summary. Failing tests or latest review `revise` → `0` (`wrong`).
 6. **Similar questions**: scored with the exact same rule as the main question (wrong → correct is `0.5` `assisted`, locked after correct), while remaining isolated from the main score and review schedule.
+
+- Secondary text uses the `foreground-secondary` token (`--foreground-secondary`; light zinc-500, dark #8a8a93, both AA); do not hard-code zinc greys for secondary text in new code.

@@ -13,6 +13,7 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "foreground-secondary": "rgb(var(--foreground-secondary) / <alpha-value>)",
         surface: {
           panel: "rgb(var(--surface-panel) / <alpha-value>)",
         },

@@ -42,6 +42,7 @@
 :root {
   --background: #18181b;
   --foreground: #f4f4f5;
+  --foreground-secondary: 138 138 147;  /* #8a8a93 — muted secondary text (dark), AA >= 4.5:1 on zinc-900 */
   --surface-panel: 32 32 35;
   color-scheme: dark;
 }
@@ -49,6 +50,7 @@
 html.light {
   --background: #fafafa;
   --foreground: #18181b;
+  --foreground-secondary: 113 113 122;  /* zinc-500 (#71717a) — muted secondary text (light), AA >= 4.5:1 on white */
   --surface-panel: 250 250 250;
   color-scheme: light;
 }

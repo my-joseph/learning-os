@@ -394,7 +394,7 @@ export function StudioSearchPalette({ open, onClose, onCloseAutoFocus, ...props 
         position="top"
         className="flex max-h-[min(40rem,100%)] max-w-[671px] flex-col overflow-hidden bg-white p-0 dark:bg-background"
         closeButtonClassName="right-4 top-2.5 min-h-7 min-w-7 text-foreground dark:text-foreground"
-        overlayClassName="bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
+        overlayClassName="bg-black/40 dark:bg-black/50"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogTitle className="sr-only">Search Practice Studio</DialogTitle>
