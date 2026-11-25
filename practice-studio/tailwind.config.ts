@@ -11,6 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        "foreground-control": "rgb(var(--foreground-control) / <alpha-value>)",
+        "foreground-menu": "rgb(var(--foreground-menu) / <alpha-value>)",
+        "surface-hover-strong": "rgb(var(--surface-hover-strong) / <alpha-value>)",
         "muted": "rgb(var(--muted) / <alpha-value>)",
         "foreground-subtle": "rgb(var(--foreground-subtle) / <alpha-value>)",
         "border": "rgb(var(--border) / <alpha-value>)",
@@ -73,6 +76,7 @@ const config: Config = {
         "space-16": "var(--space-16)",
         "space-20": "var(--space-20)",
         "space-24": "var(--space-24)",
+        "space-28": "var(--space-28)",
         "space-40": "var(--space-40)",
         "space-52": "var(--space-52)",
         "control-xs": "var(--control-xs)",
@@ -87,6 +91,9 @@ const config: Config = {
         "sans": "var(--font-sans)",
         "display": "var(--font-display)",
         "mono": "var(--font-mono)",
+      },
+      maxHeight: {
+        search: "min(var(--height-search), 100%)",
       },
       maxWidth: {
         "practice": "var(--width-practice)",
@@ -136,6 +143,7 @@ const config: Config = {
         "status": "var(--border-width-status)",
       },
       ringWidth: {
+        "2": "var(--border-width-2)",
         "status": "var(--border-width-status)",
       },
       boxShadow: {

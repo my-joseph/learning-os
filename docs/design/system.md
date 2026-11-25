@@ -21,11 +21,14 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--foreground-secondary` | `colors.foreground-secondary` | `113 113 122` | `138 138 147` | Secondary labels using the existing contrast-tuned foreground. |
 | `--surface-panel` | `colors.surface.panel` | `250 250 250` | `32 32 35` | Sidebar, steps and secondary panels. |
 | `--muted` | `colors.muted` | `113 113 122` | `161 161 170` | Legacy muted labels where that exact light/dark pair is needed. |
+| `--foreground-control` | `colors.foreground-control` | `63 63 70` | `212 212 216` | Neutral labels on sidebar controls. |
+| `--foreground-menu` | `colors.foreground-menu` | `var(--foreground-control)` | `228 228 231` | Menu action labels. |
 | `--foreground-subtle` | `colors.foreground-subtle` | `82 82 91` | `161 161 170` | Descriptions and supporting labels currently using zinc-600 and zinc-400. |
 | `--border` | `colors.border` | `228 228 231` | `39 39 42` | Hairline dividers and card framing. |
 | `--border-control` | `colors.border-control` | `212 212 216` | `63 63 70` | Form and outline-control borders. |
 | `--surface-raised` | `colors.surface-raised` | `255 255 255` | `24 24 27` | White light-theme cards and input surfaces. |
 | `--surface-hover` | `colors.surface-hover` | `244 244 245` | `39 39 42` | Quiet hover and neutral segmented backgrounds. |
+| `--surface-hover-strong` | `colors.surface-hover-strong` | `var(--border-control)` | `82 82 91` | Hover highlight for an inset row action. |
 | `--surface-selected` | `colors.surface-selected` | `228 228 231` | `63 63 70` | Selected search and sidebar controls using this neutral pair. |
 | `--accent-primary` | `colors.accent-primary` | `79 70 229` | `79 70 229` | Filled primary action shared by both themes. |
 | `--accent-primary-hover` | `colors.accent-primary-hover` | `67 56 202` | `99 102 241` | Hover for the filled primary action. |
@@ -75,6 +78,7 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--space-16` | `spacing.space-16` | `4rem` | `4rem` | Use the matching step for padding, gaps, offsets and object sizes. |
 | `--space-20` | `spacing.space-20` | `5rem` | `5rem` | Use the matching step for padding, gaps, offsets and object sizes. |
 | `--space-24` | `spacing.space-24` | `6rem` | `6rem` | Use the matching step for padding, gaps, offsets and object sizes. |
+| `--space-28` | `spacing.space-28` | `7rem` | `7rem` | Minimum height for the Search results area. |
 | `--space-40` | `spacing.space-40` | `10rem` | `10rem` | Use the matching step for padding, gaps, offsets and object sizes. |
 | `--space-52` | `spacing.space-52` | `13rem` | `13rem` | Use the matching step for padding, gaps, offsets and object sizes. |
 | `--control-xs` | `spacing.control-xs` | `28px` | `28px` | Compact filter chips and desktop search close control. |
@@ -85,6 +89,7 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--panel-right` | `spacing.panel-right` | `276px` | `276px` | Open desktop review pane. |
 | `--control-lg` | `spacing.control-lg` | `48px` | `48px` | Large buttons. |
 | `--width-search` | `maxWidth.search` | `671px` | `671px` | Search palette maximum width. |
+| `--height-search` | `maxHeight.search` | `40rem` | `40rem` | Search palette maximum height, capped by the available space. |
 | `--width-practice` | `maxWidth.practice` | `720px` | `720px` | Centered practice and review canvas. |
 
 ### Type
@@ -136,7 +141,7 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--radius-full` | `borderRadius.full` | `9999px` | `9999px` | Round indicators and fully rounded badges. |
 | `--border-width-0` | `borderWidth.0` | `0px` | `0px` | Borderless state. |
 | `--border-width-hairline` | `borderWidth.DEFAULT` | `1px` | `1px` | Hairline border. |
-| `--border-width-2` | `borderWidth.2` | `2px` | `2px` | Underline and accent border. |
+| `--border-width-2` | `borderWidth.2` / `ringWidth.2` | `2px` | `2px` | Underline, accent border, and focus ring. |
 | `--border-width-status` | `borderWidth.status` / `ringWidth.status` | `1.5px` | `1.5px` | Fine status outline. |
 | `--shadow-none` | `boxShadow.ui-none` | `0 0 #0000` | `0 0 #0000` | Explicit flat surfaces. |
 | `--shadow-sm` | `boxShadow.ui-sm` | `0 1px 2px 0 rgb(0 0 0 / 0.05)` | `0 1px 2px 0 rgb(0 0 0 / 0.05)` | Cards and subtle active states. |
@@ -258,16 +263,16 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 | Stacking layer | `0` × 2, `10` × 7, `40` × 2, `50` × 10, `55` × 1, `60` × 2 |
 | Breakpoint | `min-width: 640px` × 324, `min-width: 768px` × 16, `min-width: 1024px` × 90 |
 
-### Hard-coded value baseline
+### Current hard-coded value baseline
 
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
-| arbitrary utilities | 315 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
-| raw neutral text utilities | 1109 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| arbitrary utilities | 314 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
+| raw neutral text utilities | 1085 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 50 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
 | other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
 | inline values | 397 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
 | CSS literals | 23 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1906** | |
+| **Total** | **1881** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.

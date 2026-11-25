@@ -9,6 +9,7 @@ import {
   Search,
   Sigma,
 } from "lucide-react";
+import { ListRow } from "@/components/ui/ListRow";
 import {
   Command,
   CommandGroup,
@@ -23,6 +24,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/shadcn/Dialog";
+import { SegmentedChips } from "@/components/ui/shadcn/Tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/shadcn/Tooltip";
 import { cn } from "@/lib/cn";
 import { readRecentDrillIds } from "@/lib/lastDrillStorage";
@@ -80,38 +82,39 @@ export function StudioSearchTrigger({
   compact?: boolean;
   className?: string;
 }) {
+  const triggerProps = {
+    "aria-label": "Search",
+    "aria-haspopup": "dialog" as const,
+    "aria-keyshortcuts": shortcut === "⌘K" ? "Meta+K" : "Control+K",
+    onClick,
+  };
+  const icon = <Search aria-hidden="true" className="size-space-4 shrink-0" />;
+  if (!compact) {
+    return (
+      <ListRow
+        {...triggerProps}
+        data-sidebar-row="search"
+        label="Search"
+        leading={icon}
+        touchTarget="expanded"
+        trailing={<kbd aria-hidden="true" className="font-sans text-xs text-foreground-subtle">{shortcut}</kbd>}
+        className={className}
+      />
+    );
+  }
+
   const trigger = (
     <button
+      {...triggerProps}
       type="button"
-      data-sidebar-row={compact ? undefined : "search"}
-      aria-label="Search"
-      aria-haspopup="dialog"
-      aria-keyshortcuts={shortcut === "⌘K" ? "Meta+K" : "Control+K"}
-      onClick={onClick}
       className={cn(
-        "inline-flex shrink-0 items-center gap-2 rounded-md text-sm text-zinc-700 transition-colors hover:bg-zinc-200/50 focus-visible:outline-none motion-reduce:transition-none dark:text-zinc-300 dark:hover:bg-zinc-700/40",
-        compact
-          ? "size-11 justify-center focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 lg:size-8"
-          : "group/search h-8 w-full px-1.5 text-left",
+        "inline-flex size-touch shrink-0 items-center justify-center gap-space-2 rounded-md text-sm text-foreground-control transition-colors duration-color ease-standard hover:bg-surface-selected/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent motion-reduce:transition-none dark:hover:bg-surface-selected/40 lg:size-control-sm",
         className
       )}
     >
-      <Search aria-hidden="true" className="size-4 shrink-0" />
-      {!compact && (
-        <>
-          <span>Search</span>
-          <kbd
-            aria-hidden="true"
-            className="ml-auto shrink-0 font-sans text-xs text-zinc-600 opacity-0 group-focus-visible/search:opacity-100 [@media(hover:hover)]:group-hover/search:opacity-100 dark:text-zinc-400"
-          >
-            {shortcut}
-          </kbd>
-        </>
-      )}
+      {icon}
     </button>
   );
-
-  if (!compact) return trigger;
   return (
     <Tooltip>
       <TooltipTrigger asChild>{trigger}</TooltipTrigger>
@@ -239,33 +242,21 @@ function SearchResults({
   const renderEntry = (entry: SearchEntry) => {
     const Icon = workspaceIcons[entry.workspace];
     const hasMenu = entry.kind === "drill" && onResetDrill && onDeleteDrill;
-    const item = (
+    const menuOpen = openMenuId === entry.id;
+    const rowActive = selected === entry.id || menuOpen;
+    return (
       <CommandItem
         key={entry.id}
         value={entry.id}
         onSelect={() => navigate(entry.href)}
-        className={hasMenu ? "pr-12 [@media(hover:hover)]:group-hover/result:text-foreground dark:[@media(hover:hover)]:group-hover/result:text-foreground sm:pr-10 sm:[@media(any-pointer:coarse)]:pr-12" : undefined}
-      >
-        <Icon aria-hidden="true" className="size-4 shrink-0" />
-        <span className="min-w-0 flex-1 truncate font-medium">{entry.title}</span>
-      </CommandItem>
-    );
-    if (!hasMenu) return item;
-
-    const menuOpen = openMenuId === entry.id;
-    return (
-      <div
-        key={entry.id}
-        role="presentation"
-        data-active={selected === entry.id || menuOpen}
-        className="group/result relative"
-      >
-        {item}
-        <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center opacity-0 [@media(hover:hover)]:group-hover/result:pointer-events-auto [@media(hover:hover)]:group-hover/result:opacity-100 group-focus-within/result:pointer-events-auto group-focus-within/result:opacity-100 group-data-[active=true]/result:pointer-events-auto group-data-[active=true]/result:opacity-100">
+        selected={rowActive}
+        label={entry.title}
+        leading={<Icon aria-hidden="true" className="size-space-4 shrink-0" />}
+        trailing={hasMenu && (
           <DrillRowActions
             nodeId={entry.id}
             variant="search"
-            tabIndex={selected === entry.id || menuOpen ? 0 : -1}
+            tabIndex={rowActive ? 0 : -1}
             open={menuOpen}
             onTooltipEscape={onClose}
             onOpenChange={(open) => {
@@ -281,8 +272,8 @@ function SearchResults({
               onDeleteDrill(id);
             }}
           />
-        </div>
-      </div>
+        )}
+      />
     );
   };
 
@@ -309,8 +300,8 @@ function SearchResults({
         selectType(types[(index + delta + types.length) % types.length].value);
       }}
     >
-      <div className="flex min-h-12 shrink-0 items-center gap-3 pl-5 pr-12">
-        <Search aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+      <div className="flex min-h-control-lg shrink-0 items-center gap-space-3 pl-space-5 pr-space-12">
+        <Search aria-hidden="true" className="size-space-4 shrink-0 text-muted" />
         <CommandInput
           ref={inputRef}
           autoComplete="off"
@@ -322,26 +313,17 @@ function SearchResults({
           }}
         />
       </div>
-      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-3 pb-2 dark:border-zinc-800">
-        {types.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={value === type}
-            onClick={() => selectType(value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") event.stopPropagation();
-            }}
-            className="h-7 rounded-md px-2 text-sm text-foreground transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 motion-reduce:transition-none dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <CommandList label="Search results" className="min-h-28 py-1.5">
+      <SegmentedChips
+        label="Result type"
+        options={types}
+        value={type}
+        onValueChange={selectType}
+        className="border-b border-border px-space-3 pb-space-2"
+      />
+      <CommandList label="Search results" className="min-h-space-28 py-space-1_5">
         {due.length > 0 && <CommandGroup heading="Needs attention">{due.map(renderEntry)}</CommandGroup>}
         {!search && type === "all" && (dueLoading || dueError) && (
-          <p role="status" className="px-5 pb-1 pt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-space-5 pb-space-1 pt-space-2 text-sm text-muted">
             {dueLoading ? "Loading due reviews…" : "Due reviews could not be loaded."}
           </p>
         )}
@@ -350,36 +332,40 @@ function SearchResults({
         {actions.length > 0 && (
           <CommandGroup heading="Actions">
             {actions.map(({ id, title, icon: Icon, run }) => (
-              <CommandItem key={id} value={id} onSelect={run}>
-                <Icon aria-hidden="true" className="size-4 shrink-0" />
-                {title}
-              </CommandItem>
+              <CommandItem
+                key={id}
+                value={id}
+                onSelect={run}
+                label={title}
+                emphasis="normal"
+                leading={<Icon aria-hidden="true" className="size-space-4 shrink-0" />}
+              />
             ))}
           </CommandGroup>
         )}
         {loading ? (
-          <CommandLoading label="Loading search results" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <CommandLoading label="Loading search results" className="px-space-5 py-space-5 text-sm text-muted">
             Loading practice items…
           </CommandLoading>
         ) : loadError ? (
-          <p role="status" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-space-5 py-space-5 text-sm text-muted">
             Some practice items could not be loaded.
           </p>
         ) : ids.length === 0 && (
-          <p role="status" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-space-5 py-space-5 text-sm text-muted">
             {search ? "No matching results." : `No ${resultsLabel?.toLowerCase()} in this workspace.`}
           </p>
         )}
       </CommandList>
-      <div className="hidden shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-5 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:flex">
+      <div className="hidden shrink-0 flex-wrap items-center gap-x-space-4 gap-y-space-1 border-t border-border bg-surface-panel px-space-5 py-space-2 text-xs text-foreground-subtle sm:flex">
         {[
           ["Close", "Esc"],
           [query ? "Change type at text edges" : "Change type", "← →"],
           ["Open", "↵"],
         ].map(([label, key]) => (
-          <span key={label} className="inline-flex items-center gap-1.5">
+          <span key={label} className="inline-flex items-center gap-space-1_5">
             {label}
-            <kbd className="rounded border border-zinc-200 px-1 font-sans dark:border-zinc-700">{key}</kbd>
+            <kbd className="rounded border border-surface-selected px-space-1 font-sans">{key}</kbd>
           </span>
         ))}
       </div>
@@ -392,9 +378,10 @@ export function StudioSearchPalette({ open, onClose, onCloseAutoFocus, ...props 
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent
         position="top"
-        className="flex max-h-[min(40rem,100%)] max-w-[671px] flex-col overflow-hidden bg-white p-0 dark:bg-background"
-        closeButtonClassName="right-4 top-2.5 min-h-7 min-w-7 text-foreground dark:text-foreground"
-        overlayClassName="bg-black/40 dark:bg-black/50"
+        className="flex max-h-search max-w-search flex-col overflow-hidden bg-surface-raised p-space-0"
+        closeButtonSize="xs"
+        closeButtonClassName="right-space-4 top-space-2_5"
+        overlayPreset="search"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogTitle className="sr-only">Search Practice Studio</DialogTitle>
