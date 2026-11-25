@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
-  buildFlatLabTreeRows,
   buildPickerSections,
   buildVisibleTreeRows,
   classifyPickerItemType,
@@ -19,7 +18,6 @@ import {
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
   resolveTreeKeyAction,
-  sortLabPickerItems,
 } from "../src/lib/drillGrouping";
 import {
   DrillSwitcher,
@@ -563,34 +561,83 @@ const prgSidebarDrills: DrillListItem[] = [
   }),
 ];
 const prgSidebarLabs: LabListItem[] = [
-  makeLab("LAB-PRG-T01-C04-02", "PRG-T01-C04", "SQL Ledger", {
+  makeLab("LAB-PRG-T01-C01-02", "PRG-T01-C01", "Rate-Limited Web Page Fetcher", {
+    chapterTitle: "JavaScript Execution & Async Internals",
     practiceStatus: "Ready",
     hasNotes: true,
   }),
   makeLab("LAB-PRG-T01-C01-01", "PRG-T01-C01", "TinyEventEmitter & PromisePool", {
+    chapterTitle: "JavaScript Execution & Async Internals",
     practiceStatus: "In Progress",
+  }),
+  makeLab("LAB-PRG-T01-C04-02", "PRG-T01-C04", "Full-Stack E-Commerce Core & Checkout Engine", {
+    unitCode: "PRG-T01-C04-U06",
+    unitTitle: "Packaging, Exports & DevVault Core",
+    chapterTitle: "Problem Solving, Clean Utilities & Unit Testing",
+    practiceStatus: "Ready",
   }),
 ];
 
-const sortedPrgLabs = sortLabPickerItems(normalizeLabPickerItems(prgSidebarLabs));
+const prgLabSections = buildPickerSections({
+  items: normalizeLabPickerItems(prgSidebarLabs),
+  currentId: "LAB-PRG-T01-C01-01",
+  recentIds: [],
+  search: "",
+  filter: "ALL",
+});
+assert.equal(prgLabSections.topicGroups.length, 1);
+assert.equal(prgLabSections.topicGroups[0].topicCode, "PRG-T01");
+assert.equal(prgLabSections.topicGroups[0].chapters.length, 2);
+
+const c01LabChapter = prgLabSections.topicGroups[0].chapters[0];
+assert.equal(c01LabChapter.chapterCode, "PRG-T01-C01");
+assert.equal(c01LabChapter.itemCount, 2, "two labs under one chapter share the chapter group");
 assert.deepEqual(
-  sortedPrgLabs.map((l) => l.id),
-  ["LAB-PRG-T01-C01-01", "LAB-PRG-T01-C04-02"],
-  "PRG sidebar labs sort by curriculum code"
+  c01LabChapter.entries.map((entry) => (entry.kind === "single" ? entry.item.id : entry.key)),
+  ["LAB-PRG-T01-C01-01", "LAB-PRG-T01-C01-02"],
+  "two labs under one chapter sort naturally as sibling chapter leaves"
 );
 
-const flatLabRows = buildFlatLabTreeRows({
-  items: sortedPrgLabs,
+const c04LabChapter = prgLabSections.topicGroups[0].chapters[1];
+assert.equal(c04LabChapter.chapterCode, "PRG-T01-C04");
+assert.equal(c04LabChapter.entries.length, 1);
+assert.equal(c04LabChapter.entries[0].kind, "unit-group", "unit-scoped lab nests under a Unit folder");
+if (c04LabChapter.entries[0].kind === "unit-group") {
+  assert.equal(c04LabChapter.entries[0].unitCode, "PRG-T01-C04-U06");
+  assert.equal(c04LabChapter.entries[0].unitTitle, "Packaging, Exports & DevVault Core");
+  assert.equal(c04LabChapter.entries[0].inlineInChapter, false);
+  assert.equal(
+    c04LabChapter.entries[0].items[0].setLabel,
+    "Full-Stack E-Commerce Core & Checkout Engine",
+    "unit-scoped lab leaf uses the lab title rather than Set N"
+  );
+}
+
+const labTreeRows = buildVisibleTreeRows({
+  topicGroups: prgLabSections.topicGroups,
   currentId: "LAB-PRG-T01-C01-01",
-  dueUnitCodes: new Set(["PRG-T01-C04"]),
+  expandedTopics: new Set(prgLabSections.defaultExpandedTopics),
+  expandedChapters: new Set(prgLabSections.defaultExpandedChapters),
+  expandedUnits: new Set(prgLabSections.defaultExpandedUnits),
+  dueUnitCodes: new Set(["PRG-T01-C01"]),
+  nodeIdPrefix: "lab:",
 });
-assert.equal(flatLabRows.length, 2);
-assert.equal(flatLabRows[0].level, 1);
-assert.equal(flatLabRows[0].parentNodeId, null);
-if (flatLabRows[0].kind === "leaf" && flatLabRows[1].kind === "leaf") {
-  assert.equal(flatLabRows[0].isCurrent, true);
-  assert.equal(flatLabRows[1].isDueToday, true);
-  assert.equal(flatLabRows[1].hasNotes, true);
+assert.deepEqual(
+  labTreeRows.map((r) => [r.kind, r.level, r.nodeId, r.hoverCode]),
+  [
+    ["topic", 1, "lab:topic:PRG-T01", "PRG-T01"],
+    ["chapter", 2, "lab:chapter:PRG-T01-C01", "C01"],
+    ["leaf", 3, "leaf:LAB-PRG-T01-C01-01", "LAB-01"],
+    ["leaf", 3, "leaf:LAB-PRG-T01-C01-02", "LAB-02"],
+    ["chapter", 2, "lab:chapter:PRG-T01-C04", "C04"],
+  ]
+);
+if (labTreeRows[2].kind === "leaf" && labTreeRows[3].kind === "leaf") {
+  assert.equal(labTreeRows[2].isCurrent, true);
+  assert.equal(labTreeRows[2].label, "TinyEventEmitter & PromisePool");
+  assert.equal(labTreeRows[2].isDueToday, true);
+  assert.equal(labTreeRows[3].label, "Rate-Limited Web Page Fetcher");
+  assert.equal(labTreeRows[3].hasNotes, true);
 }
 
 const prgDrillSections = buildPickerSections({
@@ -601,7 +648,7 @@ const prgDrillSections = buildPickerSections({
   filter: "ALL",
 });
 const combinedRows = [
-  ...flatLabRows,
+  ...labTreeRows,
   ...buildVisibleTreeRows({
     topicGroups: prgDrillSections.topicGroups,
     currentId: "DRL-PRG-T01-C01-U01-01",
@@ -611,14 +658,14 @@ const combinedRows = [
   }),
 ];
 assert.deepEqual(
-  resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C04-02", "ArrowDown"),
+  resolveTreeKeyAction(combinedRows, "lab:chapter:PRG-T01-C04", "ArrowDown"),
   { type: "focus", nodeId: "topic:PRG-T01" },
-  "ArrowDown navigates seamlessly from Labs section into Drills section"
+  "ArrowDown navigates seamlessly from Labs tree into Drills tree"
 );
 assert.deepEqual(
   resolveTreeKeyAction(combinedRows, "topic:PRG-T01", "ArrowUp"),
-  { type: "focus", nodeId: "leaf:LAB-PRG-T01-C04-02" },
-  "ArrowUp navigates seamlessly from Drills section back to Labs section"
+  { type: "focus", nodeId: "lab:chapter:PRG-T01-C04" },
+  "ArrowUp navigates seamlessly from Drills tree back to Labs tree"
 );
 assert.deepEqual(
   resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C01-01", "Enter"),
@@ -627,8 +674,13 @@ assert.deepEqual(
 );
 assert.deepEqual(
   resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C01-01", "ArrowLeft"),
-  { type: "none" },
-  "ArrowLeft on top-level lab leaf is a no-op"
+  { type: "focus", nodeId: "lab:chapter:PRG-T01-C01" },
+  "ArrowLeft on lab leaf focuses its parent chapter"
+);
+assert.deepEqual(
+  resolveTreeKeyAction(combinedRows, "lab:topic:PRG-T01", "ArrowLeft"),
+  { type: "collapse", nodeKind: "topic", code: "PRG-T01" },
+  "ArrowLeft on expanded Labs topic collapses Labs topic without colliding with Drills topic"
 );
 
 // PRG sidebar SSR: no Drills/Labs tabs, both sections in one scrolling tree, collapsible headers with trailing chevrons
@@ -643,7 +695,7 @@ const prgSidebarHtml = renderToStaticMarkup(
     currentDrill={null}
     drills={prgSidebarDrills}
     labs={prgSidebarLabs}
-    dueUnitCodes={["PRG-T01-C04", "PRG-T01-C01-U02"]}
+    dueUnitCodes={["PRG-T01-C01", "PRG-T01-C01-U02"]}
     selectedDrillId="LAB-PRG-T01-C01-01"
     drillSearch=""
     onSearchChange={noop}
@@ -672,11 +724,44 @@ assert.match(
   "Drills section header has aria-expanded and small muted trailing chevron rotated when expanded"
 );
 assert.match(prgSidebarHtml, /motion-reduce:transition-none/);
+assert.match(prgSidebarHtml, /JavaScript Execution &amp; Async Internals/);
+assert.match(prgSidebarHtml, /TinyEventEmitter &amp; PromisePool/);
+assert.match(prgSidebarHtml, /Rate-Limited Web Page Fetcher/);
+assert.match(prgSidebarHtml, />LAB-01</);
+assert.match(prgSidebarHtml, />LAB-02</);
 assert.match(prgSidebarHtml, /data-sidebar-leaf="LAB-PRG-T01-C01-01"/);
-assert.match(prgSidebarHtml, /data-sidebar-row="leaf-1"/);
+assert.match(prgSidebarHtml, /data-sidebar-leaf="LAB-PRG-T01-C01-02"/);
+assert.match(prgSidebarHtml, /data-sidebar-row="leaf-3"/);
 assert.doesNotMatch(prgSidebarHtml, /aria-label="Actions for LAB-/, "Lab rows must not have action menus");
 assert.match(prgSidebarHtml, /Due today/);
 assert.match(prgSidebarHtml, /aria-current="true"/);
+
+// Unit-scoped lab selected in PRG sidebar expands Topic -> Chapter -> Unit -> Lab leaf (level 4)
+const prgSidebarUnitLabHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={prgSidebarLabs}
+    selectedDrillId="LAB-PRG-T01-C04-02"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.match(prgSidebarUnitLabHtml, /Problem Solving, Clean Utilities &amp; Unit Testing/);
+assert.match(prgSidebarUnitLabHtml, /data-sidebar-row="unit"[^>]*>[\s\S]*?Packaging, Exports &amp; DevVault Core/);
+assert.match(prgSidebarUnitLabHtml, />U06</);
+assert.match(prgSidebarUnitLabHtml, /data-sidebar-leaf="LAB-PRG-T01-C04-02"/);
+assert.match(prgSidebarUnitLabHtml, /data-sidebar-row="leaf-4"/);
+assert.match(prgSidebarUnitLabHtml, /Full-Stack E-Commerce Core &amp; Checkout Engine/);
 
 const prgSidebarDrillSelectedHtml = renderToStaticMarkup(
   <DrillSwitcher
