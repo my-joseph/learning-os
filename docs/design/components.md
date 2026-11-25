@@ -10,6 +10,7 @@ Learner decision, 2026-11-25.
 2. Use its existing variant if it fits. For a new need within that role, add a named variant to the shared component. Use design tokens exclusively for its visual values. Keep the behavior, keyboard affordances, and responsive states in the shared implementation.
 3. For a change to an existing component's size, weight, or colour, determine how broadly the learner wants it applied. For a global change, update the shared token or base and verify its callers. For a single surface, add a variant and opt in there. If the intended reach is unclear, ask the learner before changing the shared default.
 4. Create a shared component only for a genuinely new role. Explain the role and why existing components cannot serve it in the PR. Add the export and its props or variants to this catalog in the same change. Get learner approval before introducing a colour.
+5. Source a new role from shadcn/ui first (https://ui.shadcn.com, the Studio's base library — learner decision 2026-11-22/25): if the shadcn registry has a component for the role, add it into `practice-studio/src/components/ui/shadcn/` (shadcn CLI or its published source), keep its Radix behaviour and accessibility, restyle it only with Studio tokens, express differences as variants, and add it to this catalog. Write a custom component only when shadcn/ui has nothing for the role; say so in the PR body with the shadcn components you checked.
 
 ## Shared UI exports
 
