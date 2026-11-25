@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
+import { ListRow } from "../ListRow";
 import { cn } from "@/lib/cn";
 
 export const Command = CommandPrimitive;
@@ -14,7 +15,7 @@ export const CommandInput = React.forwardRef<
   <CommandPrimitive.Input
     ref={ref}
     className={cn(
-      "h-12 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-zinc-500 focus-visible:outline-none dark:placeholder:text-zinc-400",
+      "h-control-lg min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted focus-visible:outline-none",
       className
     )}
     {...props}
@@ -28,7 +29,7 @@ export const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn("min-h-0 flex-1 scroll-py-2 overflow-y-auto overscroll-contain", className)}
+    className={cn("min-h-0 flex-1 scroll-py-space-2 overflow-y-auto overscroll-contain", className)}
     {...props}
   />
 ));
@@ -41,7 +42,7 @@ export const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      "px-3 pt-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-zinc-500 dark:[&_[cmdk-group-heading]]:text-zinc-400",
+      "px-space-3 pt-space-1 [&_[cmdk-group-heading]]:px-space-2 [&_[cmdk-group-heading]]:pb-space-1 [&_[cmdk-group-heading]]:pt-space-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted",
       className
     )}
     {...props}
@@ -49,17 +50,28 @@ export const CommandGroup = React.forwardRef<
 ));
 CommandGroup.displayName = "CommandGroup";
 
+type CommandItemProps = React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item> &
+  Pick<React.ComponentPropsWithoutRef<typeof ListRow>, "label" | "leading" | "trailing" | "selected" | "emphasis" | "size" | "tone" | "loading">;
+
 export const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Item
+  CommandItemProps
+>(({ label, leading, trailing, selected, emphasis, size, tone, loading, className, disabled, ...props }, ref) => (
+  <ListRow
     ref={ref}
-    className={cn(
-      "flex min-h-11 cursor-pointer select-none items-center gap-3 rounded-md px-2 py-1 text-sm text-foreground-secondary data-[selected=true]:bg-zinc-200/60 data-[selected=true]:text-foreground [@media(hover:hover)]:hover:text-foreground dark:data-[selected=true]:bg-zinc-700/60 dark:data-[selected=true]:text-foreground dark:[@media(hover:hover)]:hover:text-foreground sm:min-h-9 sm:[@media(any-pointer:coarse)]:min-h-11",
-      className
-    )}
-    {...props}
-  />
+    asChild
+    variant="command"
+    label={label}
+    leading={leading}
+    trailing={trailing}
+    selected={selected}
+    emphasis={emphasis}
+    size={size}
+    tone={tone}
+    loading={loading}
+    className={className}
+  >
+    <CommandPrimitive.Item disabled={disabled || loading} {...props} />
+  </ListRow>
 ));
 CommandItem.displayName = "CommandItem";

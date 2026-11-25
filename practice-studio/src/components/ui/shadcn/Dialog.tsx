@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { m } from "motion/react";
 import { cn } from "@/lib/cn";
 import { dialogCard, fade } from "@/lib/motion";
+import { IconButton } from "./Button";
 
 const DialogOpenContext = React.createContext<boolean>(false);
 
@@ -31,16 +33,25 @@ export const DialogPortal: React.FC<
   return <DialogPrimitive.Portal {...props}>{children}</DialogPrimitive.Portal>;
 };
 
+const dialogOverlayVariants = cva("fixed inset-0 z-overlay motion-reduce:transition-none", {
+  variants: {
+    preset: { default: "bg-overlay-scrim", search: "bg-overlay-scrim-search" },
+  },
+  defaultVariants: { preset: "default" },
+});
+
+type DialogOverlayPreset = VariantProps<typeof dialogOverlayVariants>["preset"];
+
 export const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & { preset?: DialogOverlayPreset }
+>(({ className, preset, ...props }, ref) => (
   <DialogPrimitive.Overlay ref={ref} asChild {...props}>
     <m.div
       variants={fade}
       initial="hidden"
       animate="shown"
-      className={cn("fixed inset-0 z-50 bg-zinc-950/70 motion-reduce:transition-none", className)}
+      className={cn(dialogOverlayVariants({ preset }), className)}
     />
   </DialogPrimitive.Overlay>
 ));
@@ -52,12 +63,14 @@ export const DialogContent = React.forwardRef<
     position?: "center" | "top";
     closeButtonClassName?: string;
     overlayClassName?: string;
+    overlayPreset?: DialogOverlayPreset;
+    closeButtonSize?: "xs" | "sm" | "md";
   }
->(({ className, children, position = "center", closeButtonClassName, overlayClassName, ...props }, ref) => (
+>(({ className, children, position = "center", closeButtonClassName, overlayClassName, overlayPreset, closeButtonSize, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay className={overlayClassName} />
+    <DialogOverlay preset={overlayPreset} className={overlayClassName} />
     <div className={cn(
-      "fixed inset-0 z-50 flex",
+      "fixed inset-0 z-overlay flex",
       position === "top"
         ? "h-dvh items-start justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] lg:pt-[max(12dvh,env(safe-area-inset-top))]"
         : "items-center justify-center p-4",
@@ -68,18 +81,26 @@ export const DialogContent = React.forwardRef<
           variants={dialogCard}
           initial="hidden"
           animate="shown"
-          className={cn("pointer-events-auto relative w-full max-w-lg rounded-xl border border-zinc-200 bg-background p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800", position === "top" && "origin-top", className)}
+          className={cn("pointer-events-auto relative w-full max-w-lg rounded-xl border border-border bg-background p-space-6 text-foreground shadow-ui-xl motion-reduce:transition-none", position === "top" && "origin-top", className)}
         >
           {children}
-          <DialogPrimitive.Close
-            aria-label="Close dialog"
-            className={cn(
-              "absolute right-3 top-3 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400",
-              closeButtonClassName
-            )}
+          {closeButtonSize ? (
+            <DialogClose asChild>
+              <IconButton aria-label="Close dialog" size={closeButtonSize} className={cn("absolute right-space-3 top-space-3", closeButtonClassName)}>
+                <X aria-hidden="true" className="size-space-4" />
+              </IconButton>
+            </DialogClose>
+          ) : (
+            <DialogPrimitive.Close
+              aria-label="Close dialog"
+              className={cn(
+                "absolute right-3 top-3 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400",
+                closeButtonClassName
+              )}
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </DialogPrimitive.Close>
+          )}
         </m.div>
       </DialogPrimitive.Content>
     </div>

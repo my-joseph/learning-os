@@ -18,6 +18,18 @@
 }
 
 @layer components {
+  /* Reserve the visual box and extend the hit area into adjacent padding. */
+  @media (any-pointer: coarse) {
+    .expand-touch-target::after {
+      @apply absolute left-1/2 top-1/2 h-full min-h-touch w-full min-w-touch -translate-x-1/2 -translate-y-1/2;
+      content: "";
+    }
+
+    .expand-touch-start::after {
+      @apply left-auto right-0 translate-x-0;
+    }
+  }
+
   /* Focus can land on a leaf's button, but its visible surface is the whole row. */
   :is(button[data-sidebar-row]:focus-visible, [data-sidebar-row]:has(> [role="treeitem"]:focus-visible)) {
     @apply ring-2 ring-inset ring-zinc-500 dark:ring-zinc-400;
@@ -62,6 +74,9 @@ html.light {
 :root,
 html.light {
   --muted: 113 113 122;
+  --foreground-control: 63 63 70;
+  --foreground-menu: var(--foreground-control);
+  --surface-hover-strong: var(--border-control);
   --foreground-subtle: 82 82 91;
   --border: 228 228 231;
   --border-control: 212 212 216;
@@ -103,6 +118,9 @@ html.light {
 html.dark,
 .dark {
   --muted: 161 161 170;
+  --foreground-control: 212 212 216;
+  --foreground-menu: 228 228 231;
+  --surface-hover-strong: 82 82 91;
   --foreground-subtle: 161 161 170;
   --border: 39 39 42;
   --border-control: 63 63 70;
@@ -168,6 +186,7 @@ html.dark,
   --space-16: 4rem;
   --space-20: 5rem;
   --space-24: 6rem;
+  --space-28: 7rem;
   --space-40: 10rem;
   --space-52: 13rem;
   --control-xs: 28px;
@@ -178,6 +197,7 @@ html.dark,
   --panel-right: 276px;
   --control-lg: 48px;
   --width-search: 671px;
+  --height-search: 40rem;
   --width-practice: 720px;
   --text-2xs: 11px;
   --text-caption: 13px;

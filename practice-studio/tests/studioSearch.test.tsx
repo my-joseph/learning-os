@@ -146,8 +146,7 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
       for (const chip of chips) {
         const hoverClasses = [...chip.classList].filter((name) => name.split(":").includes("hover"));
         assert.deepEqual(hoverClasses, [
-          "[@media(hover:hover)]:hover:bg-zinc-100",
-          "dark:[@media(hover:hover)]:hover:bg-zinc-800",
+          "[@media(hover:hover)]:hover:bg-surface-hover",
         ]);
         assert.ok(chip.classList.contains("focus-visible:ring-2"));
         assert.equal([...chip.classList].some((name) => name.split(":").includes("focus")), false);
