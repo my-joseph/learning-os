@@ -10,14 +10,10 @@ import {
   ChevronRight,
   ChevronsDownUp,
   ChevronsUpDown,
-  Copy,
   Layers,
   MessageSquare,
-  MoreHorizontal,
   Search,
   SlidersHorizontal,
-  RotateCcw,
-  Trash2,
   X,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
@@ -53,6 +49,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/shadcn/Popover";
+
+import { DrillRowActions } from "./DrillRowActions";
 
 const noop = () => {};
 
@@ -257,91 +255,6 @@ const SIDEBAR_ROW_SURFACE = "h-8 rounded-md transition-colors";
 
 const SIDEBAR_BRANCH_ROW_CLASS =
   `min-w-0 w-full ${SIDEBAR_ROW_SURFACE} flex items-center gap-1.5 text-left text-sm focus:outline-none hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40`;
-
-function TreeNodeActions({
-  nodeId,
-  onReset,
-  onDelete,
-  open,
-  onOpenChange,
-}: {
-  nodeId: string;
-  onReset: (nodeId: string) => void;
-  onDelete: (nodeId: string) => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const [copied, setCopied] = useState(false);
-  const copyId = async () => {
-    try {
-      await navigator.clipboard.writeText(nodeId);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1200);
-    } catch {
-      // Clipboard permissions can be unavailable in non-secure browser contexts.
-    }
-  };
-
-  return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={`Actions for ${nodeId}`}
-          title="More actions"
-          onClick={(event) => event.stopPropagation()}
-          onKeyDown={(event) => event.stopPropagation()}
-          className="relative mr-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-500 opacity-100 transition-colors hover:text-zinc-900 focus:outline-none dark:text-zinc-400 dark:hover:text-zinc-100 before:content-[''] before:absolute before:inset-2 before:rounded-full before:transition-colors hover:before:bg-zinc-300/70 dark:hover:before:bg-zinc-600/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-zinc-500 dark:focus-visible:before:ring-zinc-400 lg:h-7 lg:w-7 lg:before:inset-0 lg:before:hidden lg:focus-visible:before:block lg:opacity-0 lg:group-hover/leaf:opacity-100 lg:focus-visible:opacity-100"
-        >
-          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        side="right"
-        sideOffset={4}
-        className="w-40 p-1"
-        role="menu"
-        aria-label={`Actions for ${nodeId}`}
-        onKeyDown={(event) => event.stopPropagation()}
-      >
-        <button
-          type="button"
-          role="menuitem"
-          onClick={copyId}
-          className="flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400"
-        >
-          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-          {copied ? "Copied" : "Copy ID"}
-        </button>
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            onOpenChange(false);
-            onReset(nodeId);
-          }}
-          className="flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400"
-        >
-          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-          Reset
-        </button>
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            onOpenChange(false);
-            onDelete(nodeId);
-          }}
-          className={`flex min-h-8 w-full items-center gap-2 rounded px-2 text-left text-sm ${statusTone.wrong.text} hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400`}
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Delete
-        </button>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
   { id: "ALL", label: "All" },
@@ -962,7 +875,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         <HoverRowCode code={hoverCode} isSidebar={isSidebar} />
       </button>
       {isSidebar && item.kind === "drill" && (
-        <TreeNodeActions
+        <DrillRowActions
           nodeId={item.id}
           onReset={onResetDrill}
           onDelete={onDeleteDrill}

@@ -441,9 +441,11 @@ assert.match(sidebarTreeHtml, /lg:h-7 lg:w-7/);
 const sidebarActionSource = readFileSync("src/components/shell/DrillSwitcher.tsx", "utf8");
 assert.match(sidebarActionSource, /data-menu-open=\{openActionNodeId === item\.id/);
 assert.match(sidebarActionSource, /isCurrent \|\| openActionNodeId === item\.id/);
-assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Copy ID/);
-assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Reset/);
-assert.match(sidebarActionSource, /role="menuitem"[\s\S]*?Delete/);
+assert.match(sidebarActionSource, /<DrillRowActions/);
+const drillRowActionsSource = readFileSync("src/components/shell/DrillRowActions.tsx", "utf8");
+assert.match(drillRowActionsSource, /role="menuitem"[\s\S]*?Copy ID/);
+assert.match(drillRowActionsSource, /role="menuitem"[\s\S]*?Reset/);
+assert.match(drillRowActionsSource, /role="menuitem"[\s\S]*?Delete/);
 assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
 assert.match(sidebarTreeHtml, /aria-current="true"/);
 const selectedLeafMarkup = sidebarTreeHtml.match(

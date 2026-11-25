@@ -33,6 +33,7 @@ import {
   type SearchEntry,
   type SearchType,
 } from "@/lib/studioSearch";
+import { DrillRowActions } from "./DrillRowActions";
 
 const types = [
   { value: "all", label: "All" },
@@ -141,6 +142,8 @@ interface StudioSearchPaletteProps {
   switchHref: string | null;
   onReviewSync?: () => void;
   onNavigate: (href: string) => void;
+  onResetDrill?: (id: string) => void;
+  onDeleteDrill?: (id: string) => void;
 }
 
 function SearchResults({
@@ -156,10 +159,13 @@ function SearchResults({
   switchHref,
   onReviewSync,
   onNavigate,
+  onResetDrill,
+  onDeleteDrill,
 }: Omit<StudioSearchPaletteProps, "open" | "onCloseAutoFocus">) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<SearchType>("all");
   const [selectedId, setSelectedId] = useState("");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const otherWorkspace = workspace === "math" ? "code" : "math";
   const [recentIds] = useState(() => [
     ...readRecentDrillIds(workspace),
@@ -232,11 +238,51 @@ function SearchResults({
 
   const renderEntry = (entry: SearchEntry) => {
     const Icon = workspaceIcons[entry.workspace];
-    return (
-      <CommandItem key={entry.id} value={entry.id} onSelect={() => navigate(entry.href)}>
-        <Icon aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+    const hasMenu = entry.kind === "drill" && onResetDrill && onDeleteDrill;
+    const item = (
+      <CommandItem
+        key={entry.id}
+        value={entry.id}
+        onSelect={() => navigate(entry.href)}
+        className={hasMenu ? "pr-12 [@media(hover:hover)]:group-hover/result:text-foreground dark:[@media(hover:hover)]:group-hover/result:text-foreground sm:pr-10 sm:[@media(any-pointer:coarse)]:pr-12" : undefined}
+      >
+        <Icon aria-hidden="true" className="size-4 shrink-0" />
         <span className="min-w-0 flex-1 truncate font-medium">{entry.title}</span>
       </CommandItem>
+    );
+    if (!hasMenu) return item;
+
+    const menuOpen = openMenuId === entry.id;
+    return (
+      <div
+        key={entry.id}
+        role="presentation"
+        data-active={selected === entry.id || menuOpen}
+        className="group/result relative"
+      >
+        {item}
+        <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center opacity-0 [@media(hover:hover)]:group-hover/result:pointer-events-auto [@media(hover:hover)]:group-hover/result:opacity-100 group-focus-within/result:pointer-events-auto group-focus-within/result:opacity-100 group-data-[active=true]/result:pointer-events-auto group-data-[active=true]/result:opacity-100">
+          <DrillRowActions
+            nodeId={entry.id}
+            variant="search"
+            tabIndex={selected === entry.id || menuOpen ? 0 : -1}
+            open={menuOpen}
+            onTooltipEscape={onClose}
+            onOpenChange={(open) => {
+              if (open) setSelectedId(entry.id);
+              setOpenMenuId(open ? entry.id : null);
+            }}
+            onReset={(id) => {
+              onClose();
+              onResetDrill(id);
+            }}
+            onDelete={(id) => {
+              onClose();
+              onDeleteDrill(id);
+            }}
+          />
+        </div>
+      </div>
     );
   };
 
@@ -263,7 +309,7 @@ function SearchResults({
         selectType(types[(index + delta + types.length) % types.length].value);
       }}
     >
-      <div className="flex min-h-12 shrink-0 items-center gap-3 pl-4 pr-12">
+      <div className="flex min-h-12 shrink-0 items-center gap-3 pl-5 pr-12">
         <Search aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
         <CommandInput
           ref={inputRef}
@@ -276,7 +322,7 @@ function SearchResults({
           }}
         />
       </div>
-      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-2 pb-2 dark:border-zinc-800">
+      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-3 pb-2 dark:border-zinc-800">
         {types.map(({ value, label }) => (
           <button
             key={value}
@@ -286,7 +332,7 @@ function SearchResults({
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") event.stopPropagation();
             }}
-            className="h-7 rounded-md px-2 text-sm text-zinc-600 transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium aria-pressed:text-zinc-900 motion-reduce:transition-none dark:text-zinc-400 dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70 dark:aria-pressed:text-zinc-100"
+            className="h-7 rounded-md px-2 text-sm text-foreground transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium motion-reduce:transition-none dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70"
           >
             {label}
           </button>
@@ -295,7 +341,7 @@ function SearchResults({
       <CommandList label="Search results" className="min-h-28 py-1.5">
         {due.length > 0 && <CommandGroup heading="Needs attention">{due.map(renderEntry)}</CommandGroup>}
         {!search && type === "all" && (dueLoading || dueError) && (
-          <p role="status" className="px-4 pb-1 pt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-5 pb-1 pt-2 text-sm text-zinc-500 dark:text-zinc-400">
             {dueLoading ? "Loading due reviews…" : "Due reviews could not be loaded."}
           </p>
         )}
@@ -305,27 +351,27 @@ function SearchResults({
           <CommandGroup heading="Actions">
             {actions.map(({ id, title, icon: Icon, run }) => (
               <CommandItem key={id} value={id} onSelect={run}>
-                <Icon aria-hidden="true" className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Icon aria-hidden="true" className="size-4 shrink-0" />
                 {title}
               </CommandItem>
             ))}
           </CommandGroup>
         )}
         {loading ? (
-          <CommandLoading label="Loading search results" className="px-4 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <CommandLoading label="Loading search results" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
             Loading practice items…
           </CommandLoading>
         ) : loadError ? (
-          <p role="status" className="px-4 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
             Some practice items could not be loaded.
           </p>
         ) : ids.length === 0 && (
-          <p role="status" className="px-4 py-5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p role="status" className="px-5 py-5 text-sm text-zinc-500 dark:text-zinc-400">
             {search ? "No matching results." : `No ${resultsLabel?.toLowerCase()} in this workspace.`}
           </p>
         )}
       </CommandList>
-      <div className="hidden shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-4 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:flex">
+      <div className="hidden shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 bg-surface-panel px-5 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:flex">
         {[
           ["Close", "Esc"],
           [query ? "Change type at text edges" : "Change type", "← →"],
@@ -346,9 +392,9 @@ export function StudioSearchPalette({ open, onClose, onCloseAutoFocus, ...props 
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent
         position="top"
-        className="flex max-h-[min(40rem,100%)] max-w-xl flex-col overflow-hidden bg-white p-0 dark:bg-background"
-        closeButtonClassName="right-2 top-2.5 min-h-7 min-w-7"
-        overlayClassName="bg-black/25 dark:bg-black/40"
+        className="flex max-h-[min(40rem,100%)] max-w-[671px] flex-col overflow-hidden bg-white p-0 dark:bg-background"
+        closeButtonClassName="right-4 top-2.5 min-h-7 min-w-7 text-foreground dark:text-foreground"
+        overlayClassName="bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogTitle className="sr-only">Search Practice Studio</DialogTitle>
