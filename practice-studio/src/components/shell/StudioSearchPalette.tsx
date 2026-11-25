@@ -276,7 +276,7 @@ function SearchResults({
           }}
         />
       </div>
-      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-3 pb-2 dark:border-zinc-800">
+      <div role="group" aria-label="Result type" className="flex shrink-0 gap-0.5 border-b border-zinc-200 px-2 pb-2 dark:border-zinc-800">
         {types.map(({ value, label }) => (
           <button
             key={value}
