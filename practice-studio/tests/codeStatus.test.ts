@@ -131,7 +131,7 @@ assert.equal(failingStatus.testsSymbol, "✗");
 assert.equal(failingStatus.lintSymbol, "✗");
 assert.equal(failingStatus.typesSymbol, "✗");
 assert.deepEqual(failingStatus.failures, [
-  "Q01_clampPort.ts:0 test 1 hidden check failed",
+  "test failed: 1 hidden check failed",
   "Q01_clampPort.ts:12 no-param-reassign Assignment to function parameter 'port'.",
   "Q01_clampPort.ts:15 TS2322 Type 'string' is not assignable to type 'number'.",
 ]);

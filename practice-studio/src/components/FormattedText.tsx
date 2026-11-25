@@ -20,6 +20,34 @@ export function codeLanguageLabel(lang: string | null | undefined): string {
   return CODE_LANGUAGE_LABELS[lang.toLowerCase()] ?? lang;
 }
 
+const TERMINAL_LANGUAGES = new Set(["terminal", "console", "shell-session"]);
+
+function parseFenceInfo(info: string) {
+  const firstWord = info.split(/\s+/, 1)[0];
+  const lang = firstWord && !firstWord.startsWith("{") && !firstWord.includes("=") ? firstWord : null;
+  let title: string | undefined;
+  const highlightedLines: Array<readonly [number, number]> = [];
+  // Consume quoted values and brace groups whole, including in unknown options.
+  const tokens = info.slice(lang?.length ?? 0).match(/(?:[^\s"{]+|"(?:\\.|[^"\\])*(?:"|\\?$)|\{[^}]*\}?)+/g) ?? [];
+  for (const token of tokens) {
+    const titleMatch = /^title="((?:\\.|[^"\\])*)"$/.exec(token);
+    if (titleMatch) {
+      title = titleMatch[1].replace(/\\(["\\])/g, "$1").trim() || title;
+      continue;
+    }
+
+    const rangeMatch = /^\{\s*(\d+(?:\s*-\s*\d+)?(?:\s*,\s*\d+(?:\s*-\s*\d+)?)*)\s*\}$/.exec(token);
+    if (!rangeMatch) continue;
+    for (const entry of rangeMatch[1].split(",")) {
+      const [first, last = first] = entry.split("-").map(Number);
+      if (first > 0 && first <= last && Number.isSafeInteger(last)) {
+        highlightedLines.push([first, last]);
+      }
+    }
+  }
+  return { lang, title, highlightedLines };
+}
+
 interface FormattedTextProps {
   text: string;
   className?: string;
@@ -46,7 +74,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     const rawLines = text.split("\n");
     const out: Array<
       | { kind: "line"; line: string; lineIdx: number }
-      | { kind: "code"; code: string; lang: string | null; lineIdx: number }
+      | { kind: "code"; code: string; info: ReturnType<typeof parseFenceInfo>; lineIdx: number }
     > = [];
     let i = 0;
     while (i < rawLines.length) {
@@ -55,7 +83,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
       if (trimmedCurrent.startsWith("```")) {
         const startIdx = i;
         const fenceInfo = trimmedCurrent.slice(3).trim();
-        const lang = fenceInfo.split(/\s+/)[0] || null;
+        const info = parseFenceInfo(fenceInfo);
         i++;
         const codeLines: string[] = [];
         while (i < rawLines.length && !rawLines[i].trim().startsWith("```")) {
@@ -65,7 +93,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         if (i < rawLines.length && rawLines[i].trim().startsWith("```")) {
           i++;
         }
-        out.push({ kind: "code", code: codeLines.join("\n"), lang, lineIdx: startIdx });
+        out.push({ kind: "code", code: codeLines.join("\n"), info, lineIdx: startIdx });
       } else {
         out.push({ kind: "line", line: current, lineIdx: i });
         i++;
@@ -193,13 +221,19 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     <div className={`space-y-1.5 ${className}`}>
       {blocks.map((block) => {
         if (block.kind === "code") {
+          const { lang, title, highlightedLines } = block.info;
+          if (lang && TERMINAL_LANGUAGES.has(lang.toLowerCase())) {
+            return <CodeBlock key={block.lineIdx} variant="terminal" code={block.code} title={title} />;
+          }
           return (
             <CodeBlock
               key={block.lineIdx}
               variant="full-file"
               code={block.code}
-              language={block.lang}
-              filename={codeLanguageLabel(block.lang)}
+              language={lang}
+              filename={title ?? codeLanguageLabel(lang)}
+              highlightedLines={highlightedLines}
+              preserveWhitespace
             />
           );
         }

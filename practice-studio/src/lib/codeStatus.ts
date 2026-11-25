@@ -229,17 +229,17 @@ export function formatReviewRunFailures(
 
   if (Array.isArray(reviewRun.tests?.failed)) {
     for (const failedName of maskHiddenTestFailures(reviewRun.tests.failed)) {
-      lines.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${failedName}`));
+      lines.push(sanitizeCodeCheckError(`test failed: ${failedName}`));
     }
   }
 
   if (Array.isArray(reviewRun.lint)) {
     for (const item of reviewRun.lint) {
       const file = sanitizeCodeCheckError(item.file || fileFallback);
-      const line = typeof item.line === "number" ? item.line : 0;
+      const where = typeof item.line === "number" && item.line > 0 ? `${file}:${item.line}` : file;
       const rule = item.rule || "lint";
       lines.push(
-        sanitizeCodeCheckError(`${file}:${line} ${rule} ${item.message || ""}`.trim())
+        sanitizeCodeCheckError(`${where} ${rule} ${item.message || ""}`.trim())
       );
     }
   }
@@ -252,13 +252,13 @@ export function formatReviewRunFailures(
 
   for (const item of typeItems) {
     const file = sanitizeCodeCheckError(item.file || fileFallback);
-    const line = typeof item.line === "number" ? item.line : 0;
+    const where = typeof item.line === "number" && item.line > 0 ? `${file}:${item.line}` : file;
     const msg = (item.message || "").trim();
     const match = TS_CODE_RE.exec(msg);
     if (match) {
-      lines.push(sanitizeCodeCheckError(`${file}:${line} ${match[1]} ${match[2]}`.trim()));
+      lines.push(sanitizeCodeCheckError(`${where} ${match[1]} ${match[2]}`.trim()));
     } else {
-      lines.push(sanitizeCodeCheckError(`${file}:${line} tsc ${msg}`.trim()));
+      lines.push(sanitizeCodeCheckError(`${where} tsc ${msg}`.trim()));
     }
   }
 
@@ -333,7 +333,6 @@ export function deriveCodeStatus(
   } else if (latestReview) {
     failures = formatReviewRunFailures(latestReview, defaultFile);
   } else if (state?.lastTestReport && !state.lastTestReport.allPassed) {
-    const fileFallback = defaultFile || "solution.js";
     const failingResults = (state.lastTestReport.visibleResults || []).filter(
       (r) => !r.passed
     );
@@ -343,7 +342,7 @@ export function deriveCodeStatus(
         hiddenFailedCount += 1;
       } else {
         const detail = r.error ? ` ${r.error.split("\n")[0].trim()}` : "";
-        failures.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${r.name}${detail}`));
+        failures.push(sanitizeCodeCheckError(`test failed: ${r.name}${detail}`));
       }
     }
     if (hiddenFailedCount > 0) {
@@ -351,7 +350,7 @@ export function deriveCodeStatus(
         hiddenFailedCount === 1
           ? "1 hidden check failed"
           : `${hiddenFailedCount} hidden checks failed`;
-      failures.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${label}`));
+      failures.push(sanitizeCodeCheckError(`test failed: ${label}`));
     }
   }
 

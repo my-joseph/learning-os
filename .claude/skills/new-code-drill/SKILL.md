@@ -58,6 +58,31 @@ Per problem:
 - `constraints` (optional): `string[]` listing input bounds/limits whenever the input has limits (e.g. `["1 <= items.length <= 10^4"]`).
 - `steps`: concise explanation steps (`[{"explain": "..."}]`); `verificationLevel: "partial"`.
 
+### Code fences in Studio
+
+- Use `{lines}` to point a worked step at the line it explains. Use 1-based line numbers and inclusive ranges. In a prompt, highlight only details the learner is already given. Keep the bug location, answers, and hidden cases out of the prompt.
+- Use `title="…"` on each file in a multi-file example so the learner can tell which snippet belongs to which file. Combine it with line highlighting when both are useful.
+- Use a `terminal` fence for expected CLI output. Prefix command lines with `$ `. In a prompt, use CLI examples only when the output is already part of the public contract and does not give away the answer.
+
+````markdown
+```js {2}
+const options = { format: "text" };
+printOptions(options);
+```
+
+```js title="app.js"
+import { settings } from "./settings.js";
+```
+```js title="settings.js"
+export const settings = { format: "text" };
+```
+
+```terminal
+$ node app.js --version
+1.2.0
+```
+````
+
 ## 5. Pre-flight check (`--check`)
 
 ```bash

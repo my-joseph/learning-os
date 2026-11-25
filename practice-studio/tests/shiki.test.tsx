@@ -145,7 +145,7 @@ async function main() {
   assert.match(selectableHtml, /aria-pressed="false"[^>]*aria-label="Select line 1"/);
   assert.match(selectableHtml, /aria-pressed="true"[^>]*aria-label="Select line 3"/);
 
-  const { window } = new JSDOM("<div id='root'></div>");
+  const { window } = new JSDOM("<div id='root'></div>", { url: "http://localhost" });
   Object.assign(globalThis, { window, document: window.document, IS_REACT_ACT_ENVIRONMENT: true });
   const { createRoot } = await import("react-dom/client");
   const root = createRoot(window.document.getElementById("root")!);
@@ -169,6 +169,37 @@ async function main() {
       assert.equal(row.dispatchEvent(event), false);
     }
     assert.deepEqual(selectedCalls, [3, 3, 3]);
+
+    const pre = window.document.querySelector("pre")!;
+    const wrapButton = window.document.querySelector<HTMLButtonElement>('[aria-label="Wrap lines"]')!;
+    assert.equal(pre.hasAttribute("data-wrap"), false);
+    assert.equal(wrapButton.getAttribute("aria-controls"), pre.id);
+    await act(() => wrapButton.click());
+    assert.equal(wrapButton.getAttribute("aria-pressed"), "true");
+    assert.equal(wrapButton.getAttribute("aria-label"), "Unwrap");
+    assert.equal(pre.getAttribute("data-wrap"), "true");
+    assert.equal(window.localStorage.getItem("practice_studio_code_wrap"), "true");
+    const transcript = "$ node app.js\n\nReady";
+    let copiedText = "";
+    Object.defineProperty(globalThis.navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async (text: string) => { copiedText = text; } },
+    });
+    try {
+      await act(() => root.render(<CodeBlock variant="terminal" code={transcript} exitCode={0} />));
+      const terminalPre = window.document.querySelector("pre")!;
+      assert.equal(terminalPre.getAttribute("data-wrap"), "true");
+      assert.equal(terminalPre.hasAttribute("data-numbered"), false);
+      assert.equal(terminalPre.textContent, transcript);
+      const footer = window.document.querySelector('[data-slot="code-block-footer"]')!;
+      assert.equal(footer.textContent, "Exit code 0");
+      assert.ok(footer.classList.contains("text-status-correct-text"));
+      const copy = Array.from(window.document.querySelectorAll("button")).find(button => button.textContent === "Copy")!;
+      await act(() => copy.click());
+      assert.equal(copiedText, transcript);
+    } finally {
+      Reflect.deleteProperty(globalThis.navigator, "clipboard");
+    }
   } finally {
     await act(() => root.unmount());
     window.close();

@@ -23,9 +23,10 @@ Review & Sync shows an amber **Synced with problems** banner when a Notion write
 
 ## Code display
 
-- Full-file blocks show the filename, line numbers, and a Copy button. Bug-finding problems also let learners select lines by click or keyboard. Fenced snippets and full-file blocks scroll within the code surface when a line exceeds the available width.
+- Full-file blocks show the filename, line numbers, and Copy. Bug-finding problems also let learners select lines by click or keyboard. Wrap lines switches from horizontal scrolling to wrapped lines with a single number per source line. Studio remembers the choice per browser.
 - Input and Output examples, visible test assertions, and sync diagnostics wrap. Supported programming snippets use Studio's lazy-loaded Shiki grammars and GitHub light and dark themes.
-- Fences in worked steps and review text use the same shared block. Reference files appear in the Reference disclosure after a passing review in the current attempt cycle.
+- Fences in prompts, worked steps, and review text support optional filenames, line highlights, and CLI transcripts. See the [Markdown code fence syntax](design/components.md#markdown-code-fences). Reference files appear in the Reference disclosure after a passing review in the current attempt cycle.
+- Run checks shows test counts and available diagnostics in a copyable Terminal block for both programming drills and labs. Hidden cases appear as aggregate counts. Private runner transcripts stay server-side.
 
 ## Layout
 - Edge-to-edge flat hairline 3-pane desktop layout (`>=1024 px`) separated by `1 px` `zinc-200` / `zinc-800` hairlines:
