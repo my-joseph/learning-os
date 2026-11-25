@@ -7,6 +7,10 @@ export function plainTitle(title: string | null | undefined): string {
   return title.replace(/`/g, "").trim();
 }
 
+export function isCurriculumId(text: string): boolean {
+  return /^(?:(?:DRL-)?(?:MTH|PHY|PRG)-[A-Z0-9]+|LAB-[A-Z0-9]+)(?:-[A-Z0-9]+)*$/i.test(text);
+}
+
 const TRAP_PREFIX_RE = /^(?:t\d+-)?(?:c\d+-)?(?:u\d+-)?/i;
 
 /**

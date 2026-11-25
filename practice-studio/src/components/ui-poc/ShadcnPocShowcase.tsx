@@ -32,7 +32,7 @@ export function ShadcnPocShowcase() {
       <header className="mb-8 flex min-w-0 flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Component proof of concept</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">shadcn/ui + Radix</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">shadcn/ui + Radix</h1>
           <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">A focused interaction and token review on the current Practice Studio stack.</p>
         </div>
         <ThemeToggleButton theme={theme} onToggle={handleToggleTheme} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border border-zinc-300 text-foreground hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:border-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400" />
@@ -64,8 +64,8 @@ export function ShadcnPocShowcase() {
             <Tabs defaultValue="overview">
               <TabsList aria-label="Status examples"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="complete">Complete</TabsTrigger><TabsTrigger value="pending">Pending</TabsTrigger></TabsList>
               <TabsContent value="overview"><p className="text-sm">Keyboard navigation follows the logical tab order.</p></TabsContent>
-              <TabsContent value="complete"><span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusTone.correct.softCard} ${statusTone.correct.text}`}>Complete</span></TabsContent>
-              <TabsContent value="pending"><span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusTone.notTried.softCard} ${statusTone.notTried.text}`}>Not started</span></TabsContent>
+              <TabsContent value="complete"><span className={`inline-flex rounded-full px-3 py-1 text-sm font-normal ${statusTone.correct.softCard} ${statusTone.correct.text}`}>Complete</span></TabsContent>
+              <TabsContent value="pending"><span className={`inline-flex rounded-full px-3 py-1 text-sm font-normal ${statusTone.notTried.softCard} ${statusTone.notTried.text}`}>Not started</span></TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -85,7 +85,7 @@ export function ShadcnPocShowcase() {
         <Card aria-labelledby="popover-heading">
           <CardHeader><CardTitle id="popover-heading">Popover and tooltip</CardTitle><CardDescription>Both patterns support keyboard access and Escape dismissal.</CardDescription></CardHeader>
           <CardContent className="flex min-w-0 flex-wrap items-center gap-3">
-            <Popover><PopoverTrigger asChild><Button variant="outline">Open details</Button></PopoverTrigger><PopoverContent aria-label="Interface details"><p className="font-medium">Interface details</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Neutral surfaces use the existing zinc scale.</p></PopoverContent></Popover>
+            <Popover><PopoverTrigger asChild><Button variant="outline">Open details</Button></PopoverTrigger><PopoverContent aria-label="Interface details"><p className="font-normal">Interface details</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Neutral surfaces use the existing zinc scale.</p></PopoverContent></Popover>
             <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild><Button size="icon" variant="ghost" aria-label="Help about focus"><CircleHelp aria-hidden="true" className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Focus remains visible for keyboard users.</TooltipContent></Tooltip></TooltipProvider>
           </CardContent>
         </Card>
@@ -119,13 +119,13 @@ export function ShadcnPocShowcase() {
         <Card aria-labelledby="hover-card-heading">
           <CardHeader><CardTitle id="hover-card-heading">Hover card</CardTitle><CardDescription>Supplementary previews are available on hover and keyboard focus.</CardDescription></CardHeader>
           <CardContent>
-            <HoverCard openDelay={200}><HoverCardTrigger asChild><Button variant="outline">Preview a concept</Button></HoverCardTrigger><HoverCardContent><p className="font-medium">Concept preview</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">A short, optional summary can provide context without interrupting the page.</p></HoverCardContent></HoverCard>
+            <HoverCard openDelay={200}><HoverCardTrigger asChild><Button variant="outline">Preview a concept</Button></HoverCardTrigger><HoverCardContent><p className="font-normal">Concept preview</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">A short, optional summary can provide context without interrupting the page.</p></HoverCardContent></HoverCard>
           </CardContent>
         </Card>
 
         <Card aria-labelledby="input-heading">
           <CardHeader><CardTitle id="input-heading">Input states</CardTitle><CardDescription>Text fields keep clear focus and disabled states.</CardDescription></CardHeader>
-          <CardContent className="grid min-w-0 gap-3"><label htmlFor="poc-search" className="text-sm font-medium">Search sample content</label><Input id="poc-search" placeholder="Enter a search term" /><Input aria-label="Disabled sample input" disabled placeholder="Disabled field" /></CardContent>
+          <CardContent className="grid min-w-0 gap-3"><label htmlFor="poc-search" className="text-sm font-normal">Search sample content</label><Input id="poc-search" placeholder="Enter a search term" /><Input aria-label="Disabled sample input" disabled placeholder="Disabled field" /></CardContent>
         </Card>
 
         <Card aria-labelledby="skeleton-heading">

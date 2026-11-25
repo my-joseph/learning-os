@@ -166,7 +166,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         return (
           <span
             key={idx}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 align-baseline"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-normal bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 align-baseline"
             title={`Concept Vault: ${key}`}
           >
             <BookOpen className="w-3 h-3 shrink-0 opacity-70" />
@@ -280,7 +280,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
               key={lineIdx}
               className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <span className="font-display tabular-nums text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
+              <span className="font-sans tabular-nums text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
                 {num}.
               </span>
               <div className="flex-1">{renderInline(numContent)}</div>

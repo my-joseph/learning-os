@@ -170,7 +170,8 @@ async function runTests() {
         onNextItem={() => {}}
       />
     );
-    assert.match(activeHtml, /<h1[^>]*whitespace-nowrap[^>]*>Daily review<\/h1>/);
+    assert.match(activeHtml, /<h1[^>]*font-heading[^>]*>Daily review<\/h1>/);
+    assert.doesNotMatch(activeHtml, /font-mono[^>]*>DRL-MTH-T01-C04-U01-01</);
     assert.match(activeHtml, /aria-label="Review progress"[^>]*whitespace-nowrap[^>]*>Review 1 of 3/);
     assert.match(activeHtml, /aria-label="Back to drill"[^>]*min-h-\[44px\] min-w-\[44px\]/);
     assert.equal(
@@ -631,10 +632,10 @@ async function runTests() {
       />
     );
     assert.match(endHtml, /Review complete/);
-    assert.match(endHtml, /2 \/ 3 correct/);
+    assert.match(endHtml, /2 \/ 3<\/span> correct/);
     assert.match(endHtml, /Still due 4/);
-    assert.match(endHtml, /1 moved up a level/);
-    assert.match(endHtml, /1 moved down a level/);
+    assert.match(endHtml, /1<\/span> moved up a level/);
+    assert.match(endHtml, /1<\/span> moved down a level/);
     assert.match(endHtml, /Tomorrow/);
     assert.match(endHtml, /Review 4 more/);
     assert.match(endHtml, /Missed \(1\)/);

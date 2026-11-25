@@ -125,7 +125,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
           >
             {sections.map((section) => (
               <div key={section.id} className="space-y-space-1_5">
-                <div className="text-xs font-medium text-muted">
+                <div className="text-xs font-normal text-muted">
                   {section.heading}
                 </div>
                 <div className="flex flex-wrap gap-space-1_5">

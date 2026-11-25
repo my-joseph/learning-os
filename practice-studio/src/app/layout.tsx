@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-// Learner font choice 2026-11-22: Geist / Geist Fallback (font-sans), Roboto Slab (display /
-// secondary accent: scores, counters, timers, curriculum IDs), Geist Mono (code only), KaTeX (math).
+// Learner font choice 2026-11-25: Geist (UI and small numerals, 400/600),
+// Roboto Slab (prominent headings and numerals, 500/600), Geist Mono (code and curriculum IDs), KaTeX (math).
 import "@fontsource-variable/roboto-slab";
 import "katex/dist/katex.min.css";
 import "./globals.css";
@@ -11,13 +11,13 @@ import { THEME_INIT_SCRIPT } from "@/lib/studioRules";
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  weight: "100 900",
+  weight: "400 600",
 });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  weight: "100 900",
+  weight: "400 600",
   fallback: ["Geist Fallback", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
 });
 

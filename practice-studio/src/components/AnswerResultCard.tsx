@@ -159,7 +159,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                         )}
                       </span>
                       {model.attemptNumber !== null && !isReviewSession && (
-                        <span className="text-xs font-display tabular-nums text-muted">
+                        <span className="text-xs font-sans tabular-nums text-muted">
                           Attempt {model.attemptNumber}
                         </span>
                       )}

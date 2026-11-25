@@ -3,6 +3,7 @@
 import React from "react";
 import { Equal, Loader2 } from "lucide-react";
 import { IconButton } from "@/components/ui/shadcn/Button";
+import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/shadcn/Input";
 
 export const ANSWER_FIELD_CONTAINER_CLASS =
@@ -52,6 +53,7 @@ export interface PlainAnswerFieldProps {
   "aria-label": string;
   isChecking: boolean;
   locked?: boolean;
+  code?: boolean;
 }
 
 /** Shared plain-text answer input with embedded `=` check button. */
@@ -64,6 +66,7 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
   "aria-label": ariaLabel,
   isChecking,
   locked = false,
+  code = false,
 }) => {
   return (
     <div className={ANSWER_FIELD_CONTAINER_CLASS}>
@@ -85,7 +88,7 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className={locked ? "opacity-muted cursor-default" : undefined}
+        className={cn(code && "font-mono normal-nums placeholder:font-sans", locked && "opacity-muted cursor-default")}
       />
       <InlineCheckButton
         onClick={onCheck}

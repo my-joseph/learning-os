@@ -455,7 +455,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   <button
                     type="button"
                     onClick={handleReviewRetry}
-                    className="inline-flex min-h-[36px] items-center rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800"
+                    className="inline-flex min-h-[36px] items-center rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 text-xs font-normal text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800"
                   >
                     Try again
                   </button>

@@ -17,7 +17,7 @@ export function SectionHeader({ expanded, controls, className, children, ...prop
       aria-expanded={expanded}
       aria-controls={controls}
       className={cn(
-        "flex min-h-touch w-full items-center gap-space-1 rounded-md px-space-1_5 text-left text-xs font-medium text-muted transition-colors hover:text-foreground-section-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-muted motion-reduce:transition-none lg:min-h-0 lg:py-space-1",
+        "flex min-h-touch w-full items-center gap-space-1 rounded-md px-space-1_5 text-left text-xs font-normal text-muted transition-colors hover:text-foreground-section-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-muted motion-reduce:transition-none lg:min-h-0 lg:py-space-1",
         className
       )}
     >

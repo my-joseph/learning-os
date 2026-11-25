@@ -1,5 +1,6 @@
 "use client";
 
+import { Numeral } from "@/components/ui/Numeral";
 import React, { useState } from "react";
 import {
   AlertTriangle,
@@ -115,32 +116,28 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             Submit lab
           </h2>
           <p className="text-sm text-zinc-600 dark:text-zinc-300">
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {passed}
-            </span>{" "}
-            of{" "}
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {total}
-            </span>{" "}
+            <Numeral variant="lg" className="text-foreground">{passed}</Numeral>
+            {" "}of{" "}
+            <Numeral variant="lg" className="text-foreground">{total}</Numeral>{" "}
             milestones passed
             {awaitingReview > 0 && (
               <>
                 {" · "}
-                <span className="font-display tabular-nums">{awaitingReview}</span>{" "}
+                <span className="font-sans tabular-nums">{awaitingReview}</span>{" "}
                 awaiting review
               </>
             )}
             {revise > 0 && (
               <>
                 {" · "}
-                <span className="font-display tabular-nums">{revise}</span>{" "}
+                <span className="font-sans tabular-nums">{revise}</span>{" "}
                 needs revision
               </>
             )}
             {notTried > 0 && (
               <>
                 {" · "}
-                <span className="font-display tabular-nums">{notTried}</span>{" "}
+                <span className="font-sans tabular-nums">{notTried}</span>{" "}
                 not tried
               </>
             )}
@@ -222,8 +219,9 @@ export const SyncCard: React.FC<SyncCardProps> = ({
             <ListDot kind="info" />
             <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span>Drill result:</span>
-              <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                {summary.score} / {summary.maxScore} points ({summary.accuracyPct}%)
+              <span className="tabular-nums text-foreground">
+                <Numeral variant="lg" className="leading-none">{summary.score} / {summary.maxScore}</Numeral>
+                {" "}points ({summary.accuracyPct}%)
               </span>
               <span aria-hidden="true" className="text-zinc-400 dark:text-zinc-500">
                 ·
@@ -241,7 +239,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 type="button"
                 disabled={isSyncing}
                 onClick={() => onStatusOverrideChange(toggleTargetStatus)}
-                className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {toggleLabel}
               </Button>}
@@ -278,7 +276,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 {preview.logLines.length > 0 ? (
                   <>
                     <span>
-                      <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                      <span className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
                         {preview.logLines.length}
                       </span>{" "}
                       {preview.logLines.length === 1 ? "line" : "lines"} added to{" "}
@@ -291,7 +289,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       onClick={() => setShowLines((prev) => !prev)}
                       aria-expanded={showLines}
                       aria-controls="sync-preview-log-lines"
-                      className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                      className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                     >
                       <span>{showLines ? "Hide lines" : "Show lines"}</span>
                       <ChevronDown
@@ -336,9 +334,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 {preview.coveredUnits.map((u, idx) => (
                   <React.Fragment key={u.unitCode}>
                     {idx > 0 && ", "}
-                    <span className="font-display font-semibold text-zinc-900 dark:text-zinc-100">
-                      {u.unitCode}
-                    </span>
+                    <code className="font-mono text-foreground">{u.unitCode}</code>
                   </React.Fragment>
                 ))}
                 <span> are recalculated from all your practice</span>
@@ -354,24 +350,20 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                     return (
                       <p key={u.unitCode}>
                         {showCode && (
-                          <span className="font-display text-zinc-700 dark:text-zinc-300 mr-1.5">
-                            {u.unitCode}
-                          </span>
+                          <code className="font-mono text-foreground-control mr-1.5">{u.unitCode}</code>
                         )}
                         <span>now </span>
                         {u.mastery !== null && (
                           <>
                             <span>Mastery </span>
-                            <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300">
-                              {u.mastery}
-                            </span>
+                            <Numeral variant="lg" className="leading-none text-foreground-control">{u.mastery}</Numeral>
                           </>
                         )}
                         {u.mastery !== null && u.nextReview && <span> · </span>}
                         {u.nextReview && (
                           <>
                             <span>next review </span>
-                            <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300">
+                            <span className="font-sans tabular-nums text-zinc-700 dark:text-zinc-300">
                               {formatShortDate(u.nextReview)}
                             </span>
                           </>
@@ -390,7 +382,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               <ListDot kind="info" />
               <div className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span>
-                  <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  <span className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
                     {preview.unansweredCount}
                   </span>{" "}
                   not tried. They are sent as not tried.
@@ -399,7 +391,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   <Button variant="ghost" size="compact"
                     type="button"
                     onClick={onAnswerFirstUnanswered}
-                    className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                    className="inline-flex items-center min-h-[44px] sm:min-h-[32px] text-xs font-normal text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                   >
                     Answer them first
                   </Button>
@@ -416,7 +408,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
         {effectiveSyncPhase === "changed" && (
           <div className="rounded-xl bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-3.5 py-2.5 text-xs text-zinc-700 dark:text-zinc-300">
             You changed{" "}
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+            <span className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
               {changedCount}
             </span>{" "}
             {changedCount === 1 ? "thing" : "things"} since the last sync.
@@ -434,7 +426,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   {syncTime.shortTime && (
                     <>
                       {" · "}
-                      <span className="font-display tabular-nums">{syncTime.shortTime}</span>
+                      <span className="font-sans tabular-nums">{syncTime.shortTime}</span>
                     </>
                   )}
                 </span>
@@ -445,7 +437,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   href={notionUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs font-medium ${statusTone.correct.text} hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded`}
+                  className={`inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs font-normal ${statusTone.correct.text} hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded`}
                 >
                   <span>Open in Notion</span>
                   <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -466,15 +458,15 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                           {label}
                         </span>
                         {" · Mastery "}
-                        <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                        <Numeral variant="lg" className="leading-none text-foreground">
                           {prevMastery !== null && prevMastery !== undefined
                             ? `${prevMastery} → ${upd.mastery}`
                             : upd.mastery}
-                        </span>
+                        </Numeral>
                         {upd.nextReview && (
                           <>
                             {" · next review "}
-                            <span className="font-display tabular-nums text-zinc-900 dark:text-zinc-100">
+                            <span className="font-sans tabular-nums text-zinc-900 dark:text-zinc-100">
                               {formatShortDate(upd.nextReview)}
                             </span>
                           </>
@@ -484,7 +476,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-600 dark:text-zinc-400">
                           <span>
                             Capped at{" "}
-                            <span className="font-display tabular-nums">{upd.mastery}</span>
+                            <span className="font-sans tabular-nums">{upd.mastery}</span>
                             {" · "}
                             {upd.masteryCap.reason}
                           </span>
@@ -492,7 +484,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                             <Button variant="ghost" size="compact"
                               type="button"
                               onClick={() => onOpenL4Challenge(l4Challenge.index)}
-                              className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                              className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-normal text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                             >
                               <span>Try an L4 challenge</span>
                               <ArrowRight className="w-3 h-3" aria-hidden="true" />
@@ -511,7 +503,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                 type="button"
                 onClick={onSync}
                 disabled={isSyncing}
-                className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs font-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
               >
                 <span>Sync again</span>
               </Button>
@@ -548,7 +540,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         type="button"
                         onClick={() => setShowErrorDetails((prev) => !prev)}
                         aria-expanded={showErrorDetails}
-                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                       >
                         <span>Details</span>
                         <ChevronDown
@@ -616,7 +608,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                         type="button"
                         onClick={() => setShowErrorDetails((prev) => !prev)}
                         aria-expanded={showErrorDetails}
-                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                        className="inline-flex items-center gap-0.5 min-h-[44px] sm:min-h-[32px] font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                       >
                         <span>Details</span>
                         <ChevronDown
@@ -628,7 +620,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       </Button>
                       <CopyButton
                         text={errorFullText}
-                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                         timeoutMs={1500}
                         copiedContent={
                           <>
@@ -680,7 +672,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               type="button"
               onClick={onSync}
               disabled={isSyncing}
-              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-600 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-600 text-xs font-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
             >
               <span>Sync again</span>
             </Button>
@@ -698,7 +690,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               disabled={isSyncing || !preview.hasAnyAttempt || preview.summary.maxScore === 0}
               className={
                 !preview.hasAnyAttempt || preview.summary.maxScore === 0
-                  ? "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-sm font-medium cursor-not-allowed shrink-0"
+                  ? "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-sm font-normal cursor-not-allowed shrink-0"
                   : "w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0"
               }
             >

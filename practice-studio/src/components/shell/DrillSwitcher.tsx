@@ -22,12 +22,8 @@ import {
   buildPickerSections,
   buildVisibleTreeRows,
   collectAllTreeCodes,
-  extractChapterShortCode,
-  extractLeafHoverCode,
-  extractShortCode,
   filterPickerItems,
   findFirstLeafNodeId,
-  formatFullRowCode,
   getPickerStatusLabel,
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
@@ -41,6 +37,7 @@ import {
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
 import { ListRow } from "@/components/ui/ListRow";
+import { TreeHoverPreviewHost } from "@/components/ui/TreeHoverPreview";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { plainTitle } from "@/lib/titleText";
@@ -209,33 +206,22 @@ function NoteBadge({
   return null;
 }
 
-function HoverRowCode({ code, isSidebar = false }: { code: string; isSidebar?: boolean }) {
-  // Zero-width anchor: the code floats over the end of the title on hover, so the row never
-  // changes width (no jitter) and nothing is reserved when not hovered.
-  return (
-    <span className="relative w-0 shrink-0 self-stretch">
-      <span
-        data-sidebar-row-code={isSidebar || undefined}
-        aria-hidden={isSidebar || undefined}
-        className={`pointer-events-none absolute right-space-1_5 top-1/2 -translate-y-1/2 hidden ${isSidebar ? "" : "group-hover:block group-focus-visible:block "}whitespace-nowrap rounded px-space-1 bg-surface-hover font-display text-2xs text-muted tabular-nums`}
-      >
-        {code}
-      </span>
-    </span>
-  );
-}
-
 function CountPill({ count, isSidebar = false }: { count: number; isSidebar?: boolean }) {
   return (
     <Badge
       variant="status"
-      className={`text-2xs font-display tabular-nums text-muted ${
+      className={`text-2xs font-sans tabular-nums text-muted ${
         isSidebar ? "bg-transparent" : "bg-surface-hover"
       } px-space-1_5 py-space-0_5 rounded-full shrink-0`}
     >
       {count}
     </Badge>
   );
+}
+
+function curriculumTitle(title: string, kind: string, ...codes: string[]) {
+  const label = plainTitle(title);
+  return label && !codes.includes(label) ? label : `Untitled ${kind}`;
 }
 
 const BRANCH_ROW_CLASS =
@@ -733,6 +719,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
 
   const currentPinnedItem =
     !isSidebar && !sections.isSearching && sections.currentItem ? sections.currentItem : null;
+  const currentPinnedTitle = currentPinnedItem
+    ? curriculumTitle(
+        currentPinnedItem.title, currentPinnedItem.kind, currentPinnedItem.id, currentPinnedItem.unitCode
+      )
+    : "";
   const currentPinnedHasNotes = currentPinnedItem
     ? currentPinnedItem.hasNotes || Boolean(currentDrillHasNotes)
     : false;
@@ -754,7 +745,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           isSidebar
             ? "px-space-2 min-h-touch lg:min-h-control-md bg-surface-raised dark:bg-surface-raised/60 hover:bg-surface-hover dark:hover:bg-surface-selected/40"
             : "px-space-2 bg-surface-raised hover:bg-background dark:hover:bg-surface-hover/70"
-        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-medium text-foreground-control transition-colors whitespace-nowrap`}
+        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-normal text-foreground-control transition-colors whitespace-nowrap`}
       >
         <ChevronsUpDown className={`${isSidebar ? "size-space-3_5" : "size-space-3"} text-foreground-faint dark:text-muted shrink-0`} aria-hidden="true" />
         <span>Expand all</span>
@@ -767,7 +758,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           isSidebar
             ? "px-space-2 min-h-touch lg:min-h-control-md bg-surface-raised dark:bg-surface-raised/60 hover:bg-surface-hover dark:hover:bg-surface-selected/40"
             : "px-space-2 bg-surface-raised hover:bg-background dark:hover:bg-surface-hover/70"
-        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-medium text-foreground-control transition-colors whitespace-nowrap`}
+        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-normal text-foreground-control transition-colors whitespace-nowrap`}
       >
         <ChevronsDownUp className={`${isSidebar ? "size-space-3_5" : "size-space-3"} text-foreground-faint dark:text-muted shrink-0`} aria-hidden="true" />
         <span>Collapse all</span>
@@ -775,23 +766,42 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     </>
   );
 
+  const sidebarRowDetails = (nodeId: string, code: string, title: string, canManageDrill = false) => ({
+    actionOpen: openActionNodeId === nodeId,
+    preview: (
+      <>
+        <p className="break-words text-sm font-normal text-foreground">{title}</p>
+        <p className="mt-space-1 break-words font-mono text-2xs font-normal text-muted">{code}</p>
+      </>
+    ),
+    action: (
+      <DrillRowActions
+        nodeId={code}
+        rowTitle={title}
+        onReset={canManageDrill ? onResetDrill : undefined}
+        onDelete={canManageDrill ? onDeleteDrill : undefined}
+        open={openActionNodeId === nodeId}
+        onOpenChange={(open) => setOpenActionNodeId(open ? nodeId : null)}
+      />
+    ),
+  });
+
   const renderBranchRow = (
     kind: "topic" | "chapter" | "unit",
     code: string,
     title: string,
     expanded: boolean,
     scope: "drills" | "labs",
-    hoverCode?: string,
     count?: number
   ) => {
     const depth = kind === "topic" ? 1 : kind === "chapter" ? 2 : 3;
     const nodeId = `${scope === "labs" ? "lab:" : ""}${kind}:${code}`;
+    const label = curriculumTitle(title, kind, code);
     const rowProps = {
       role: "treeitem",
       "aria-level": depth,
       "aria-expanded": expanded,
       "aria-selected": false,
-      title: code,
       onClick: () => {
         setActiveNodeId(nodeId);
         setBranchExpanded(kind, code, "toggle", scope);
@@ -809,36 +819,34 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         )}
       </>
     );
-    const trailing = (
-      <>
-        {hoverCode && <HoverRowCode code={hoverCode} isSidebar={isSidebar} />}
-        {count !== undefined && <CountPill count={count} isSidebar={isSidebar} />}
-      </>
-    );
+    const trailing = count !== undefined && <CountPill count={count} isSidebar={isSidebar} />;
+
+    if (isSidebar) {
+      return (
+        <ListRow
+          {...rowProps}
+          variant="tree"
+          treeDepth={depth}
+          className={kind === "topic" ? "text-foreground" : undefined}
+          leading={leading}
+          label={label}
+          treeRow={{
+            ...sidebarRowDetails(nodeId, code, label),
+            surfaceProps: { "data-sidebar-row": kind },
+          }}
+        />
+      );
+    }
 
     return (
-      <div className={`flex items-center gap-space-0_5 ${isSidebar ? "h-control-sm" : "group"}`}>
-        {isSidebar ? (
-          <ListRow
-            {...rowProps}
-            data-sidebar-row={kind}
-            variant="tree"
-            treeDepth={depth}
-            className={kind === "topic" ? "text-foreground" : undefined}
-            emphasis="medium"
-            leading={leading}
-            label={plainTitle(title)}
-            trailing={trailing}
-          />
-        ) : (
-          <button {...rowProps} type="button" className={`${BRANCH_ROW_CLASS} flex-1`}>
-            {leading}
-            <span className={`text-xs font-medium truncate min-w-0 flex-1 ${kind === "topic" ? "text-foreground" : "text-foreground-control"}`}>
-              {plainTitle(title)}
-            </span>
-            {trailing}
-          </button>
-        )}
+      <div className="group flex items-center gap-space-0_5">
+        <button {...rowProps} type="button" className={`${BRANCH_ROW_CLASS} flex-1`}>
+          {leading}
+          <span className={`text-xs font-normal truncate min-w-0 flex-1 ${kind === "topic" ? "text-foreground" : "text-foreground-control"}`}>
+            {label}
+          </span>
+          {trailing}
+        </button>
       </div>
     );
   };
@@ -851,8 +859,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   ) => {
     const isCurrent = item.id === selectedDrillId;
     const isSearchTarget = sections.isSearching && activeNodeId === nodeId;
-    const hoverCode = extractLeafHoverCode(item);
-    const fullCode = formatFullRowCode(item);
+    const title = curriculumTitle(item.title, item.kind, item.id, item.unitCode);
+    const rowLabel = label === item.title ? title : plainTitle(label);
+    const fullTitle = rowLabel === title ? title : `${title} · ${rowLabel}`;
     const hasNotes =
       isCurrent && currentDrillHasNotes !== null
         ? item.hasNotes || currentDrillHasNotes
@@ -863,7 +872,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       "aria-level": level,
       "aria-selected": isCurrent,
       "aria-current": isCurrent ? "true" as const : undefined,
-      title: fullCode,
       onClick: () => {
         setActiveNodeId(nodeId);
         handlePick(item.id);
@@ -879,8 +887,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         <NoteBadge hasNotes={hasNotes} isDueToday={isDueToday} />
       </>
     );
-    const trailing = <HoverRowCode code={hoverCode} isSidebar={isSidebar} />;
-
     if (isSidebar) {
       return (
         <ListRow
@@ -889,26 +895,15 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           variant="tree"
           treeDepth={level}
           selected={isCurrent}
-          emphasis={isCurrent ? "medium" : "normal"}
           leading={leading}
-          label={plainTitle(label)}
-          trailing={trailing}
-          treeLeaf={{
-            actionOpen: openActionNodeId === item.id,
+          label={rowLabel}
+          treeRow={{
+            ...sidebarRowDetails(nodeId, item.id, fullTitle, item.kind === "drill"),
             highlighted: isSearchTarget,
             surfaceProps: {
               "data-sidebar-leaf": item.id,
               "data-sidebar-row": `leaf-${level}`,
             },
-            action: item.kind === "drill" && (
-              <DrillRowActions
-                nodeId={item.id}
-                onReset={onResetDrill}
-                onDelete={onDeleteDrill}
-                open={openActionNodeId === item.id}
-                onOpenChange={(open) => setOpenActionNodeId(open ? item.id : null)}
-              />
-            ),
           }}
         />
       );
@@ -928,10 +923,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           }`}
         >
           {leading}
-          <span className={`text-xs truncate min-w-0 flex-1 ${isCurrent ? "font-medium text-foreground" : "text-foreground-control"}`}>
-            {plainTitle(label)}
+          <span className={`text-xs truncate min-w-0 flex-1 text-foreground-control ${isCurrent ? "font-medium" : "font-normal"}`}>
+            {rowLabel}
           </span>
-          {trailing}
         </button>
       </div>
     );
@@ -1009,10 +1003,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           aria-controls={undefined}
                           className={`relative z-local inline-flex ${
                             isSidebar ? "h-8" : "min-h-0"
-                          } items-center justify-center gap-space-1_5 rounded-md bg-transparent px-space-2_5 py-space-1 ${isSidebar ? "text-sm" : "text-xs"} font-medium text-muted shadow-none transition-colors whitespace-nowrap hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:hover:text-foreground-menu`}
+                          } items-center justify-center gap-space-1_5 rounded-md bg-transparent px-space-2_5 py-space-1 ${isSidebar ? "text-sm" : "text-xs"} font-normal text-muted shadow-none transition-colors whitespace-nowrap hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:hover:text-foreground-menu`}
                         >
                           <span>{tab.label}</span>
-                          <span className="text-2xs font-display tabular-nums text-muted">
+                          <span className="text-2xs font-sans tabular-nums text-muted">
                             {tab.count}
                           </span>
                         </TabsTrigger>
@@ -1039,7 +1033,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         aria-expanded={isViewOpen}
                         className={`inline-flex items-center gap-space-1 ${
                           isSidebar ? "px-space-2 min-h-touch lg:min-h-control-md " : "px-space-2 "
-                        }py-space-1 rounded-md border ${isSidebar ? "text-sm" : "text-2xs"} font-medium transition-colors whitespace-nowrap ${
+                        }py-space-1 rounded-md border ${isSidebar ? "text-sm" : "text-2xs"} font-normal transition-colors whitespace-nowrap ${
                           isViewOpen || isFilterActive
                             ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-foreground"
                             : isSidebar
@@ -1075,7 +1069,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       className="w-space-52 rounded-xl p-space-2_5 z-tooltip space-y-space-2_5"
                     >
                       <div className="space-y-space-1">
-                        <div className="px-space-1 text-2xs font-medium text-muted">
+                        <div className="px-space-1 text-2xs font-normal text-muted">
                           Status
                         </div>
                         <div
@@ -1096,7 +1090,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                 }}
                                 className={`w-full flex items-center justify-between px-space-2 py-space-1 rounded-md text-xs transition-colors ${
                                   isActive
-                                    ? "bg-surface-hover text-foreground font-medium"
+                                    ? "bg-surface-hover text-foreground font-normal"
                                     : "text-foreground-subtle hover:bg-background dark:hover:bg-surface-hover/60"
                                 } ${isSidebar ? "text-sm min-h-control-md" : "text-xs"}`}
                               >
@@ -1114,7 +1108,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       </div>
 
                       <div className="pt-space-2 border-t border-border space-y-space-1_5">
-                        <div className="px-space-1 text-2xs font-medium text-muted">
+                        <div className="px-space-1 text-2xs font-normal text-muted">
                           Legend
                         </div>
                         <div className="grid grid-cols-2 gap-x-space-2 gap-y-space-1 px-space-1">
@@ -1159,13 +1153,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             {/* Pinned Current Row */}
             {currentPinnedItem && (
               <div className="shrink-0 pb-space-2 mb-space-2 border-b border-border space-y-space-1">
-                <div className="px-space-1 text-2xs font-medium text-muted">
+                <div className="px-space-1 text-2xs font-normal text-muted">
                   Current
                 </div>
                 <button
                   type="button"
                   onClick={() => handlePick(currentPinnedItem.id)}
-                  title={formatFullRowCode(currentPinnedItem)}
                   className={`group w-full text-left px-space-1_5 py-space-1_5 ${
                     isSidebar
                       ? "min-h-touch lg:min-h-control-md rounded-lg bg-surface-selected/70 dark:bg-surface-selected/60 hover:bg-surface-selected/90 dark:hover:bg-surface-selected/70"
@@ -1177,12 +1170,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     hasNotes={currentPinnedHasNotes}
                     isDueToday={currentPinnedIsDue}
                   />
-                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-foreground truncate min-w-0 flex-1`}>
+                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-normal text-foreground truncate min-w-0 flex-1`}>
                     {currentPinnedItem.setLabel
-                      ? `${plainTitle(currentPinnedItem.title)} · ${currentPinnedItem.setLabel}`
-                      : plainTitle(currentPinnedItem.title)}
+                      ? `${currentPinnedTitle} · ${currentPinnedItem.setLabel}`
+                      : currentPinnedTitle}
                   </span>
-                  <HoverRowCode code={extractLeafHoverCode(currentPinnedItem)} />
                 </button>
               </div>
             )}
@@ -1210,7 +1202,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         setActiveTab(activeTab === "labs" ? "drills" : "labs");
                         setActiveNodeId(null);
                       }}
-                      className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-accent hover:underline`}
+                      className={`${isSidebar ? "text-sm" : "text-xs"} font-normal text-accent hover:underline`}
                     >
                       Show {otherTabMatchCount} matching{" "}
                       {activeTab === "labs"
@@ -1248,12 +1240,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
 
                       return groups.map((topic) => {
                         const isTopicExpanded = activeExpandedTopics.has(topic.topicCode);
-                        const showTopicCode = topic.topicTitle !== topic.topicCode;
 
                         return (
                           <div key={topic.topicCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                            {renderBranchRow("topic", topic.topicCode, topic.topicTitle, isTopicExpanded, scope,
-                              showTopicCode ? topic.topicCode : undefined)}
+                            {renderBranchRow("topic", topic.topicCode, topic.topicTitle, isTopicExpanded, scope)}
 
                             <Reveal show={isTopicExpanded}>
                               <div
@@ -1264,16 +1254,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                   const isChapterExpanded = activeExpandedChapters.has(
                                     chapter.chapterCode
                                   );
-                                  const chapterShortCode = extractChapterShortCode(
-                                    chapter.chapterCode
-                                  );
-                                  const showChapterCode =
-                                    chapter.chapterTitle !== chapterShortCode;
 
                                   return (
                                     <div key={chapter.chapterCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                                      {renderBranchRow("chapter", chapter.chapterCode, chapter.chapterTitle, isChapterExpanded, scope,
-                                        showChapterCode ? chapterShortCode : undefined, chapter.itemCount)}
+                                      {renderBranchRow("chapter", chapter.chapterCode, chapter.chapterTitle, isChapterExpanded, scope, chapter.itemCount)}
 
                                       <Reveal show={isChapterExpanded}>
                                         <div
@@ -1304,16 +1288,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                             const isUnitExpanded = activeExpandedUnits.has(
                                               entry.unitCode
                                             );
-                                            const unitShortCode = extractShortCode({
-                                              kind: "drill",
-                                              id: entry.unitCode,
-                                              unitCode: entry.unitCode,
-                                            });
 
                                             return (
                                               <div key={entry.key} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                                                {renderBranchRow("unit", entry.unitCode, entry.unitTitle, isUnitExpanded, scope,
-                                                  unitShortCode, entry.items.length)}
+                                                {renderBranchRow("unit", entry.unitCode, entry.unitTitle, isUnitExpanded, scope, entry.items.length)}
 
                                                 <Reveal show={isUnitExpanded}>
                                                   <div
@@ -1414,6 +1392,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         className="flex-1 min-h-0 flex flex-col px-space-2_5 pt-space-2_5 pb-space-1_5"
       >
         {pickerBody}
+        <TreeHoverPreviewHost />
       </div>
     );
   }
@@ -1429,9 +1408,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         aria-label="Switch practice drill"
         className="w-full sm:w-auto inline-flex items-center justify-between gap-space-2 h-control-md px-space-3 rounded-lg bg-surface-hover/80 dark:bg-surface-hover/70 hover:bg-surface-selected/70 dark:hover:bg-surface-hover border border-border text-left transition-colors min-w-0"
       >
-        <span className="text-xs sm:text-sm font-medium text-foreground truncate max-w-picker-title-sm sm:max-w-picker-title-md md:max-w-picker-title-lg">
+        <span className="text-xs sm:text-sm font-normal text-foreground truncate max-w-picker-title-sm sm:max-w-picker-title-md md:max-w-picker-title-lg">
           {currentDrill
-            ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
+            ? curriculumTitle(currentDrill.unitTitle, "drill", currentDrill.unitCode, currentDrill.drillId)
             : "Select practice drill"}
         </span>
         <ChevronDown

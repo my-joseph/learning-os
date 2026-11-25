@@ -74,7 +74,7 @@ export function CodeBlockTitle({ className, ...props }: React.ComponentProps<"di
   return (
     <div
       data-slot="code-block-title"
-      className={cn("min-w-0 truncate font-mono text-xs font-medium", className)}
+      className={cn("min-w-0 truncate font-mono text-xs font-normal", className)}
       {...props}
     />
   );

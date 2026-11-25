@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  b,
+  strong {
+    font-weight: var(--weight-semibold);
+  }
+
   :focus:not(:focus-visible) {
     outline: none;
   }
@@ -81,23 +86,31 @@
     }
   }
 
-  /* Focus can land on a leaf's button, but its visible surface is the whole row. */
-  :is(button[data-sidebar-row]:focus-visible, [data-sidebar-row]:has(> [role="treeitem"]:focus-visible)) {
+  /* The focus ring follows the row surface around its button and action. */
+  [data-sidebar-row]:has(> [role="treeitem"]:focus-visible) {
     @apply ring-2 ring-inset ring-muted;
   }
 
-  [data-sidebar-tree] [role="treeitem"]:focus-visible [data-sidebar-row-code] {
-    display: block;
+  [data-radix-popper-content-wrapper]:has(> [data-tree-row-preview]) {
+    pointer-events: none;
   }
 
-  @media (hover: hover) {
-    [data-sidebar-row]:hover [data-sidebar-row-code] {
-      display: block;
-    }
+  @screen lg {
+    @media (hover: hover) and (pointer: fine) {
+      [data-tree-row-actions] > [data-tree-row-action] {
+        opacity: var(--opacity-hidden);
+        pointer-events: none;
+      }
 
-    /* A pointer over a row takes precedence over a badge left visible by keyboard focus. */
-    [data-sidebar-tree]:has([data-sidebar-row]:hover) [data-sidebar-row]:not(:hover) [data-sidebar-row-code] {
-      display: none;
+      [data-tree-row-actions]:is(:hover, :focus-within, [data-selected="true"], [data-menu-open="true"]) > [data-tree-row-action] {
+        opacity: var(--opacity-visible);
+        pointer-events: auto;
+      }
+
+      [data-tree-row-actions]:is(:hover, :focus-within, [data-selected="true"], [data-menu-open="true"]) > button > [data-tree-row-label] {
+        text-overflow: clip;
+        mask-image: linear-gradient(to right, currentColor calc(100% - var(--control-xs)), transparent);
+      }
     }
   }
 }
@@ -308,11 +321,9 @@ html.dark,
   --text-4xl: 2.25rem;
   --text-4xl-leading: 2.5rem;
   --weight-normal: 400;
-  --weight-medium: 500;
+  --weight-heading-medium: 500;
   --weight-semibold: 600;
-  --weight-bold: 700;
-  --weight-extrabold: 800;
-  --weight-black: 900;
+  --tracking-heading: -0.01em;
   --leading-none: 1;
   --leading-tight: 1.25;
   --leading-snug: 1.375;
@@ -380,7 +391,7 @@ html.dark,
 :root,
 body {
   --font-sans: var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Roboto Slab Variable", "Roboto Slab", Georgia, serif;
+  --font-heading: "Roboto Slab Variable", "Roboto Slab", Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 

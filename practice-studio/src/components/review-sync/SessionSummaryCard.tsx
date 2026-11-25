@@ -1,5 +1,7 @@
 "use client";
 
+import { Heading } from "@/components/ui/Heading";
+import { Numeral } from "@/components/ui/Numeral";
 import React from "react";
 import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import type { DrillDocument, Problem } from "@/types/drill";
@@ -22,7 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/shadcn/Tooltip";
-import { plainTitle } from "@/lib/titleText";
+import { isCurriculumId, plainTitle } from "@/lib/titleText";
 
 export type EffectiveSyncPhase =
   | "idle"
@@ -169,17 +171,9 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
       <section aria-labelledby="review-sync-heading">
       {/* Top row: h1 title + right-aligned quiet sync status link */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <div className="min-w-0 space-y-0.5">
-          <h1
-            id="review-sync-heading"
-            className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight break-words"
-          >
-            {drillTitle}
-          </h1>
-          <p className="font-display text-xs text-zinc-500 dark:text-zinc-400">
-            {drill.unitCode}
-          </p>
-        </div>
+        <Heading id="review-sync-heading" className="min-w-0 break-words">
+          {isCurriculumId(drillTitle) ? "Review & sync" : drillTitle}
+        </Heading>
 
         <Button
           variant="ghost"
@@ -187,61 +181,59 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           onClick={onScrollToSync}
           className={`self-start sm:self-auto inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs transition-colors rounded-md py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0 ${statusLink.toneClass}`}
         >
-          <span className="font-display tabular-nums">{statusLink.label}</span>
+          {statusLink.label}
           {statusLink.showArrow && <ArrowDown className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
         </Button>
       </div>
 
-      {/* Verdict sentence (text-base, numbers/time in font-display) */}
-      <p className="text-base text-zinc-800 dark:text-zinc-200 leading-relaxed">
+      {/* Verdict sentence with score and time */}
+      <p className="text-base text-zinc-800 dark:text-zinc-200 tabular-nums leading-relaxed">
         {!hasAnyAttempt ? (
           <>
             <span>Nothing answered yet</span>
             {formattedTime && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
+                <Numeral variant="lg" className="text-base text-muted">
                   {formattedTime}
-                </span>
+                </Numeral>
               </>
             )}
           </>
         ) : allFirstTry ? (
           <>
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+            <Numeral variant="lg" className="text-base text-foreground">
               {points} / {totalCount}
-            </span>
+            </Numeral>
             <span> points · All {totalCount} right on the first try</span>
             {formattedTime && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
+                <Numeral variant="lg" className="text-base text-muted">
                   {formattedTime}
-                </span>
+                </Numeral>
               </>
             )}
           </>
         ) : (
           <>
-            <span className="font-display font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+            <Numeral variant="lg" className="text-base text-foreground">
               {points} / {totalCount}
-            </span>
+            </Numeral>
             <span> points · {rightCount} of {totalCount} right</span>
             {firstTryCount > 0 && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-900 dark:text-zinc-100">
-                  {firstTryCount}
-                </span>
+                <Numeral>{firstTryCount}</Numeral>
                 <span> on the first try</span>
               </>
             )}
             {formattedTime && (
               <>
                 <span className="mx-1.5 text-zinc-400 dark:text-zinc-500">·</span>
-                <span className="font-display tabular-nums text-zinc-600 dark:text-zinc-300">
+                <Numeral variant="lg" className="text-base text-muted">
                   {formattedTime}
-                </span>
+                </Numeral>
               </>
             )}
           </>
@@ -269,7 +261,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
                     onClick={() => onJumpToRow(prob.id, outcome === "correct_first")}
                     title={tooltip}
                     aria-label={tooltip}
-                    className={`min-w-[44px] sm:min-w-[36px] min-h-[44px] sm:min-h-[32px] px-2 rounded-lg border font-display text-xs font-semibold tabular-nums inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${TILE_COLORS[outcome]}`}
+                    className={`min-w-[44px] sm:min-w-[36px] min-h-[44px] sm:min-h-[32px] px-2 rounded-lg border font-sans tabular-nums text-xs font-semibold inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ${TILE_COLORS[outcome]}`}
                   >
                     {qLabel}
                   </button>
@@ -289,14 +281,14 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
             {pattern.count === 2 ? (
               "twice"
             ) : (
-              <span className="font-display tabular-nums">{pattern.count}×</span>
+              <span className="font-sans tabular-nums">{pattern.count}×</span>
             )}
             :{" "}
           </span>
           <span className="font-semibold text-zinc-900 dark:text-zinc-100">
             {pattern.label}
           </span>{" "}
-          <span className="font-display text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="font-sans tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
             ({pattern.itemLabels.join(", ")})
           </span>
         </p>
@@ -308,7 +300,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
           variant="ghost"
           size="compact"
           onClick={onBackToQuiz}
-          className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[32px] px-1 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+          className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[32px] px-1 rounded-lg text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
         >
           <ArrowLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           <span>{backLabel}</span>

@@ -120,7 +120,7 @@ const ReviewItemResult: React.FC<{
           <span>
             <span className="text-zinc-500 dark:text-zinc-400">Tests </span>
             {passed !== null && total !== null ? (
-              <span className={`font-display tabular-nums ${statusSymbolClass(testsKind)}`}>
+              <span className={`font-sans tabular-nums ${statusSymbolClass(testsKind)}`}>
                 {passed}/{total}
               </span>
             ) : testRep.hasData ? (
@@ -129,7 +129,7 @@ const ReviewItemResult: React.FC<{
               <span className={statusSymbolClass("none")}>–</span>
             )}
             {isLab && testRep.hiddenTotal !== null && testRep.hiddenTotal > 0 && (
-              <span className="ml-1.5 text-zinc-500 dark:text-zinc-400 font-display tabular-nums">
+              <span className="ml-1.5 text-zinc-500 dark:text-zinc-400 font-sans tabular-nums">
                 · hidden {testRep.hiddenPassed ?? 0}/{testRep.hiddenTotal}
               </span>
             )}
@@ -137,14 +137,14 @@ const ReviewItemResult: React.FC<{
 
           <span>
             <span className="text-zinc-500 dark:text-zinc-400">Lint </span>
-            <span className={`font-display tabular-nums ${statusSymbolClass(lintKind)}`}>
+            <span className={`font-sans tabular-nums ${statusSymbolClass(lintKind)}`}>
               {lintKind === "none" ? "–" : lintKind === "pass" ? "✓" : `✗ ${rev.lintCount}`}
             </span>
           </span>
 
           <span>
             <span className="text-zinc-500 dark:text-zinc-400">Types </span>
-            <span className={`font-display tabular-nums ${statusSymbolClass(typesKind)}`}>
+            <span className={`font-sans tabular-nums ${statusSymbolClass(typesKind)}`}>
               {typesKind === "none"
                 ? "–"
                 : typesKind === "pass"
@@ -209,7 +209,7 @@ const ReviewItemResult: React.FC<{
     metaParts.push(
       <span key="tries">
         <span className="text-zinc-500 dark:text-zinc-400">Tries </span>
-        <span className="font-display tabular-nums text-zinc-800 dark:text-zinc-200">{tries}</span>
+        <span className="font-sans tabular-nums text-zinc-800 dark:text-zinc-200">{tries}</span>
       </span>
     );
   }
@@ -217,13 +217,13 @@ const ReviewItemResult: React.FC<{
     metaParts.push(
       <span key="hints">
         <span className="text-zinc-500 dark:text-zinc-400">Hints </span>
-        <span className="font-display tabular-nums text-zinc-800 dark:text-zinc-200">{hints}</span>
+        <span className="font-sans tabular-nums text-zinc-800 dark:text-zinc-200">{hints}</span>
       </span>
     );
   }
   if (duration) {
     metaParts.push(
-      <span key="time" className="font-display tabular-nums text-zinc-700 dark:text-zinc-300">
+      <span key="time" className="font-sans tabular-nums text-zinc-700 dark:text-zinc-300">
         {duration}
       </span>
     );
@@ -234,7 +234,7 @@ const ReviewItemResult: React.FC<{
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
         <div className="min-w-0 break-words">
           <span className="text-zinc-500 dark:text-zinc-400">Your answer: </span>
-          <span className="font-display font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
             {outcome === "skipped" && !answerText
               ? "Skipped"
               : answerText ? <FormattedText text={answerText} /> : "Not recorded"}
@@ -244,7 +244,7 @@ const ReviewItemResult: React.FC<{
         {verifiedText && (
           <div className="min-w-0 break-words">
             <span className="text-zinc-500 dark:text-zinc-400">Verified answer: </span>
-            <span className={`font-display font-semibold ${statusTone.correct.text}`}>
+            <span className={`font-sans tabular-nums font-semibold ${statusTone.correct.text}`}>
               <FormattedText text={verifiedText} />
             </span>
           </div>
@@ -252,11 +252,11 @@ const ReviewItemResult: React.FC<{
       </div>
 
       {typeof state?.divergedStep === "number" && (
-        <div className={`inline-flex items-center gap-1.5 ${statusTone.wrong.text} font-medium`}>
+        <div className={`inline-flex items-center gap-1.5 ${statusTone.wrong.text} font-normal`}>
           <Flag className="w-3 h-3 shrink-0" aria-hidden="true" />
           <span>
             Went off track at step{" "}
-            <span className="font-display tabular-nums">{state.divergedStep + 1}</span>
+            <span className="font-sans tabular-nums">{state.divergedStep + 1}</span>
           </span>
         </div>
       )}
@@ -353,7 +353,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                 aria-hidden="true"
                 className={`w-2.5 h-2.5 rounded-[3px] shrink-0 ${meta.nodeClassName}`}
               />
-              <span className="font-display text-xs font-semibold tabular-nums text-zinc-900 dark:text-zinc-100 shrink-0">
+              <span className="font-sans tabular-nums text-xs font-semibold text-zinc-900 dark:text-zinc-100 shrink-0">
                 {qLabel}
               </span>
               <span className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -479,7 +479,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                     <button
                       type="button"
                       onClick={onOpen}
-                      className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                      className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                     >
                       <span>Open {qLabel}</span>
                       <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -489,7 +489,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                       <button
                         type="button"
                         onClick={onTrySimilar}
-                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                        className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[28px] text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                       >
                         <span>Try a similar question</span>
                       </button>
@@ -498,7 +498,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                     {canCopyReviewRequest && (
                       <CopyButton
                         text={reviewRequestCmd}
-                        className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
+                        className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[28px] text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
                         timeoutMs={1500}
                         requireClipboard
                         copiedContent={

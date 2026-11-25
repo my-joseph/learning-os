@@ -12,7 +12,7 @@ export const inputVariants = cva(
         embedded:
           "bg-transparent text-zinc-800 placeholder:text-zinc-500 focus-visible:outline-none dark:text-zinc-200 dark:placeholder:text-zinc-400",
         answer:
-          "h-touch bg-transparent pl-space-3_5 pr-space-12 py-space-2 font-mono text-sm text-foreground placeholder:font-sans placeholder:text-foreground-faint focus-visible:outline-none",
+          "h-touch bg-transparent pl-space-3_5 pr-space-12 py-space-2 font-sans tabular-nums text-sm text-foreground placeholder:text-foreground-faint focus-visible:outline-none",
       },
     },
     defaultVariants: {

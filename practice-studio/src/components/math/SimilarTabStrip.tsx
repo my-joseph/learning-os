@@ -142,9 +142,9 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
           >
             <StatusMark status={realStatus} />
             <span className="hidden sm:inline">
-              Question <span className="font-display tabular-nums">{questionNumber}</span>
+              Question <span className="font-sans tabular-nums">{questionNumber}</span>
             </span>
-            <span className="sm:hidden font-display tabular-nums">Q{questionNumber}</span>
+            <span className="sm:hidden font-sans tabular-nums">Q{questionNumber}</span>
           </TabsTrigger>
 
           {hasSimilarSlots && (
@@ -178,9 +178,9 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
                   >
                     <StatusMark status="untried" muted />
                     <span className="hidden sm:inline">
-                      Similar <span className="font-display tabular-nums">{slot}</span>
+                      Similar <span className="font-sans tabular-nums">{slot}</span>
                     </span>
-                    <span className="sm:hidden font-display tabular-nums">{slot}</span>
+                    <span className="sm:hidden font-sans tabular-nums">{slot}</span>
                   </TabsTrigger>
                 );
               })
@@ -204,9 +204,9 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
                   >
                     <StatusMark status={tab.status} />
                     <span className="hidden sm:inline">
-                      Similar <span className="font-display tabular-nums">{tab.slot}</span>
+                      Similar <span className="font-sans tabular-nums">{tab.slot}</span>
                     </span>
-                    <span className="sm:hidden font-display tabular-nums">{tab.slot}</span>
+                    <span className="sm:hidden font-sans tabular-nums">{tab.slot}</span>
                   </TabsTrigger>
                 );
               })}

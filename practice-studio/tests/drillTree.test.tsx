@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { JSDOM } from "jsdom";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -7,12 +7,8 @@ import {
   buildVisibleTreeRows,
   classifyPickerItemType,
   collectAllTreeCodes,
-  extractChapterShortCode,
-  extractLeafHoverCode,
-  extractShortCode,
   findCurrentLeafNodeId,
   findFirstLeafNodeId,
-  formatFullRowCode,
   getPickerStatusLabel,
   isChapterMixedUnitCode,
   normalizeDrillPickerItems,
@@ -144,25 +140,6 @@ const labItems = normalizeLabPickerItems([
   makeLab("LAB-PRG-T01-C04-02", "PRG-T01-C04", "SQL Ledger", { hasNotes: true }),
 ]);
 
-assert.equal(extractShortCode(mathItems[0]), "C04");
-assert.equal(extractShortCode(mathItems[2]), "U01");
-assert.equal(extractShortCode(mathItems[4]), "U02");
-assert.equal(extractShortCode(labItems[0]), "LAB-02");
-
-assert.equal(extractChapterShortCode("MTH-T02-C01"), "C01");
-assert.equal(extractChapterShortCode("PRG-T01-C04"), "C04");
-assert.equal(extractChapterShortCode("OTHER"), "OTHER");
-
-assert.equal(extractLeafHoverCode(mathItems[0]), "C04-01");
-assert.equal(extractLeafHoverCode(mathItems[2]), "U01-03");
-assert.equal(extractLeafHoverCode(mathItems[4]), "U02");
-assert.equal(extractLeafHoverCode(codeDrill), "U02");
-assert.equal(extractLeafHoverCode(labItems[0]), "LAB-02");
-
-assert.equal(formatFullRowCode(mathItems[0]), "MTH-T01-C04 · DRL-MTH-T01-C04-01");
-assert.equal(formatFullRowCode(mathItems[4]), "MTH-T02-C01-U02");
-assert.equal(formatFullRowCode(labItems[0]), "LAB-PRG-T01-C04-02");
-
 assert.equal(classifyPickerItemType(mathItems[0]), "chapter-mixed");
 assert.equal(classifyPickerItemType(mathItems[2]), "math-unit");
 assert.equal(classifyPickerItemType(codeDrill), "code-unit");
@@ -207,15 +184,15 @@ const defaultRows = buildVisibleTreeRows({
 });
 
 assert.deepEqual(
-  defaultRows.map((r) => [r.kind, r.level, r.nodeId, r.hoverCode]),
+  defaultRows.map((r) => [r.kind, r.level, r.nodeId]),
   [
-    ["topic", 1, "topic:MTH-T01", "MTH-T01"],
-    ["topic", 1, "topic:MTH-T02", "MTH-T02"],
-    ["chapter", 2, "chapter:MTH-T02-C01", "C01"],
-    ["unit", 3, "unit:MTH-T02-C01-U01", "U01"],
-    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-03", "U01-03"],
-    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-04", "U01-04"],
-    ["leaf", 3, "leaf:DRL-MTH-T02-C01-U02-01", "U02"],
+    ["topic", 1, "topic:MTH-T01"],
+    ["topic", 1, "topic:MTH-T02"],
+    ["chapter", 2, "chapter:MTH-T02-C01"],
+    ["unit", 3, "unit:MTH-T02-C01-U01"],
+    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-03"],
+    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-04"],
+    ["leaf", 3, "leaf:DRL-MTH-T02-C01-U02-01"],
   ]
 );
 
@@ -224,7 +201,6 @@ assert.equal(currentLeaf.kind, "leaf");
 if (currentLeaf.kind === "leaf") {
   assert.equal(currentLeaf.isCurrent, true);
   assert.equal(currentLeaf.label, "Set 3");
-  assert.equal(currentLeaf.shortCode, "U01");
   assert.equal(currentLeaf.status, "In Progress");
   assert.equal(currentLeaf.hasNotes, true, "currentHasNotesOverride merges live notes");
   assert.equal(currentLeaf.isDueToday, false);
@@ -315,7 +291,7 @@ assert.deepEqual(
 assert.deepEqual(resolveTreeKeyAction([], null, "ArrowDown"), { type: "none" });
 
 // ---------------------------------------------------------------------------
-// 4. Tree UI polish invariants (hover codes, no empty note slot, no type icons, focus-visible)
+// 4. Tree UI polish invariants (curriculum titles, no empty note slot, no type icons, focus-visible)
 // ---------------------------------------------------------------------------
 const noop = () => {};
 
@@ -339,23 +315,8 @@ const mathTreeHtml = renderToStaticMarkup(
   />
 );
 
-// 1) Hover codes on every level (topic, chapter, unit, set, single-unit) use hidden (no reserved width)
-//    and sit to the left of the count pill without overlapping it.
-assert.doesNotMatch(mathTreeHtml, /opacity-0/, "hover codes must not reserve width with opacity-0");
-assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>MTH-T02</);
-assert.match(
-  mathTreeHtml,
-  /hidden group-hover:block group-focus-visible:block[^>]*>C01<\/span><\/span><span[^>]*rounded-full[^>]*>3<\/span>/,
-  "chapter hover code sits left of count pill"
-);
-assert.match(
-  mathTreeHtml,
-  /hidden group-hover:block group-focus-visible:block[^>]*>U01<\/span><\/span><span[^>]*rounded-full[^>]*>2<\/span>/,
-  "unit hover code sits left of count pill"
-);
-assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U01-03</);
-assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U01-04</);
-assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U02</);
+assert.doesNotMatch(mathTreeHtml, />(?:MTH-T02|C01|U01|U01-03|U01-04|U02)</);
+assert.doesNotMatch(mathTreeHtml, /title="(?:MTH-|DRL-)/);
 
 // 2) No empty note slot when a leaf has neither notes nor due-today status;
 //    status dot precedes any note/due icon so dots stay vertically aligned.
@@ -367,7 +328,7 @@ assert.doesNotMatch(
 // Set 3 (current, no notes, not due) renders StatusDot directly followed by label "Set 3"
 assert.match(
   mathTreeHtml,
-  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="text-xs truncate min-w-0 flex-1 font-medium[^>]*>Set 3<\/span>/
+  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="[^"]*font-medium[^>]*>Set 3<\/span>/
 );
 // Set 4 (hasNotes: true) renders StatusDot followed by NoteBadge
 assert.match(mathTreeHtml, /<span class="sr-only">Needs retry<\/span>/);
@@ -390,7 +351,7 @@ assert.match(mathTreeHtml, /aria-level="3" aria-expanded="true"[^>]*focus-visibl
 assert.doesNotMatch(mathTreeHtml, /aria-expanded="(true|false)"[^>]*class="[^"]*bg-indigo-50/);
 assert.doesNotMatch(mathTreeHtml, /aria-expanded="(true|false)"[^>]*class="[^"]*(?<!:)\bring-2\b/);
 
-// Labs tab also shows hover code on lab leaf and removes FlaskConical
+// Legacy Labs tab renders lab titles without badges or action menus
 const labTreeHtml = renderToStaticMarkup(
   <DrillSwitcher
     isOpen={true}
@@ -409,7 +370,7 @@ const labTreeHtml = renderToStaticMarkup(
     onSelectDrill={noop}
   />
 );
-assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>LAB-02</);
+assert.doesNotMatch(labTreeHtml, />LAB-02<|title="LAB-/);
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
 assert.doesNotMatch(labTreeHtml, /aria-label="Actions for LAB-/);
@@ -434,46 +395,35 @@ const sidebarTreeHtml = renderToStaticMarkup(
 );
 assert.doesNotMatch(sidebarTreeHtml, />Expand all|>Collapse all|>View</);
 assert.doesNotMatch(sidebarTreeHtml, /border-l/);
-assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01"/);
-assert.doesNotMatch(sidebarTreeHtml, /aria-label="Actions for MTH-T02-C01-U01"/);
-assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
-const drillRowActionsSource = readFileSync("src/components/shell/DrillRowActions.tsx", "utf8");
-assert.match(drillRowActionsSource, /<RowMenuItem\b[\s\S]*?Copy ID/);
-assert.match(drillRowActionsSource, /<RowMenuItem\b[\s\S]*?Reset/);
-assert.match(drillRowActionsSource, /<RowMenuItem\b[\s\S]*?Delete/);
-assert.match(sidebarTreeHtml, /aria-label="Actions for DRL-MTH-T02-C01-U01-03"/);
-assert.match(sidebarTreeHtml, /aria-current="true"/);
-const selectedLeafMarkup = sidebarTreeHtml.match(
-  /<div[^>]*data-sidebar-leaf="DRL-MTH-T02-C01-U01-03"[\s\S]*?<\/div>/
-)?.[0];
-assert.ok(selectedLeafMarkup, "sidebar drill leaf has a shared visual wrapper");
-const sidebarRows = [...sidebarTreeHtml.matchAll(/data-sidebar-row="([^"]+)"[^>]*class="([^"]+)"/g)];
+assert.doesNotMatch(sidebarTreeHtml, />(?:MTH-T02|C01|U01|U01-03|U01-04|U02)<|title="(?:MTH-|DRL-)/);
+const sidebarTree = JSDOM.fragment(sidebarTreeHtml);
+const sidebarRows = sidebarTree.querySelectorAll("[data-sidebar-row]");
 assert.ok(sidebarRows.length > 4, "sidebar renders folder and leaf surfaces");
-for (const [, row, classes] of sidebarRows) {
-  assert.match(classes, /\bh-control-sm\b/, `${row} uses the shared 32 px surface and radius`);
-  assert.doesNotMatch(classes, /focus-within:|ring-indigo/, `${row} has no pointer-focus ring`);
+for (const row of Array.from(sidebarRows)) {
+  const treeItem = row.querySelector(':scope > [role="treeitem"]');
+  assert.ok(treeItem);
+  const action = row.querySelector(':scope > [data-tree-row-action] > button');
+  const title = treeItem.querySelector("[data-tree-row-label]");
+  assert.ok(title);
+  const selected = treeItem.hasAttribute("aria-current");
+  assert.ok(row.classList.contains("h-control-sm"));
+  assert.ok(row.classList.contains("rounded-md"));
+  assert.ok(action, "every tree row has an independent menu button");
+  assert.ok(title.classList.contains(selected ? "font-medium" : "font-normal"));
+  assert.ok(!title.classList.contains(selected ? "font-normal" : "font-medium"));
+  const depth = Number(treeItem.getAttribute("aria-level"));
+  assert.ok(treeItem.classList.contains(["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"][depth - 1]));
+  assert.ok(treeItem.classList.contains(depth === 1 ? "text-foreground" : "text-foreground-control"));
 }
-const sidebarCodes = [...sidebarTreeHtml.matchAll(/data-sidebar-row-code="true" aria-hidden="true" class="([^"]+)"[^>]*>([^<]+)/g)];
-for (const code of ["MTH-T02", "C01", "U01", "U01-03", "U01-04"]) {
-  assert.ok(sidebarCodes.some(([, , label]) => label === code), `sidebar has a row-owned badge for ${code}`);
-}
-assert.ok(sidebarCodes.every(([, classes]) => !classes.includes("group-hover")));
-assert.match(selectedLeafMarkup, /bg-surface-selected\/70/);
-assert.match(selectedLeafMarkup, /aria-current="true"/);
-assert.match(selectedLeafMarkup, /size-touch/);
-assert.match(selectedLeafMarkup, /lg:size-control-xs/);
-assert.match(
-  selectedLeafMarkup,
-  /<\/button><button[^>]*aria-label="Actions for DRL-MTH-T02-C01-U01-03"/,
-  "drill selection and action targets are sibling buttons, never nested"
-);
+const selectedLeaf = sidebarTree.querySelector('[data-sidebar-leaf="DRL-MTH-T02-C01-U01-03"]');
+assert.ok(selectedLeaf);
+assert.ok(selectedLeaf.classList.contains("bg-surface-selected/70"));
+assert.ok(selectedLeaf.matches('[data-selected="true"]'));
+assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"].size-touch'));
+assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"]')?.classList.contains("lg:size-control-xs"));
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="topic"[^>]*class="[^"]*pl-space-1_5/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="chapter"[^>]*class="[^"]*pl-space-4/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="unit"[^>]*class="[^"]*pl-tree-depth-3/);
-assert.match(sidebarTreeHtml, /data-sidebar-row="leaf-4"[^>]*class="[^"]*h-control-sm w-full[^"]*"[^>]*><button[^>]*class="[^"]*pl-control-md/);
 assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-space-3/, "sidebar branches keep a shared left edge");
-assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
+assert.doesNotMatch(sidebarTreeHtml, /tabular-nums[^>]*>2<\/span>/, "sidebar tree rows show no child counts");
 
 const depthTokens = ["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"];
 for (const depth of [1, 2, 3, 4] as const) {
@@ -490,7 +440,7 @@ const leafLayout = (selected: boolean, actionOpen: boolean) => {
       treeDepth={4}
       selected={selected}
       label="Drill"
-      treeLeaf={{ action: <button type="button">Actions</button>, actionOpen }}
+      treeRow={{ action: <button type="button">Actions</button>, actionOpen }}
     />
   );
   if (actionOpen) assert.match(markup, /data-menu-open="true"/);
@@ -556,8 +506,6 @@ assert.ok(bridgeItem, "MTH-BRIDGE drill must be normalized for the picker");
 assert.equal(bridgeItem.subject, "MATH");
 assert.equal(bridgeItem.topicCode, "MTH-BRIDGE");
 assert.equal(bridgeItem.topicTitle, "Cross-Unit Bridge Synthesis");
-assert.equal(extractShortCode(bridgeItem), "BRIDGE");
-assert.equal(extractChapterShortCode(bridgeItem.chapterCode), "BRIDGE");
 assert.equal(classifyPickerItemType(bridgeItem), "chapter-mixed");
 
 const bridgeSections = buildPickerSections({
@@ -653,13 +601,13 @@ const labTreeRows = buildVisibleTreeRows({
   nodeIdPrefix: "lab:",
 });
 assert.deepEqual(
-  labTreeRows.map((r) => [r.kind, r.level, r.nodeId, r.hoverCode]),
+  labTreeRows.map((r) => [r.kind, r.level, r.nodeId]),
   [
-    ["topic", 1, "lab:topic:PRG-T01", "PRG-T01"],
-    ["chapter", 2, "lab:chapter:PRG-T01-C01", "C01"],
-    ["leaf", 3, "leaf:LAB-PRG-T01-C01-01", "LAB-01"],
-    ["leaf", 3, "leaf:LAB-PRG-T01-C01-02", "LAB-02"],
-    ["chapter", 2, "lab:chapter:PRG-T01-C04", "C04"],
+    ["topic", 1, "lab:topic:PRG-T01"],
+    ["chapter", 2, "lab:chapter:PRG-T01-C01"],
+    ["leaf", 3, "leaf:LAB-PRG-T01-C01-01"],
+    ["leaf", 3, "leaf:LAB-PRG-T01-C01-02"],
+    ["chapter", 2, "lab:chapter:PRG-T01-C04"],
   ]
 );
 if (labTreeRows[2].kind === "leaf" && labTreeRows[3].kind === "leaf") {
@@ -757,12 +705,11 @@ assert.match(prgSidebarHtml, /motion-reduce:transition-none/);
 assert.match(prgSidebarHtml, /JavaScript Execution &amp; Async Internals/);
 assert.match(prgSidebarHtml, /TinyEventEmitter &amp; PromisePool/);
 assert.match(prgSidebarHtml, /Rate-Limited Web Page Fetcher/);
-assert.match(prgSidebarHtml, />LAB-01</);
-assert.match(prgSidebarHtml, />LAB-02</);
+assert.doesNotMatch(prgSidebarHtml, />LAB-0[12]</);
 assert.match(prgSidebarHtml, /data-sidebar-leaf="LAB-PRG-T01-C01-01"/);
 assert.match(prgSidebarHtml, /data-sidebar-leaf="LAB-PRG-T01-C01-02"/);
 assert.match(prgSidebarHtml, /data-sidebar-row="leaf-3"/);
-assert.doesNotMatch(prgSidebarHtml, /aria-label="Actions for LAB-/, "Lab rows must not have action menus");
+assert.match(prgSidebarHtml, /aria-label="Actions for TinyEventEmitter &amp; PromisePool"/);
 assert.match(prgSidebarHtml, /Due today/);
 assert.match(prgSidebarHtml, /aria-current="true"/);
 
@@ -788,7 +735,7 @@ const prgSidebarUnitLabHtml = renderToStaticMarkup(
 );
 assert.match(prgSidebarUnitLabHtml, /Problem Solving, Clean Utilities &amp; Unit Testing/);
 assert.match(prgSidebarUnitLabHtml, /data-sidebar-row="unit"[^>]*>[\s\S]*?Packaging, Exports &amp; DevVault Core/);
-assert.match(prgSidebarUnitLabHtml, />U06</);
+assert.doesNotMatch(prgSidebarUnitLabHtml, />U06</);
 assert.match(prgSidebarUnitLabHtml, /data-sidebar-leaf="LAB-PRG-T01-C04-02"/);
 assert.match(prgSidebarUnitLabHtml, /data-sidebar-row="leaf-4"/);
 assert.match(prgSidebarUnitLabHtml, /Full-Stack E-Commerce Core &amp; Checkout Engine/);
@@ -815,7 +762,7 @@ const prgSidebarDrillSelectedHtml = renderToStaticMarkup(
 );
 assert.match(
   prgSidebarDrillSelectedHtml,
-  /aria-label="Actions for DRL-PRG-T01-C01-U01-01"/,
+  /aria-label="Actions for Execution Context &amp; Scope"/,
   "Drill leaves keep action menus"
 );
 assert.match(prgSidebarDrillSelectedHtml, /data-sidebar-leaf="DRL-PRG-T01-C01-U01-01"/);

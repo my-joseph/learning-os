@@ -105,7 +105,7 @@ const config: Config = {
       },
       fontFamily: {
         "sans": "var(--font-sans)",
-        "display": "var(--font-display)",
+        "heading": "var(--font-heading)",
         "mono": "var(--font-mono)",
       },
       maxHeight: {
@@ -134,11 +134,11 @@ const config: Config = {
       },
       fontWeight: {
         "normal": "var(--weight-normal)",
-        "medium": "var(--weight-medium)",
+        "heading-medium": "var(--weight-heading-medium)",
         "semibold": "var(--weight-semibold)",
-        "bold": "var(--weight-bold)",
-        "extrabold": "var(--weight-extrabold)",
-        "black": "var(--weight-black)",
+      },
+      letterSpacing: {
+        "heading": "var(--tracking-heading)",
       },
       lineHeight: {
         "none": "var(--leading-none)",

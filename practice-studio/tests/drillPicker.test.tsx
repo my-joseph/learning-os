@@ -394,15 +394,15 @@ assert.match(mathHtml, /aria-selected="true"/);
 assert.match(mathHtml, /Algebra and Trigonometry/);
 assert.match(mathHtml, /Equations and Inequalities/);
 assert.match(mathHtml, /Complex Numbers/);
-assert.match(mathHtml, />U01</);
-assert.match(mathHtml, />U02</);
+assert.doesNotMatch(mathHtml, />U01</);
+assert.doesNotMatch(mathHtml, />U02</);
 assert.match(mathHtml, />Set 3</);
 assert.match(mathHtml, /Due today/);
 assert.match(mathHtml, /title="In progress"><span class="[^"]*\bbg-accent\b/);
 assert.ok(mathHtml.includes(statusTone.wrong.dot));
 // MTH-T01 starts collapsed so Fractions drills inside aren't expanded
 assert.match(mathHtml, /Prealgebra/);
-assert.doesNotMatch(mathHtml, />C04</, "collapsed topic must hide its child drills");
+assert.doesNotMatch(mathHtml, /Fractions/, "collapsed topic must hide its child drills");
 assert.doesNotMatch(mathHtml, />DRL-MTH-/);
 assert.match(mathHtml, /class="sm:relative min-w-0 flex-1 sm:flex-initial"/, "mobile wrapper stays static so popover anchors to header row");
 assert.match(mathHtml, /role="dialog"[^>]*class="[^"]*left-0 right-0 top-full[^"]*sm:right-auto/, "mobile popover spans header row without overflowing viewport");
@@ -441,7 +441,7 @@ assert.match(codeSearchHtml, /role="tab"[^>]*aria-selected="false"[^>]*data-stat
 assert.match(codeSearchHtml, /aria-expanded="false"[^>]*aria-haspopup="dialog"[^>]*data-state="closed"/);
 assert.match(codeSearchHtml, /aria-expanded="false"[^>]*aria-haspopup="dialog"[^>]*data-state="closed"[^>]*>[^<]*<svg/);
 assert.match(codeSearchHtml, /Closures/);
-assert.match(codeSearchHtml, />U02</);
+assert.doesNotMatch(codeSearchHtml, />U02</);
 assert.match(codeSearchHtml, /Has notes/);
 assert.doesNotMatch(codeSearchHtml, />Current</, "searching hides Current section");
 assert.doesNotMatch(codeSearchHtml, />DRL-PRG-/);

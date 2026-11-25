@@ -1,5 +1,6 @@
 "use client";
 
+import { isCurriculumId } from "@/lib/titleText";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeftRight,
@@ -250,7 +251,7 @@ function SearchResults({
         value={entry.id}
         onSelect={() => navigate(entry.href)}
         selected={rowActive}
-        label={entry.title}
+        label={isCurriculumId(entry.title) ? <span className="font-mono">{entry.title}</span> : entry.title}
         leading={<Icon aria-hidden="true" className="size-space-4 shrink-0" />}
         trailing={hasMenu && (
           <DrillRowActions

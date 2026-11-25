@@ -83,7 +83,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <AlertDialogFooter className="flex-row justify-end gap-2">
           <AlertDialogCancel
             ref={cancelRef}
-            className="rounded-xl text-xs font-medium"
+            className="rounded-xl text-xs font-normal"
           >
             {cancelLabel}
           </AlertDialogCancel>

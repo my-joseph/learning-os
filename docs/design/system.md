@@ -8,7 +8,9 @@ Use the token roles below when adding a [component variant](components.md). Exis
 - Use semantic utilities such as `text-foreground`, `text-foreground-secondary`, `bg-surface-raised`, `border-border` and `bg-overlay-scrim`. RGB channel triples support Tailwind alpha modifiers. Scrim tokens include their existing alpha.
 - Use `min-h-touch` and `min-w-touch` for the interactive target, with a smaller visual control when the pattern calls for it. Use `h-control-sm` for a 32 px compact row and `gap-space-2` for the 0.5 rem spacing step.
 - Keep answer and warning states on the recipes in `practice-studio/src/lib/statusTone.ts`. Use shared Motion variants in `practice-studio/src/lib/motion.ts` for Motion components and the duration and easing utilities for CSS transitions. The existing Motion recipes express times in seconds. Media queries use literal breakpoints, mirrored by the screen tokens.
-- Prefer `font-sans` for prose, `font-display` for non-code counters and identifiers, and `font-mono` for code. KaTeX and the MathLive, Shiki and figure palettes keep their rendering-specific values.
+- Use Geist (`font-sans`, 400 or 600) for prompts, prose, controls, menus and labels. Use `tabular-nums` for counters, question labels and other numeric UI text smaller than 14 px.
+- Reserve Roboto Slab (`font-heading`, 500 or 600, `tracking-heading`) for page titles, large section headings and empty-state titles at 18 px or larger, and prominent numerals at 14 px or larger. Use `Heading` and `Numeral` to apply these roles.
+- Use Geist Mono (`font-mono`) for code, terminal output, function names, typed code answers and curriculum IDs such as `MTH-…`, `PRG-…`, `DRL-…` and `LAB-…`. KaTeX and MathLive keep their math fonts.
 
 ## Token reference
 
@@ -117,9 +119,9 @@ Use the token roles below when adding a [component variant](components.md). Exis
 
 | CSS token | Tailwind group and key | Light | Dark | When to use |
 | :--- | :--- | :--- | :--- | :--- |
-| `--font-sans` | `fontFamily.sans` | `var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | `var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | UI text, prompts and prose. |
-| `--font-display` | `fontFamily.display` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | Scores, counters, Q labels, curriculum IDs and timers. |
-| `--font-mono` | `fontFamily.mono` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | Code, tests, identifiers and typed code answers. |
+| `--font-sans` | `fontFamily.sans` | `var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | `var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | UI text, prompts, prose and small numerals. |
+| `--font-heading` | `fontFamily.heading` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | Prominent headings and numerals. |
+| `--font-mono` | `fontFamily.mono` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | Code, terminals, typed code answers and curriculum IDs. |
 | `--text-2xs` | `fontSize.2xs` | `11px` | `11px` | Compact metadata and secondary chips. |
 | `--text-micro` | `fontSize.micro` | `10px` | `10px` | Stepper numerals and compact labels. |
 | `--text-micro-compact` | `fontSize.micro-compact` | `9px` | `9px` | Compact stepper numerals on phones. |
@@ -136,12 +138,10 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--text-3xl-leading` | `fontSize.3xl (line height)` | `2.25rem` | `2.25rem` | Default line height paired with text-3xl. |
 | `--text-4xl` | `fontSize.4xl` | `2.25rem` | `2.25rem` | Showcase heading at wider widths. |
 | `--text-4xl-leading` | `fontSize.4xl (line height)` | `2.5rem` | `2.5rem` | Default line height paired with text-4xl. |
-| `--weight-normal` | `fontWeight.normal` | `400` | `400` | Use where this existing weight supplies emphasis. |
-| `--weight-medium` | `fontWeight.medium` | `500` | `500` | Use where this existing weight supplies emphasis. |
-| `--weight-semibold` | `fontWeight.semibold` | `600` | `600` | Use where this existing weight supplies emphasis. |
-| `--weight-bold` | `fontWeight.bold` | `700` | `700` | Use where this existing weight supplies emphasis. |
-| `--weight-extrabold` | `fontWeight.extrabold` | `800` | `800` | Use where this existing weight supplies emphasis. |
-| `--weight-black` | `fontWeight.black` | `900` | `900` | Use where this existing weight supplies emphasis. |
+| `--weight-normal` | `fontWeight.normal` | `400` | `400` | Regular Geist and Geist Mono text. |
+| `--weight-heading-medium` | `fontWeight.heading-medium` | `500` | `500` | Roboto Slab section headings. |
+| `--weight-semibold` | `fontWeight.semibold` | `600` | `600` | Emphasized Geist text, page headings and prominent numerals. |
+| `--tracking-heading` | `letterSpacing.heading` | `-0.01em` | `-0.01em` | Roboto Slab headings and prominent numerals. |
 | `--leading-none` | `lineHeight.none` | `1` | `1` | Use for the matching line spacing. |
 | `--leading-tight` | `lineHeight.tight` | `1.25` | `1.25` | Use for the matching line spacing. |
 | `--leading-snug` | `lineHeight.snug` | `1.375` | `1.375` | Use for the matching line spacing. |
@@ -263,13 +263,13 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 |  | `width: 27` × 2, `width: 28` × 4, `width: 29` × 1, `width: 34` × 1, `width: 70` × 2, `width: 110` × 2, `width: 120` × 1, `width: 140%` × 4, `width: 276` × 1, `width: 287` × 1 |
 |  | `width: 320` × 1, `width: auto` × 1, `x: -6` × 2, `x: -100%` × 1, `x: 0` × 3, `x: 100%` × 1, `y: -2` × 1, `y: -4` × 1, `y: 0` × 6, `y: 2` × 1 |
 |  | `y: 4` × 1, `y: 6` × 1, `y: 8` × 1, `y: 100%` × 1 |
-| Font family | `fontFamily: KaTeX_Main, 'Times New Roman', serif` × 1, `fontFamily: KaTeX_Math, 'Times New Roman', serif` × 1, `var(--font-display)` × 89, `var(--font-mono)` × 48, `var(--font-sans)` × 19 |
-| Font size | `0.85em` × 1, `0.88em` × 3, `0px` × 2, `1rem` × 1, `9px` × 1, `10px` × 12, `11px` × 20, `13px` × 2, `fontSize: 0.32` × 1, `fontSize: 0.35` × 1 |
-|  | `fontSize: 6.25` × 1, `fontSize: 7` × 1, `fontSize: 8` × 1, `fontSize: 9` × 1, `fontSize: 9.5` × 4, `fontSize: 11.5` × 1, `fontSize: 11px` × 3, `fontSize: 12` × 5, `fontSize: 13` × 1, `var(--text-3xl)` × 1 |
-|  | `var(--text-4xl)` × 1, `var(--text-base)` × 11, `var(--text-lg)` × 9, `var(--text-sm)` × 115, `var(--text-xs)` × 221 |
-| Font weight | `fontWeight: 500` × 1, `var(--shiki-dark-font-weight, inherit)` × 1, `var(--shiki-light-font-weight, inherit)` × 1, `var(--weight-black)` × 3, `var(--weight-bold)` × 22, `var(--weight-extrabold)` × 9, `var(--weight-medium)` × 92, `var(--weight-normal)` × 2, `var(--weight-semibold)` × 101 |
-| Line height | `1.4` × 1, `var(--leading-body)` × 1, `var(--leading-none)` × 3, `var(--leading-relaxed)` × 28, `var(--leading-snug)` × 8, `var(--leading-tight)` × 2, `var(--text-3xl-leading)` × 1, `var(--text-4xl-leading)` × 1, `var(--text-base-leading)` × 11, `var(--text-lg-leading)` × 9 |
-|  | `var(--text-sm-leading)` × 115, `var(--text-xs-leading)` × 221 |
+| Font family | `fontFamily: KaTeX_Main, 'Times New Roman', serif` × 1, `fontFamily: KaTeX_Math, 'Times New Roman', serif` × 1, `var(--font-heading)` × 3, `var(--font-mono)` × 28, `var(--font-sans)` × 102 |
+| Font size | `0.85em` × 1, `0.88em` × 3, `10px` × 8, `11px` × 7, `13px` × 2, `1rem` × 1, `fontSize: 0.32` × 1, `fontSize: 0.35` × 1, `fontSize: 11.5` × 1, `fontSize: 11px` × 3 |
+|  | `fontSize: 12` × 5, `fontSize: 13` × 1, `fontSize: 6.25` × 1, `fontSize: 7` × 1, `fontSize: 8` × 1, `fontSize: 9` × 1, `fontSize: 9.5` × 4, `var(--text-2xs)` × 14, `var(--text-3xl)` × 1, `var(--text-4xl)` × 1 |
+|  | `var(--text-base)` × 12, `var(--text-lg)` × 5, `var(--text-micro)` × 4, `var(--text-micro-compact)` × 2, `var(--text-sm)` × 110, `var(--text-xs)` × 199 |
+| Font weight | `fontWeight: 500` × 1, `var(--shiki-dark-font-weight, inherit)` × 1, `var(--shiki-light-font-weight, inherit)` × 1, `var(--weight-heading-medium)` × 2, `var(--weight-normal)` × 86, `var(--weight-semibold)` × 121 |
+| Line height | `1.4` × 1, `var(--leading-body)` × 1, `var(--leading-none)` × 9, `var(--leading-relaxed)` × 28, `var(--leading-snug)` × 9, `var(--leading-tight)` × 2, `var(--text-3xl-leading)` × 1, `var(--text-4xl-leading)` × 1, `var(--text-base-leading)` × 12, `var(--text-lg-leading)` × 5 |
+|  | `var(--text-sm-leading)` × 110, `var(--text-xs-leading)` × 199 |
 | Radius | `3px` × 1, `11px` × 1, `var(--radius-2xl)` × 15, `var(--radius-base)` × 35, `var(--radius-full)` × 38, `var(--radius-lg)` × 67, `var(--radius-md)` × 55, `var(--radius-none)` × 8, `var(--radius-sm)` × 3, `var(--radius-xl)` × 85 |
 | Border and stroke width | `0` × 14, `1.5px` × 8, `1px` × 6, `2px` × 194, `4px` × 1, `calc(var(--border-width-hairline) * calc(1 - var(--tw-divide-y-reverse)))` × 6, `calc(var(--border-width-hairline) * var(--tw-divide-y-reverse))` × 6, `strokeWidth: 0.8` × 3, `strokeWidth: 1` × 2, `strokeWidth: 1.2` × 5 |
 |  | `strokeWidth: 1.3` × 1, `strokeWidth: 1.4` × 1, `strokeWidth: 1.5` × 10, `strokeWidth: 1.6` × 2, `strokeWidth: 1.8` × 3, `strokeWidth: 1.25` × 6, `strokeWidth: 2` × 19, `strokeWidth: 2.2` × 1, `strokeWidth: 2.4` × 2, `strokeWidth: 2.5` × 8 |
@@ -291,11 +291,11 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
 | arbitrary utilities | 183 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]` |
-| raw neutral text utilities | 756 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| raw neutral text utilities | 688 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 39 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
 | other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
 | inline values | 386 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
 | CSS literals | 35 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1411** | |
+| **Total** | **1343** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.

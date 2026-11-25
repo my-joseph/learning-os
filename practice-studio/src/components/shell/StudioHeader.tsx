@@ -12,7 +12,7 @@ import {
 import { DrillDocument } from "@/types/drill";
 import { Workspace, isLabId } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
-import { plainTitle } from "@/lib/titleText";
+import { isCurriculumId, plainTitle } from "@/lib/titleText";
 import { EASE_OUT, quick } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { Button, IconButton } from "@/components/ui/shadcn/Button";
@@ -145,7 +145,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           />
         )}
 
-        <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-200 truncate pl-0.5">
+        <span className={cn("text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 truncate pl-0.5", isCurriculumId(drillTitle) && "font-mono")}>
           {drillTitle}
         </span>
       </div>

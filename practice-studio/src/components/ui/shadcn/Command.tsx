@@ -42,7 +42,7 @@ export const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      "px-space-3 pt-space-1 [&_[cmdk-group-heading]]:px-space-2 [&_[cmdk-group-heading]]:pb-space-1 [&_[cmdk-group-heading]]:pt-space-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted",
+      "px-space-3 pt-space-1 [&_[cmdk-group-heading]]:px-space-2 [&_[cmdk-group-heading]]:pb-space-1 [&_[cmdk-group-heading]]:pt-space-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-normal [&_[cmdk-group-heading]]:text-muted",
       className
     )}
     {...props}

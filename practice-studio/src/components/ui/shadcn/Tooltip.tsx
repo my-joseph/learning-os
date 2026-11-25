@@ -112,7 +112,7 @@ export const TooltipContent = React.forwardRef<
         initial="hidden"
         animate="shown"
         className={cn(
-          "z-[60] max-w-xs rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 shadow-md motion-reduce:transition-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+          "z-[60] max-w-xs rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-normal text-zinc-800 shadow-md motion-reduce:transition-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
           className
         )}
       >

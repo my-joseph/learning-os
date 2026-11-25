@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/shadcn/
 
 export function DrillRowActions({
   nodeId,
+  rowTitle,
   onReset,
   onDelete,
   open,
@@ -17,8 +18,9 @@ export function DrillRowActions({
   onTooltipEscape,
 }: {
   nodeId: string;
-  onReset: (nodeId: string) => void;
-  onDelete: (nodeId: string) => void;
+  rowTitle?: string;
+  onReset?: (nodeId: string) => void;
+  onDelete?: (nodeId: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   variant?: "sidebar" | "search";
@@ -37,8 +39,9 @@ export function DrillRowActions({
   };
 
   const inSearch = variant === "search";
+  const label = `Actions for ${rowTitle ?? nodeId}`;
   const triggerProps = {
-    "aria-label": `Actions for ${nodeId}`,
+    "aria-label": label,
     "aria-haspopup": "menu" as const,
     tabIndex,
     onClick: (event: React.MouseEvent) => event.stopPropagation(),
@@ -75,32 +78,36 @@ export function DrillRowActions({
           )}
         </Tooltip>
       ) : trigger}
-      <RowMenuContent placement={variant} aria-label={`Actions for ${nodeId}`}>
+      <RowMenuContent placement={variant} aria-label={label}>
         <RowMenuItem density="compact" onClick={copyId}>
           <Copy className="size-space-3_5" aria-hidden="true" />
           {copied ? "Copied" : "Copy ID"}
         </RowMenuItem>
-        <RowMenuItem
-          density="compact"
-          onClick={() => {
-            onOpenChange(false);
-            onReset(nodeId);
-          }}
-        >
-          <RotateCcw className="size-space-3_5" aria-hidden="true" />
-          Reset
-        </RowMenuItem>
-        <RowMenuItem
-          density="compact"
-          tone="destructive"
-          onClick={() => {
-            onOpenChange(false);
-            onDelete(nodeId);
-          }}
-        >
-          <Trash2 className="size-space-3_5" aria-hidden="true" />
-          Delete
-        </RowMenuItem>
+        {onReset && (
+          <RowMenuItem
+            density="compact"
+            onClick={() => {
+              onOpenChange(false);
+              onReset(nodeId);
+            }}
+          >
+            <RotateCcw className="size-space-3_5" aria-hidden="true" />
+            Reset
+          </RowMenuItem>
+        )}
+        {onDelete && (
+          <RowMenuItem
+            density="compact"
+            tone="destructive"
+            onClick={() => {
+              onOpenChange(false);
+              onDelete(nodeId);
+            }}
+          >
+            <Trash2 className="size-space-3_5" aria-hidden="true" />
+            Delete
+          </RowMenuItem>
+        )}
       </RowMenuContent>
     </RowMenu>
   );

@@ -83,7 +83,7 @@ export const VisualRenderer: React.FC<VisualRendererProps> = ({
           <button
             type="button"
             onClick={() => setShowInteractive(!showInteractive)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border transition-colors bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal rounded-lg border transition-colors bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             {showInteractive ? (
               <>
@@ -234,7 +234,7 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
               y={lblY}
               textAnchor="middle"
               dominantBaseline="central"
-              className="fill-amber-700 dark:fill-amber-400 font-mono font-bold"
+              className="fill-amber-700 dark:fill-amber-400 font-sans tabular-nums font-semibold"
               style={{ fontSize: "11px" }}
             >
               {element.label}
@@ -298,9 +298,9 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           y={textY}
           textAnchor={textAnchor}
           dominantBaseline="central"
-          className={`text-xs font-mono font-bold ${
+          className={`text-xs font-sans tabular-nums font-semibold ${
             element.highlight
-              ? "fill-amber-700 dark:fill-amber-400 font-extrabold"
+              ? "fill-amber-700 dark:fill-amber-400 font-semibold"
               : "fill-zinc-800 dark:fill-zinc-200"
           }`}
           style={{ fontSize: "11px" }}

@@ -131,7 +131,7 @@ export const InteractiveCircle2D: React.FC<InteractiveCircle2DProps> = ({
               )}
             </span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
+          <span className="text-[10px] font-sans tabular-nums px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
             2D Interactive
           </span>
         </div>
@@ -244,8 +244,8 @@ export const InteractiveCircle2D: React.FC<InteractiveCircle2DProps> = ({
             y={cy + (rPx * 0.5) * Math.sin(rad) + 10 * Math.cos(rad)}
             textAnchor="middle"
             dominantBaseline="central"
-            className={`font-mono text-xs font-bold pointer-events-none transition-all ${
-              hovered === "radius" || hovered === "handle" ? "fill-indigo-600 dark:fill-indigo-400 font-extrabold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
+            className={`font-sans tabular-nums text-xs font-semibold pointer-events-none transition-all ${
+              hovered === "radius" || hovered === "handle" ? "fill-indigo-600 dark:fill-indigo-400 font-semibold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
             }`}
           >
             r = {r}
@@ -258,7 +258,7 @@ export const InteractiveCircle2D: React.FC<InteractiveCircle2DProps> = ({
             className="cursor-pointer"
           >
             <circle cx={cx} cy={cy} r={4} fill="currentColor" stroke="currentColor" strokeWidth={1.5} className="text-zinc-300 dark:text-zinc-700" />
-            <text x={cx - 10} y={cy - 8} className="fill-zinc-600 dark:fill-zinc-400 font-mono text-[10px] pointer-events-none">
+            <text x={cx - 10} y={cy - 8} className="fill-zinc-600 dark:fill-zinc-400 font-sans tabular-nums text-[10px] pointer-events-none">
               O
             </text>
           </g>
@@ -298,14 +298,14 @@ export const InteractiveCircle2D: React.FC<InteractiveCircle2DProps> = ({
       </div>
 
       {/* Live Telemetry & Equation Proof Bar */}
-      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
+      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-sans tabular-nums text-xs">
         <div className="flex items-center gap-2.5">
           <span className="text-zinc-500 dark:text-zinc-400">Exact Area:</span>
-          <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm">A = {rSq}&pi;</span>
+          <span className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">A = {rSq}&pi;</span>
           <span className="text-zinc-500 dark:text-zinc-400">(&approx; {approxArea})</span>
           <span className="text-zinc-600 dark:text-zinc-400">|</span>
           <span className="text-zinc-500 dark:text-zinc-400">Circumference:</span>
-          <span className="text-amber-700 dark:text-amber-400 font-bold">{diameter}&pi;</span>
+          <span className="text-amber-700 dark:text-amber-400 font-semibold">{diameter}&pi;</span>
           <span className="text-zinc-500 dark:text-zinc-400">(&approx; {approxCirc})</span>
         </div>
 
@@ -317,7 +317,7 @@ export const InteractiveCircle2D: React.FC<InteractiveCircle2DProps> = ({
           }}
           disabled={!isChanged}
           title="Reset circle to problem default values"
-          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-normal transition-all ${
             isChanged
               ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
               : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"

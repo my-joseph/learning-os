@@ -258,9 +258,7 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         {!ready && (
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute left-3.5 right-12 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none ${
-              value ? "font-mono" : "font-sans"
-            }`}
+            className="pointer-events-none absolute left-3.5 right-12 font-sans tabular-nums text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
           >
             {value || placeholder || "Enter your answer…"}
           </span>

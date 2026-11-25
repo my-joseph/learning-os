@@ -247,7 +247,7 @@ async function runTests() {
     );
     assert.match(mathHtml, /Due today/);
     assert.match(mathHtml, />10 total across workspaces<\/span>/, "header count must be the all-workspace total");
-    assert.match(mathHtml, /7 due · next 7 · ~11 min/);
+    assert.match(mathHtml, /7<\/span> due · next 7 · ~11 min/);
     assert.match(mathHtml, /10 total across workspaces/);
     assert.match(mathHtml, /Start review · 7 of 7/);
     assert.match(mathHtml, /min-h-\[36px\][^>]*>3 due in the other workspace/);
@@ -257,7 +257,7 @@ async function runTests() {
     // Unit mastery context for current unit stays visible with dots and cap reason, NOT as a to-do link:
     assert.match(mathHtml, /Complex Conjugates/);
     assert.match(mathHtml, /Mastery 2 of 4/);
-    assert.match(mathHtml, /Capped at 2 · needs one L4 challenge without hints/);
+    assert.match(mathHtml, /Capped at <span[^>]*>2<\/span> · needs one L4 challenge without hints/);
     assert.doesNotMatch(
       mathHtml,
       /href="\/math\/DRL-MTH-T09-C01-U01-02"/,
@@ -275,7 +275,7 @@ async function runTests() {
       />
     );
     assert.match(cappedSessionHtml, /36 total across workspaces/);
-    assert.match(cappedSessionHtml, /29 due · next 8 · ~12 min/);
+    assert.match(cappedSessionHtml, /29<\/span> due · next 8 · ~12 min/);
     assert.match(cappedSessionHtml, /Start review · 8 of 29/);
     assert.doesNotMatch(
       mathHtml,
@@ -297,7 +297,7 @@ async function runTests() {
         weakSpotUnits={[]}
       />
     );
-    assert.match(fallbackEstimateHtml, /5 due · next 5 · ~8 min/);
+    assert.match(fallbackEstimateHtml, /5<\/span> due · next 5 · ~8 min/);
     assert.match(fallbackEstimateHtml, /href="\/review\?scope=subject:MTH"/);
     assert.doesNotMatch(fallbackEstimateHtml, /in the other workspace/);
 
@@ -336,7 +336,7 @@ async function runTests() {
         ]}
       />
     );
-    assert.match(prgHtml, /4 due · next 4 · ~9 min/);
+    assert.match(prgHtml, /4<\/span> due · next 4 · ~9 min/);
     assert.match(prgHtml, /10 total across workspaces/);
     assert.match(prgHtml, /6 due in the other workspace/);
     assert.match(prgHtml, /href="\/review\?scope=subject:PRG"/);

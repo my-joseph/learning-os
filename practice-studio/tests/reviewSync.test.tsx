@@ -448,9 +448,9 @@ const allCorrect = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(
   attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] })] };
 assert.match(render(allCorrect), /right on the first try/);
 assert.match(render(allCorrect), /Nothing to fix/);
-assert.match(render(allCorrect), /1 \/ 1 points/);
-assert.match(render(mathDrill), /0\.5 \/ 3 points/);
-assert.match(render(mathDrill), /0\.5 \/ 3 points/);
+assert.match(render(allCorrect), /1 \/ 1<\/span><span> points/);
+assert.match(render(mathDrill), /0\.5 \/ 3<\/span><span> points/);
+assert.match(render(mathDrill), /0\.5 \/ 3<\/span><span> points/);
 const pointsHtml = render(mathDrill);
 assert.ok((pointsHtml.match(/0\.5 \/ 3/g) || []).length >= 2,
   "summary and sync card use the same points figure");

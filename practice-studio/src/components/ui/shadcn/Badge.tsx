@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 import { statusTone } from "@/lib/statusTone";
 
-const standardBadge = "inline-flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium [&>svg]:pointer-events-none [&>svg]:size-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
+const standardBadge = "inline-flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-normal [&>svg]:pointer-events-none [&>svg]:size-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
 export const badgeVariants = cva(
   "",
@@ -18,10 +18,10 @@ export const badgeVariants = cva(
         destructive: `${standardBadge} ${statusTone.wrong.solidBadge}`,
         success: `${standardBadge} ${statusTone.correct.softCard}`,
         ghost: `${standardBadge} text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800`,
-        choice: "inline-flex size-space-6 items-center justify-center rounded-md text-xs font-display font-semibold shrink-0 transition-colors",
+        choice: "inline-flex size-space-6 items-center justify-center rounded-md text-xs font-sans tabular-nums font-semibold shrink-0 transition-colors",
         answerPart: "inline-flex items-center gap-space-1 rounded-md px-space-1_5 py-space-0_5 text-xs bg-surface-raised/70 dark:bg-surface-raised/50",
         tabMark: "inline-flex size-space-4 shrink-0 items-center justify-center rounded-full",
-        stepMarker: "relative flex shrink-0 items-center justify-center rounded-full border-2 font-display font-semibold tabular-nums stepper-marker-transition",
+        stepMarker: "relative flex shrink-0 items-center justify-center rounded-full border-2 font-sans tabular-nums font-semibold stepper-marker-transition",
       },
     },
     defaultVariants: { variant: "default" },
