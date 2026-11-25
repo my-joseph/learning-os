@@ -91,7 +91,7 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
         data-tree-row-label={isTree || undefined}
         className={cn(
           "min-w-0 flex-1 truncate",
-          (isTree ? selected : emphasis === "medium") && "font-semibold",
+          (isTree ? selected : emphasis === "medium") && "font-medium",
           isTree && !selected && "font-normal"
         )}
       >

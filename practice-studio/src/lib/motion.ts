@@ -6,10 +6,16 @@ export const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 export const quick: Transition = { duration: 0.16, ease: EASE_OUT };
 export const settle: Transition = { duration: 0.24, ease: EASE_OUT };
 
+const popoverHidden = { opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12, ease: EASE_OUT } };
+const popoverShown = { opacity: 1, y: 0, scale: 1, transition: quick };
+
 /** Dropdowns and menus: grow from where they were opened, shrink back on close. */
-export const popover: Variants = {
-  hidden: { opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12, ease: EASE_OUT } },
-  shown: { opacity: 1, y: 0, scale: 1, transition: quick },
+export const popover: Variants = { hidden: popoverHidden, shown: popoverShown };
+
+/** Popover that opens to the right of its trigger (sidebar hover card): same motion on the x axis. */
+export const popoverFromLeft: Variants = {
+  hidden: { ...popoverHidden, x: popoverHidden.y, y: popoverShown.y },
+  shown: { ...popoverShown, x: popoverShown.y },
 };
 
 /** Hint, set-up, steps, feedback: open and close in place (height + fade). */

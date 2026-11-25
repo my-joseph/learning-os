@@ -923,7 +923,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           }`}
         >
           {leading}
-          <span className={`text-xs truncate min-w-0 flex-1 text-foreground-control ${isCurrent ? "font-semibold" : "font-normal"}`}>
+          <span className={`text-xs truncate min-w-0 flex-1 text-foreground-control ${isCurrent ? "font-medium" : "font-normal"}`}>
             {rowLabel}
           </span>
         </button>
