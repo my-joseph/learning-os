@@ -500,7 +500,7 @@
         "one": 1
       },
       "trapGivens": [
-        6,
+        2,
         4
       ],
       "answerSpec": {
@@ -512,25 +512,21 @@
           },
           {
             "id": "B",
-            "label": "No real value of $k$",
-            "provenance": "Rejects every candidate after a sign slip in the nonzero check, concluding that no k works."
+            "label": "$k = -1$",
+            "trapTag": "pure-imaginary-wrong-component",
+            "provenance": "Swaps the real and imaginary components in the condition, setting the imaginary part k^2 - k - 2 = 0 and requiring the real part k^2 + k - 6 != 0 to reject k = 2, leaving k = -1."
           },
           {
             "id": "C",
             "label": "$k = -3$ or $k = 2$",
             "trapTag": "t02-c01-u01-missing-nonzero-check-trap",
-            "provenance": "Solves the real-part equation but never checks that the imaginary part stays nonzero."
+            "provenance": "Solves the real-part equation k^2 + k - 6 = 0 to get k = -3 or k = 2, omitting the nonzero check on the imaginary part k^2 - k - 2."
           },
           {
             "id": "D",
             "label": "$k = -1$ or $k = 2$",
             "trapTag": "t02-c01-u01-pure-imaginary-wrong-part-trap",
-            "provenance": "Sets the imaginary part to zero instead of the real part."
-          },
-          {
-            "id": "E",
-            "label": "$k = 3$ or $k = -2$",
-            "provenance": "Sign slip when factoring the real part."
+            "provenance": "Sets the imaginary part k^2 - k - 2 to zero instead of the real part without a nonzero check, obtaining both roots k = -1 and k = 2 where the number is real."
           }
         ],
         "correct": "A"
@@ -538,12 +534,12 @@
       "answerPlain": "A",
       "answerDisplay": "A",
       "inputHint": "Choose one option.",
-      "commonTrapTag": "t02-c01-u01-missing-nonzero-check-trap",
-      "trapDerivation": "(-1 + (1 + 4*6)**(1/2))/2",
-      "trapValue": "2",
+      "commonTrapTag": "pure-imaginary-wrong-component",
+      "trapDerivation": "(1 - (1 + 4*2)**(1/2))/2",
+      "trapValue": "-1",
       "verify": {
         "source": "-3",
-        "trapValue": "2"
+        "trapValue": "-1"
       },
       "checkpointHint": "A purely imaginary number sits on the imaginary axis but not at the origin, so test every candidate against both parts.",
       "references": [
@@ -607,7 +603,7 @@
         }
       ],
       "unitCode": "MTH-T02-C01-U01",
-      "fingerprint": "t02-c01-u01-missing-nonzero-check-trap|choose|For which real number $k$ is $(k^# + k - #) + (k^# - k - #)i$ purely imaginary?",
+      "fingerprint": "pure-imaginary-wrong-component|choose|For which real number $k$ is $(k^# + k - #) + (k^# - k - #)i$ purely imaginary?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -626,14 +622,14 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "t02-c01-u01-missing-nonzero-check-trap",
+          "trapTag": "pure-imaginary-wrong-component",
           "trapValueVerified": true,
           "weakDistractors": 0,
-          "provenanceDistractors": 4
+          "provenanceDistractors": 3
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 21
+          "fieldsChecked": 20
         },
         "antiLeak": {
           "passed": true,
@@ -671,13 +667,14 @@
           {
             "id": "A",
             "label": "$4$",
-            "provenance": "Uses only the sign condition and reports the smallest power of i equal to one."
+            "trapTag": "t02-c01-u01-assume-period-four-trap",
+            "provenance": "Assumes (1 + i)^n returns to the positive real axis with period 4 like i^4 = 1 and ignores the scale growth to 256, reporting n = 4."
           },
           {
             "id": "B",
             "label": "$8$",
             "trapTag": "t02-c01-u01-report-reduced-exponent-trap",
-            "provenance": "Finds the exponent of the squared base but forgets to double it."
+            "provenance": "Reduces (1 + i)^2 = 2i and solves (2i)^m = 256 to find m = 8, then reports the reduced exponent m = 8 instead of doubling it to n = 2m = 16."
           },
           {
             "id": "C",
@@ -686,12 +683,8 @@
           {
             "id": "D",
             "label": "$32$",
-            "provenance": "Doubles the exponent twice."
-          },
-          {
-            "id": "E",
-            "label": "$128$",
-            "provenance": "Halves the target instead of working with powers."
+            "trapTag": "cx-cycle-length-guess",
+            "provenance": "Finds 2^8 = 256 so 8 factors of 2 are needed, then multiplies 8 by the guessed period-4 cycle length of i instead of the squaring exponent 2 from (1 + i)^2 = 2i, getting 4 * 8 = 32."
           }
         ],
         "correct": "C"
@@ -783,11 +776,11 @@
           "trapTag": "t02-c01-u01-report-reduced-exponent-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
-          "provenanceDistractors": 4
+          "provenanceDistractors": 3
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 21
+          "fieldsChecked": 20
         },
         "antiLeak": {
           "passed": true,
@@ -824,19 +817,21 @@
         "options": [
           {
             "id": "A",
-            "label": "$7$",
-            "provenance": "Counts the exponents where the sum fails instead of where it holds."
+            "label": "$8$",
+            "trapTag": "cx-power-cycle-misread",
+            "provenance": "Misreads the 4-step cycle of i by taking i^3 = +i instead of -i, so n = 1 and n = 3 (mod 4) give -1 + 2i instead of -1 and only the 8 integers with n = 2 (mod 4) in 1 <= n <= 30 work."
           },
           {
             "id": "B",
             "label": "$15$",
             "trapTag": "t02-c01-u01-structured-exponent-residue-trap",
-            "provenance": "Treats i to the power two n as minus one for every n, so only odd n seem to work."
+            "provenance": "Treats i^(2n) as -1 for every n instead of (-1)^n, so n = 2 (mod 4) gives -3 instead of -1 and only the 15 odd integers in 1 <= n <= 30 work."
           },
           {
             "id": "C",
-            "label": "$22$",
-            "provenance": "Off by one at the end of the range."
+            "label": "$21$",
+            "trapTag": "t02-c01-u01-power-of-i-remainder-trap",
+            "provenance": "Finds 3 valid residues per period-4 cycle across floor(30/4) = 7 full cycles to get 7 * 3 = 21, dropping the remainder 30 mod 4 = 2 leftover integers n = 29 and n = 30."
           },
           {
             "id": "D",
@@ -844,8 +839,9 @@
           },
           {
             "id": "E",
-            "label": "$30$",
-            "provenance": "Assumes the sum is always minus one."
+            "label": "$24$",
+            "trapTag": "cx-congruence-count-off-by-one",
+            "provenance": "Finds that n = 1, 2, 3 (mod 4) work and counts 8 solutions in 1 <= n <= 30 for n = 1 (mod 4), then assumes all 3 valid residue classes have 8 solutions in the range (missing that n = 3 (mod 4) stops at 27 with 7), getting 3 * 8 = 24."
           }
         ],
         "correct": "D"

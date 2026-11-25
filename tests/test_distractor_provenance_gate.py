@@ -387,9 +387,4 @@ def test_audit_existing_mth_drills_reports_exact_failing_problems() -> None:
             if errs:
                 failing_problems[f"{drill_id}/{prob['id']}"] = errs
 
-    expected_failing = {
-        "DRL-MTH-T02-C01-U01-05/Q05",
-        "DRL-MTH-T02-C01-U01-05/Q06",
-        "DRL-MTH-T02-C01-U01-05/Q07",
-    }
-    assert set(failing_problems.keys()) == expected_failing
+    assert failing_problems == {}
