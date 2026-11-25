@@ -238,7 +238,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
             </div>
             {unitContext.masteryCap?.capped && unitContext.masteryCap.reason && (
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug break-words">
-                Capped at <Numeral variant="lg" className="leading-none">{unitContext.mastery}</Numeral>
+                Capped at <Numeral variant="sm" className="leading-none">{unitContext.mastery}</Numeral>
                 {" "}· {unitContext.masteryCap.reason}
               </p>
             )}
