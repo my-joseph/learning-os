@@ -88,23 +88,31 @@
     }
   }
 
-  /* Focus can land on a leaf's button, but its visible surface is the whole row. */
-  :is(button[data-sidebar-row]:focus-visible, [data-sidebar-row]:has(> [role="treeitem"]:focus-visible)) {
+  /* The focus ring follows the row surface around its button and action. */
+  [data-sidebar-row]:has(> [role="treeitem"]:focus-visible) {
     @apply ring-2 ring-inset ring-muted;
   }
 
-  [data-sidebar-tree] [role="treeitem"]:focus-visible [data-sidebar-row-code] {
-    display: block;
+  [data-radix-popper-content-wrapper]:has(> [data-tree-row-preview]) {
+    pointer-events: none;
   }
 
-  @media (hover: hover) {
-    [data-sidebar-row]:hover [data-sidebar-row-code] {
-      display: block;
-    }
+  @screen lg {
+    @media (hover: hover) and (pointer: fine) {
+      [data-tree-row-actions] > [data-tree-row-action] {
+        opacity: var(--opacity-hidden);
+        pointer-events: none;
+      }
 
-    /* A pointer over a row takes precedence over a badge left visible by keyboard focus. */
-    [data-sidebar-tree]:has([data-sidebar-row]:hover) [data-sidebar-row]:not(:hover) [data-sidebar-row-code] {
-      display: none;
+      [data-tree-row-actions]:is(:hover, :focus-within, [data-selected="true"], [data-menu-open="true"]) > [data-tree-row-action] {
+        opacity: var(--opacity-visible);
+        pointer-events: auto;
+      }
+
+      [data-tree-row-actions]:is(:hover, :focus-within, [data-selected="true"], [data-menu-open="true"]) > button > [data-tree-row-label] {
+        text-overflow: clip;
+        mask-image: linear-gradient(to right, currentColor calc(100% - var(--control-xs)), transparent);
+      }
     }
   }
 }

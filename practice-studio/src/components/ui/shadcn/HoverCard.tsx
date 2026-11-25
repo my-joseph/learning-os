@@ -9,6 +9,27 @@ import { popover } from "@/lib/motion";
 export const HoverCard = HoverCardPrimitive.Root;
 export const HoverCardTrigger = HoverCardPrimitive.Trigger;
 
+// A row contains real buttons, so it needs to keep its native touch activation.
+export const HoverCardRowTrigger = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => (
+    <HoverCardTrigger
+      asChild
+      onPointerEnter={(event) => {
+        if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) event.preventDefault();
+      }}
+      onFocus={(event) => event.preventDefault()}
+    >
+      <HoverCardRowSurface {...props} ref={ref} />
+    </HoverCardTrigger>
+  )
+);
+HoverCardRowTrigger.displayName = "HoverCardRowTrigger";
+
+const HoverCardRowSurface = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <div {...props} ref={ref} onTouchStart={undefined} />
+);
+HoverCardRowSurface.displayName = "HoverCardRowSurface";
+
 export const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
@@ -19,7 +40,7 @@ export const HoverCardContent = React.forwardRef<
         variants={popover}
         initial="hidden"
         animate="shown"
-        className={cn("z-50 w-64 rounded-xl border border-zinc-200 bg-white p-4 text-foreground shadow-md outline-none motion-reduce:transition-none dark:border-zinc-800 dark:bg-zinc-900", className)}
+        className={cn("z-overlay w-64 rounded-xl border border-border bg-surface-raised p-space-4 text-foreground shadow-ui-md outline-none motion-reduce:transition-none dark:bg-surface-panel", className)}
       >
         {children}
       </m.div>
