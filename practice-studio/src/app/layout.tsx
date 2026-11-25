@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 // Learner font choice 2026-11-22: Geist / Geist Fallback (font-sans), Roboto Slab (display /
 // secondary accent: scores, counters, timers, curriculum IDs), Geist Mono (code only), KaTeX (math).
 import "@fontsource-variable/roboto-slab";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { THEME_INIT_SCRIPT } from "@/lib/studioRules";
