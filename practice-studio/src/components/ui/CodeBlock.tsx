@@ -30,6 +30,8 @@ type CodeBlockProps = { className?: string; language?: string | null } & (
       title?: string;
       exitCode?: number;
       status?: { label: string; passed: boolean };
+      /** Pre-styled terminal lines; `code` stays the plain text that Copy copies. */
+      children?: React.ReactNode;
     }
   | {
       variant: "full-file";
@@ -255,6 +257,7 @@ function TerminalBlock({
   title = "Terminal",
   exitCode,
   status,
+  children,
 }: Extract<CodeBlockProps, { variant: "terminal" }>) {
   const wrap = useWrapPreference(true);
   const contentId = useId();
@@ -266,7 +269,7 @@ function TerminalBlock({
     <CodeBlockRoot variant="terminal" className={className} data-code-variant="terminal">
       <CodeHeader title={title} code={code} wrap={wrap} contentId={contentId} />
       <CodeBlockContent id={contentId} wrap={wrap} aria-label={title}>
-        {code.split("\n").map((line, index) => (
+        {children ?? code.split("\n").map((line, index) => (
           <React.Fragment key={index}>
             {index > 0 && "\n"}
             {line.startsWith("$ ") ? (

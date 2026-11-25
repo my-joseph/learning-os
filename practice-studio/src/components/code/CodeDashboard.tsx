@@ -48,7 +48,7 @@ import {
   scoreProblem,
 } from "@/lib/scoring";
 import { statusTone } from "@/lib/statusTone";
-import { statusSymbolClass } from "@/lib/statusSymbol";
+import { statusSymbolClass, type StatusSymbolKind } from "@/lib/statusSymbol";
 import {
   getPrgScore,
   getReviewRequest,
@@ -253,13 +253,30 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const layeredStatus = deriveCodeStatus(effectiveState, reviewRun, filename);
   const { tests, testsCount, lint, types, failures } = layeredStatus;
   const checkDiagnostic = sanitizeCodeCheckError(checkError);
-  const checkOutput = [
-    testsCount ? `Tests: ${testsCount.passed}/${testsCount.total} passed` : "",
-    lint === "not_run" ? "" : `Lint: ${lint === "pass" ? "passed" : "failed"}`,
-    types === "not_run" ? "" : `Types: ${types === "pass" ? "passed" : "failed"}`,
-    ...failures,
-  ].filter(Boolean).join("\n");
   const checksPassed = tests !== "fail" && lint !== "fail" && types !== "fail" && failures.length === 0;
+  const hasRunChecks = Boolean(checkDiagnostic) || tests !== "not_run" || lint !== "not_run" || types !== "not_run";
+  const checkRows: { label: string; symbol: string; kind: StatusSymbolKind; detail?: string }[] = [
+    {
+      label: "Tests",
+      symbol: layeredStatus.testsSymbol,
+      kind: tests,
+      detail: testsCount && tests !== "not_run" ? `${testsCount.passed}/${testsCount.total} passed` : undefined,
+    },
+    { label: "Lint", symbol: layeredStatus.lintSymbol, kind: lint },
+    { label: "Types", symbol: layeredStatus.typesSymbol, kind: types },
+    {
+      label: "Review",
+      symbol: layeredStatus.reviewSymbol,
+      kind: layeredStatus.review,
+      detail: layeredStatus.reviewLabel,
+    },
+  ];
+  const checkErrorLines = checkDiagnostic ? [checkDiagnostic] : failures;
+  const checkTerminalText = [
+    "$ npm run check",
+    ...checkRows.map((r) => `${r.symbol} ${r.label}${r.detail ? ` (${r.detail})` : ""}`),
+    ...(checkErrorLines.length ? ["", ...checkErrorLines] : []),
+  ].join("\n");
   const primaryAction = choosePrimaryAction(layeredStatus, drillId, problem.id);
   const reviewRequestText = getReviewRequest(drillId, problem.id);
 
@@ -773,55 +790,40 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
             {/* 2. Status line: Tests, Lint, Types, Review */}
             <div className="space-y-2.5">
-              <div
-                role="status"
-                aria-label="Check and review status"
-                className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-sans py-2.5 px-3.5 rounded-xl bg-surface-panel border border-zinc-200 dark:border-zinc-800"
-              >
-                <span>
-                  <span className="text-zinc-600 dark:text-zinc-400">Tests </span>
-                  <span className={statusSymbolClass(layeredStatus.tests)}>
-                    {layeredStatus.testsSymbol}
-                  </span>
-                  {layeredStatus.testsCount && layeredStatus.tests !== "not_run" && (
-                    <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400 ml-1">
-                      ({layeredStatus.testsCount.passed}/{layeredStatus.testsCount.total})
-                    </span>
-                  )}
-                </span>
-                <span>
-                  <span className="text-zinc-600 dark:text-zinc-400">Lint </span>
-                  <span className={statusSymbolClass(layeredStatus.lint)}>
-                    {layeredStatus.lintSymbol}
-                  </span>
-                </span>
-                <span>
-                  <span className="text-zinc-600 dark:text-zinc-400">Types </span>
-                  <span className={statusSymbolClass(layeredStatus.types)}>
-                    {layeredStatus.typesSymbol}
-                  </span>
-                </span>
-                <span>
-                  <span className="text-zinc-600 dark:text-zinc-400">Review </span>
-                  <span className={statusSymbolClass(layeredStatus.review)}>
-                    {layeredStatus.reviewSymbol}
-                  </span>
-                  <span className="text-xs font-sans text-zinc-500 dark:text-zinc-400 ml-1">
-                    ({layeredStatus.reviewLabel})
-                  </span>
-                </span>
-              </div>
-
-              {(checkDiagnostic || checkOutput) && (
+              <div role="status" aria-label="Check and review status">
                 <CodeBlock
                   variant="terminal"
-                  code={checkDiagnostic || checkOutput}
-                  status={{
+                  code={checkTerminalText}
+                  status={hasRunChecks ? {
                     label: checkDiagnostic ? "Could not run checks" : checksPassed ? "Checks passed" : "Checks failed",
                     passed: !checkDiagnostic && checksPassed,
-                  }}
-                />
-              )}
+                  } : undefined}
+                >
+                  <span className="text-muted">$ </span>npm run check
+                  {checkRows.map((row) => (
+                    <React.Fragment key={row.label}>
+                      {"\n"}
+                      <span className={statusSymbolClass(row.kind)}>{row.symbol}</span>
+                      {` ${row.label}`}
+                      {row.detail && <span className="text-muted">{` (${row.detail})`}</span>}
+                    </React.Fragment>
+                  ))}
+                  {!hasRunChecks && (
+                    <>{"\n\n"}<span className="text-muted">Not run yet. Run checks to see results here.</span></>
+                  )}
+                  {checkErrorLines.length > 0 && (
+                    <>
+                      {"\n"}
+                      {checkErrorLines.map((line, i) => (
+                        <React.Fragment key={i}>
+                          {"\n"}
+                          <span className={statusTone.wrong.text}>{line}</span>
+                        </React.Fragment>
+                      ))}
+                    </>
+                  )}
+                </CodeBlock>
+              </div>
             </div>
 
             {/* 3. One primary action + Secondary text buttons */}
