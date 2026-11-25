@@ -37,6 +37,7 @@ import {
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
 import { ListRow } from "@/components/ui/ListRow";
+import { TreeHoverPreviewHost } from "@/components/ui/TreeHoverPreview";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { plainTitle } from "@/lib/titleText";
@@ -1391,6 +1392,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         className="flex-1 min-h-0 flex flex-col px-space-2_5 pt-space-2_5 pb-space-1_5"
       >
         {pickerBody}
+        <TreeHoverPreviewHost />
       </div>
     );
   }

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
-import { HoverCard, HoverCardContent, HoverCardRowTrigger, useWarmHoverCard } from "./shadcn/HoverCard";
+import { useTreePreviewTrigger } from "./TreeHoverPreview";
 
 const rowVariants = cva(
   "items-center rounded-md data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-disabled aria-busy:pointer-events-none aria-busy:opacity-disabled",
@@ -76,6 +76,8 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
     label, leading, trailing, emphasis = variant === "command" ? "medium" : "normal",
     treeDepth = 1, treeRow, className, type = "button", children, ...props
   }, ref) => {
+    const previewKey = React.useId();
+    const previewHandlers = useTreePreviewTrigger(previewKey, treeRow?.preview, Boolean(treeRow?.actionOpen));
     const hasTrailing = trailing != null && trailing !== false;
     const isTree = variant === "tree";
     const classes = cn(
@@ -133,11 +135,11 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
     );
 
     if (isTree && treeRow) {
-      const { action, actionOpen, highlighted, preview, surfaceProps } = treeRow;
-      const Surface = preview ? HoverCardRowTrigger : "div";
-      const surface = (
-        <Surface
+      const { action, actionOpen, highlighted, surfaceProps } = treeRow;
+      return (
+        <div
           {...surfaceProps}
+          {...previewHandlers}
           data-menu-open={actionOpen || undefined}
           data-selected={selected || undefined}
           data-tree-row-actions={action ? true : undefined}
@@ -153,25 +155,7 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
         >
           {row}
           {action && <div data-tree-row-action className="shrink-0">{action}</div>}
-        </Surface>
-      );
-      if (!preview) return surface;
-      return (
-        <WarmHoverCard>
-          {surface}
-          {!actionOpen && (
-            <HoverCardContent
-              side="right"
-              align="start"
-              sideOffset={22}
-              collisionPadding={8}
-              data-tree-row-preview
-              className="pointer-events-none w-80 max-w-[var(--radix-hover-card-content-available-width)]"
-            >
-              {preview}
-            </HoverCardContent>
-          )}
-        </WarmHoverCard>
+        </div>
       );
     }
 
@@ -188,12 +172,3 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
 );
 ListRow.displayName = "ListRow";
 
-/** Sidebar tree hover card: 500 ms for the first card, then instant while sweeping (useWarmHoverCard). */
-function WarmHoverCard({ children }: { children: React.ReactNode }) {
-  const { openDelay, onOpenChange } = useWarmHoverCard(500);
-  return (
-    <HoverCard openDelay={openDelay} closeDelay={100} onOpenChange={onOpenChange}>
-      {children}
-    </HoverCard>
-  );
-}
