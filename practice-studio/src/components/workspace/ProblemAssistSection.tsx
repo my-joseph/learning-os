@@ -5,6 +5,8 @@ import { ChevronDown, Loader2, RotateCcw } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { FormattedText } from "@/components/FormattedText";
 import { StepRow } from "@/components/StepRow";
+import { Button } from "@/components/ui/shadcn/Button";
+import { Card } from "@/components/ui/shadcn/Card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,7 +30,7 @@ export const CheckpointHintDisclosure: React.FC<CheckpointHintDisclosureProps> =
   return (
     <Reveal show={visible}>
       {visible && (
-        <div className={`${warningTone.leftBorder} pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300`}>
+        <div className={`${warningTone.leftBorder} pl-space-3_5 py-space-1 text-sm text-foreground-control`}>
           <FormattedText text={checkpointHint!} />
         </div>
       )}
@@ -88,16 +90,18 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
 }) => {
   const canShowHint = Boolean(problem.hasHint || hasCheckpointHint(problem.checkpointHint));
   return (
-    <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-0 sm:gap-y-2 pt-1">
+    <div className="flex flex-wrap items-center gap-x-space-3 sm:gap-x-space-4 gap-y-0 sm:gap-y-space-2 pt-space-1">
       {hasAttempt && (
-        <button
+        <Button
           type="button"
           onClick={onReset}
-          className="order-1 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+          variant="assist"
+          size="assistInline"
+          className="order-1 gap-space-1_5"
         >
-          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+          <RotateCcw className="size-space-3_5" aria-hidden="true" />
           <span>Reset</span>
-        </button>
+        </Button>
       )}
 
       {hasSetup && (
@@ -110,28 +114,30 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
         >
           {onToggleSetup && (
             <CollapsibleTrigger asChild>
-              <button
+              <Button
                 type="button"
                 title={
                   setupUnopenedUnattempted
                     ? "Opening before checking counts as assisted"
                     : undefined
                 }
-                className="order-2 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                variant="assist"
+                size="assistInline"
+                className="order-2"
               >
                 <ChevronDown
                   aria-hidden="true"
-                  className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                  className={`size-space-3_5 transition-transform duration-panel motion-reduce:transition-none ${
                     showSetup ? "rotate-180" : ""
                   }`}
                 />
                 <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
-              </button>
+              </Button>
             </CollapsibleTrigger>
           )}
           <CollapsibleContent className="order-11 basis-full w-full">
             {showSetup && setupDisclosure ? (
-              <div className="pt-1">{setupDisclosure}</div>
+              <div className="pt-space-1">{setupDisclosure}</div>
             ) : null}
           </CollapsibleContent>
         </Collapsible>
@@ -146,22 +152,24 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
           className="contents"
         >
           <CollapsibleTrigger asChild>
-            <button
+            <Button
               type="button"
-              className="order-3 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              variant="assist"
+              size="assistInline"
+              className="order-3"
             >
               <ChevronDown
                 aria-hidden="true"
-                className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                className={`size-space-3_5 transition-transform duration-panel motion-reduce:transition-none ${
                   showHint ? "rotate-180" : ""
                 }`}
               />
               <span>{showHint ? "Hide hint" : "Hint"}</span>
-            </button>
+            </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="order-10 basis-full w-full">
             {hasCheckpointHint(problem.checkpointHint) ? (
-              <div className="pt-1">
+              <div className="pt-space-1">
                 <CheckpointHintDisclosure
                   checkpointHint={problem.checkpointHint}
                   show={showHint}
@@ -181,23 +189,25 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
       >
         {!hideShowStepsButton && (
           <CollapsibleTrigger asChild>
-            <button
+            <Button
               type="button"
               title={
                 stepsUnopenedUnattempted
                   ? "Opening before checking counts as assisted"
                   : undefined
               }
-              className="order-4 inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+              variant="assist"
+              size="assistInline"
+              className="order-4"
             >
               <ChevronDown
                 aria-hidden="true"
-                className={`w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none ${
+                className={`size-space-3_5 transition-transform duration-panel motion-reduce:transition-none ${
                   showSolution ? "rotate-180" : ""
                 }`}
               />
               <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-            </button>
+            </Button>
           </CollapsibleTrigger>
         )}
 
@@ -205,17 +215,18 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
         <CollapsibleContent className="order-12 basis-full w-full">
           <Reveal show={Boolean(showSolution)}>
             {showSolution && (
-              <div
+              <Card
+                variant="assistPanel"
                 ref={stepsRef}
-                className="mt-1 bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3"
+                className="mt-space-1 space-y-space-3"
               >
                 {showStepsHeader && (
-                  <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="flex flex-wrap justify-between items-center gap-space-2 pb-space-2 border-b border-border text-xs text-muted">
                     <span className="font-medium">Steps</span>
                     {problem.answerDisplay && (
                       <span>
                         Answer:{" "}
-                        <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                        <strong className="text-foreground font-semibold">
                           <FormattedText text={`$${problem.answerDisplay}$`} />
                         </strong>
                       </span>
@@ -223,8 +234,8 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                   </div>
                 )}
                 {loadingSteps ? (
-                  <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 py-1">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  <div className="flex items-center gap-space-2 text-xs text-muted py-space-1">
+                    <Loader2 className="size-space-3_5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                     <span>Loading steps…</span>
                   </div>
                 ) : (
@@ -240,20 +251,22 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                     ))}
                   </div>
                 )}
-              </div>
+              </Card>
             )}
           </Reveal>
         </CollapsibleContent>
       </Collapsible>
 
       {onSkip && !hasAttempt && (
-        <button
+        <Button
           type="button"
           onClick={onSkip}
-          className="order-5 inline-flex min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-0 items-center justify-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 ml-auto"
+          variant="assist"
+          size="assistSkip"
+          className="order-5 ml-auto"
         >
           <span>{skipLabel}</span>
-        </button>
+        </Button>
       )}
     </div>
   );

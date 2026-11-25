@@ -20,6 +20,8 @@ export const badgeVariants = cva(
         ghost: `${standardBadge} text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800`,
         choice: "inline-flex size-space-6 items-center justify-center rounded-md text-xs font-display font-semibold shrink-0 transition-colors",
         answerPart: "inline-flex items-center gap-space-1 rounded-md px-space-1_5 py-space-0_5 text-xs bg-surface-raised/70 dark:bg-surface-raised/50",
+        tabMark: "inline-flex size-space-4 shrink-0 items-center justify-center rounded-full",
+        stepMarker: "relative flex shrink-0 items-center justify-center rounded-full border-2 font-display font-semibold tabular-nums stepper-marker-transition",
       },
     },
     defaultVariants: { variant: "default" },

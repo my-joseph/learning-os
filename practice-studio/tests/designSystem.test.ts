@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import postcss from "postcss";
+import tailwindcss from "tailwindcss";
 import ts from "typescript";
 import config from "../tailwind.config";
 import { auditDesignSystem, sourceFiles, studioRoot } from "./designSystemAudit";
@@ -107,4 +108,33 @@ test("Hard-coded design values stay within the Studio baseline", async (t) => {
   const baseline: { total: number } = JSON.parse(read("tests/designSystem.baseline.json"));
   t.diagnostic(`${audit.total} hard-coded values (baseline ${baseline.total}): ${JSON.stringify(audit.totals)}`);
   assert.ok(audit.total <= baseline.total, "Hard-coded design values increased. Reuse design tokens or migrate existing literals.");
+});
+
+test("Assist geometry utilities compile to their mobile and desktop dimensions", async () => {
+  const { root } = await postcss(tailwindcss(config)).process(read("src/app/globals.css"), { from: undefined });
+  const expectSize = (selector: string, property: string, value: string, desktop = false) => {
+    let found = false;
+    root.walkRules(selector, (rule) => {
+      if (desktop) {
+        assert.equal(rule.parent?.type, "atrule");
+        if (rule.parent?.type === "atrule") assert.equal(rule.parent.params, "(min-width: 640px)");
+      }
+      rule.walkDecls(property, (declaration) => {
+        if (declaration.prop === property && declaration.value === value) found = true;
+      });
+    });
+    assert.ok(found, `${selector} must set ${property} to ${value}`);
+  };
+  expectSize(".min-h-touch", "min-height", "var(--touch)");
+  expectSize(".min-w-touch", "min-width", "var(--touch)");
+  expectSize(".sm\\:min-h-control-xs", "min-height", "var(--control-xs)", true);
+  expectSize(".sm\\:min-h-control-md", "min-height", "var(--control-md)", true);
+  expectSize(".sm\\:h-space-9", "height", "var(--space-9)", true);
+  expectSize(".sm\\:size-space-6", "height", "var(--space-6)", true);
+  expectSize(".size-stepper-marker", "width", "var(--stepper-marker)");
+  expectSize(".size-stepper-marker-compact", "width", "var(--stepper-marker-compact)");
+  expectSize(".stepper-item", "min-width", "calc(2 * var(--control-md))");
+  expectSize(".stepper-item:first-child", "margin-left", "auto");
+  expectSize(".stepper-item:last-child", "margin-right", "auto");
+  expectSize(".border-status", "border-width", "var(--border-width-status)");
 });

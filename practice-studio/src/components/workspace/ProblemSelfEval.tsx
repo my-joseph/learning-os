@@ -3,6 +3,7 @@
 import React from "react";
 import { PenLine } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
+import { Button } from "@/components/ui/shadcn/Button";
 import { Input } from "@/components/ui/shadcn/Input";
 import { statusTone } from "@/lib/statusTone";
 import { MistakeTag } from "@/types/drill";
@@ -64,64 +65,60 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
   }
 
   return (
-    <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3 text-xs text-zinc-500 dark:text-zinc-400">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="pt-space-4 border-t border-border space-y-space-3 text-xs text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-space-3">
         {showSelfScore && (
-          <div className="flex items-center gap-1.5">
-            <span className="mr-1">Self-score:</span>
+          <div className="flex items-center gap-space-1_5">
+            <span className="mr-space-1">Self-score:</span>
             {SELF_SCORE_BUTTONS.map((btn) => {
               const exceedsCap =
                 skipped ||
                 (maxScore !== undefined && (maxScore === null || btn.val > maxScore));
               const btnDisabled = disabled || exceedsCap;
               return (
-                <button
+                <Button
                   key={btn.val}
                   type="button"
                   disabled={btnDisabled}
                   onClick={() => onSetScore(btn.val)}
                   aria-pressed={score === btn.val}
-                  className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-0 px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                    score === btn.val
-                      ? btn.activeCls
-                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                  }`}
+                  variant="assistScore"
+                  size="assistScore"
+                  className={score === btn.val ? btn.activeCls : undefined}
                 >
                   {btn.label}
-                </button>
+                </Button>
               );
             })}
           </div>
         )}
 
         {mistakeTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1">Mistake:</span>
+          <div className="flex flex-wrap items-center gap-space-1_5">
+            <span className="mr-space-1">Mistake:</span>
             {mistakeTags.map((t) => {
               const hasTag = mistakes.includes(t.id);
               return (
-                <button
+                <Button
                   key={t.id}
                   type="button"
                   disabled={disabled}
                   onClick={() => onToggleMistakeTag(t.id)}
                   aria-pressed={hasTag}
-                  className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-0 py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
-                    hasTag
-                      ? statusTone.wrong.selfScoreActive
-                      : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                  }`}
+                  variant="assistTag"
+                  size="assistTag"
+                  className={hasTag ? statusTone.wrong.selfScoreActive : undefined}
                 >
                   <FormattedText text={t.label} />
-                </button>
+                </Button>
               );
             })}
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 bg-surface-panel dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
-        <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
+      <div className="flex items-center gap-space-2 bg-surface-panel dark:bg-surface-raised border border-border rounded-xl px-space-3 py-space-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 dark:focus-within:ring-accent/25">
+        <PenLine className="size-space-3_5 text-muted shrink-0" />
         <Input
           type="text"
           variant="embedded"

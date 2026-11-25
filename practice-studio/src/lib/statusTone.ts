@@ -79,7 +79,7 @@ export const statusTone: StatusToneRecipes = {
     // OUTLINE with no fill (learner 2026-11-19). Tune via --status-assisted in globals.css.
     solidCircle:
       "bg-transparent border-status-assisted text-status-assisted group-hover:bg-status-assisted/10",
-    tabMark: "bg-transparent border-[1.5px] border-status-assisted text-status-assisted",
+    tabMark: "bg-transparent border-status border-status-assisted text-status-assisted",
     softCard: "bg-transparent border border-status-assisted/50",
     choiceCard: "bg-transparent border-status-assisted",
     solidBadge: "bg-transparent border border-status-assisted text-status-assisted",
@@ -111,8 +111,8 @@ export const statusTone: StatusToneRecipes = {
   },
   skipped: {
     solidCircle:
-      "border-dashed border-status-skipped bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
-    tabMark: "border-[1.5px] border-dashed border-status-skipped",
+      "border-dashed border-status-skipped bg-surface-raised text-muted group-hover:border-muted",
+    tabMark: "border-status border-dashed border-status-skipped",
     softCard: "bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60",
     iconCircle: "bg-zinc-200/80 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
     text: "text-zinc-500 dark:text-zinc-400",
@@ -121,8 +121,8 @@ export const statusTone: StatusToneRecipes = {
   },
   notTried: {
     solidCircle:
-      "border-status-neutral bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
-    tabMark: "border-[1.5px] border-status-skipped",
+      "border-status-neutral bg-surface-raised text-muted group-hover:border-muted",
+    tabMark: "border-status border-status-skipped",
     softCard: "bg-surface-panel border border-zinc-200 dark:border-zinc-800",
     iconCircle: "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
     text: "text-zinc-500 dark:text-zinc-400",
@@ -132,7 +132,7 @@ export const statusTone: StatusToneRecipes = {
 };
 
 /** Muted untried tab mark for locked ghost tabs in SimilarTabStrip. */
-export const MUTED_UNTRIED_TAB_MARK = "border-[1.5px] border-status-neutral";
+export const MUTED_UNTRIED_TAB_MARK = "border-status border-status-neutral";
 
 /** Destructive confirmation button recipe (ConfirmDialog). */
 export const DESTRUCTIVE_BUTTON_CLS =

@@ -4,6 +4,7 @@ import React from "react";
 import { AnimatePresence, m } from "motion/react";
 import { Clock, Pause, Play } from "lucide-react";
 import { formatTimerClock } from "@/lib/telemetryTimer";
+import { IconButton } from "@/components/ui/shadcn/Button";
 import { warningTone } from "@/lib/statusTone";
 import { fade, presence } from "@/lib/motion";
 import {
@@ -36,26 +37,26 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
   const pauseTooltipLabel = isPaused ? "Resume timer (p)" : "Pause timer (p)";
 
   return (
-    <div className="inline-flex items-center gap-2 ml-auto shrink-0">
+    <div className="inline-flex items-center gap-space-2 ml-auto shrink-0">
       <span
-        className={`inline-flex items-center gap-1 text-xs font-medium tabular-nums transition-colors ${
-          isPaused ? warningTone.text : "text-zinc-500 dark:text-zinc-400"
+        className={`inline-flex items-center gap-space-1 text-xs font-medium tabular-nums transition-colors ${
+          isPaused ? warningTone.text : "text-muted"
         }`}
       >
         <Tooltip>
           <TooltipTrigger asChild>
             <span
-              className="relative inline-flex rounded-sm cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60"
+              className="relative inline-flex rounded-sm cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 dark:focus-visible:ring-accent/60"
               tabIndex={0}
               aria-label={`Total ${totalClock}`}
             >
-              <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <Clock className="size-space-3_5 shrink-0" aria-hidden="true" />
             </span>
           </TooltipTrigger>
           <TooltipContent
             side="bottom"
             sideOffset={8}
-            className="rounded-full px-3 py-1 font-display tabular-nums whitespace-nowrap"
+            className="rounded-full px-space-3 py-space-1 font-display tabular-nums whitespace-nowrap"
           >
             Total {totalClock}
           </TooltipContent>
@@ -72,23 +73,21 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
-            type="button"
+          <IconButton
+            hitArea="timer"
+            size="timer"
+            tone={isPaused ? "timerPaused" : "timer"}
             onClick={onTogglePause}
             aria-label={pauseActionLabel}
             aria-pressed={isPaused}
-            className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 -my-2.5 -mr-2.5 sm:min-h-0 sm:min-w-0 sm:w-6 sm:h-6 sm:my-0 sm:mr-0 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60 ${
-              isPaused
-                ? `${warningTone.text} hover:bg-zinc-100 dark:hover:bg-zinc-800`
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            }`}
+            className="-my-space-2_5 -mr-space-2_5 sm:my-0 sm:mr-0"
           >
             {isPaused ? (
-              <Play className="w-3 h-3" aria-hidden="true" />
+              <Play className="size-space-3" aria-hidden="true" />
             ) : (
-              <Pause className="w-3 h-3" aria-hidden="true" />
+              <Pause className="size-space-3" aria-hidden="true" />
             )}
-          </button>
+          </IconButton>
         </TooltipTrigger>
         <TooltipContent side="bottom">{pauseTooltipLabel}</TooltipContent>
       </Tooltip>

@@ -7,6 +7,8 @@ const twMerge = extendTailwindMerge({
       spacing: [(value: string) => /^(space-|control-)/.test(value) || value === "touch"],
     },
     classGroups: {
+      "border-w": ["border-status"],
+      "font-size": ["text-micro", "text-micro-compact"],
       rounded: ["rounded-answer-action"],
       z: ["z-base", "z-local", "z-sticky", "z-overlay", "z-overlay-menu", "z-tooltip"],
       shadow: ["shadow-ui-none", "shadow-ui-sm", "shadow-ui-md", "shadow-ui-lg", "shadow-ui-xl", "shadow-ui-inner"],

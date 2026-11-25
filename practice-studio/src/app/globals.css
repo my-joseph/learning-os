@@ -30,6 +30,57 @@
     }
   }
 
+  @screen md {
+    .step-row[data-latex] {
+      grid-template-columns: 1.2fr 1fr;
+    }
+    .step-row[data-action] {
+      grid-template-columns: 1fr auto;
+    }
+    .step-row[data-latex][data-action] {
+      grid-template-columns: 1.2fr 1fr auto;
+    }
+  }
+
+  .stepper-item {
+    @apply relative first:ml-auto last:mr-auto flex-none w-space-11 sm:flex-1 sm:basis-0;
+  }
+
+  .stepper-marker-transition {
+    transition-property: background-color, border-color, box-shadow, color, filter;
+    transition-duration: var(--duration-color);
+  }
+
+  .stepper-connector {
+    @apply pointer-events-none absolute z-base -translate-y-1/2 h-space-0_5 rounded-full;
+    top: calc(var(--stepper-marker) / 2 + var(--space-1));
+    left: calc(50% + var(--stepper-marker) / 2 + var(--space-1));
+    width: calc(var(--space-11) + var(--space-4) - var(--stepper-marker) - 2 * var(--space-1));
+  }
+
+  .stepper-connector-compact {
+    top: calc(var(--stepper-marker-compact) / 2 + var(--space-1));
+    left: calc(50% + var(--stepper-marker-compact) / 2 + var(--space-1));
+    width: calc(var(--space-11) + var(--space-4) - var(--stepper-marker-compact) - 2 * var(--space-1));
+  }
+
+  @screen sm {
+    .stepper-item {
+      min-width: calc(2 * var(--control-md));
+      max-width: var(--space-40);
+    }
+    .stepper-connector {
+      top: var(--space-4);
+      left: calc(50% + var(--control-md) / 2);
+      width: calc(100% - var(--control-md));
+    }
+    .stepper-connector-compact {
+      top: calc(var(--space-5) / 2 + var(--space-0-5));
+      left: calc(50% + var(--control-xs) / 2);
+      width: calc(100% - var(--control-xs));
+    }
+  }
+
   /* Focus can land on a leaf's button, but its visible surface is the whole row. */
   :is(button[data-sidebar-row]:focus-visible, [data-sidebar-row]:has(> [role="treeitem"]:focus-visible)) {
     @apply ring-2 ring-inset ring-muted;
@@ -48,6 +99,19 @@
     [data-sidebar-tree]:has([data-sidebar-row]:hover) [data-sidebar-row]:not(:hover) [data-sidebar-row-code] {
       display: none;
     }
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-fade-edges {
+    mask-image: linear-gradient(to right, transparent, var(--foreground) var(--space-4), var(--foreground) calc(100% - var(--space-4)), transparent);
   }
 }
 
@@ -82,6 +146,8 @@ html.light {
   --accent-field: var(--accent-primary);
   --accent-strong: 67 56 202;
   --accent-tint: 238 242 255;
+  --accent-on-primary-muted: 224 231 255;
+  --accent-current: var(--accent);
   --foreground-faint: 161 161 170;
   --foreground-section-hover: 39 39 42;
   --surface-hover-strong: var(--border-control);
@@ -132,6 +198,7 @@ html.dark,
   --foreground-action-hover: 244 244 245;
   --accent-field: var(--accent-primary-hover);
   --accent-tint: 30 27 75;
+  --accent-current: 165 180 252;
   --foreground-faint: 113 113 122;
   --foreground-section-hover: var(--foreground-menu);
   --surface-hover-strong: 82 82 91;
@@ -211,6 +278,8 @@ html.dark,
   --control-answer: calc(var(--touch) + 2 * var(--space-px));
   --icon-math-quick: 22px;
   --icon-math-quick-max: 26px;
+  --stepper-marker: 22px;
+  --stepper-marker-compact: 18px;
   --panel-left: 287px;
   --panel-right: 276px;
   --control-lg: 48px;
@@ -223,6 +292,8 @@ html.dark,
   --width-picker-title-lg: 360px;
   --width-practice: 720px;
   --text-2xs: 11px;
+  --text-micro: 10px;
+  --text-micro-compact: 9px;
   --text-caption: 13px;
   --text-xs: 0.75rem;
   --text-xs-leading: 1rem;

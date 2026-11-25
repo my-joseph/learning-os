@@ -12,6 +12,8 @@ import {
   tabStatusAccessibleSuffix,
 } from "@/lib/similarTabs";
 import { MUTED_UNTRIED_TAB_MARK, statusTone } from "@/lib/statusTone";
+import { Badge } from "@/components/ui/shadcn/Badge";
+import { Button } from "@/components/ui/shadcn/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/shadcn/Tabs";
 
 export interface SimilarTabStripProps {
@@ -28,14 +30,16 @@ export interface SimilarTabStripProps {
   onSelectTab: (tabId: SimilarTabId) => void;
 }
 
-/**
- * Shared tab status circle matching the Pagination Stepper colour language:
- * - not tried / usedHelp (unanswered): plain outlined circle (no colour)
- * - skipped: dashed outlined circle
- * - correct: filled green circle with ✓
- * - assisted (used help + correct) / partial: green outline circle (no fill) with ✓ or –
- * - wrong: filled rose circle with ✗
- */
+const MARKS = {
+  correct: { tone: statusTone.correct.tabMark, icon: Check },
+  wrong: { tone: statusTone.wrong.tabMark, icon: X },
+  assisted: { tone: statusTone.assisted.tabMark, icon: Check },
+  partial: { tone: statusTone.assisted.tabMark, icon: Minus },
+  skipped: { tone: statusTone.skipped.tabMark },
+  usedHelp: { tone: statusTone.notTried.tabMark },
+  untried: { tone: statusTone.notTried.tabMark },
+};
+
 function StatusMark({
   status,
   muted = false,
@@ -43,76 +47,17 @@ function StatusMark({
   status: SimilarTabStatus | RealTabStatus;
   muted?: boolean;
 }) {
-  if (status === "correct") {
-    return (
-      <span
-        data-status="correct"
-        className={`w-4 h-4 rounded-full ${statusTone.correct.tabMark} inline-flex items-center justify-center shrink-0`}
-        aria-hidden="true"
-      >
-        <Check className="w-2.5 h-2.5" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === "wrong") {
-    return (
-      <span
-        data-status="wrong"
-        className={`w-4 h-4 rounded-full ${statusTone.wrong.tabMark} inline-flex items-center justify-center shrink-0`}
-        aria-hidden="true"
-      >
-        <X className="w-2.5 h-2.5" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === "assisted") {
-    return (
-      <span
-        data-status="assisted"
-        className={`w-4 h-4 rounded-full ${statusTone.assisted.tabMark} inline-flex items-center justify-center shrink-0`}
-        aria-hidden="true"
-      >
-        <Check className="w-2.5 h-2.5" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === "partial") {
-    return (
-      <span
-        data-status="partial"
-        className={`w-4 h-4 rounded-full ${statusTone.assisted.tabMark} inline-flex items-center justify-center shrink-0`}
-        aria-hidden="true"
-      >
-        <Minus className="w-2.5 h-2.5" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === "skipped") {
-    return (
-      <span
-        data-status="skipped"
-        className={`w-4 h-4 rounded-full ${statusTone.skipped.tabMark} inline-block shrink-0`}
-        aria-hidden="true"
-      />
-    );
-  }
-  if (status === "usedHelp") {
-    return (
-      <span
-        data-status="usedHelp"
-        className={`w-4 h-4 rounded-full ${statusTone.notTried.tabMark} inline-block shrink-0`}
-        aria-hidden="true"
-      />
-    );
-  }
+  const mark = MARKS[status];
+  const Icon = "icon" in mark ? mark.icon : undefined;
   return (
-    <span
-      data-status="untried"
-      className={`w-4 h-4 rounded-full inline-block shrink-0 ${
-        muted ? MUTED_UNTRIED_TAB_MARK : statusTone.notTried.tabMark
-      }`}
+    <Badge
+      variant="tabMark"
+      data-status={status}
+      className={muted ? MUTED_UNTRIED_TAB_MARK : mark.tone}
       aria-hidden="true"
-    />
+    >
+      {Icon && <Icon className="size-space-2_5" strokeWidth={3} />}
+    </Badge>
   );
 }
 
@@ -162,24 +107,13 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   const lockDescId = `similar-lock-desc-${problemId}`;
   const lockTooltip = `Answer Question ${questionNumber} first`;
 
-  const baseTabClass =
-    "inline-flex items-center justify-center gap-1.5 shrink-0 snap-start min-h-[44px] sm:min-h-0 sm:h-9 px-3 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
-
-  const selectedClass =
-    "text-zinc-900 dark:text-zinc-100 font-semibold border-indigo-600 dark:border-indigo-400";
-  const unselectedClass =
-    "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border-transparent";
-  const ghostClass =
-    "text-zinc-400 dark:text-zinc-500 border-transparent cursor-not-allowed opacity-70 select-none";
-
-  const realSelected = effectiveSelected === "q";
   const realAriaLabel = `Question ${questionNumber}${tabStatusAccessibleSuffix(realStatus)}`;
   const hasSimilarSlots = locked ? lockedSlots.length > 0 : tabs.length > 0;
   const showListError = !locked && tabs.length === 0 && Boolean(listError);
   const showListLoading = !locked && tabs.length === 0 && !listError && loadingList;
 
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 -mx-4 px-4 sm:mx-0 sm:px-0">
+    <div className="flex items-center justify-between gap-space-2 border-b border-border -mx-space-4 px-space-4 sm:mx-0 sm:px-0">
       <Tabs
         value={effectiveSelected}
         activationMode="manual"
@@ -187,10 +121,9 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
       >
         <TabsList
           ref={listRef}
-          variant="underline"
+          variant="similar"
           aria-label={`Question ${questionNumber} and similar questions`}
           onBlur={handleListBlur}
-          className="flex h-auto min-h-0 items-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden rounded-none bg-transparent p-0 dark:bg-transparent [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mb-px"
         >
           {locked && hasSimilarSlots && (
             <span id={lockDescId} className="sr-only">
@@ -206,7 +139,6 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
             aria-label={realAriaLabel}
             tabIndex={focusedTab === "q" ? 0 : -1}
             onFocus={() => setFocusedTab("q")}
-            className={`${baseTabClass} min-h-[44px] sm:min-h-0 bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none ${realSelected ? selectedClass : unselectedClass}`}
           >
             <StatusMark status={realStatus} />
             <span className="hidden sm:inline">
@@ -218,10 +150,10 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
           {hasSimilarSlots && (
             <span
               aria-hidden="true"
-              className={`sm:hidden shrink-0 pl-1 pr-0.5 text-xs select-none ${
+              className={`sm:hidden shrink-0 pl-space-1 pr-space-0_5 text-xs select-none ${
                 locked
-                  ? "text-zinc-400 dark:text-zinc-600 opacity-60"
-                  : "text-zinc-500 dark:text-zinc-400"
+                  ? "text-foreground-faint dark:text-surface-hover-strong opacity-secondary"
+                  : "text-muted"
               }`}
             >
               Similar
@@ -243,7 +175,6 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
                     aria-label={`Similar question ${slot}`}
                     aria-describedby={lockDescId}
                     title={lockTooltip}
-                    className={`${baseTabClass} min-h-[44px] sm:min-h-0 bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none ${ghostClass}`}
                   >
                     <StatusMark status="untried" muted />
                     <span className="hidden sm:inline">
@@ -255,7 +186,6 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
               })
             : tabs.map((tab) => {
                 const tabId = slotToTabId(tab.slot);
-                const isSelected = effectiveSelected === tabId;
                 const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(
                   tab.status
                 )}`;
@@ -271,7 +201,6 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
                     aria-label={tabAriaLabel}
                     tabIndex={focusedTab === tabId ? 0 : -1}
                     onFocus={() => setFocusedTab(tabId)}
-                    className={`${baseTabClass} min-h-[44px] sm:min-h-0 bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none ${isSelected ? selectedClass : unselectedClass}`}
                   >
                     <StatusMark status={tab.status} />
                     <span className="hidden sm:inline">
@@ -288,22 +217,22 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
         <div
           role="status"
           data-similar-list-error="true"
-          className="flex items-center gap-2 shrink-0 py-1 text-xs text-zinc-500 dark:text-zinc-400"
+          className="flex items-center gap-space-2 shrink-0 py-space-1 text-xs text-muted"
         >
           <span className="truncate">{listError}</span>
           {onRetryList && (
-            <button
-              type="button"
+            <Button
+              variant="assistRetry"
+              size="assistRetry"
               onClick={onRetryList}
               disabled={loadingList}
-              className="inline-flex items-center justify-center gap-1 shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 px-2 sm:px-1.5 py-0.5 rounded font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-50"
             >
               <RefreshCw
-                className={`w-3 h-3 ${loadingList ? "animate-spin" : ""}`}
+                className={`size-space-3 ${loadingList ? "animate-spin" : ""}`}
                 aria-hidden="true"
               />
               <span>{loadingList ? "Retrying..." : "Retry"}</span>
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -311,7 +240,7 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
       {showListLoading && (
         <span
           role="status"
-          className="shrink-0 py-1 text-xs text-zinc-400 dark:text-zinc-500"
+          className="shrink-0 py-space-1 text-xs text-foreground-faint"
         >
           Loading similar...
         </span>
