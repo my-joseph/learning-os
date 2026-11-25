@@ -1,11 +1,16 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { MathFigureSpec } from "@/types/figure";
 import { VisualSpec } from "@/types/drill";
 import { GeometryRenderer } from "./GeometryRenderer";
 import { CartesianRenderer } from "./CartesianRenderer";
-import { VisualRenderer } from "../VisualRenderer";
+
+const VisualRenderer = dynamic(
+  () => import("../VisualRenderer").then((mod) => mod.VisualRenderer),
+  { ssr: true }
+);
 
 interface MathFigureProps {
   figure: MathFigureSpec | VisualSpec;

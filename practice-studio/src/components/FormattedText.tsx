@@ -1,12 +1,64 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
-import { HighlightedCode } from "@/components/HighlightedCode";
+import type { ThemedToken } from "shiki/core";
 import { ListDot, listKindForHeading } from "@/components/ui/ListDot";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
-import { normalizeShikiLanguage } from "@/lib/shiki";
+import { normalizeShikiLanguage, type SupportedShikiLang } from "@/lib/shikiLanguages";
+import { getRegisteredShikiHighlighter } from "@/lib/shikiRegistry";
+import { renderShikiLineTokens } from "@/lib/shikiTokens";
+
+interface CodeFenceSpanProps {
+  code: string;
+  language: SupportedShikiLang;
+}
+
+const CodeFenceSpan: React.FC<CodeFenceSpanProps> = ({ code, language }) => {
+  const lines = useMemo(() => code.split("\n"), [code]);
+  const highlighter = getRegisteredShikiHighlighter();
+  const syncTokens = useMemo(
+    () => (highlighter ? highlighter.highlightTokensSync(code, language) : null),
+    [highlighter, code, language]
+  );
+  const requestKey = `${language}:${code}`;
+  const [asyncResult, setAsyncResult] = useState<{
+    key: string;
+    tokens: ThemedToken[][];
+  } | null>(null);
+
+  useEffect(() => {
+    if (!highlighter || syncTokens) return;
+    let cancelled = false;
+    void highlighter.highlightCode(code, language).then((tokens) => {
+      if (!cancelled && tokens) {
+        setAsyncResult({ key: requestKey, tokens });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [highlighter, code, language, requestKey, syncTokens]);
+
+  const highlightedLines =
+    syncTokens ?? (asyncResult?.key === requestKey ? asyncResult.tokens : null);
+
+  if (!highlightedLines || highlightedLines.length !== lines.length) {
+    return <span>{code}</span>;
+  }
+
+  return (
+    <span>
+      {highlightedLines.map((lineTokens, lineIdx) => (
+        <React.Fragment key={lineIdx}>
+          {lineIdx > 0 ? "\n" : null}
+          {renderShikiLineTokens(lineTokens)}
+        </React.Fragment>
+      ))}
+    </span>
+  );
+};
 
 interface FormattedTextProps {
   text: string;
@@ -189,7 +241,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
             >
               <code>
                 {supportedLang ? (
-                  <HighlightedCode code={block.code} language={supportedLang} />
+                  <CodeFenceSpan code={block.code} language={supportedLang} />
                 ) : (
                   block.code
                 )}

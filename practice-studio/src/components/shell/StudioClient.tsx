@@ -8,15 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
 
-const MathWorkspace = dynamic(
-  () => import("@/components/math/MathWorkspace").then((mod) => mod.MathWorkspace),
-  { ssr: true }
-);
+import type { MathWorkspaceProps } from "@/components/math/MathWorkspace";
+import type { CodeDashboardProps } from "@/components/code/CodeDashboard";
 
-const CodeDashboard = dynamic(
-  () => import("@/components/code/CodeDashboard").then((mod) => mod.CodeDashboard),
-  { ssr: true }
-);
 const ReviewSyncPage = dynamic(
   () => import("@/components/review-sync/ReviewSyncPage").then((mod) => mod.ReviewSyncPage),
   { ssr: false }
@@ -47,11 +41,13 @@ import { plainTitle } from "@/lib/titleText";
 import { sendPracticeAction } from "@/lib/practiceActions";
 import { getPersistedStatusOverride } from "@/lib/sessionSummary";
 
-interface StudioClientProps {
+export interface StudioClientProps {
   workspace: Workspace;
   drillId: string;
   initialQuestionId?: string;
   isLabRoute?: boolean;
+  MathWorkspaceComponent?: React.ComponentType<MathWorkspaceProps>;
+  CodeDashboardComponent?: React.ComponentType<CodeDashboardProps>;
 }
 
 /** Main interactive Practice Studio client bound to a workspace and drill route. */
@@ -60,6 +56,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   drillId,
   initialQuestionId,
   isLabRoute = false,
+  MathWorkspaceComponent,
+  CodeDashboardComponent,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -464,11 +462,11 @@ export const StudioClient: React.FC<StudioClientProps> = ({
               </div>
             ) : null;
 
-            if (workspace === "math") {
+            if (workspace === "math" && MathWorkspaceComponent) {
               return (
                 <>
                   {reviewContext}
-                  <MathWorkspace
+                  <MathWorkspaceComponent
                   key={prob.id}
                   frameless
                   problem={prob}
@@ -507,10 +505,12 @@ export const StudioClient: React.FC<StudioClientProps> = ({
               );
             }
 
+            if (!CodeDashboardComponent) return null;
+
             return (
               <>
                 {reviewContext}
-                <CodeDashboard
+                <CodeDashboardComponent
                 key={prob.id}
                 frameless
                 problem={prob}
