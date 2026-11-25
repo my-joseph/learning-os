@@ -1,3 +1,5 @@
+@import "../styles/typeset.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -426,7 +428,7 @@ body {
   opacity: 0.45;
 }
 
-.katex-display {
+.katex-display:not(.typeset-math > .katex-display) {
   margin: 0.35em 0 !important;
   text-align: left !important;
 }

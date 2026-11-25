@@ -12,6 +12,17 @@ Use the token roles below when adding a [component variant](components.md). Exis
 - Reserve Roboto Slab (`font-heading`, 500 or 600, `tracking-heading`) for page titles, large section headings and empty-state titles at 18 px or larger, and prominent numerals at 14 px or larger. Use `Heading` and `Numeral` to apply these roles.
 - Use Geist Mono (`font-mono`) for code, terminal output, function names, typed code answers and curriculum IDs such as `MTH-…`, `PRG-…`, `DRL-…` and `LAB-…`. KaTeX and MathLive keep their math fonts.
 
+## Rendered prose
+
+`FormattedText` uses the local shadcn Typeset port in `practice-studio/src/styles/typeset.css`. Body text and semibold content headings use `--font-sans`. Inline code uses `--font-mono`, `--surface-hover` and `--radius-base`. List markers use `--foreground-secondary`, and table rules use `--border-control`.
+
+| Preset | `--typeset-size` | `--typeset-leading` | `--typeset-flow` |
+| :--- | :--- | :--- | :--- |
+| `.typeset-studio` | `--text-base` (15 px) | `--leading-relaxed` (1.625) | `--space-4` (16 px) |
+| `.typeset-compact` | Inherited | `--leading-body` (1.6) | `--space-2` (8 px) |
+
+Single-line labels inherit the surrounding size and line height. Compact prose inherits the size set by the surrounding card or panel.
+
 ## Token reference
 
 ### Colour

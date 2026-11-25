@@ -39,7 +39,7 @@ export const MathQuestionBody: React.FC<MathQuestionBodyProps> = ({
       <div className="space-y-2">
         {header}
 
-        <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
+        <div className="min-w-0 text-base leading-relaxed text-foreground">
           {lineChoiceData ? (
             <LineChoicePrompt
               parsed={lineChoiceData}
@@ -50,7 +50,7 @@ export const MathQuestionBody: React.FC<MathQuestionBodyProps> = ({
               resultStatus={choiceResultStatus}
             />
           ) : (
-            <FormattedText text={prompt} />
+            <FormattedText text={prompt} block />
           )}
         </div>
       </div>

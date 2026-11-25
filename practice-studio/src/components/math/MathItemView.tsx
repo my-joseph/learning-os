@@ -455,7 +455,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                           : ""
                       }`}
                     >
-                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-surface-panel border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
+                      <code className="inline-code">
                         {problem.plainText}
                       </code>
                       <CopyButton

@@ -1,10 +1,10 @@
 import React from "react";
 
 /**
- * Global list bullet (learner decisions 2026-11-19). Three kinds, chosen by what the list means:
- * - "task"  (default): filled indigo dot — what the learner must do (Requirements, Your task, Visible tests).
- * - "info":  filled zinc dot — information / observations (Observed symptoms, notes, other headings).
- * - "limit": hollow indigo ring — limits and contracts (Return contract, Constraints, Input shape).
+ * Bullet for structured UI lists. Pick the kind that matches the role of the list.
+ * - "task"  (default): filled indigo dot for actions such as Visible tests.
+ * - "info":  filled zinc dot for observations or notes.
+ * - "limit": hollow indigo ring for limits such as Constraints.
  * Always centred on the first text line of the item.
  */
 export type ListKind = "task" | "info" | "limit";
@@ -27,12 +27,3 @@ export const ListDot: React.FC<{ kind?: ListKind; className?: string }> = ({
     <span className={DOT_CLASS[kind]} />
   </span>
 );
-
-/** Pick the list kind from the heading text above a list (case-insensitive keyword match). */
-export function listKindForHeading(heading: string | null | undefined): ListKind {
-  const h = (heading || "").toLowerCase();
-  if (!h) return "info";
-  if (/(contract|constraint|limit|bound|shape|edge case|return value|returns?\b)/.test(h)) return "limit";
-  if (/(requirement|your task|task|must|rule|validation|implement|steps? to|goal)/.test(h)) return "task";
-  return "info";
-}

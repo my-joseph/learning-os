@@ -3,6 +3,7 @@
 Each surface has a different job. Use these principles to carry the learner's taste across the Studio without making every screen look the same. Use existing design-system tokens and shared component variants; get the learner's approval before adding colors. Start with the [design tokens](system.md) and [component catalog](components.md).
 
 - Give Studio its typographic voice with Roboto Slab on prominent headings and numerals. Use Geist for reading and navigation, and Geist Mono for code and curriculum IDs.
+- Use Typeset for rendered prose so headings, lists and equations share a consistent rhythm and inline code stays quiet.
 - Keep surfaces calm and low-noise; give the active task the strongest hierarchy. See: [approved search palette](references/studio-search-palette-approved.png), [search palette reference](references/search-palette.png).
 - Build every surface from the shared components and their variants (size, tone, state); extend the shared component with a named variant when the role already exists. See: [approved search palette](references/studio-search-palette-approved.png).
 - State changes (hover, focus, selected, pressed) change colour, background or opacity only — never font weight, font size, padding or border width — so nothing shifts or reflows. See: [approved search palette](references/studio-search-palette-approved.png).

@@ -465,9 +465,10 @@ async function testHighlightedExamples() {
   // Inline <code> in requirements and constraints stays as plain <code> without shiki-token spans
   assert.match(
     highlightedHtml,
-    /<code class="font-mono[^"]*">searchInsert\(nums, target\)<\/code>/
+    /<code class="inline-code">searchInsert\(nums, target\)<\/code>/
   );
-  assert.match(highlightedHtml, /<code class="font-mono[^"]*">nums<\/code> is sorted ascending/);
+  assert.match(highlightedHtml, /<code class="inline-code">nums<\/code> is sorted ascending/);
+  assert.match(highlightedHtml, /<code class="inline-code text-foreground-control">searchInsert<\/code>/);
 
   console.log("codeExamples render tests passed");
 }

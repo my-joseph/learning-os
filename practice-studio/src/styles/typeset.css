@@ -1,0 +1,194 @@
+/*
+ * Adapted from shadcn/typeset (https://ui.shadcn.com/docs/typeset).
+ * Source: shadcn-ui/ui, apps/v4/app/(app)/(typeset)/typeset.css
+ *
+ * MIT License
+ *
+ * Copyright (c) 2023 shadcn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+.typeset {
+  --typeset-size: inherit;
+  --typeset-leading: inherit;
+  --typeset-flow: var(--space-3);
+  --typeset-list-flow: var(--space-1-5);
+  --typeset-subheading-size: 1.125em;
+  --typeset-muted: rgb(var(--foreground-secondary));
+  --typeset-rule: rgb(var(--border-control));
+
+  font-family: var(--font-sans);
+  font-size: var(--typeset-size);
+  line-height: var(--typeset-leading);
+  overflow-wrap: anywhere;
+}
+
+.typeset-studio {
+  --typeset-size: var(--text-base);
+  --typeset-leading: var(--leading-relaxed);
+  --typeset-flow: var(--space-4);
+}
+
+.typeset-compact {
+  --typeset-leading: var(--leading-body);
+  --typeset-flow: var(--space-2);
+  --typeset-list-flow: var(--space-1);
+}
+
+.typeset :where(p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, hr, .typeset-scroll, .typeset-math, [data-code-variant]):not(:where(.typeset [data-slot] *)) {
+  margin-block-start: var(--typeset-flow);
+  margin-block-end: var(--space-0);
+}
+
+.typeset :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.typeset :where(h1) { font-size: var(--text-3xl); }
+.typeset :where(h2) { font-size: var(--text-lg); }
+.typeset :where(h3) { font-size: var(--typeset-subheading-size); }
+.typeset :where(h4) { font-size: var(--typeset-size); }
+.typeset :where(h5, h6) { color: var(--typeset-muted); }
+
+.typeset :where(:is(h1, h2, h3, h4, h5, h6) + *) {
+  margin-block-start: var(--typeset-list-flow);
+}
+
+.typeset :where(ul) { list-style-type: disc; }
+.typeset :where(ul ul) { list-style-type: circle; }
+.typeset :where(ul ul ul) { list-style-type: square; }
+.typeset :where(ol) { list-style-type: decimal; }
+
+.typeset :where(ul, ol) {
+  padding-inline-start: var(--space-5);
+}
+
+.typeset :where(li) {
+  padding-inline-start: var(--space-1);
+}
+
+.typeset :where(li + li, li > *) {
+  margin-block-start: var(--typeset-list-flow);
+}
+
+.typeset :where(li)::marker {
+  color: var(--typeset-muted);
+}
+
+.inline-code {
+  --typeset-code-size: 0.85em;
+  --typeset-code-padding: 0.125em 0.3em;
+
+  background-color: rgb(var(--surface-hover));
+  font-family: var(--font-mono);
+  font-size: var(--typeset-code-size);
+  border-radius: var(--radius-base);
+  padding: var(--typeset-code-padding);
+  overflow-wrap: anywhere;
+}
+
+@media (forced-colors: active) {
+  .inline-code {
+    outline: var(--border-width-hairline) solid currentColor;
+  }
+}
+
+.typeset :where(blockquote) {
+  border-inline-start: var(--border-width-2) solid var(--typeset-rule);
+  padding-inline-start: var(--space-4);
+}
+
+.typeset :where(hr) {
+  border-color: var(--typeset-rule);
+}
+
+.typeset :where(.typeset-math, .typeset-scroll) {
+  overflow-x: auto;
+}
+
+.typeset :where(.typeset-math) {
+  padding-block: var(--space-1);
+}
+
+.typeset .typeset-math > .katex-display {
+  margin: var(--space-0);
+}
+
+.typeset .typeset-math > .katex-display > .katex {
+  width: max-content;
+  min-width: 100%;
+}
+
+.typeset .inline-math > .katex {
+  font-size: inherit;
+  line-height: var(--leading-none);
+}
+
+/* Center inline math on the text axis without changing the prose line box. */
+.typeset :where(p, h1, h2, h3, h4, h5, h6, th, td) .inline-math:has(> .katex) {
+  display: inline-grid;
+  grid-template-rows: var(--space-0);
+  grid-template-columns: minmax(0, auto);
+  max-inline-size: 100%;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.typeset :where(table) {
+  width: 100%;
+  overflow-wrap: normal;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-body);
+  border-collapse: separate;
+  border-spacing: var(--space-0);
+  border-block-end: var(--border-width-hairline) solid var(--typeset-rule);
+}
+
+.typeset :where(table .inline-code) {
+  overflow-wrap: normal;
+}
+
+.typeset :where(th, td) {
+  padding: var(--space-2-5) var(--space-3);
+  text-align: start;
+  vertical-align: top;
+}
+
+.typeset :where(th) {
+  font-weight: var(--weight-semibold);
+}
+
+.typeset :where(tbody td) {
+  border-block-start: var(--border-width-hairline) solid var(--typeset-rule);
+}
+
+.typeset :where(th:first-child, td:first-child) {
+  padding-inline-start: var(--space-0);
+}
+
+.typeset :where(th[align="center"], td[align="center"]) { text-align: center; }
+.typeset :where(th[align="right"], td[align="right"]) { text-align: end; }
+
+.typeset > :where(:first-child),
+.typeset :where(li, blockquote) > :where(:first-child) {
+  margin-block-start: var(--space-0);
+}

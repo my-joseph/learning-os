@@ -22,11 +22,12 @@ Learner decision, 2026-11-25.
 
 ### Approved libraries
 
-The dates record policy approval for these existing Studio choices and the Code Block integration.
+The dates record policy approval for these Studio choices.
 
 | Library | Role | Reason | Approved date |
 | :--- | :--- | :--- | :--- |
 | Radix / shadcn/ui | Headless primitives and component registry | Accessible controls with local source styled by Studio tokens. Includes the Code Block registry item and shared Button. | 2026-11-25 |
+| [shadcn Typeset](https://ui.shadcn.com/docs/typeset) | Prose rhythm | Local copy of the MIT-licensed CSS, adapted to Studio tokens and Tailwind 3. | 2026-11-26 |
 | `cmdk` | Command palette | Keyboard navigation and command selection for Studio Search. | 2026-11-25 |
 | `motion` | Motion | Shared animation and reduced-motion support. | 2026-11-25 |
 | `lucide-react` | Icons | Shared semantic icons, including Code Block copy feedback. | 2026-11-25 |
@@ -48,7 +49,7 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 | `CopyButton.tsx` | `CopyButton` | `text`, `className`, `children`, `copiedContent`. Optional `timeoutMs`, `title`, `ariaLabel`, `requireClipboard`. Switches to copied feedback. |
 | `Heading.tsx` | `Heading` | Use `variant="page"` (default) for the page h1 and `variant="section"` for a prominent h2 or empty-state title. Do not put the curriculum ID above the title; the learner copies IDs from the row menu. |
 | `Numeral.tsx` | `Numeral` | Use `variant="sm"` (default) for Geist tabular figures at the surrounding text size. Use `variant="lg"` for Roboto Slab tabular figures at 14 px or larger, including scores, mastery, Due today and the question timer. |
-| `ListDot.tsx` | `ListDot`, `listKindForHeading` | `kind` is `task` (default), `info`, or `limit` with optional `className`. Use the heading helper to select a kind. |
+| `ListDot.tsx` | `ListDot` | Use for structured UI lists. `kind` is `task` (default), `info`, or `limit` with optional `className`. |
 | `ListRow.tsx` | `ListRow` | Sidebar button with `leading`, a single-line `label`, and a reserved `trailing` slot. The slot appears on hover, keyboard focus, or selection. Use `variant="tree"` and `treeDepth={1 | 2 | 3 | 4}` for fixed 32 px curriculum rows. The tree row keeps its full-width surface and indents its contents. Use `treeLeaf` to place an independent `action` beside the selection button. `actionOpen` keeps the surface highlighted, `highlighted` marks a search target, and `surfaceProps` applies attributes to the wrapper. Use `CommandItem` for the cmdk adapter. |
 | `SectionHeader.tsx` | `SectionHeader` | Compact disclosure button. Pass `expanded`, the controlled panel ID in `controls`, and `onClick`. The trailing chevron follows the expanded state. Pair with a panel managed by the caller. |
 | `ThemeToggleButton.tsx` | `ThemeToggleButton` | `theme` is `light` or `dark`. pass `onToggle` and optional `className`. |
@@ -68,6 +69,12 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 | `shadcn/Skeleton.tsx` | `Skeleton` | Loading placeholder. Pass div props and size utilities through `className`. |
 | `shadcn/Tabs.tsx` | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`, `SegmentedChips`, `SegmentedNav`, `SegmentedNavItem` | TabsList sets `variant` to `default` (segmented) or `underline`. TabsTrigger inherits it and accepts an override. Root and parts take Radix selection, value and orientation props. Use `SegmentedChips` for a single-select filter group with `label`, `options`, `value` and `onValueChange`. Chips use pressed-button semantics. Use `variant="answerMode"` with two labelled options and optional icons for the sliding answer mode switch. Use `SegmentedNav` for two navigation links with a sliding indicator. It takes `variant="sidebar" | "header" | "rail"` and `activeIndex={0 | 1}`. Wrap each link or unavailable segment in `SegmentedNavItem` and pass its visual `selected` state. Keep `aria-current` on the active link. |
 | `shadcn/Tooltip.tsx` | `TooltipProvider`, `Tooltip`, `TooltipTrigger`, `TooltipPortal`, `TooltipContent` | Brief contextual labels. Provider defaults to `delayDuration={300}`. Trigger accepts `asChild` and `title` for the hydration fallback. Content defaults to `sideOffset={6}` and `collisionPadding={8}`. |
+
+## Rendered prose
+
+Render prompts, explanations, worked examples and review text with `FormattedText`. It uses the Studio Typeset preset for block content. Pass `block` for standalone prose that may contain a single line. Use `density="compact"` in dense cards and secondary panels. Markdown lists use native markers, tables use header cells and row dividers, and display math accepts `$$…$$` or `\[…\]` on its own lines.
+
+Use backticks within prose and `<code className="inline-code">` for standalone inline code such as a prompt header function name. Both use the borderless, softly filled Typeset treatment. Fenced blocks use the shared CodeBlock or Terminal, with spacing supplied by Typeset.
 
 ## Markdown code fences
 
