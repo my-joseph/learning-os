@@ -90,6 +90,8 @@ Studio resolves drill JSON, variant banks, lab configs, READMEs, visible tests, 
 
 Practice Reset starts a new cycle through `POST /api/reveal` and keeps attempt history and the existing item schedule. `POST /api/variant` acts on individual variant sessions. Daily Review uses `start-review` to resume an unfinished server cycle and `reset-review` to start a retry while carrying forward any hint or equation set-up opened in the unfinished cycle. The item stays due until its first substantive check or explicit Skip is submitted for completion. The server keeps the first scheduled outcome for that day. The due list and completion response share the same public fields.
 
+Reset also clears checker-added mistake tags from the previous cycle and keeps learner-selected tags. Progress records the check timestamp for each checker-added tag in `state.autoMistakes`. Older `concept-gap` tags require a current-cycle Skip after Reset. Other legacy tags with no recorded source are preserved. Review & Sync uses the resulting current tags.
+
 ## Scoring rule
 One canonical rule drives every score, status, stepper circle, result card, Review & Sync row, and Notion mastery update (`practice-studio/src/lib/scoring.ts` in TypeScript and `progress_store.score_problem` in Python, locked in parity by `tests/fixtures/scoring_cases.json`). All scoring reads the **current cycle** (`cycleStartedAt`) only:
 

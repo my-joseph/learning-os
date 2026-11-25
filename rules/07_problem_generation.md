@@ -18,6 +18,7 @@
 - If the Unit lacks enough distinct problems for the requested count, the generator must raise an error; never duplicate (06 §2.1, G3).
 
 ## 2. Weak-spot targeting
+- Post-drill mistake summaries count checker-added tags from the current cycle and retain learner-selected tags. Historical attempts remain available as evidence.
 - Sources, most to least reliable: (1) mistake tags with `trapMatched` in >= 2 attempts, (2) `concept-gap` skips, (3) the learner's Mistake & Pitfall Log (02 §7), (4) learner statement. `unclassified` wrong answers are data to inspect, not a weakness label. `durationMs` and `hintsRevealed` are supporting signals only.
 - `[code]` Counting tags: `python -m scripts.weak_spots [SCOPE]` joins learner progress (`progress/`) with drill content and reports, per unit, open weak spots (`matchedTrap` >= 2), closed ones (the last 2 drills that tested the trap were clean and unassisted), level advice from the last 5 items, assisted and skipped items, and the next weak-spot drill to make. A weak-spot drill sets `focusTags`.
 - `[code]` A weak-spot drill targets 1–2 trap tags. The default AI path uses `new-math-drill` to select archetypes whose `cognitiveTraps` include the tag and sets `focusTags`. The legacy template CLI can also filter by `--focus-tag`; it remains available while template removal is on hold. Prefer 1–2 tags per drill and include a reverse form where appropriate.

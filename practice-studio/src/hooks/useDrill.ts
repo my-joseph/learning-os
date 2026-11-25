@@ -11,6 +11,7 @@ import {
   applyDivergedStep,
   resetDrillForRetry,
   resetProblemForRetry,
+  toggleMistakeTag,
 } from "@/lib/applyCheckResult";
 import {
   hasSubstantiveAttempt,
@@ -968,14 +969,7 @@ export function useDrill({
       const target = doc?.problems.find((p) => p.id === probId);
       if (!doc || !target || tagId === "concept-gap") return;
       void sendPracticeAction(doc.drillId, probId, { action: "toggle-mistake", tag: tagId }, target.state.cycleStartedAt ?? null);
-      updateProblem(probId, (p) => {
-        const list = p.state.mistakes || [];
-        const next = list.includes(tagId) ? list.filter((t) => t !== tagId) : [...list, tagId];
-        return {
-          ...p,
-          state: { ...p.state, mistakes: next },
-        };
-      });
+      updateProblem(probId, (p) => ({ ...p, state: toggleMistakeTag(p.state, tagId) }));
     },
     [updateProblem]
   );

@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { mistakesInCycle } from "@/lib/applyCheckResult";
 import { getProgressDir, isSafeId, JSON_EXTENSIONS, resolveContainedPath } from "@/lib/paths";
 import {
   compareIsoTimestamps,
@@ -277,7 +278,11 @@ export function readProgress(drillId: string): ProgressFile | null {
   const file = resolveProgressFile(drillId);
   if (!file) return null;
   try {
-    return JSON.parse(fs.readFileSync(file, "utf-8")) as ProgressFile;
+    const data = JSON.parse(fs.readFileSync(file, "utf-8")) as ProgressFile;
+    for (const state of Object.values(data?.problems ?? {}) as Partial<ProblemState>[]) {
+      if (Array.isArray(state?.mistakes)) Object.assign(state, mistakesInCycle(state));
+    }
+    return data;
   } catch {
     return null;
   }
@@ -467,9 +472,6 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
           st.testRuns = mergedTestRuns;
         }
 
-        if (Array.isArray(incoming.mistakes) && incoming.mistakes.length > 0) {
-          st.mistakes = mergeStringTags(prev.mistakes, incoming.mistakes);
-        }
         if (typeof incoming.mistakeNote === "string" && incoming.mistakeNote.trim().length > 0) {
           st.mistakeNote = incoming.mistakeNote;
         }
@@ -549,7 +551,7 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
           if (mergedReviews !== undefined) st.reviews = mergedReviews;
           const mergedTestRuns = mergeAttempts(prev.testRuns, incoming.testRuns);
           if (mergedTestRuns !== undefined) st.testRuns = mergedTestRuns;
-          for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
+          for (const key of ["mistakeNote", "revisitNote"] as const) {
             if (isEmptyValue(st[key]) && !isEmptyValue(incoming[key])) {
               st[key] = incoming[key];
             }
@@ -620,7 +622,7 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
               }
             }
 
-            for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {
+            for (const key of ["mistakeNote", "revisitNote"] as const) {
               if (isEmptyValue(st[key]) && !isEmptyValue(prev[key])) {
                 st[key] = prev[key];
               }
@@ -668,6 +670,21 @@ export function writeProgress(doc: DocLike, options: WriteProgressOptions = {}):
       const maxCycle = maxIsoTimestamp(prev?.cycleStartedAt, st.cycleStartedAt);
       if (maxCycle) {
         st.cycleStartedAt = maxCycle;
+      }
+      if (Array.isArray(prev?.mistakes) || Array.isArray(incoming.mistakes)) {
+        const previous = mistakesInCycle(prev, maxCycle);
+        const next = mistakesInCycle(incoming, maxCycle);
+        const chosen = next.mistakes.length ? next : previous;
+        const mergeTags = doc.reviewMerge || !sameIsoTimestamp(prevCycle, incomingCycle);
+        const automatic = mergeTags ? { ...previous.autoMistakes, ...next.autoMistakes } : { ...chosen.autoMistakes };
+        // A learner selection takes precedence over an automatic tag of the same name.
+        for (const source of [previous, next]) {
+          for (const tag of source.mistakes) {
+            if (typeof source.autoMistakes?.[tag] !== "string") delete automatic[tag];
+          }
+        }
+        st.mistakes = mergeTags ? mergeStringTags(previous.mistakes, next.mistakes) : chosen.mistakes;
+        st.autoMistakes = Object.keys(automatic).length ? automatic : undefined;
       }
       if (sameIsoTimestamp(maxCycle, prevCycle) && prev && "reviewBaseLevel" in prev) {
         st.reviewBaseLevel = prev.reviewBaseLevel;
@@ -872,6 +889,7 @@ export function mutateProblemStates(
       nextState.variants = { ...nextState.variants };
     }
     nextState = mutator(nextState, qid) ?? nextState;
+    Object.assign(nextState, mistakesInCycle(nextState));
 
     const derived = deriveVariantLists(
       nextState.variants,
