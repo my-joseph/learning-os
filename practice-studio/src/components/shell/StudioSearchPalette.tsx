@@ -332,7 +332,7 @@ function SearchResults({
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") event.stopPropagation();
             }}
-            className="h-7 rounded-md px-2 text-sm text-foreground transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 aria-pressed:font-medium motion-reduce:transition-none dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70"
+            className="h-7 rounded-md px-2 text-sm text-foreground transition-colors [@media(hover:hover)]:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 aria-pressed:bg-zinc-200/70 motion-reduce:transition-none dark:[@media(hover:hover)]:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400 dark:aria-pressed:bg-zinc-700/70"
           >
             {label}
           </button>
