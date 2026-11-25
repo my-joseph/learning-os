@@ -99,7 +99,7 @@ for (const drillId of ["DRL-PRG-TEST-01", "LAB-PRG-TEST-01"]) {
     ...drillProblem,
     state: makeState({ lastTestReport: { ...failedReport, rawOutput } }),
   }, drillId);
-  assert.match(failedHtml, /data-code-variant="terminal"[\s\S]*Tests<span[^>]*> \(0\/2 passed[\s\S]*Visible check Result differed[\s\S]*1 hidden check failed[\s\S]*text-status-wrong[^>]*>Checks failed/);
+  assert.match(failedHtml, /data-code-variant="terminal"[\s\S]*Tests  <span[^>]*>2 failed<\/span> \| <span[^>]*>0 passed<\/span><span[^>]*> \(2\)[\s\S]*Visible check Result differed[\s\S]*1 hidden check failed[\s\S]*text-status-wrong[^>]*>Checks failed/);
   assert.doesNotMatch(failedHtml, /private runner transcript|private check name|private check body/);
 
   const passedHtml = renderDashboard({
@@ -108,7 +108,7 @@ for (const drillId of ["DRL-PRG-TEST-01", "LAB-PRG-TEST-01"]) {
       lastTestReport: projectTestRunReport({ allPassed: true, passedCount: 2, totalCount: 2, rawOutput }),
     }),
   }, drillId);
-  assert.match(passedHtml, /data-code-variant="terminal"[\s\S]*Tests<span[^>]*> \(2\/2 passed[\s\S]*text-status-correct-text[^>]*>Checks passed/);
+  assert.match(passedHtml, /data-code-variant="terminal"[\s\S]*Tests  <span[^>]*>2 passed<\/span><span[^>]*> \(2\)[\s\S]*text-status-correct-text[^>]*>Checks passed/);
   assert.doesNotMatch(passedHtml, /private runner transcript/);
 }
 

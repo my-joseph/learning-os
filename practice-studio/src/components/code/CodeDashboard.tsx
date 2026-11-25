@@ -120,6 +120,12 @@ const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
   return hint || "Enter predicted output…";
 };
 
+/** Vitest-style count: "1 failed | 13 passed (14)", or "13 passed (13)" when nothing failed. */
+function formatTestCounts({ passed, total }: { passed: number; total: number }): string {
+  const failed = total - passed;
+  return `${failed > 0 ? `${failed} failed | ` : ""}${passed} passed (${total})`;
+}
+
 function formatReviewDate(iso?: string): string {
   if (!iso) return "";
   const trimmed = iso.trim();
@@ -260,7 +266,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
       label: "Tests",
       symbol: layeredStatus.testsSymbol,
       kind: tests,
-      detail: testsCount && tests !== "not_run" ? `${testsCount.passed}/${testsCount.total} passed` : undefined,
+      detail: testsCount && tests !== "not_run" ? formatTestCounts(testsCount) : undefined,
     },
     { label: "Lint", symbol: layeredStatus.lintSymbol, kind: lint },
     { label: "Types", symbol: layeredStatus.typesSymbol, kind: types },
@@ -274,7 +280,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const checkErrorLines = checkDiagnostic ? [checkDiagnostic] : failures;
   const checkTerminalText = [
     "$ npm run check",
-    ...checkRows.map((r) => `${r.symbol} ${r.label}${r.detail ? ` (${r.detail})` : ""}`),
+    ...checkRows.map((r) =>
+      `${r.symbol} ${r.label}${r.detail ? (r.label === "Tests" ? `  ${r.detail}` : ` (${r.detail})`) : ""}`
+    ),
     ...(checkErrorLines.length ? ["", ...checkErrorLines] : []),
   ].join("\n");
   const primaryAction = choosePrimaryAction(layeredStatus, drillId, problem.id);
@@ -805,7 +813,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       {"\n"}
                       <span className={statusSymbolClass(row.kind)}>{row.symbol}</span>
                       {` ${row.label}`}
-                      {row.detail && <span className="text-muted">{` (${row.detail})`}</span>}
+                      {row.label === "Tests" && testsCount && tests !== "not_run" ? (
+                        <>
+                          {"  "}
+                          {testsCount.total - testsCount.passed > 0 && (
+                            <><span className={statusTone.wrong.text}>{`${testsCount.total - testsCount.passed} failed`}</span>{" | "}</>
+                          )}
+                          <span className={statusTone.correct.text}>{`${testsCount.passed} passed`}</span>
+                          <span className="text-muted">{` (${testsCount.total})`}</span>
+                        </>
+                      ) : row.detail && <span className="text-muted">{` (${row.detail})`}</span>}
                     </React.Fragment>
                   ))}
                   {!hasRunChecks && (
