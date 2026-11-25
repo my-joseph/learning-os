@@ -499,7 +499,8 @@ for (const workspace of ["math", "code"] as const) {
     assert.equal(attributes.includes('aria-current="page"'), name === (workspace === "math" ? "Math" : "Programming"));
   }
   const track = workspaceSwitchHtml.match(/<nav aria-label="Workspace" class="([^"]+)"/)?.[1];
-  assert.match(track ?? "", /grid-cols-2.*p-0\.5/);
+  assert.match(track ?? "", /grid-cols-2.*p-0\.5 lg:p-0/);
+  assert.match(track ?? "", /rounded-lg/);
   assert.doesNotMatch(track ?? "", /\b(?:min-h-|h-)/, "cell size and padding determine track height");
 }
 

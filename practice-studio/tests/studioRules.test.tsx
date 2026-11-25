@@ -199,6 +199,7 @@ assert.match(studioHeader, /<List\b/);
 assert.match(studioHeader, /dark:bg-zinc-900/);
 assert.doesNotMatch(studioHeader, /dark:bg-zinc-950/);
 assert.match(studioSidebar, /Collapse sidebar/);
+assert.match(studioSidebar, /lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8/);
 assert.match(studioSidebar, /isOpen \? 287 : 0/);
 assert.match(studioSidebar, /w-\[287px\]/);
 assert.match(studioSidebar, /bg-surface-panel/);
