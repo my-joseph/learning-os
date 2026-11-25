@@ -9,6 +9,7 @@ import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { WorkedExampleDisclosure } from "../src/components/math/WorkedExampleView";
 import { ProblemAssistSection } from "../src/components/workspace/ProblemAssistSection";
 import { labToDrillDocument, type LabDetailResponse } from "../src/lib/labModel";
+import { projectTestRunReport } from "../src/lib/redact";
 import { preloadShiki } from "../src/lib/shiki";
 import type { Problem, ProblemState } from "../src/types/drill";
 
@@ -59,10 +60,10 @@ const drillProblem: Problem = {
   state: makeState(),
 };
 
-const drillHtml = renderToStaticMarkup(
+const renderDashboard = (problem: Problem, drillId = "DRL-PRG-TEST-01") => renderToStaticMarkup(
   <CodeDashboard
-    problem={drillProblem}
-    drillId="DRL-PRG-TEST-01"
+    problem={problem}
+    drillId={drillId}
     index={0}
     totalQuestions={1}
     drillTitle="Sorted Search"
@@ -76,6 +77,39 @@ const drillHtml = renderToStaticMarkup(
     onResetProblem={noop}
   />
 );
+const drillHtml = renderDashboard(drillProblem);
+assert.doesNotMatch(drillHtml, /data-code-variant="terminal"/);
+
+const rawOutput = "private runner transcript";
+const failedReport = projectTestRunReport({
+  allPassed: false,
+  passedCount: 0,
+  totalCount: 2,
+  hiddenTotal: 1,
+  rawOutput,
+  visibleResults: [
+    { name: "Visible check", passed: false, error: "Result differed" },
+    { name: "[HIDDEN-1] private check name", passed: false, error: "private check body" },
+  ],
+});
+assert.equal(failedReport.rawOutput, undefined);
+for (const drillId of ["DRL-PRG-TEST-01", "LAB-PRG-TEST-01"]) {
+  const failedHtml = renderDashboard({
+    ...drillProblem,
+    state: makeState({ lastTestReport: { ...failedReport, rawOutput } }),
+  }, drillId);
+  assert.match(failedHtml, /data-code-variant="terminal"[\s\S]*Tests: 0\/2 passed[\s\S]*Visible check Result differed[\s\S]*1 hidden check failed[\s\S]*text-status-wrong[^>]*>Checks failed/);
+  assert.doesNotMatch(failedHtml, /private runner transcript|private check name|private check body/);
+
+  const passedHtml = renderDashboard({
+    ...drillProblem,
+    state: makeState({
+      lastTestReport: projectTestRunReport({ allPassed: true, passedCount: 2, totalCount: 2, rawOutput }),
+    }),
+  }, drillId);
+  assert.match(passedHtml, /data-code-variant="terminal"[\s\S]*Tests: 2\/2 passed[\s\S]*text-status-correct-text[^>]*>Checks passed/);
+  assert.doesNotMatch(passedHtml, /private runner transcript/);
+}
 
 // Examples appear right after requirements and before Visible tests
 const reqIdx = drillHtml.indexOf("Return the insertion index.");

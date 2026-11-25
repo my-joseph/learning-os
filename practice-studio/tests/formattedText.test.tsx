@@ -80,6 +80,28 @@ async function main() {
   assert.match(plainHtml, /title="Code">Code</);
   assert.match(plainHtml, /data-slot="code-block-line-content">plain output line<\/span>/);
 
+  const delimiter = "```";
+  const fence = (info: string, code: string) =>
+    renderToStaticMarkup(<FormattedText text={[delimiter + info, code, delimiter].join("\n")} />);
+  const highlighted = (html: string) =>
+    Array.from(html.matchAll(/data-variant="highlighted"[^>]*><span[^>]*>(\d+)<\/span>/g), ([, line]) => Number(line));
+  const numbered = Array.from({ length: 9 }, (_, i) => i === 0 ? "" : "line " + (i + 1)).join("\n");
+  const metaHtml = fence('text title="src/app config.js" unknown="{5}" {3, 7-9} {0, 99}', numbered);
+  assert.match(metaHtml, /title="src\/app config\.js">src\/app config\.js</);
+  assert.deepEqual(highlighted(metaHtml), [3, 7, 8, 9]);
+  assert.deepEqual(highlighted(fence("text {4-2} {-1} {2,wrong} {9007199254740992}", numbered)), []);
+  assert.deepEqual(highlighted(fence('text {2} title="unclosed {3}', numbered)), [2]);
+  assert.match(fence('text title="& <img>"', "sample"), /title="&amp; &lt;img&gt;"/);
+
+  for (const alias of ["terminal", "console", "shell-session"]) {
+    const html = fence(alias, "$ npm run start\n\n<script>log</script>");
+    assert.match(html, /data-code-variant="terminal"/);
+    assert.match(html, /title="Terminal">Terminal</);
+    assert.match(html, /<span class="text-muted">\$ <\/span>npm run start\n\n&lt;script&gt;log&lt;\/script&gt;/);
+    assert.doesNotMatch(html, /data-numbered|data-code-block-line|shiki-token/);
+  }
+  assert.match(fence('terminal title="node app.js"', "Ready"), /title="node app\.js">node app\.js</);
+
   console.log("formattedText tests passed");
 }
 

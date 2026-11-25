@@ -251,6 +251,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   };
 
   const layeredStatus = deriveCodeStatus(effectiveState, reviewRun, filename);
+  const { tests, testsCount, lint, types, failures } = layeredStatus;
+  const checkDiagnostic = sanitizeCodeCheckError(checkError);
+  const checkOutput = [
+    testsCount ? `Tests: ${testsCount.passed}/${testsCount.total} passed` : "",
+    lint === "not_run" ? "" : `Lint: ${lint === "pass" ? "passed" : "failed"}`,
+    types === "not_run" ? "" : `Types: ${types === "pass" ? "passed" : "failed"}`,
+    ...failures,
+  ].filter(Boolean).join("\n");
+  const checksPassed = tests !== "fail" && lint !== "fail" && types !== "fail" && failures.length === 0;
   const primaryAction = choosePrimaryAction(layeredStatus, drillId, problem.id);
   const reviewRequestText = getReviewRequest(drillId, problem.id);
 
@@ -803,16 +812,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </span>
               </div>
 
-              {(checkError || layeredStatus.failures.length > 0) && (
-                <ul
-                  aria-label="Check failures"
-                  className={`min-w-0 max-w-full overflow-x-auto whitespace-pre-wrap break-words border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-sans text-xs text-zinc-800 dark:text-zinc-200`}
-                >
-                  {checkError && <li>{sanitizeCodeCheckError(checkError)}</li>}
-                  {layeredStatus.failures.map((line, idx) => (
-                    <li key={idx}>{line}</li>
-                  ))}
-                </ul>
+              {(checkDiagnostic || checkOutput) && (
+                <CodeBlock
+                  variant="terminal"
+                  code={checkDiagnostic || checkOutput}
+                  status={{
+                    label: checkDiagnostic ? "Could not run checks" : checksPassed ? "Checks passed" : "Checks failed",
+                    passed: !checkDiagnostic && checksPassed,
+                  }}
+                />
               )}
             </div>
 

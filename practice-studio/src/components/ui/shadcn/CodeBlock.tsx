@@ -36,6 +36,7 @@ const codeBlockVariants = cva(
       variant: {
         full: "mb-space-4 text-xs md:text-sm",
         compact: "text-xs",
+        terminal: "text-xs",
       },
     },
     defaultVariants: { variant: "compact" },
@@ -89,6 +90,16 @@ export function CodeBlockActions({ className, ...props }: React.ComponentProps<"
   );
 }
 
+export function CodeBlockFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="code-block-footer"
+      className={cn("border-t border-border px-space-3_5 py-space-1 font-mono", className)}
+      {...props}
+    />
+  );
+}
+
 export function CodeBlockContent({
   className,
   children,
@@ -113,7 +124,10 @@ export function CodeBlockContent({
     >
       <code
         data-slot="code-block-code"
-        className={lineNumbers ? "grid min-w-max grid-cols-[auto_1fr]" : undefined}
+        className={lineNumbers ? cn(
+          "grid",
+          wrap ? "grid-cols-[auto_minmax(0,1fr)]" : "min-w-max grid-cols-[auto_1fr]"
+        ) : undefined}
       >
         {children}
       </code>
