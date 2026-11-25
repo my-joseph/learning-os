@@ -6,39 +6,60 @@ import { FormattedText } from "../src/components/FormattedText";
 import { preloadShiki } from "../src/lib/shiki";
 
 async function main() {
-  // 1. Markdown headings render as bold labels, never raw "###"
-  // Learner 2026-11-19: list bullets use the same small indigo dot as the Visible tests list.
-  const bulletHtml = renderToStaticMarkup(<FormattedText text={"Requirements:\n- Return a fresh array\n- Keep order"} />);
-  assert.match(bulletHtml, /w-1\.5 h-1\.5 rounded-full bg-indigo-600 dark:bg-indigo-400/);
-  assert.doesNotMatch(bulletHtml, /•/);
-
-  // Learner 2026-11-19: three list kinds picked from the heading above the list.
-  const kindsHtml = renderToStaticMarkup(
-    <FormattedText
-      text={[
-        "**Observed Symptoms:**",
-        "- Clients share defaults",
-        "**Requirements:**",
-        "- Return a fresh array",
-        "**Return Contract:**",
-        "- Return string[]",
-        "Something else",
-        "- plain note",
-      ].join("\n")}
-    />
+  // 1. Studio prose preserves semantic structure and escapes plain text.
+  const proseHtml = renderToStaticMarkup(
+    <FormattedText text={[
+      "## API reference",
+      "### formatBadge",
+      "Use `formatBadge` to format a label.",
+      "",
+      "**Requirements:**",
+      "- Accept a `name`",
+      "  - Trim whitespace",
+      "- Keep the input unchanged",
+      "",
+      "Return Contract:",
+      "3. Return a label",
+      "4. Return an empty string when needed",
+      "",
+      "| Field | Type |",
+      "| --- | :---: |",
+      "| `status` | pending\\|active |",
+      "",
+      "> Use short labels.",
+      "",
+      "---",
+      "",
+      "Inline math $x^2$ stays with the sentence.",
+      "$$",
+      String.raw`\frac{1}{2}`,
+      "$$",
+      "",
+      "<script>untrusted</script>",
+    ].join("\n")} />
   );
-  const kinds = [...kindsHtml.matchAll(/data-list-kind="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(kinds, ["info", "task", "limit", "info"]);
-  assert.match(kindsHtml, /border-indigo-600 dark:border-indigo-400/);
-  assert.match(kindsHtml, /bg-zinc-400 dark:bg-zinc-500/);
+  assert.match(proseHtml, /<div class="typeset typeset-studio">/);
+  assert.match(proseHtml, /<h2>API reference<\/h2><h3>formatBadge<\/h3><p>Use <code class="inline-code">formatBadge<\/code>/);
+  assert.match(proseHtml, /<h4>Requirements:<\/h4><ul><li>.*<ul><li><p>Trim whitespace<\/p><\/li><\/ul><\/li>/);
+  assert.match(proseHtml, /<h4>Return Contract:<\/h4><ol start="3">.*<li value="4">/);
+  assert.match(proseHtml, /<th scope="col" align="center">Type<\/th>.*<td align="center">pending\|active<\/td>/);
+  assert.match(proseHtml, /<blockquote><p>Use short labels\.<\/p><\/blockquote><hr\/>/);
+  assert.match(proseHtml, /class="inline-math"><span class="katex"/);
+  assert.match(proseHtml, /class="typeset-math"><span class="katex-display"/);
+  assert.match(proseHtml, /&lt;script&gt;untrusted&lt;\/script&gt;/);
 
-  const headingHtml = renderToStaticMarkup(
-    <FormattedText text={"### Requirements\n- keep order\n#### Return contract"} />
+  assert.match(
+    renderToStaticMarkup(<FormattedText text="One `token`" />),
+    /^<span class="typeset">One <code class="inline-code">token<\/code><\/span>$/
   );
-  assert.doesNotMatch(headingHtml, /###/, "raw ### must not be shown");
-  assert.match(headingHtml, /font-semibold[^>]*>Requirements</);
-  assert.match(headingHtml, /font-semibold[^>]*>Return contract</);
-  assert.match(headingHtml, /keep order/);
+  assert.match(
+    renderToStaticMarkup(<FormattedText text="One paragraph." block />),
+    /<div class="typeset typeset-studio"><p>One paragraph\.<\/p><\/div>/
+  );
+  assert.match(
+    renderToStaticMarkup(<FormattedText text={"A note\n\n- Details"} density="compact" />),
+    /^<div class="typeset typeset-compact">/
+  );
 
   // 2. Fenced code blocks highlight supported languages with dual-theme Shiki tokens
   await preloadShiki();

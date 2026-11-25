@@ -51,7 +51,7 @@ export const StepRow: React.FC<StepRowProps> = ({
         <span className="font-sans tabular-nums font-normal text-muted mr-space-1_5">
           Step {index + 1}:
         </span>
-        <FormattedText text={step.explain} />
+        <FormattedText text={step.explain} density="compact" />
       </div>
 
       {onMarkDiverged && (

@@ -4,7 +4,8 @@ import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
 import { CodeBlock } from "@/components/ui/CodeBlock";
-import { ListDot, listKindForHeading } from "@/components/ui/ListDot";
+import { parseFormattedText, type ProseBlock } from "@/lib/formattedTextBlocks";
+import { cn } from "@/lib/cn";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 
 const CODE_LANGUAGE_LABELS: Record<string, string> = {
@@ -51,249 +52,165 @@ function parseFenceInfo(info: string) {
 interface FormattedTextProps {
   text: string;
   className?: string;
+  density?: "studio" | "compact";
+  block?: boolean;
+}
+
+const INLINE_TOKEN = new RegExp(
+  String.raw`(${MATH_TOKEN}|\*\*[^*]+\*\*|` +
+    "`[^`]+`" +
+    String.raw`|\[\[[\w-]+\]\]|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))`,
+  "g"
+);
+const HEADINGS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+
+function renderMath(latex: string, displayMode: boolean) {
+  const tex = wrapBareWordsInLatex(latex);
+  try {
+    const html = katex.renderToString(tex, { displayMode, throwOnError: false });
+    return displayMode ? (
+      <div className="typeset-math" dangerouslySetInnerHTML={{ __html: html }} />
+    ) : (
+      <span className="inline-math" dangerouslySetInnerHTML={{ __html: html }} />
+    );
+  } catch {
+    return <code className="inline-code">{tex}</code>;
+  }
+}
+
+function renderInline(text: string): React.ReactNode {
+  return text.split(INLINE_TOKEN).filter(Boolean).map((token, index) => {
+    let content: React.ReactNode;
+    if (isMathSegment(token)) {
+      content = renderMath(token.slice(1, -1), false);
+    } else if (token.startsWith("**") && token.endsWith("**") && token.length >= 4) {
+      content = <strong>{renderInline(token.slice(2, -2))}</strong>;
+    } else if (/^(`.+`|'.+')$/.test(token)) {
+      content = <code className="inline-code">{token.slice(1, -1)}</code>;
+    } else if (/^\[\[[\w-]+\]\]$/.test(token)) {
+      const id = token.slice(2, -2);
+      const label = id.startsWith("CON-") ? id.slice(4).replace(/-/g, " ") : id;
+      content = (
+        <span
+          className="inline-flex items-center gap-space-1 px-space-1_5 py-space-0_5 rounded text-xs font-normal bg-surface-hover text-foreground-control border border-border-control align-baseline"
+          title={`Concept Vault: ${id}`}
+        >
+          <BookOpen className="size-space-3 shrink-0 opacity-soft" />
+          <span>{label}</span>
+        </span>
+      );
+    } else {
+      content = unescapeDollar(token);
+    }
+    return <React.Fragment key={index}>{content}</React.Fragment>;
+  });
+}
+
+function renderBlocks(blocks: ProseBlock[]): React.ReactNode {
+  return blocks.map((block, index) => {
+    let content: React.ReactNode;
+    switch (block.kind) {
+      case "paragraph":
+        content = (
+          <p>
+            {block.lines.map((line, lineIndex) => (
+              <React.Fragment key={lineIndex}>
+                {lineIndex > 0 && <br />}
+                {renderInline(line)}
+              </React.Fragment>
+            ))}
+          </p>
+        );
+        break;
+      case "heading": {
+        const Heading = HEADINGS[block.level - 1];
+        content = <Heading>{renderInline(block.text)}</Heading>;
+        break;
+      }
+      case "list": {
+        const List = block.ordered ? "ol" : "ul";
+        content = (
+          <List start={block.items[0].number}>
+            {block.items.map((item, itemIndex) => (
+              <li key={itemIndex} value={itemIndex > 0 ? item.number : undefined}>
+                {renderBlocks(item.blocks)}
+              </li>
+            ))}
+          </List>
+        );
+        break;
+      }
+      case "table":
+        content = (
+          <div className="typeset-scroll" tabIndex={0} role="region" aria-label="Table">
+            <table>
+              <thead>
+                <tr>
+                  {block.cells[0].map((cell, column) => (
+                    <th key={column} scope="col" align={block.align[column]}>{renderInline(cell)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {block.cells.slice(1).map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, column) => (
+                      <td key={column} align={block.align[column]}>{renderInline(cell)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+        break;
+      case "quote":
+        content = <blockquote>{renderBlocks(block.blocks)}</blockquote>;
+        break;
+      case "rule":
+        content = <hr />;
+        break;
+      case "math":
+        content = renderMath(block.latex, true);
+        break;
+      case "code": {
+        const { lang, title, highlightedLines } = parseFenceInfo(block.info);
+        content = lang && TERMINAL_LANGUAGES.has(lang.toLowerCase()) ? (
+          <CodeBlock variant="terminal" code={block.code} title={title} />
+        ) : (
+          <CodeBlock
+            variant="full-file"
+            code={block.code}
+            language={lang}
+            filename={title ?? codeLanguageLabel(lang)}
+            highlightedLines={highlightedLines}
+            preserveWhitespace
+          />
+        );
+        break;
+      }
+    }
+    return <React.Fragment key={index}>{content}</React.Fragment>;
+  });
 }
 
 export const FormattedText: React.FC<FormattedTextProps> = ({
   text,
-  className = "",
+  className,
+  density = "studio",
+  block = false,
 }) => {
-  // Regex to split inline tokens: math ($...$), bold (**...**), backtick code (`...`), concept vault token ([[...]]), or quoted identifier ('...')
-  const inlineRegex = useMemo(
-    () =>
-      new RegExp(
-        String.raw`(${MATH_TOKEN}|\*\*[^*]+\*\*|` +
-          "`[^`]+`" +
-          String.raw`|\[\[[\w-]+\]\]|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))`,
-        "g"
-      ),
-    []
-  );
+  const blocks = useMemo(() => parseFormattedText(text), [text]);
+  const first = blocks[0];
 
-  const blocks = useMemo(() => {
-    if (!text) return [];
-    const rawLines = text.split("\n");
-    const out: Array<
-      | { kind: "line"; line: string; lineIdx: number }
-      | { kind: "code"; code: string; info: ReturnType<typeof parseFenceInfo>; lineIdx: number }
-    > = [];
-    let i = 0;
-    while (i < rawLines.length) {
-      const current = rawLines[i];
-      const trimmedCurrent = current.trim();
-      if (trimmedCurrent.startsWith("```")) {
-        const startIdx = i;
-        const fenceInfo = trimmedCurrent.slice(3).trim();
-        const info = parseFenceInfo(fenceInfo);
-        i++;
-        const codeLines: string[] = [];
-        while (i < rawLines.length && !rawLines[i].trim().startsWith("```")) {
-          codeLines.push(rawLines[i]);
-          i++;
-        }
-        if (i < rawLines.length && rawLines[i].trim().startsWith("```")) {
-          i++;
-        }
-        out.push({ kind: "code", code: codeLines.join("\n"), info, lineIdx: startIdx });
-      } else {
-        out.push({ kind: "line", line: current, lineIdx: i });
-        i++;
-      }
-    }
-    return out;
-  }, [text]);
-
-  const renderInline = (content: string) => {
-    if (!content) return null;
-    const segments = content.split(inlineRegex).filter(Boolean);
-
-    return segments.map((seg, idx) => {
-      // 1. LaTeX Math: $...$
-      if (isMathSegment(seg)) {
-        const tex = wrapBareWordsInLatex(seg.slice(1, -1));
-        try {
-          const html = katex.renderToString(tex, {
-            displayMode: false,
-            throwOnError: false,
-          });
-          return (
-            <span
-              key={idx}
-              dangerouslySetInnerHTML={{ __html: html }}
-              className="inline-math"
-            />
-          );
-        } catch {
-          return (
-            <code
-              key={idx}
-              className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
-            >
-              {tex}
-            </code>
-          );
-        }
-      }
-
-      // 2. Markdown Bold: **...**
-      if (seg.startsWith("**") && seg.endsWith("**") && seg.length >= 4) {
-        const boldText = seg.slice(2, -2);
-        return (
-          <strong key={idx} className="font-semibold text-zinc-900 dark:text-zinc-100">
-            {boldText}
-          </strong>
-        );
-      }
-
-      // 3. Markdown Backtick Code: `...`
-      if (seg.startsWith("`") && seg.endsWith("`") && seg.length >= 2) {
-        const code = seg.slice(1, -1);
-        return (
-          <code
-            key={idx}
-            className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
-          >
-            {code}
-          </code>
-        );
-      }
-
-      // 4. Concept Vault Token: [[KEY]]
-      if (seg.startsWith("[[") && seg.endsWith("]]") && seg.length >= 4) {
-        const key = seg.slice(2, -2);
-        const displayLabel = key.startsWith("CON-")
-          ? key.replace("CON-", "").replace(/-/g, " ")
-          : key;
-        return (
-          <span
-            key={idx}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-normal bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 align-baseline"
-            title={`Concept Vault: ${key}`}
-          >
-            <BookOpen className="w-3 h-3 shrink-0 opacity-70" />
-            <span>{displayLabel}</span>
-          </span>
-        );
-      }
-
-      // 5. Quoted Code identifier: '...'
-      if (seg.startsWith("'") && seg.endsWith("'") && seg.length > 2) {
-        const code = seg.slice(1, -1);
-        return (
-          <code
-            key={idx}
-            className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
-          >
-            {code}
-          </code>
-        );
-      }
-
-      // Plain text (`\$` is a literal dollar sign)
-      return <React.Fragment key={idx}>{unescapeDollar(seg)}</React.Fragment>;
-    });
-  };
-
-  if (blocks.length <= 1 && blocks[0]?.kind !== "code") {
-    return <span className={className}>{renderInline(text)}</span>;
-  }
-
-  // Each bullet takes its style from the nearest heading-like line above its list
-  // ("Requirements:", "**Observed Symptoms:**", "### Return Contract").
-  const listKindByLine = new Map<number, ReturnType<typeof listKindForHeading>>();
-  {
-    let heading: string | null = null;
-    for (const block of blocks) {
-      if (block.kind !== "line") {
-        heading = null;
-        continue;
-      }
-      const t = block.line.trim();
-      if (!t) continue;
-      if (t.startsWith("- ") || t.startsWith("* ")) {
-        listKindByLine.set(block.lineIdx, listKindForHeading(heading));
-        continue;
-      }
-      heading = t.replace(/^#{1,4}\s+/, "").replace(/\*\*/g, "").replace(/:\s*$/, "").trim();
-    }
+  // Keep one-line labels phrasing content so they can sit inside controls and figure labels.
+  if (!block && (!first || (blocks.length === 1 && first.kind === "paragraph" && first.lines.length === 1))) {
+    return <span className={cn("typeset", className)}>{renderInline(text)}</span>;
   }
 
   return (
-    <div className={`space-y-1.5 ${className}`}>
-      {blocks.map((block) => {
-        if (block.kind === "code") {
-          const { lang, title, highlightedLines } = block.info;
-          if (lang && TERMINAL_LANGUAGES.has(lang.toLowerCase())) {
-            return <CodeBlock key={block.lineIdx} variant="terminal" code={block.code} title={title} />;
-          }
-          return (
-            <CodeBlock
-              key={block.lineIdx}
-              variant="full-file"
-              code={block.code}
-              language={lang}
-              filename={title ?? codeLanguageLabel(lang)}
-              highlightedLines={highlightedLines}
-              preserveWhitespace
-            />
-          );
-        }
-
-        const { line, lineIdx } = block;
-        const trimmed = line.trim();
-
-        if (!trimmed) {
-          return <div key={lineIdx} className="h-1.5" />;
-        }
-
-        const headingMatch = trimmed.match(/^#{1,4}\s+(.+)$/);
-        if (headingMatch) {
-          // Markdown heading ("### Requirements") renders like the bold section labels used elsewhere.
-          return (
-            <div
-              key={lineIdx}
-              className="font-semibold text-zinc-900 dark:text-zinc-100 leading-relaxed pt-1"
-            >
-              {renderInline(headingMatch[1])}
-            </div>
-          );
-        }
-
-        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-          const bulletContent = trimmed.slice(2);
-          return (
-            <div
-              key={lineIdx}
-              className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
-            >
-              <ListDot kind={listKindByLine.get(lineIdx) ?? "info"} />
-              <div className="flex-1">{renderInline(bulletContent)}</div>
-            </div>
-          );
-        }
-
-        const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
-        if (numMatch) {
-          const num = numMatch[1];
-          const numContent = numMatch[2];
-          return (
-            <div
-              key={lineIdx}
-              className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
-            >
-              <span className="font-sans tabular-nums text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
-                {num}.
-              </span>
-              <div className="flex-1">{renderInline(numContent)}</div>
-            </div>
-          );
-        }
-
-        return (
-          <div key={lineIdx} className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
-            {renderInline(line)}
-          </div>
-        );
-      })}
+    <div className={cn("typeset", density === "compact" ? "typeset-compact" : "typeset-studio", className)}>
+      {renderBlocks(blocks)}
     </div>
   );
 };

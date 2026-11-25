@@ -12,6 +12,17 @@ Use the token roles below when adding a [component variant](components.md). Exis
 - Reserve Roboto Slab (`font-heading`, 500 or 600, `tracking-heading`) for page titles, large section headings and empty-state titles at 18 px or larger, and prominent numerals at 14 px or larger. Use `Heading` and `Numeral` to apply these roles.
 - Use Geist Mono (`font-mono`) for code, terminal output, function names, typed code answers and curriculum IDs such as `MTH-…`, `PRG-…`, `DRL-…` and `LAB-…`. KaTeX and MathLive keep their math fonts.
 
+## Rendered prose
+
+`FormattedText` uses the local shadcn Typeset port in `practice-studio/src/styles/typeset.css`. Body text and semibold content headings use `--font-sans`. Inline code uses `--font-mono`, `--surface-hover` and `--radius-base`. List markers use `--foreground-secondary`, and table rules use `--border-control`.
+
+| Preset | `--typeset-size` | `--typeset-leading` | `--typeset-flow` |
+| :--- | :--- | :--- | :--- |
+| `.typeset-studio` | `--text-base` (15 px) | `--leading-relaxed` (1.625) | `--space-4` (16 px) |
+| `.typeset-compact` | Inherited | `--leading-body` (1.6) | `--space-2` (8 px) |
+
+Single-line labels inherit the surrounding size and line height. Compact prose inherits the size set by the surrounding card or panel.
+
 ## Token reference
 
 ### Colour
@@ -290,12 +301,12 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
-| arbitrary utilities | 183 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]` |
-| raw neutral text utilities | 688 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| arbitrary utilities | 179 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]` |
+| raw neutral text utilities | 654 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 39 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
-| other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
+| other raw colours | 13 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
 | inline values | 386 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
-| CSS literals | 35 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1343** | |
+| CSS literals | 38 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
+| **Total** | **1309** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.

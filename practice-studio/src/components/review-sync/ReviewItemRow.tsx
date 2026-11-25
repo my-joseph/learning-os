@@ -170,10 +170,10 @@ const ReviewItemResult: React.FC<{
               <li key={`${finding.check}-${fIdx}`} className="flex items-start gap-2 leading-relaxed">
                 <ListDot kind="info" />
                 <span className="min-w-0 break-words">
-                  <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100 mr-1.5">
+                  <code className="inline-code mr-space-1_5">
                     {finding.check}
                   </code>
-                  {finding.note && <FormattedText text={finding.note} />}
+                  {finding.note && <FormattedText text={finding.note} density="compact" />}
                 </span>
               </li>
             ))}

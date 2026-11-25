@@ -66,7 +66,6 @@ import {
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
 import { isCurriculumId, plainTitle } from "@/lib/titleText";
-import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
 import {
   Collapsible,
@@ -570,22 +569,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     : ""}
                 </span>
               )}
-              {problem.entryPoint && (
-                isLab ? (
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    {problem.entryPoint}
-                  </span>
-                ) : (
-                  <code className="font-mono text-zinc-700 dark:text-zinc-300">
-                    {problem.entryPoint}
-                  </code>
-                )
+              {isLab && problem.entryPoint && (
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  {problem.entryPoint}
+                </span>
               )}
               {!problem.entryPoint &&
                 problem.context &&
                 !isContextSlug(problem.context) && (
                   <span className="text-zinc-700 dark:text-zinc-300">
-                    <FormattedText text={problem.context} />
+                    <FormattedText text={problem.context} density="compact" />
                   </span>
                 )}
             </h2>
@@ -597,8 +590,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             />
           </div>
 
-          <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
-            <FormattedText text={problem.prompt} />
+          <div className="text-base leading-relaxed text-foreground min-w-0">
+            <FormattedText text={problem.prompt} block />
           </div>
         </div>
 
@@ -612,7 +605,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </h4>
                   {ex.explanation && ex.explanation.trim() && (
                     <div className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                      <FormattedText text={ex.explanation} />
+                      <FormattedText text={ex.explanation} density="compact" />
                     </div>
                   )}
                   <CodeBlock
@@ -635,9 +628,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
               {problem.constraints.map((constraint, cIdx) => (
                 <li key={cIdx} className="flex items-start gap-2 leading-relaxed">
-                  <ListDot kind="limit" />
                   <span className="leading-relaxed">
-                    <FormattedText text={constraint} />
+                    <FormattedText text={constraint} density="compact" />
                   </span>
                 </li>
               ))}
@@ -755,7 +747,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                         >
                           <li className="space-y-1">
                             <div className="flex items-start gap-2">
-                              <ListDot className="mt-3 sm:mt-0" />
                               <CollapsibleTrigger asChild>
                                 <button
                                   type="button"
@@ -763,7 +754,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                                   className="inline-flex min-h-[44px] py-3 sm:min-h-0 sm:py-0 min-w-0 items-start sm:items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                                 >
                                   <span>
-                                    <FormattedText text={t.name} />
+                                    <FormattedText text={t.name} density="compact" />
                                   </span>
                                   <ChevronDown
                                     aria-hidden="true"
@@ -787,9 +778,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ) : (
                         <li key={t.id || idx} className="space-y-1">
                           <div className="flex items-start gap-2">
-                            <ListDot />
                             <span>
-                              <FormattedText text={t.name} />
+                              <FormattedText text={t.name} density="compact" />
                             </span>
                           </div>
                         </li>
@@ -926,7 +916,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     href={vscodeUrl}
                     className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
-                    <span>Open <code className="font-mono">{problem.mainFile}</code></span>
+                    <span>Open <code className="inline-code">{problem.mainFile}</code></span>
                   </a>
                 )}
 
@@ -1023,9 +1013,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                                 <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-sans">
                                   {r.findings.map((f, fIdx) => (
                                     <li key={fIdx} className="flex items-start gap-2">
-                                      <ListDot kind="info" />
                                       <span className="min-w-0 break-words">
-                                        <code className="font-mono">{f.check}</code> ({f.severity}
+                                        <code className="inline-code">{f.check}</code> ({f.severity}
                                         {f.line ? `, line ${f.line}` : ""}
                                         {f.disputed ? ", disputed" : ""}): {f.note}
                                       </span>
@@ -1069,16 +1058,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     {openExplain && (
                       <div className="pt-2 pb-1 space-y-2 text-xs">
                         <div className="text-zinc-700 dark:text-zinc-300">
-                          <FormattedText text={explainQuestion} />
+                          <FormattedText text={explainQuestion} density="compact" />
                         </div>
                         {recordedExplain ? (
                           <div className={`border-l-2 ${statusTone.correct.border} pl-3 py-0.5 text-zinc-800 dark:text-zinc-200`}>
-                            <FormattedText text={recordedExplain} />
+                            <FormattedText text={recordedExplain} density="compact" />
                           </div>
                         ) : (
                           <p className="text-xs text-zinc-500 dark:text-zinc-400">
                             Ask Claude to review your code, e.g.{" "}
-                            <code className="font-mono text-zinc-700 dark:text-zinc-300">
+                            <code className="inline-code">
                               {drillId ? reviewRequestText : `ตรวจโค้ด <ID> ${problem.id}`}
                             </code>
                           </p>

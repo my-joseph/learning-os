@@ -139,7 +139,8 @@ assert.match(drillHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-contr
 assert.match(drillHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-1")[^>]*>/);
 assert.match(drillHtml, /<div(?=[^>]*id="visible-test-code-0")(?=[^>]*hidden="")[^>]*>/);
 assert.doesNotMatch(drillHtml, /searchInsert\(\[1, 3, 5\], 3\)/, "collapsed visible test code stays unmounted");
-assert.match(drillHtml, /rounded-full bg-indigo-600 dark:bg-indigo-400/);
+// Learner 2026-11-26: PRG prompt lists (Visible tests, Constraints, findings) have no dot bullets.
+assert.doesNotMatch(drillHtml, /data-list-kind=/);
 assert.match(drillHtml, /inserts before the first value/);
 assert.doesNotMatch(drillHtml, /aria-controls="visible-test-code-2"/, "tests without code stay plain names");
 
@@ -465,9 +466,11 @@ async function testHighlightedExamples() {
   // Inline <code> in requirements and constraints stays as plain <code> without shiki-token spans
   assert.match(
     highlightedHtml,
-    /<code class="font-mono[^"]*">searchInsert\(nums, target\)<\/code>/
+    /<code class="inline-code">searchInsert\(nums, target\)<\/code>/
   );
-  assert.match(highlightedHtml, /<code class="font-mono[^"]*">nums<\/code> is sorted ascending/);
+  assert.match(highlightedHtml, /<code class="inline-code">nums<\/code> is sorted ascending/);
+  // Learner 2026-11-26: no entry-point badge beside "Problem X of Y".
+  assert.doesNotMatch(highlightedHtml, /<code class="inline-code text-foreground-control">searchInsert<\/code>/);
 
   console.log("codeExamples render tests passed");
 }
