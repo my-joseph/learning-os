@@ -122,7 +122,7 @@
         },
         {
           "latex": "x = 8",
-          "explain": "Divide both sides by the coefficient of x.",
+          "explain": "Divide both sides by the coefficient of $x$.",
           "val": "8"
         }
       ],

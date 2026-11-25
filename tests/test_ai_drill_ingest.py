@@ -95,12 +95,12 @@ class TestAiDrillIngest(unittest.TestCase):
                             ),
                             S(
                                 "\\text{Water} = 270\\text{ g}",
-                                "Simplify the invariant water mass to 270 grams.",
+                                "Simplify the invariant water mass to $270$ grams.",
                                 eq=["300 * (1 - 0.10)", "270"],
                             ),
                             S(
                                 "270 = 0.75 \\times T_{\\text{new}}",
-                                "Equate the water mass to 75% of the expanded new total mixture.",
+                                "Equate the water mass to $75\\%$ of the expanded new total mixture.",
                             ),
                             S(
                                 "T_{\\text{new}} = 360\\text{ g}",

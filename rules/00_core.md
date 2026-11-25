@@ -68,7 +68,7 @@ Never invent property values, relationships, learning progress, resource content
 When authoring or generating worked solutions and step-by-step derivations (`steps` array in Math and STEM problems):
 - **Pedagogical Line-by-Line Integrity:** Every step must isolate a **single discrete algebraic or arithmetic transformation** (e.g. remove parentheses, simplify inner grouped arithmetic, reduce fractions, evaluate powers, simplify radicand, take principal square root, isolate variable).
 - **Anti-Clumping & Zero Equality Chaining:** Never compress 3–4 mathematical operations into a single step (e.g., never write $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$ in one line). Multi-equality chaining ($A = B = C = D$) destroys the learner's ability to locate arithmetic divergences.
-- **Action-Oriented Explanations:** Every step's `explain` string must state the specific mathematical action taken (e.g. *"Simplify 34 + 10 to 44."*, *"Evaluate 15^2 to 225."*) to empower the "Mark Diverged Step" telemetry in Practice Studio to pinpoint exact student misconceptions.
+- **Action-Oriented Explanations:** Every step's `explain` string must state the specific mathematical action taken (e.g. `Simplify $34 + 10$ to $44$.` or `Evaluate $15^2$ to $225$.`) to empower the "Mark Diverged Step" telemetry in Practice Studio to pinpoint exact student misconceptions.
 
 ---
 
