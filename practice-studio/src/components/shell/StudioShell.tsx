@@ -496,6 +496,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           setIsSideDrawerOpen(false);
           onSearchNavigate(href);
         }}
+        onResetDrill={onResetDrill}
+        onDeleteDrill={onDeleteDrill}
       />
     </div>
   );

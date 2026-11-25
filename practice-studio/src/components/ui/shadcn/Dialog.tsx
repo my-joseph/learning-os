@@ -48,10 +48,14 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 export const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { position?: "center" | "top" }
->(({ className, children, position = "center", ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    position?: "center" | "top";
+    closeButtonClassName?: string;
+    overlayClassName?: string;
+  }
+>(({ className, children, position = "center", closeButtonClassName, overlayClassName, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
+    <DialogOverlay className={overlayClassName} />
     <div className={cn(
       "fixed inset-0 z-50 flex",
       position === "top"
@@ -67,7 +71,13 @@ export const DialogContent = React.forwardRef<
           className={cn("pointer-events-auto relative w-full max-w-lg rounded-xl border border-zinc-200 bg-background p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800", position === "top" && "origin-top", className)}
         >
           {children}
-          <DialogPrimitive.Close aria-label="Close dialog" className="absolute right-3 top-3 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400">
+          <DialogPrimitive.Close
+            aria-label="Close dialog"
+            className={cn(
+              "absolute right-3 top-3 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400",
+              closeButtonClassName
+            )}
+          >
             <X aria-hidden="true" className="h-4 w-4" />
           </DialogPrimitive.Close>
         </m.div>

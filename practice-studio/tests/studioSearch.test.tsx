@@ -78,6 +78,12 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
   );
   writeLastDrillId(labId, "code");
   const navigations: string[] = [];
+  const copies: string[] = [];
+  const resets: string[] = [];
+  const deletions: string[] = [];
+  Object.defineProperty(window.navigator, "clipboard", {
+    value: { writeText: async (id: string) => { copies.push(id); } },
+  });
 
   function Harness() {
     const [open, setOpen] = useState(false);
@@ -100,6 +106,8 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
             reviewHref="/review?scope=subject:PRG"
             switchHref={null}
             onNavigate={(href) => navigations.push(href)}
+            onResetDrill={(id) => resets.push(id)}
+            onDeleteDrill={(id) => deletions.push(id)}
           />
         </MotionConfig>
       </LazyMotion>
@@ -166,9 +174,58 @@ test("Search opens via keyboard, filters fuzzy matches, and Enter navigates", as
       input = window.document.querySelector<HTMLInputElement>("[role=combobox]")!;
     });
 
+    await t.test("Only drill results offer Actions, and Escape dismisses the menu first", async () => {
+      const buttons = window.document.querySelectorAll<HTMLButtonElement>("[role=listbox] button");
+      assert.equal(buttons.length, 1);
+      const trigger = buttons[0];
+      assert.equal(trigger.getAttribute("aria-label"), `Actions for ${drillId}`);
+      assert.equal(trigger.tabIndex, 0);
+      assert.ok(!trigger.closest("[role=option]"));
+
+      await press(input, "ArrowDown");
+      assert.equal(trigger.tabIndex, -1);
+      await press(input, "ArrowUp");
+      assert.equal(trigger.tabIndex, 0);
+      await act(async () => trigger.focus());
+      assert.equal(await press(trigger, "Enter"), false);
+      await act(async () => trigger.click());
+      const menu = window.document.querySelector("[role=menu]")!;
+      const items = [...menu.querySelectorAll<HTMLButtonElement>("[role=menuitem]")];
+      assert.deepEqual(items.map((item) => item.textContent), ["Copy ID", "Reset", "Delete"]);
+      await act(async () => items[0].click());
+      assert.deepEqual(copies, [drillId]);
+      assert.deepEqual(navigations, []);
+      await press(items[0], "Escape");
+      assert.ok(!window.document.querySelector("[role=menu]"));
+      assert.ok(window.document.querySelector("[role=dialog]"));
+      await press(trigger, "Escape");
+      assert.ok(!window.document.querySelector("[role=dialog]"));
+    });
+
+    await t.test("Reset and Delete close Search and pass the drill to the shared confirmation handlers", async () => {
+      for (const action of ["Reset", "Delete"]) {
+        await press(window, "k", { ctrlKey: true });
+        const trigger = window.document.querySelector<HTMLButtonElement>(`button[aria-label="Actions for ${drillId}"]`)!;
+        await act(async () => trigger.click());
+        const item = [...window.document.querySelectorAll<HTMLButtonElement>("[role=menuitem]")]
+          .find((button) => button.textContent === action)!;
+        await act(async () => item.click());
+        assert.ok(!window.document.querySelector("[role=dialog]"));
+        assert.ok(!window.document.querySelector("[role=menu]"));
+      }
+      assert.deepEqual(resets, [drillId]);
+      assert.deepEqual(deletions, [drillId]);
+      assert.deepEqual(navigations, []);
+      await press(window, "k", { ctrlKey: true });
+      input = window.document.querySelector<HTMLInputElement>("[role=combobox]")!;
+    });
+
     await t.test("Horizontal arrows cycle types when the input is empty", async () => {
       assert.equal(await press(input, "ArrowLeft"), true);
       assert.equal(activeType(), "Units");
+      const unitList = window.document.querySelector("[role=listbox]")!;
+      assert.equal(unitList.querySelectorAll("[role=option]").length, 1);
+      assert.equal(unitList.querySelectorAll("button").length, 0);
       assert.equal(await press(input, "ArrowRight"), true);
       assert.equal(activeType(), "All");
       await press(input, "ArrowRight");
