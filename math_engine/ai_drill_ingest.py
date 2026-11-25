@@ -13,6 +13,7 @@ import glob
 import json
 import os
 import re
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from math_engine.answer_check import (
@@ -50,6 +51,22 @@ from quality_rules import (
 )
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
+DEFAULT_DATA_ROOT = "drills/data"
+
+# Match the Studio's unescaped $ delimiters. FormattedText renders each line separately.
+_STEP_INLINE_MATH_RE = re.compile(r"(?<!\\)\$(?:\\\$|[^$\r\n])+?(?<!\\)\$")
+_STEP_PROSE_LABEL_RE = re.compile(r"\b(?:step|line|case|option|figure|part|example)\s+\d+\b(?![.,]\d)|\b[23]D\b", re.I)
+_STEP_BARE_MATH_RE = re.compile(
+    r"[\^=≠≤≥±√+<>×÷−≈°⁰¹²³⁴⁵⁶⁷⁸⁹]|\\[A-Za-z]+"
+    r"|(?<!\w)-?(?:\d+(?:[.,]\d+)*|\.\d+)[A-Za-z]?(?!\w)"
+    r"|\b[A-Za-z]_?\d+\b"
+    # An article or pronoun can still be a variable in explicit algebraic context.
+    r"|(?i:\b(?:variable|coefficient|parameter|constant)\s+)[aAI]\b"
+    r"|(?i:\b(?:solve for|isolate|factor out)\s+)[aAI](?=$|[.,;:!?])"
+    r"|\b[aAI]\s*[-*/]\s*[aAI]\b"
+    # The other isolated letters are likely symbols. Skip suffixes such as the 't' in "don't".
+    r"|\b(?<!\w['’])[B-HJ-Zb-z]\b"
+)
 
 
 class AiContractError(Exception):
@@ -1568,6 +1585,18 @@ def mark_context_used(
     save_reasoning_vault(unit_code, vault, vault_dir=vault_dir)
 
 
+def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
+    for index, step in enumerate(prob.get("steps") or [], 1):
+        explain = step.get("explain") if isinstance(step, dict) else None
+        if not isinstance(explain, str):
+            continue
+        for prose in _STEP_INLINE_MATH_RE.split(explain):
+            match = _STEP_BARE_MATH_RE.search(_STEP_PROSE_LABEL_RE.sub(" ", prose))
+            if match:
+                yield f"[{prob['id']}] Step {index} explanation contains {match[0]!r} outside $...$. Use inline math."
+                break
+
+
 def check_ai_drill(
     drill_doc: Dict[str, Any],
     rules: Optional[Dict[str, Any]] = None,
@@ -1575,11 +1604,14 @@ def check_ai_drill(
     check_originality: bool = False,
     sources_dir: Optional[str] = None,
     eligible_units: Optional[Iterable[str]] = None,
+    *,
+    check_step_math: bool = True,
 ) -> List[str]:
     """Run every ingest gate on a draft WITHOUT saving it or touching the vault.
 
     Returns all problems' errors at once (empty list = ready to ingest), so a draft
-    can be fixed in one pass instead of one error per run.
+    can be fixed in one pass instead of one error per run. The CLI disables
+    ``check_step_math`` when rechecking a saved drill.
     """
     unit_code = drill_doc.get("unitCode")
     if not unit_code:
@@ -1597,6 +1629,8 @@ def check_ai_drill(
         prob.setdefault("id", f"Q{idx:02d}")
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
+        if check_step_math:
+            errors.extend(_step_math_errors(prob))
         try:
             validate_against_vault(prob, vault_archs, unit_code)
             if "review" in prob:
@@ -1661,7 +1695,7 @@ def ingest_ai_drill(
     assigns an official drill ID, and saves to drills/data/<unit_code>/<drill_id>.json.
     """
     if data_root is None:
-        data_root = os.environ.get("DRILLS_DATA_DIR", "drills/data")
+        data_root = os.environ.get("DRILLS_DATA_DIR", DEFAULT_DATA_ROOT)
 
     unit_code = drill_doc.get("unitCode")
     if not unit_code:
@@ -1691,6 +1725,8 @@ def ingest_ai_drill(
         if "verificationLevel" not in prob:
             prob["verificationLevel"] = "partial"
 
+        if step_errors := list(_step_math_errors(prob)):
+            raise AiContractError("\n".join(step_errors))
         validate_against_vault(prob, vault_archs, unit_code)
         arch = next((a for a in vault_archs if a.get("archetypeKey") == prob.get("archetypeKey")), None)
         if unit_code == BRIDGE_SCOPE and arch:
@@ -1856,7 +1892,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         with open(args.ingest_file, "r", encoding="utf-8") as f:
             drill_data = json.load(f)
         if args.check:
-            problems_found = check_ai_drill(drill_data)
+            input_path = Path(args.ingest_file).resolve()
+            data_roots = (
+                Path(__file__).resolve().parents[1] / DEFAULT_DATA_ROOT,
+                Path(os.environ.get("DRILLS_DATA_DIR", DEFAULT_DATA_ROOT)).resolve(),
+            )
+            is_saved = any(input_path.is_relative_to(root) for root in data_roots)
+            problems_found = check_ai_drill(drill_data, check_step_math=not is_saved)
             fig_warnings = check_ai_drill_warnings(drill_data)
             resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
             if args.originality is False:

@@ -106,7 +106,7 @@ def _bridge_problem(**overrides) -> dict:
             },
             {
                 "latex": "k = 3^2 + 4^2",
-                "explain": "Expand the conjugate product using i squared equals negative one.",
+                "explain": "Expand the conjugate product using $i^2 = -1$.",
                 "eq": ["3^2 + 4^2", "25"],
                 "unit": U1,
             },
