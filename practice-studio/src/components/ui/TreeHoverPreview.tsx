@@ -3,12 +3,12 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, m } from "motion/react";
-import { fade, popoverFromLeft, settle } from "@/lib/motion";
+import { popoverFromLeft, quick } from "@/lib/motion";
 
 /*
  * One shared hover card for the sidebar tree (learner 2026-11-26).
  * The first card waits OPEN_DELAY_MS; while it is showing, moving to another row
- * glides the SAME card to that row and swaps its content, so sweeping down the list is
+ * moves the SAME card to that row quickly (no content fade), so sweeping down the list is
  * smooth and two cards never overlap. Desktop pointer only.
  */
 const OPEN_DELAY_MS = 500;
@@ -124,15 +124,11 @@ export function TreeHoverPreviewHost() {
           animate="shown"
           exit="hidden"
           layout="position"
-          transition={{ layout: settle }}
+          transition={{ layout: quick }}
           style={{ top: target.top, left: target.left }}
           className="pointer-events-none fixed z-overlay w-80 max-w-[calc(100vw-var(--space-4))] rounded-xl border border-border bg-surface-raised p-space-3 text-foreground shadow-ui-md dark:bg-surface-panel"
         >
-          <AnimatePresence mode="popLayout" initial={false}>
-            <m.div key={target.key} data-tree-row-preview variants={fade} initial="hidden" animate="shown" exit="hidden">
-              {target.preview}
-            </m.div>
-          </AnimatePresence>
+          <div data-tree-row-preview>{target.preview}</div>
         </m.div>
       )}
     </AnimatePresence>,
