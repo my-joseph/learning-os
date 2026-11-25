@@ -12,7 +12,7 @@ import {
   JSON_EXTENSIONS,
   SOURCE_EXTENSIONS,
 } from "@/lib/paths";
-import { cleanCurriculumTitle } from "@/lib/drillGrouping";
+import { cleanCurriculumTitle, parseCurriculumCodes } from "@/lib/drillGrouping";
 import { readProgress } from "@/lib/progress";
 import { isLabId } from "@/lib/routes";
 import {
@@ -228,19 +228,21 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
         typeof raw.title === "string" && raw.title.trim()
           ? raw.title.trim()
           : labId;
-      const chapterCode =
+      const rawChapterCode =
         typeof raw.chapterCode === "string" ? raw.chapterCode.trim() : "";
       const unitsUsed = Array.isArray(raw.unitsUsed)
         ? raw.unitsUsed.filter((u): u is string => typeof u === "string")
         : [];
       const unitCode =
         (typeof raw.unitCode === "string" && raw.unitCode.trim()) ||
-        chapterCode ||
+        rawChapterCode ||
         unitsUsed[0] ||
         "";
-      const topicCode =
-        (typeof raw.topicCode === "string" && raw.topicCode.trim()) ||
-        (chapterCode ? chapterCode.split("-").slice(0, 2).join("-") : "");
+      const { topicCode, chapterCode } = parseCurriculumCodes(
+        unitCode,
+        typeof raw.topicCode === "string" ? raw.topicCode : undefined,
+        rawChapterCode
+      );
       const kind =
         typeof raw.kind === "string" && raw.kind.trim()
           ? raw.kind.trim()
@@ -267,12 +269,17 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
         cleanCurriculumTitle(idMapTitles.get(chapterCode)) || chapterCode;
       const topicTitle =
         cleanCurriculumTitle(idMapTitles.get(topicCode)) || topicCode;
+      const unitTitle =
+        unitCode && unitCode !== chapterCode
+          ? cleanCurriculumTitle(idMapTitles.get(unitCode)) || unitCode
+          : undefined;
 
       items.push({
         id: labId,
         labId,
         title,
         unitCode,
+        ...(unitTitle ? { unitTitle } : {}),
         chapterCode,
         chapterTitle,
         topicCode,

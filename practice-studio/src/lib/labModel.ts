@@ -74,6 +74,7 @@ export interface LabListItem {
   labId: string;
   title: string;
   unitCode: string;
+  unitTitle?: string;
   chapterCode: string;
   chapterTitle?: string;
   topicCode: string;
