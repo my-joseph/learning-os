@@ -3,7 +3,9 @@
 Each surface has a different job. Use these principles to carry the learner's taste across the Studio without making every screen look the same. Use existing design-system tokens and shared component variants; get the learner's approval before adding colors.
 
 - Keep surfaces calm and low-noise; give the active task the strongest hierarchy. See: [approved search palette](references/studio-search-palette-approved.png), [search palette reference](references/search-palette.png).
-- Let secondary text and its icons start muted, then become primary together on hover or selection. See: [search row hover](references/search-row-hover.png), [approved hover](references/studio-search-hover-approved.png).
+- Build every surface from the shared components and their variants (size, tone, state); a new look is a new variant of a shared component, not a one-off style. See: [approved search palette](references/studio-search-palette-approved.png).
+- State changes (hover, focus, selected, pressed) change colour, background or opacity only — never font weight, font size, padding or border width — so nothing shifts or reflows. See: [approved search palette](references/studio-search-palette-approved.png).
+- Colours come from semantic tokens (e.g. `foreground`, `foreground-secondary`, status tokens), never hard-coded greys or hex; adjusting a tone means changing the token, which updates every surface. 
 - Show secondary affordances such as `⌘K` hints and `⋯` menus only on hover or keyboard focus. See: [search row hover](references/search-row-hover.png), [row menu](references/search-row-menu.png), [approved row menu](references/studio-row-menu-approved.png).
 - Keep density compact but breathable: use 28/32/36 px control and row sizes where the surface calls for them, and preserve 44 px touch targets. See: [sidebar sections](references/prg-sidebar-sections.png), [approved row menu](references/studio-row-menu-approved.png).
 - Align related controls to one left edge per surface; desktop sidebar toggles and workspace tabs share a 32 px height, while touch controls remain at least 44 px. See: [sidebar sections](references/prg-sidebar-sections.png).
