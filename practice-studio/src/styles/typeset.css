@@ -138,8 +138,8 @@
   min-width: 100%;
 }
 
+/* Keep KaTeX's own size (1.21em, as before Typeset): the learner found inherited 1em math too small. */
 .typeset .inline-math > .katex {
-  font-size: inherit;
   line-height: var(--leading-none);
 }
 
