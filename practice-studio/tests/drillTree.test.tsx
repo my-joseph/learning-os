@@ -328,7 +328,7 @@ assert.doesNotMatch(
 // Set 3 (current, no notes, not due) renders StatusDot directly followed by label "Set 3"
 assert.match(
   mathTreeHtml,
-  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="[^"]*font-semibold[^>]*>Set 3<\/span>/
+  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="[^"]*font-medium[^>]*>Set 3<\/span>/
 );
 // Set 4 (hasNotes: true) renders StatusDot followed by NoteBadge
 assert.match(mathTreeHtml, /<span class="sr-only">Needs retry<\/span>/);
@@ -409,8 +409,8 @@ for (const row of Array.from(sidebarRows)) {
   assert.ok(row.classList.contains("h-control-sm"));
   assert.ok(row.classList.contains("rounded-md"));
   assert.ok(action, "every tree row has an independent menu button");
-  assert.ok(title.classList.contains(selected ? "font-semibold" : "font-normal"));
-  assert.ok(!title.classList.contains(selected ? "font-normal" : "font-semibold"));
+  assert.ok(title.classList.contains(selected ? "font-medium" : "font-normal"));
+  assert.ok(!title.classList.contains(selected ? "font-normal" : "font-medium"));
   const depth = Number(treeItem.getAttribute("aria-level"));
   assert.ok(treeItem.classList.contains(["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"][depth - 1]));
   assert.ok(treeItem.classList.contains(depth === 1 ? "text-foreground" : "text-foreground-control"));
@@ -423,7 +423,7 @@ assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"].size-touch'));
 assert.ok(selectedLeaf.querySelector('button[aria-label$="Set 3"]')?.classList.contains("lg:size-control-xs"));
 assert.match(sidebarTreeHtml, /aria-level="1" aria-expanded="true"/);
 assert.doesNotMatch(sidebarTreeHtml, /role="group" class="ml-space-3/, "sidebar branches keep a shared left edge");
-assert.match(sidebarTreeHtml, /bg-transparent[^>]*>2<\/span>/, "sidebar counts have no fill");
+assert.doesNotMatch(sidebarTreeHtml, /tabular-nums[^>]*>2<\/span>/, "sidebar tree rows show no child counts");
 
 const depthTokens = ["pl-space-1_5", "pl-space-4", "pl-tree-depth-3", "pl-control-md"];
 for (const depth of [1, 2, 3, 4] as const) {

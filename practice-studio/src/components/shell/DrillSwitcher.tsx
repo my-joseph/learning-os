@@ -37,6 +37,7 @@ import {
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
 import { statusTone } from "@/lib/statusTone";
 import { ListRow } from "@/components/ui/ListRow";
+import { TreeHoverPreviewHost } from "@/components/ui/TreeHoverPreview";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { plainTitle } from "@/lib/titleText";
@@ -829,7 +830,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           className={kind === "topic" ? "text-foreground" : undefined}
           leading={leading}
           label={label}
-          trailing={trailing}
           treeRow={{
             ...sidebarRowDetails(nodeId, code, label),
             surfaceProps: { "data-sidebar-row": kind },
@@ -923,7 +923,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           }`}
         >
           {leading}
-          <span className={`text-xs truncate min-w-0 flex-1 text-foreground-control ${isCurrent ? "font-semibold" : "font-normal"}`}>
+          <span className={`text-xs truncate min-w-0 flex-1 text-foreground-control ${isCurrent ? "font-medium" : "font-normal"}`}>
             {rowLabel}
           </span>
         </button>
@@ -1392,6 +1392,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         className="flex-1 min-h-0 flex flex-col px-space-2_5 pt-space-2_5 pb-space-1_5"
       >
         {pickerBody}
+        <TreeHoverPreviewHost />
       </div>
     );
   }
