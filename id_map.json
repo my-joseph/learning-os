@@ -2336,6 +2336,10 @@
     "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
     "title": "DNS (Domain Name System)"
   },
+  "DRL-MTH-T02-C01-U01-05": {
+    "id": "41e3818f-8ba0-81d1-bb72-d55f8e69c4b9",
+    "title": "Complex Numbers — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
   "LAB-PRG-T01-C03-01": {
     "id": "41b3818f-8ba0-81fa-95ad-db5906705357",
     "title": "LRUCache & TreeIndex"
@@ -2380,10 +2384,6 @@
     "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
     "title": "Map, Set & Hashing Patterns — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   },
-  "DRL-MTH-T02-C04-U05-01": {
-    "id": "41b3818f-8ba0-8123-8f5d-ebc25452d34e",
-    "title": "Zeros of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
-  },
   "DRL-PRG-T01-C02-U08-01": {
     "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
     "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
@@ -2411,10 +2411,6 @@
   "DRL-MTH-T02-C04-U01-01": {
     "id": "41a3818f-8ba0-81b1-b9f0-d3b71c2ce666",
     "title": "Quadratic Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T02-C03-U03-01": {
-    "id": "41a3818f-8ba0-8165-a608-eb5dca68fc63",
-    "title": "Fitting Linear Models to Data — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
   },
   "DRL-PRG-T01-C02-U05-01": {
     "id": "41a3818f-8ba0-8117-a145-e88dc9c7b3e3",
@@ -2455,10 +2451,6 @@
   "DRL-PRG-T02-C01-U03-01": {
     "id": "41a3818f-8ba0-81ee-bb5c-cbca61399f37",
     "title": "State and Event Handling — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C02-U05-01": {
-    "id": "41a3818f-8ba0-8189-9f1d-d959ea793885",
-    "title": "Transformations of Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
   },
   "DRL-PRG-T01-C02-U02-01": {
     "id": "41a3818f-8ba0-81b1-9272-ea8c21285dd4",
@@ -2575,9 +2567,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C01-U01-05": {
-    "id": "41e3818f-8ba0-81d1-bb72-d55f8e69c4b9",
-    "title": "Complex Numbers — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
   }
 }
