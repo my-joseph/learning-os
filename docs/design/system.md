@@ -301,12 +301,12 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
-| arbitrary utilities | 183 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]` |
-| raw neutral text utilities | 688 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| arbitrary utilities | 179 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]` |
+| raw neutral text utilities | 654 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 39 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
-| other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
+| other raw colours | 13 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
 | inline values | 386 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
-| CSS literals | 35 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1343** | |
+| CSS literals | 38 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
+| **Total** | **1309** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.
