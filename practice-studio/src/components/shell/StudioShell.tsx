@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useId, useRef, useCallback } from "react";
+import React, { useState, useEffect, useId, useRef, useCallback, useMemo } from "react";
 import { m } from "motion/react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { SyncState } from "@/hooks/useProgressSync";
 import type { LabListItem } from "@/lib/labModel";
-import { DrillFilter, PracticeStatusOverride, StatusMessage, ViewMode } from "@/hooks/types";
+import { PracticeStatusOverride, StatusMessage, ViewMode } from "@/hooks/types";
 import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { settle } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { buildSearchEntries } from "@/lib/studioSearch";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { ToastStack } from "@/components/ui/ToastStack";
 import {
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/shadcn/Drawer";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidebar } from "./StudioSidebar";
+import { StudioSearchPalette, useStudioSearchShortcut } from "./StudioSearchPalette";
 import { StudioSidePanel } from "./StudioSidePanel";
 import { GeneratePopover } from "./GeneratePopover";
 
@@ -43,13 +45,13 @@ interface StudioShellProps {
   onResetAll: () => void;
   // DrillSwitcher & list
   drills: DrillListItem[];
-  allWorkspaceDrills?: DrillListItem[];
   labs?: LabListItem[];
   selectedDrillId: string;
-  drillSearch: string;
-  onSearchChange: (value: string) => void;
-  drillFilter: DrillFilter;
-  onFilterChange: (filter: DrillFilter) => void;
+  searchDrills: DrillListItem[];
+  searchLabs: LabListItem[];
+  searchLoading: boolean;
+  searchLoadError: boolean;
+  onSearchNavigate: (href: string) => void;
   onSelectDrill: (drillId: string) => void;
   onResetDrill?: (drillId: string) => void;
   onDeleteDrill?: (drillId: string) => void;
@@ -84,13 +86,13 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onToggleTheme,
   onResetAll,
   drills,
-  allWorkspaceDrills,
   labs = [],
   selectedDrillId,
-  drillSearch,
-  onSearchChange,
-  drillFilter,
-  onFilterChange,
+  searchDrills,
+  searchLabs,
+  searchLoading,
+  searchLoadError,
+  onSearchNavigate,
   onSelectDrill,
   onResetDrill,
   onDeleteDrill,
@@ -109,6 +111,20 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const [rightSettledClosed, setRightSettledClosed] = useState(false);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchPrevFocusRef = useRef<HTMLElement | null>(null);
+  const handleOpenSearch = useCallback(() => {
+    if (isSearchOpen) return;
+    searchPrevFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    setIsSearchOpen(true);
+  }, [isSearchOpen]);
+  const searchShortcut = useStudioSearchShortcut(handleOpenSearch);
+  const searchEntries = useMemo(
+    () => buildSearchEntries(searchDrills, searchLabs),
+    [searchDrills, searchLabs]
+  );
   const [pillWorkspace, setPillWorkspace] = useState<Workspace>(workspace);
   useEffect(() => setPillWorkspace(workspace), [workspace]);
 
@@ -174,6 +190,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     estimatedMinutes,
     nextDueDate,
     dueUnitCodes,
+    searchDueIds,
+    searchDueLoading,
+    searchDueError,
     currentUnitMastery,
     dueLoading,
     dueError,
@@ -214,10 +233,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         labs={labs}
         dueUnitCodes={dueUnitCodes}
         selectedDrillId={selectedDrillId}
-        drillSearch={drillSearch}
-        onSearchChange={onSearchChange}
-        drillFilter={drillFilter}
-        onFilterChange={onFilterChange}
+        searchShortcut={searchShortcut}
+        onOpenSearch={handleOpenSearch}
         onSelectDrill={onSelectDrill}
         onResetDrill={onResetDrill}
         onDeleteDrill={onDeleteDrill}
@@ -241,6 +258,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           isSidebarOpen={isSidebarOpen}
           onOpenDesktopSidebar={() => setSidebarOpen(true)}
           onOpenSidebarDrawer={() => setIsSidebarDrawerOpen(true)}
+          searchShortcut={searchShortcut}
+          onOpenSearch={handleOpenSearch}
           isRightPanelOpen={isRightPanelOpen}
           onToggleRightPanel={toggleRightPanel}
           onOpenSideDrawer={() => setIsSideDrawerOpen(true)}
@@ -324,7 +343,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         isOpen={showGenPopover}
         onClose={() => onShowGenPopoverChange(false)}
         workspace={workspace}
-        drills={allWorkspaceDrills ?? drills}
+        drills={drills}
         currentDrill={currentDrill}
         onGenerated={onGenerated}
         onStatusChange={onStatusChange}
@@ -377,10 +396,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             labs={labs}
             dueUnitCodes={dueUnitCodes}
             selectedDrillId={selectedDrillId}
-            drillSearch={drillSearch}
-            onSearchChange={onSearchChange}
-            drillFilter={drillFilter}
-            onFilterChange={onFilterChange}
+            searchShortcut={searchShortcut}
+            onOpenSearch={handleOpenSearch}
             onSelectDrill={(id) => {
               setIsSidebarDrawerOpen(false);
               onSelectDrill(id);
@@ -450,6 +467,36 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           />
         </DrawerContent>
       </Drawer>
+
+      <StudioSearchPalette
+        open={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          const previous = searchPrevFocusRef.current;
+          searchPrevFocusRef.current = null;
+          if (previous?.isConnected) previous.focus();
+        }}
+        workspace={workspace}
+        entries={searchEntries}
+        dueIds={searchDueIds}
+        loading={searchLoading}
+        loadError={searchLoadError}
+        dueLoading={searchDueLoading}
+        dueError={searchDueError}
+        reviewHref={`/review?scope=subject:${workspace === "code" ? "PRG" : "MTH"}`}
+        switchHref={workspace === "code" ? mathHref : codeHref}
+        onReviewSync={currentDrill && !isLoadingDrill && !drillNotFound ? () => {
+          setIsSidebarDrawerOpen(false);
+          setIsSideDrawerOpen(false);
+          onToggleViewMode("review");
+        } : undefined}
+        onNavigate={(href) => {
+          setIsSidebarDrawerOpen(false);
+          setIsSideDrawerOpen(false);
+          onSearchNavigate(href);
+        }}
+      />
     </div>
   );
 };

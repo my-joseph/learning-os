@@ -758,10 +758,8 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       ]}
       labs={[]}
       selectedDrillId="DRL-MTH-T01-C01-01"
-      drillSearch=""
-      onSearchChange={noop}
-      drillFilter="ALL"
-      onFilterChange={noop}
+      searchShortcut="⌘K"
+      onOpenSearch={noop}
       onSelectDrill={noop}
     />
   );
@@ -771,6 +769,9 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.doesNotMatch(openSidebarHtml, />MTH</);
   assert.doesNotMatch(openSidebarHtml, />PRG</);
   assert.match(openSidebarHtml, /aria-label="Collapse sidebar"/);
+  assert.match(openSidebarHtml, /data-sidebar-row="search"/);
+  assert.match(openSidebarHtml, /⌘K/);
+  assert.doesNotMatch(openSidebarHtml, /aria-label="Search practice drills"/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Generate drill set"/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Reset all/);
 
@@ -787,10 +788,8 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       drills={[]}
       labs={[]}
       selectedDrillId="DRL-MTH-T01-C01-01"
-      drillSearch=""
-      onSearchChange={noop}
-      drillFilter="ALL"
-      onFilterChange={noop}
+      searchShortcut="⌘K"
+      onOpenSearch={noop}
       onSelectDrill={noop}
     />
   );
@@ -811,10 +810,8 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       drills={[]}
       labs={[]}
       selectedDrillId="DRL-MTH-T01-C01-01"
-      drillSearch=""
-      onSearchChange={noop}
-      drillFilter="ALL"
-      onFilterChange={noop}
+      searchShortcut="⌘K"
+      onOpenSearch={noop}
       onSelectDrill={noop}
     />
   );
@@ -935,10 +932,11 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     onResetAll: noop,
     drills: [],
     selectedDrillId: "DRL-MTH-T01-C01-01",
-    drillSearch: "",
-    onSearchChange: noop,
-    drillFilter: "ALL" as const,
-    onFilterChange: noop,
+    searchDrills: [],
+    searchLabs: [],
+    searchLoading: false,
+    searchLoadError: false,
+    onSearchNavigate: noop,
     onSelectDrill: noop,
     showGenPopover: false,
     onShowGenPopoverChange: noop,

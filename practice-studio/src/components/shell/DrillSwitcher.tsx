@@ -54,6 +54,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/shadcn/Popover";
 
+const noop = () => {};
+
 type PickerTab = "drills" | "labs";
 export type PrgSidebarSection = "labs" | "drills";
 
@@ -141,10 +143,10 @@ interface DrillSwitcherProps {
   labs?: LabListItem[];
   dueUnitCodes?: readonly string[];
   selectedDrillId: string;
-  drillSearch: string;
-  onSearchChange: (value: string) => void;
-  drillFilter: DrillFilter;
-  onFilterChange: (filter: DrillFilter) => void;
+  drillSearch?: string;
+  onSearchChange?: (value: string) => void;
+  drillFilter?: DrillFilter;
+  onFilterChange?: (filter: DrillFilter) => void;
   onSelectDrill: (drillId: string) => void;
   onResetDrill?: (drillId: string) => void;
   onDeleteDrill?: (drillId: string) => void;
@@ -368,10 +370,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   labs = [],
   dueUnitCodes = [],
   selectedDrillId,
-  drillSearch,
-  onSearchChange,
-  drillFilter,
-  onFilterChange,
+  drillSearch = "",
+  onSearchChange = noop,
+  drillFilter = "ALL",
+  onFilterChange = noop,
   onSelectDrill,
   onResetDrill = () => {},
   onDeleteDrill = () => {},
@@ -974,49 +976,38 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
 
   const pickerBody = (
     <>
-            {/* Top Search Input */}
-            <div
-              className={`shrink-0 flex items-center gap-2 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25 ${
-                isSidebar
-                  ? "bg-white dark:bg-zinc-900"
-                  : "bg-surface-panel dark:bg-zinc-900"
-              }`}
-            >
-              <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <input
-                ref={bindSearchInputRef}
-                type="text"
-                value={drillSearch}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={
-                  isCodeWorkspace
-                    ? "Search drills, labs, chapters, or IDs..."
-                    : "Search units, chapters, or drill IDs..."
-                }
-                aria-label="Search practice drills"
-                className={`w-full bg-transparent ${isSidebar ? "text-sm" : "text-xs"} text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none ${
-                  isSidebar ? "min-h-[36px] lg:min-h-9" : ""
-                }`}
-                autoFocus={!isSidebar}
-              />
-              {drillSearch && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSearchChange("");
-                    searchInputRef.current?.focus();
-                  }}
-                  aria-label="Clear search"
-                  className={
-                    isSidebar
-                      ? "inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-9 lg:min-w-9 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                      : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+            {!isSidebar && (
+              <div className="mb-2 flex shrink-0 items-center gap-2 rounded-lg border border-zinc-200 bg-surface-panel px-2.5 py-1.5 transition-colors focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/25">
+                <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                <input
+                  ref={bindSearchInputRef}
+                  type="text"
+                  value={drillSearch}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder={
+                    isCodeWorkspace
+                      ? "Search drills, labs, chapters, or IDs..."
+                      : "Search units, chapters, or drill IDs..."
                   }
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+                  aria-label="Search practice drills"
+                  className="w-full bg-transparent text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none dark:text-zinc-100"
+                  autoFocus
+                />
+                {drillSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSearchChange("");
+                      searchInputRef.current?.focus();
+                    }}
+                    aria-label="Clear search"
+                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Legacy dropdown mode keeps Tabs + global tree controls; sidebar uses unified scrolling sections. */}
             {!isSidebar && <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -1241,7 +1232,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               {isTreeEmpty ? (
                 <div className="py-8 text-center space-y-2">
                   <p className={`${isSidebar ? "text-sm" : "text-xs"} text-zinc-500 dark:text-zinc-400`}>
-                    {isUnifiedCodeSidebar
+                    {isSidebar && !isFilteringOrSearching
+                      ? "No drills yet"
+                      : isUnifiedCodeSidebar
                       ? "No drills or labs match the current search or filter."
                       : isCodeWorkspace && activeTab === "labs"
                         ? "No labs match the current search or filter."

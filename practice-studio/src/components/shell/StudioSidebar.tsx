@@ -5,7 +5,6 @@ import { m } from "motion/react";
 import { PanelLeft } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
-import { DrillFilter } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
 import { settle } from "@/lib/motion";
 import { cn } from "@/lib/cn";
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/shadcn/Tooltip";
 import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { DrillSwitcher } from "./DrillSwitcher";
+import { StudioSearchTrigger } from "./StudioSearchPalette";
 
 const noop = () => {};
 
@@ -33,10 +33,8 @@ export interface StudioSidebarProps {
   labs?: LabListItem[];
   dueUnitCodes?: readonly string[];
   selectedDrillId: string;
-  drillSearch: string;
-  onSearchChange: (value: string) => void;
-  drillFilter: DrillFilter;
-  onFilterChange: (filter: DrillFilter) => void;
+  searchShortcut: string;
+  onOpenSearch: () => void;
   onSelectDrill: (drillId: string) => void;
   onResetDrill?: (drillId: string) => void;
   onDeleteDrill?: (drillId: string) => void;
@@ -58,10 +56,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
   labs = [],
   dueUnitCodes = [],
   selectedDrillId,
-  drillSearch,
-  onSearchChange,
-  drillFilter,
-  onFilterChange,
+  searchShortcut,
+  onOpenSearch,
   onSelectDrill,
   onResetDrill,
   onDeleteDrill,
@@ -126,6 +122,9 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             codeHref={codeHref}
           />
         </div>
+        <div className="shrink-0 pl-2.5 pr-3.5 pt-2.5">
+          <StudioSearchTrigger shortcut={searchShortcut} onClick={onOpenSearch} />
+        </div>
         <div className="flex-1 min-h-0 flex flex-col">
           <DrillSwitcher
             mode="sidebar"
@@ -139,10 +138,6 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             labs={labs}
             dueUnitCodes={dueUnitCodes}
             selectedDrillId={selectedDrillId}
-            drillSearch={drillSearch}
-            onSearchChange={onSearchChange}
-            drillFilter={drillFilter}
-            onFilterChange={onFilterChange}
             onSelectDrill={onSelectDrill}
             onResetDrill={onResetDrill}
             onDeleteDrill={onDeleteDrill}
@@ -198,6 +193,9 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
         </div>
 
         {/* Curriculum Tree body */}
+        <div className="shrink-0 pl-2.5 pr-3.5 pt-2.5">
+          <StudioSearchTrigger shortcut={searchShortcut} onClick={onOpenSearch} />
+        </div>
         <div className="flex-1 min-h-0 flex flex-col">
           <DrillSwitcher
             mode="sidebar"
@@ -211,10 +209,6 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             labs={labs}
             dueUnitCodes={dueUnitCodes}
             selectedDrillId={selectedDrillId}
-            drillSearch={drillSearch}
-            onSearchChange={onSearchChange}
-            drillFilter={drillFilter}
-            onFilterChange={onFilterChange}
             onSelectDrill={onSelectDrill}
             onResetDrill={onResetDrill}
             onDeleteDrill={onDeleteDrill}

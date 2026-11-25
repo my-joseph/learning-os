@@ -31,7 +31,7 @@ export function readLastDrillId(workspace?: Workspace): string | null {
 }
 
 /** Read the MRU list of recently opened drill/lab IDs for a workspace from localStorage. */
-function readRecentDrillIds(workspace: Workspace): string[] {
+export function readRecentDrillIds(workspace: Workspace): string[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(`${RECENT_DRILLS_STORAGE_PREFIX}${workspace}`);

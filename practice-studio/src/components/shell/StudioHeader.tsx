@@ -23,6 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/shadcn/Tooltip";
 
+import { StudioSearchTrigger } from "./StudioSearchPalette";
+
 interface StudioHeaderProps {
   workspace: Workspace;
   currentDrill: DrillDocument | null;
@@ -34,6 +36,8 @@ interface StudioHeaderProps {
   isSidebarOpen: boolean;
   onOpenDesktopSidebar: () => void;
   onOpenSidebarDrawer: () => void;
+  searchShortcut?: string;
+  onOpenSearch?: () => void;
   isRightPanelOpen: boolean;
   onToggleRightPanel?: () => void;
   onOpenSideDrawer?: () => void;
@@ -52,6 +56,8 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   isSidebarOpen,
   onOpenDesktopSidebar,
   onOpenSidebarDrawer,
+  searchShortcut = "Ctrl K",
+  onOpenSearch,
   isRightPanelOpen,
   onToggleRightPanel,
   onOpenSideDrawer,
@@ -130,6 +136,15 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             </m.div>
           )}
         </AnimatePresence>
+
+        {onOpenSearch && (
+          <StudioSearchTrigger
+            compact
+            shortcut={searchShortcut}
+            onClick={onOpenSearch}
+            className={isSidebarOpen ? "lg:hidden" : undefined}
+          />
+        )}
 
         <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-200 truncate pl-0.5">
           {drillTitle}

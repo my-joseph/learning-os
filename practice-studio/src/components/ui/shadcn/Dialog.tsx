@@ -48,17 +48,23 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 export const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { position?: "center" | "top" }
+>(({ className, children, position = "center", ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+    <div className={cn(
+      "fixed inset-0 z-50 flex",
+      position === "top"
+        ? "h-dvh items-start justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] lg:pt-[max(12dvh,env(safe-area-inset-top))]"
+        : "items-center justify-center p-4",
+      "pointer-events-none"
+    )}>
       <DialogPrimitive.Content ref={ref} asChild {...props}>
         <m.div
           variants={dialogCard}
           initial="hidden"
           animate="shown"
-          className={cn("pointer-events-auto relative w-full max-w-lg rounded-xl border border-zinc-200 bg-background p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800", className)}
+          className={cn("pointer-events-auto relative w-full max-w-lg rounded-xl border border-zinc-200 bg-background p-6 text-foreground shadow-xl motion-reduce:transition-none dark:border-zinc-800", position === "top" && "origin-top", className)}
         >
           {children}
           <DialogPrimitive.Close aria-label="Close dialog" className="absolute right-3 top-3 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400">

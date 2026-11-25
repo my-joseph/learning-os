@@ -14,7 +14,7 @@ interface ReviewItemsApiPayload {
   bySubject?: { MTH?: number; PRG?: number };
   estimatedMinutes?: number;
   nextDueDate?: string | null;
-  items?: Array<{ unitCode?: string }>;
+  items?: Array<{ drillId?: string; unitCode?: string }>;
 }
 
 export function useSidePanelData(
@@ -31,8 +31,12 @@ export function useSidePanelData(
   const [estimatedMinutes, setEstimatedMinutes] = useState<number>(0);
   const [nextDueDate, setNextDueDate] = useState<string | null>(null);
   const [dueUnitCodes, setDueUnitCodes] = useState<string[]>([]);
+  const [dueReviewDrillIds, setDueReviewDrillIds] = useState<string[]>([]);
+  const [dueTodayUnitCodes, setDueTodayUnitCodes] = useState<string[]>([]);
   const [dueLoading, setDueLoading] = useState(true);
   const [dueError, setDueError] = useState<string | null>(null);
+  const [unitScheduleLoading, setUnitScheduleLoading] = useState(true);
+  const [unitScheduleError, setUnitScheduleError] = useState(false);
 
   const [unitMasteryByCode, setUnitMasteryByCode] = useState<
     Record<string, UnitMasteryContext>
@@ -48,6 +52,8 @@ export function useSidePanelData(
     let cancelled = false;
     setDueLoading(true);
     setDueError(null);
+    setUnitScheduleLoading(true);
+    setUnitScheduleError(false);
 
     fetch(`/api/review-items?limit=8&scope=${encodeURIComponent(`subject:${workspaceSubject}`)}`, {
       cache: "no-store",
@@ -81,6 +87,9 @@ export function useSidePanelData(
         setEstimatedMinutes(Math.max(0, minutes));
         setNextDueDate(typeof data.nextDueDate === "string" ? data.nextDueDate : null);
         setDueUnitCodes(codes);
+        setDueReviewDrillIds(items.flatMap((item) =>
+          typeof item?.drillId === "string" ? [item.drillId] : []
+        ));
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -89,25 +98,37 @@ export function useSidePanelData(
           setOtherWorkspaceDueCount(0);
           setEstimatedMinutes(0);
           setDueUnitCodes([]);
+          setDueReviewDrillIds([]);
         }
       })
       .finally(() => {
         if (!cancelled) setDueLoading(false);
       });
 
-    // Unit mastery dots & cap reason are context only (never used for counts or to-do lists).
+    // Unit schedules also feed Search. The side-panel queue counts item-level reviews.
     fetch("/api/due-today", { cache: "no-store" })
       .then(async (res) => {
-        if (!res.ok) return null;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return (await res.json()) as DueTodayResponse;
       })
       .then((data) => {
+        if (!cancelled) {
+          setDueTodayUnitCodes(Array.isArray(data?.units)
+            ? data.units.map(({ unitCode }) => unitCode)
+            : []);
+        }
         if (!cancelled && data?.unitMastery && typeof data.unitMastery === "object") {
           setUnitMasteryByCode(data.unitMastery);
         }
       })
       .catch(() => {
-        // Mastery context is optional; ignore transient failures.
+        if (!cancelled) {
+          setDueTodayUnitCodes([]);
+          setUnitScheduleError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setUnitScheduleLoading(false);
       });
 
     return () => {
@@ -170,6 +191,9 @@ export function useSidePanelData(
     estimatedMinutes,
     nextDueDate,
     dueUnitCodes,
+    searchDueIds: [...dueReviewDrillIds, ...dueTodayUnitCodes],
+    searchDueLoading: dueLoading || unitScheduleLoading,
+    searchDueError: Boolean(dueError) || unitScheduleError,
     currentUnitMastery,
     dueLoading,
     dueError,
