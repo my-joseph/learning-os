@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { popover, presence, settle } from "@/lib/motion";
 import { Reveal } from "@/components/motion/Reveal";
@@ -23,6 +23,7 @@ import {
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import {
+  buildFlatLabTreeRows,
   buildPickerSections,
   buildVisibleTreeRows,
   collectAllTreeCodes,
@@ -36,8 +37,10 @@ import {
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
   resolveTreeKeyAction,
+  sortLabPickerItems,
   type PickerItem,
   type PickerStatus,
+  type PickerTopicGroup,
   type TreeNavKey,
   type VisibleTreeRow,
 } from "@/lib/drillGrouping";
@@ -54,6 +57,78 @@ import {
 } from "@/components/ui/shadcn/Popover";
 
 type PickerTab = "drills" | "labs";
+export type PrgSidebarSection = "labs" | "drills";
+
+export const PRG_SECTION_STORAGE_KEYS: Record<PrgSidebarSection, string> = {
+  labs: "practice-studio:prg-sidebar-section:labs",
+  drills: "practice-studio:prg-sidebar-section:drills",
+};
+
+/** Read a PRG sidebar section's expanded state from localStorage (defaults to true). */
+export function readSidebarSectionExpanded(section: PrgSidebarSection): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const saved = window.localStorage.getItem(PRG_SECTION_STORAGE_KEYS[section]);
+    if (saved === "false") return false;
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+/** Persist a PRG sidebar section's expanded state safely to localStorage. */
+export function writeSidebarSectionExpanded(
+  section: PrgSidebarSection,
+  expanded: boolean
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PRG_SECTION_STORAGE_KEYS[section], String(expanded));
+  } catch {
+    // ignore localStorage access/quota failures
+  }
+}
+
+function CollapsibleSidebarSection({
+  section,
+  label,
+  expanded,
+  onToggle,
+  panelId,
+  children,
+}: {
+  section: PrgSidebarSection;
+  label: string;
+  expanded: boolean;
+  onToggle: () => void;
+  panelId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div data-sidebar-section={section} className="space-y-0.5">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={onToggle}
+        className="w-full min-h-[44px] lg:min-h-0 lg:py-1 flex items-center gap-1 px-1.5 rounded-md text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-400"
+      >
+        <span>{label}</span>
+        <ChevronRight
+          className={`w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+            expanded ? "rotate-90" : ""
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+      <div id={panelId} hidden={!expanded}>
+        <Reveal show={expanded}>
+          <div className="space-y-0.5 pt-0.5">{children}</div>
+        </Reveal>
+      </div>
+    </div>
+  );
+}
 
 interface DrillSwitcherProps {
   mode?: "dropdown" | "sidebar";
@@ -307,14 +382,41 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const isCodeWorkspace =
     workspace === "code" ||
     (workspace === undefined && (labs.length > 0 || subjectOf(selectedDrillId) === "code"));
+  const isUnifiedCodeSidebar = isSidebar && isCodeWorkspace;
 
   const defaultTab: PickerTab =
     isCodeWorkspace && isLabId(selectedDrillId) ? "labs" : "drills";
 
   const [activeTab, setActiveTab] = useState<PickerTab>(defaultTab);
+  const [isLabsSectionExpanded, setIsLabsSectionExpanded] = useState(true);
+  const [isDrillsSectionExpanded, setIsDrillsSectionExpanded] = useState(true);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [openActionNodeId, setOpenActionNodeId] = useState<string | null>(null);
+  const labsPanelId = useId();
+  const drillsPanelId = useId();
+
+  useEffect(() => {
+    if (!isUnifiedCodeSidebar) return;
+    setIsLabsSectionExpanded(readSidebarSectionExpanded("labs"));
+    setIsDrillsSectionExpanded(readSidebarSectionExpanded("drills"));
+  }, [isUnifiedCodeSidebar]);
+
+  const toggleSection = (section: PrgSidebarSection) => {
+    if (section === "labs") {
+      setIsLabsSectionExpanded((prev) => {
+        const next = !prev;
+        writeSidebarSectionExpanded("labs", next);
+        return next;
+      });
+    } else {
+      setIsDrillsSectionExpanded((prev) => {
+        const next = !prev;
+        writeSidebarSectionExpanded("drills", next);
+        return next;
+      });
+    }
+  };
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
@@ -350,16 +452,29 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const drillItems = useMemo(() => normalizeDrillPickerItems(drills), [drills]);
   const labItems = useMemo(() => normalizeLabPickerItems(labs), [labs]);
 
+  const filteredSortedLabs = useMemo(
+    () =>
+      isUnifiedCodeSidebar
+        ? sortLabPickerItems(filterPickerItems(labItems, drillSearch, drillFilter))
+        : [],
+    [isUnifiedCodeSidebar, labItems, drillSearch, drillFilter]
+  );
+
   const activeItems = useMemo(
-    () => (isCodeWorkspace && activeTab === "labs" ? labItems : drillItems),
-    [isCodeWorkspace, activeTab, labItems, drillItems]
+    () =>
+      isUnifiedCodeSidebar
+        ? drillItems
+        : isCodeWorkspace && activeTab === "labs"
+          ? labItems
+          : drillItems,
+    [isUnifiedCodeSidebar, isCodeWorkspace, activeTab, labItems, drillItems]
   );
 
   const otherTabMatchCount = useMemo(() => {
-    if (!isCodeWorkspace || !drillSearch.trim()) return 0;
+    if (isUnifiedCodeSidebar || !isCodeWorkspace || !drillSearch.trim()) return 0;
     const otherItems = activeTab === "labs" ? drillItems : labItems;
     return filterPickerItems(otherItems, drillSearch, drillFilter).length;
-  }, [isCodeWorkspace, activeTab, drillItems, labItems, drillSearch, drillFilter]);
+  }, [isUnifiedCodeSidebar, isCodeWorkspace, activeTab, drillItems, labItems, drillSearch, drillFilter]);
 
   const sections = useMemo(
     () =>
@@ -372,6 +487,19 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       }),
     [activeItems, selectedDrillId, drillSearch, drillFilter]
   );
+
+  const isFilterActive = drillFilter !== "ALL";
+  const isFilteringOrSearching = sections.isSearching || isFilterActive;
+  const showLabsSection =
+    isUnifiedCodeSidebar && (!isFilteringOrSearching || filteredSortedLabs.length > 0);
+  const showDrillsSection =
+    isUnifiedCodeSidebar && (!isFilteringOrSearching || sections.topicGroups.length > 0);
+  const effectiveLabsExpanded = sections.isSearching
+    ? filteredSortedLabs.length > 0
+    : isLabsSectionExpanded;
+  const effectiveDrillsExpanded = sections.isSearching
+    ? sections.topicGroups.length > 0
+    : isDrillsSectionExpanded;
 
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(
     () => new Set(sections.defaultExpandedTopics)
@@ -388,27 +516,58 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     [sections.topicGroups]
   );
 
-  const visibleTreeRows = useMemo(
-    () =>
-      buildVisibleTreeRows({
-        topicGroups: sections.topicGroups,
-        currentId: selectedDrillId,
-        expandedTopics,
-        expandedChapters,
-        expandedUnits,
-        dueUnitCodes: dueUnitSet,
-        currentHasNotesOverride: currentDrillHasNotes,
-      }),
-    [
-      sections.topicGroups,
-      selectedDrillId,
+  const visibleTreeRows = useMemo(() => {
+    if (isUnifiedCodeSidebar) {
+      const rows: VisibleTreeRow[] = [];
+      if (showLabsSection && effectiveLabsExpanded) {
+        rows.push(
+          ...buildFlatLabTreeRows({
+            items: filteredSortedLabs,
+            currentId: selectedDrillId,
+            dueUnitCodes: dueUnitSet,
+            currentHasNotesOverride: currentDrillHasNotes,
+          })
+        );
+      }
+      if (showDrillsSection && effectiveDrillsExpanded) {
+        rows.push(
+          ...buildVisibleTreeRows({
+            topicGroups: sections.topicGroups,
+            currentId: selectedDrillId,
+            expandedTopics,
+            expandedChapters,
+            expandedUnits,
+            dueUnitCodes: dueUnitSet,
+            currentHasNotesOverride: currentDrillHasNotes,
+          })
+        );
+      }
+      return rows;
+    }
+    return buildVisibleTreeRows({
+      topicGroups: sections.topicGroups,
+      currentId: selectedDrillId,
       expandedTopics,
       expandedChapters,
       expandedUnits,
-      dueUnitSet,
-      currentDrillHasNotes,
-    ]
-  );
+      dueUnitCodes: dueUnitSet,
+      currentHasNotesOverride: currentDrillHasNotes,
+    });
+  }, [
+    isUnifiedCodeSidebar,
+    showLabsSection,
+    effectiveLabsExpanded,
+    filteredSortedLabs,
+    showDrillsSection,
+    effectiveDrillsExpanded,
+    sections.topicGroups,
+    selectedDrillId,
+    expandedTopics,
+    expandedChapters,
+    expandedUnits,
+    dueUnitSet,
+    currentDrillHasNotes,
+  ]);
 
   const rowByNodeId = useMemo(() => {
     const map = new Map<string, VisibleTreeRow>();
@@ -641,8 +800,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     ? dueUnitSet.has(currentPinnedItem.unitCode)
     : false;
 
-  const isTreeEmpty = sections.topicGroups.length === 0;
-  const isFilterActive = drillFilter !== "ALL";
+  const isTreeEmpty = isUnifiedCodeSidebar
+    ? !showLabsSection && !showDrillsSection
+    : sections.topicGroups.length === 0;
 
   const expandCollapseButtons = (
     <>
@@ -680,7 +840,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const renderLeafRow = (
     item: PickerItem,
     label: string,
-    level: 3 | 4,
+    level: 1 | 3 | 4,
     nodeId: string
   ) => {
     const isCurrent = item.id === selectedDrillId;
@@ -692,6 +852,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         ? item.hasNotes || currentDrillHasNotes
         : item.hasNotes;
     const isDueToday = dueUnitSet.has(item.unitCode);
+    const sidebarLeafPad =
+      level === 1 ? "px-1.5" : level === 4 ? "pl-[36px] pr-1.5" : "pl-[26px] pr-1.5";
 
     return (
       <div
@@ -728,7 +890,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`min-w-0 ${isSidebar ? "h-8 flex-1 rounded-md" : "group w-full rounded-md"} overflow-hidden text-left ${isSidebar ? (level === 4 ? "pl-[36px] pr-1.5" : "pl-[26px] pr-1.5") : "px-1.5"} py-1.5 transition-colors flex items-center gap-1.5 focus:outline-none ${
+        className={`min-w-0 ${isSidebar ? "h-8 flex-1 rounded-md" : "group w-full rounded-md"} overflow-hidden text-left ${isSidebar ? sidebarLeafPad : "px-1.5"} py-1.5 transition-colors flex items-center gap-1.5 focus:outline-none ${
           isSidebar ? "" : "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600/70 dark:focus-visible:ring-indigo-400/70"
         } ${
           isCurrent
@@ -816,8 +978,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               )}
             </div>
 
-            {/* Workspace tabs remain in the sidebar; global tree controls stay in dropdown mode. */}
-            {(!isSidebar || isCodeWorkspace) && <div className={`shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 ${isSidebar ? "" : "border-b border-zinc-200 dark:border-zinc-800"}`}>
+            {/* Legacy dropdown mode keeps Tabs + global tree controls; sidebar uses unified scrolling sections. */}
+            {!isSidebar && <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800">
               {isCodeWorkspace ? (
                 <Tabs
                   value={activeTab}
@@ -1039,9 +1201,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               {isTreeEmpty ? (
                 <div className="py-8 text-center space-y-2">
                   <p className={`${isSidebar ? "text-sm" : "text-xs"} text-zinc-500 dark:text-zinc-400`}>
-                    {isCodeWorkspace && activeTab === "labs"
-                      ? "No labs match the current search or filter."
-                      : "No drills match the current search or filter."}
+                    {isUnifiedCodeSidebar
+                      ? "No drills or labs match the current search or filter."
+                      : isCodeWorkspace && activeTab === "labs"
+                        ? "No labs match the current search or filter."
+                        : "No drills match the current search or filter."}
                   </p>
                   {otherTabMatchCount > 0 && (
                     <button
@@ -1068,204 +1232,262 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   role="tree"
                   aria-label="Practice curriculum"
                   data-sidebar-tree={isSidebar || undefined}
-                  className="space-y-0.5 py-0.5"
+                  className={`${isUnifiedCodeSidebar ? "space-y-3" : "space-y-0.5"} py-0.5`}
                 >
-                  {sections.topicGroups.map((topic) => {
-                    const topicNodeId = `topic:${topic.topicCode}`;
-                    const isTopicExpanded = expandedTopics.has(topic.topicCode);
-                    const showTopicCode = topic.topicTitle !== topic.topicCode;
+                  {(() => {
+                    const renderTopicGroups = (groups: readonly PickerTopicGroup[]) =>
+                      groups.map((topic) => {
+                        const topicNodeId = `topic:${topic.topicCode}`;
+                        const isTopicExpanded = expandedTopics.has(topic.topicCode);
+                        const showTopicCode = topic.topicTitle !== topic.topicCode;
+
+                        return (
+                          <div key={topic.topicCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                            <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
+                            <button
+                              ref={(el) => registerNodeRef(topicNodeId, el)}
+                              type="button"
+                              role="treeitem"
+                              data-sidebar-row={isSidebar ? "topic" : undefined}
+                              aria-level={1}
+                              aria-expanded={isTopicExpanded}
+                              aria-selected={false}
+                              title={topic.topicCode}
+                              onClick={() => {
+                                setActiveNodeId(topicNodeId);
+                                setBranchExpanded("topic", topic.topicCode, "toggle");
+                              }}
+                              className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "px-1.5" : ""}`}
+                            >
+                              <ChevronRight
+                                className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+                                  isTopicExpanded ? "rotate-90" : ""
+                                }`}
+                                aria-hidden="true"
+                              />
+                              <Layers
+                                className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1`}>
+                                {plainTitle(topic.topicTitle)}
+                              </span>
+                              {showTopicCode && <HoverRowCode code={topic.topicCode} isSidebar={isSidebar} />}
+                            </button>
+                            </div>
+
+                            <Reveal show={isTopicExpanded}>
+                              <div
+                                role="group"
+                                className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
+                              >
+                                {topic.chapters.map((chapter) => {
+                                  const chapterNodeId = `chapter:${chapter.chapterCode}`;
+                                  const isChapterExpanded = expandedChapters.has(
+                                    chapter.chapterCode
+                                  );
+                                  const chapterShortCode = extractChapterShortCode(
+                                    chapter.chapterCode
+                                  );
+                                  const showChapterCode =
+                                    chapter.chapterTitle !== chapterShortCode;
+
+                                  return (
+                                    <div key={chapter.chapterCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                                      <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
+                                      <button
+                                        ref={(el) => registerNodeRef(chapterNodeId, el)}
+                                        type="button"
+                                        role="treeitem"
+                                        data-sidebar-row={isSidebar ? "chapter" : undefined}
+                                        aria-level={2}
+                                        aria-expanded={isChapterExpanded}
+                                        aria-selected={false}
+                                        title={chapter.chapterCode}
+                                        onClick={() => {
+                                          setActiveNodeId(chapterNodeId);
+                                          setBranchExpanded(
+                                            "chapter",
+                                            chapter.chapterCode,
+                                            "toggle"
+                                          );
+                                        }}
+                                        className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-4 pr-1.5" : ""}`}
+                                      >
+                                        <ChevronRight
+                                          className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+                                            isChapterExpanded ? "rotate-90" : ""
+                                          }`}
+                                          aria-hidden="true"
+                                        />
+                                        <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
+                                          {plainTitle(chapter.chapterTitle)}
+                                        </span>
+                                        {showChapterCode && (
+                                          <HoverRowCode code={chapterShortCode} isSidebar={isSidebar} />
+                                        )}
+                                        <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
+                                      </button>
+                                      </div>
+
+                                      <Reveal show={isChapterExpanded}>
+                                        <div
+                                          role="group"
+                                          className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
+                                        >
+                                          {chapter.entries.map((entry) => {
+                                            if (entry.kind === "single") {
+                                              return renderLeafRow(
+                                                entry.item,
+                                                entry.item.title,
+                                                3,
+                                                `leaf:${entry.item.id}`
+                                              );
+                                            }
+
+                                            if (entry.inlineInChapter) {
+                                              return entry.items.map((setEntry) =>
+                                                renderLeafRow(
+                                                  setEntry.item,
+                                                  setEntry.setLabel,
+                                                  3,
+                                                  `leaf:${setEntry.item.id}`
+                                                )
+                                              );
+                                            }
+
+                                            const unitNodeId = `unit:${entry.unitCode}`;
+                                            const isUnitExpanded = expandedUnits.has(
+                                              entry.unitCode
+                                            );
+                                            const unitShortCode = extractShortCode({
+                                              kind: "drill",
+                                              id: entry.unitCode,
+                                              unitCode: entry.unitCode,
+                                            });
+
+                                            return (
+                                              <div key={entry.key} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
+                                                <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
+                                                <button
+                                                  ref={(el) =>
+                                                    registerNodeRef(unitNodeId, el)
+                                                  }
+                                                  type="button"
+                                                  role="treeitem"
+                                                  data-sidebar-row={isSidebar ? "unit" : undefined}
+                                                  aria-level={3}
+                                                  aria-expanded={isUnitExpanded}
+                                                  aria-selected={false}
+                                                  title={entry.unitCode}
+                                                  onClick={() => {
+                                                    setActiveNodeId(unitNodeId);
+                                                    setBranchExpanded(
+                                                      "unit",
+                                                      entry.unitCode,
+                                                      "toggle"
+                                                    );
+                                                  }}
+                                                  className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-[26px] pr-1.5" : ""}`}
+                                                >
+                                                  <ChevronRight
+                                                    className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${
+                                                      isUnitExpanded ? "rotate-90" : ""
+                                                    }`}
+                                                    aria-hidden="true"
+                                                  />
+                                                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
+                                                    {plainTitle(entry.unitTitle)}
+                                                  </span>
+                                                  <HoverRowCode code={unitShortCode} isSidebar={isSidebar} />
+                                                  <CountPill count={entry.items.length} isSidebar={isSidebar} />
+                                                </button>
+                                                </div>
+
+                                                <Reveal show={isUnitExpanded}>
+                                                  <div
+                                                    role="group"
+                                                    className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
+                                                  >
+                                                    {entry.items.map((setEntry) =>
+                                                      renderLeafRow(
+                                                        setEntry.item,
+                                                        setEntry.setLabel,
+                                                        4,
+                                                        `leaf:${setEntry.item.id}`
+                                                      )
+                                                    )}
+                                                  </div>
+                                                </Reveal>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </Reveal>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </Reveal>
+                          </div>
+                        );
+                      });
+
+                    if (!isUnifiedCodeSidebar) {
+                      return renderTopicGroups(sections.topicGroups);
+                    }
 
                     return (
-                      <div key={topic.topicCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                        <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
-                        <button
-                          ref={(el) => registerNodeRef(topicNodeId, el)}
-                          type="button"
-                          role="treeitem"
-                          data-sidebar-row={isSidebar ? "topic" : undefined}
-                          aria-level={1}
-                          aria-expanded={isTopicExpanded}
-                          aria-selected={false}
-                          title={topic.topicCode}
-                          onClick={() => {
-                            setActiveNodeId(topicNodeId);
-                            setBranchExpanded("topic", topic.topicCode, "toggle");
-                          }}
-                          className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "px-1.5" : ""}`}
-                        >
-                          <ChevronRight
-                            className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                              isTopicExpanded ? "rotate-90" : ""
-                            }`}
-                            aria-hidden="true"
-                          />
-                          <Layers
-                            className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0"
-                            aria-hidden="true"
-                          />
-                          <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1`}>
-                            {plainTitle(topic.topicTitle)}
-                          </span>
-                          {showTopicCode && <HoverRowCode code={topic.topicCode} isSidebar={isSidebar} />}
-                        </button>
-                        </div>
-
-                        <Reveal show={isTopicExpanded}>
-                          <div
-                            role="group"
-                            className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
+                      <>
+                        {showLabsSection && (
+                          <CollapsibleSidebarSection
+                            section="labs"
+                            label="Labs"
+                            expanded={effectiveLabsExpanded}
+                            onToggle={() => {
+                              if (!sections.isSearching) {
+                                toggleSection("labs");
+                              }
+                            }}
+                            panelId={labsPanelId}
                           >
-                            {topic.chapters.map((chapter) => {
-                              const chapterNodeId = `chapter:${chapter.chapterCode}`;
-                              const isChapterExpanded = expandedChapters.has(
-                                chapter.chapterCode
-                              );
-                              const chapterShortCode = extractChapterShortCode(
-                                chapter.chapterCode
-                              );
-                              const showChapterCode =
-                                chapter.chapterTitle !== chapterShortCode;
-
-                              return (
-                                <div key={chapter.chapterCode} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                                  <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
-                                  <button
-                                    ref={(el) => registerNodeRef(chapterNodeId, el)}
-                                    type="button"
-                                    role="treeitem"
-                                    data-sidebar-row={isSidebar ? "chapter" : undefined}
-                                    aria-level={2}
-                                    aria-expanded={isChapterExpanded}
-                                    aria-selected={false}
-                                    title={chapter.chapterCode}
-                                    onClick={() => {
-                                      setActiveNodeId(chapterNodeId);
-                                      setBranchExpanded(
-                                        "chapter",
-                                        chapter.chapterCode,
-                                        "toggle"
-                                      );
-                                    }}
-                                    className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-4 pr-1.5" : ""}`}
-                                  >
-                                    <ChevronRight
-                                      className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                        isChapterExpanded ? "rotate-90" : ""
-                                      }`}
-                                      aria-hidden="true"
-                                    />
-                                    <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
-                                      {plainTitle(chapter.chapterTitle)}
-                                    </span>
-                                    {showChapterCode && (
-                                      <HoverRowCode code={chapterShortCode} isSidebar={isSidebar} />
-                                    )}
-                                    <CountPill count={chapter.itemCount} isSidebar={isSidebar} />
-                                  </button>
-                                  </div>
-
-                                  <Reveal show={isChapterExpanded}>
-                                    <div
-                                      role="group"
-                                      className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
-                                    >
-                                      {chapter.entries.map((entry) => {
-                                        if (entry.kind === "single") {
-                                          return renderLeafRow(
-                                            entry.item,
-                                            entry.item.title,
-                                            3,
-                                            `leaf:${entry.item.id}`
-                                          );
-                                        }
-
-                                        if (entry.inlineInChapter) {
-                                          return entry.items.map((setEntry) =>
-                                            renderLeafRow(
-                                              setEntry.item,
-                                              setEntry.setLabel,
-                                              3,
-                                              `leaf:${setEntry.item.id}`
-                                            )
-                                          );
-                                        }
-
-                                        const unitNodeId = `unit:${entry.unitCode}`;
-                                        const isUnitExpanded = expandedUnits.has(
-                                          entry.unitCode
-                                        );
-                                        const unitShortCode = extractShortCode({
-                                          kind: "drill",
-                                          id: entry.unitCode,
-                                          unitCode: entry.unitCode,
-                                        });
-
-                                        return (
-                                          <div key={entry.key} className={`flex flex-col ${isSidebar ? "w-full" : "group"}`}>
-                                            <div className={`flex items-center gap-0.5 ${isSidebar ? "h-8" : "group"}`}>
-                                            <button
-                                              ref={(el) =>
-                                                registerNodeRef(unitNodeId, el)
-                                              }
-                                              type="button"
-                                              role="treeitem"
-                                              data-sidebar-row={isSidebar ? "unit" : undefined}
-                                              aria-level={3}
-                                              aria-expanded={isUnitExpanded}
-                                              aria-selected={false}
-                                              title={entry.unitCode}
-                                              onClick={() => {
-                                                setActiveNodeId(unitNodeId);
-                                                setBranchExpanded(
-                                                  "unit",
-                                                  entry.unitCode,
-                                                  "toggle"
-                                                );
-                                              }}
-                                              className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-[26px] pr-1.5" : ""}`}
-                                            >
-                                              <ChevronRight
-                                                className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                                  isUnitExpanded ? "rotate-90" : ""
-                                                }`}
-                                                aria-hidden="true"
-                                              />
-                                              <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1`}>
-                                                {plainTitle(entry.unitTitle)}
-                                              </span>
-                                              <HoverRowCode code={unitShortCode} isSidebar={isSidebar} />
-                                              <CountPill count={entry.items.length} isSidebar={isSidebar} />
-                                            </button>
-                                            </div>
-
-                                            <Reveal show={isUnitExpanded}>
-                                              <div
-                                                role="group"
-                                                className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
-                                              >
-                                                {entry.items.map((setEntry) =>
-                                                  renderLeafRow(
-                                                    setEntry.item,
-                                                    setEntry.setLabel,
-                                                    4,
-                                                    `leaf:${setEntry.item.id}`
-                                                  )
-                                                )}
-                                              </div>
-                                            </Reveal>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </Reveal>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </Reveal>
-                      </div>
+                            {filteredSortedLabs.length === 0 ? (
+                              <p className="px-1.5 py-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                                No labs yet
+                              </p>
+                            ) : (
+                              filteredSortedLabs.map((lab) =>
+                                renderLeafRow(lab, lab.title, 1, `leaf:${lab.id}`)
+                              )
+                            )}
+                          </CollapsibleSidebarSection>
+                        )}
+                        {showDrillsSection && (
+                          <CollapsibleSidebarSection
+                            section="drills"
+                            label="Drills"
+                            expanded={effectiveDrillsExpanded}
+                            onToggle={() => {
+                              if (!sections.isSearching) {
+                                toggleSection("drills");
+                              }
+                            }}
+                            panelId={drillsPanelId}
+                          >
+                            {sections.topicGroups.length === 0 ? (
+                              <p className="px-1.5 py-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                                No drills yet
+                              </p>
+                            ) : (
+                              <div className="space-y-0.5">
+                                {renderTopicGroups(sections.topicGroups)}
+                              </div>
+                            )}
+                          </CollapsibleSidebarSection>
+                        )}
+                      </>
                     );
-                  })}
+                  })()}
                 </div>
               )}
             </div>
