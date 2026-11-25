@@ -333,7 +333,6 @@ export function deriveCodeStatus(
   } else if (latestReview) {
     failures = formatReviewRunFailures(latestReview, defaultFile);
   } else if (state?.lastTestReport && !state.lastTestReport.allPassed) {
-    const fileFallback = defaultFile || "solution.js";
     const failingResults = (state.lastTestReport.visibleResults || []).filter(
       (r) => !r.passed
     );
