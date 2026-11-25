@@ -23,6 +23,7 @@ from progress_store import (
     apply_progress,
     is_locked_after_correct,
     is_timestamp_in_cycle,
+    mistake_tags_in_cycle,
     progress_root,
     save_progress,
     score_problem,
@@ -151,7 +152,8 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
     if is_locked_after_correct(state):
         return state.get("lastCheck") or result
 
-    mistakes = set(state.get("mistakes") or [])
+    previous_mistakes = mistake_tags_in_cycle(state)
+    mistakes = set(previous_mistakes)
 
     matched_tag = None
     diag_codes = [d.get("code") for d in result.get("diagnostics", [])]
@@ -181,6 +183,7 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
                 mistakes.add(tag["id"])
 
     timestamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    auto_mistakes = previous_mistakes | dict.fromkeys(mistakes - previous_mistakes.keys(), timestamp)
     attempt = {"input": trimmed, "ts": timestamp, "verdict": result["verdict"]}
     if diag_codes:
         attempt["diagnosticCodes"] = diag_codes
@@ -196,6 +199,7 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
             "userInput": trimmed,
             "skipped": False if substantive else bool(state.get("skipped")),
             "mistakes": sorted(mistakes),
+            "autoMistakes": {tag: stamp for tag, stamp in auto_mistakes.items() if stamp is not None},
             "lastCheck": result,
             "attempts": [*attempts, attempt],
         }

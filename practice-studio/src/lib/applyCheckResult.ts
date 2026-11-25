@@ -11,6 +11,37 @@ import { isSubstantiveVerdict, isTimestampInCycle, sanitizeCheckMessage } from "
 import { isLockedAfterCorrect, scoreProblem } from "./scoring";
 import { isInCycle } from "./similarTabs";
 
+/** Keep learner tags and current-cycle automatic tags. Skip is reserved even in older saves. */
+export function mistakesInCycle(
+  state?: Partial<ProblemState> | null,
+  cycleStartedAt = state?.cycleStartedAt
+): Pick<ProblemState, "mistakes" | "autoMistakes"> {
+  const cycle = typeof cycleStartedAt === "string" ? cycleStartedAt.trim() : null;
+  const tags = Array.isArray(state?.mistakes) ? state.mistakes : [];
+  const hasCurrentSkip = !cycle || (Array.isArray(state?.attempts) && state.attempts.some(
+    (attempt) => attempt?.kind !== "variant" && attempt?.verdict === "skipped" &&
+      isTimestampInCycle(attempt.ts, cycle)
+  ));
+  const auto = new Map<string, string>();
+  const mistakes = tags.filter((tag) => {
+    if (tag === "concept-gap" && !hasCurrentSkip) return false;
+    const stamp = state?.autoMistakes?.[tag];
+    if (typeof stamp !== "string") return true;
+    if (!isTimestampInCycle(stamp, cycle)) return false;
+    auto.set(tag, stamp);
+    return true;
+  });
+  return { mistakes, autoMistakes: auto.size ? Object.fromEntries(auto) : undefined };
+}
+
+/** An explicit toggle clears checker ownership so reselecting a tag makes it learner-owned. */
+export function toggleMistakeTag(state: ProblemState, tag: string): ProblemState {
+  const { mistakes, autoMistakes } = mistakesInCycle(state);
+  const tags = mistakes.includes(tag) ? mistakes.filter((id) => id !== tag) : [...mistakes, tag];
+  delete autoMistakes?.[tag];
+  return { ...state, mistakes: tags, autoMistakes };
+}
+
 export interface ApplyCheckOptions {
   durationMs?: number;
   ts?: string;
@@ -30,7 +61,6 @@ export function applyCheckResult(
   const trimmed = (inputVal || "").trim();
   const ts = options.ts || new Date().toISOString();
   const currentAttempts = prob.state?.attempts || [];
-  const currentMistakes = new Set(prob.state?.mistakes || []);
   const hintsCount = options.hintsRevealed ?? prob.state?.hintsRevealed ?? 0;
 
   // 1. Empty input (and not skipped) -> return unchanged state
@@ -41,6 +71,14 @@ export function applyCheckResult(
   // 2. Lock after correct (Rule 2): ignore further checks once correct in the current cycle.
   if (result.verdict !== "skipped" && isLockedAfterCorrect(prob.state)) {
     return { ...prob.state };
+  }
+
+  const { mistakes, autoMistakes } = mistakesInCycle(prob.state);
+  const newMistakes = new Set(mistakes);
+  const newAutoMistakes = new Map(Object.entries(autoMistakes ?? {}));
+  function addAutoMistake(tag: string) {
+    if (!newMistakes.has(tag) || newAutoMistakes.has(tag)) newAutoMistakes.set(tag, ts);
+    newMistakes.add(tag);
   }
 
   const cycleStartedAt = prob.state?.cycleStartedAt ?? null;
@@ -72,7 +110,7 @@ export function applyCheckResult(
 
   // 4. Skip action
   if (result.verdict === "skipped") {
-    currentMistakes.add("concept-gap");
+    addAutoMistake("concept-gap");
     const attempt: AttemptRecord = {
       input: trimmed || "(Skipped)",
       ts,
@@ -87,7 +125,8 @@ export function applyCheckResult(
       userInput: trimmed || "(Skipped)",
       score: 0,
       skipped: true,
-      mistakes: Array.from(currentMistakes),
+      mistakes: Array.from(newMistakes),
+      autoMistakes: Object.fromEntries(newAutoMistakes),
       lastCheck: result,
       attempts: [...currentAttempts, attempt],
       hintsRevealed: hintsCount,
@@ -95,7 +134,6 @@ export function applyCheckResult(
     };
   }
 
-  const newMistakes = new Set(prob.state?.mistakes || []);
   let matchedTrapTag: string | undefined;
 
   // Diagnostics codes
@@ -111,7 +149,7 @@ export function applyCheckResult(
       if (chosen && (chosen.trapTag || chosen.tag)) {
         const choiceTrap = chosen.trapTag || chosen.tag;
         if (choiceTrap) {
-          newMistakes.add(choiceTrap);
+          addAutoMistake(choiceTrap);
           matchedTrapTag = choiceTrap;
         }
       }
@@ -119,7 +157,7 @@ export function applyCheckResult(
 
     // trapMatched -> problem.commonTrapTag
     if (result.trapMatched && prob.commonTrapTag) {
-      newMistakes.add(prob.commonTrapTag);
+      addAutoMistake(prob.commonTrapTag);
       matchedTrapTag = prob.commonTrapTag;
     }
 
@@ -128,23 +166,23 @@ export function applyCheckResult(
     if (!result.trapMatched) {
       mistakeTags.forEach((tag) => {
         if (tag.autoFrom?.some((c) => diagCodeSet.has(c))) {
-          newMistakes.add(tag.id);
+          addAutoMistake(tag.id);
         }
       });
     }
 
     // Fallback "unclassified" ONLY when no tag was attached
     if (newMistakes.size === 0) {
-      newMistakes.add("unclassified");
+      addAutoMistake("unclassified");
     }
   } else if (result.verdict === "partial" && result.trapMatched && prob.commonTrapTag) {
     // Incomplete answer equal to the trap (e.g. one root of a solution set omitted): tag the trap.
-    newMistakes.add(prob.commonTrapTag);
+    addAutoMistake(prob.commonTrapTag);
     matchedTrapTag = prob.commonTrapTag;
   } else if (result.verdict !== "correct") {
     mistakeTags.forEach((tag) => {
       if (tag.autoFrom?.some((c) => diagCodeSet.has(c))) {
-        newMistakes.add(tag.id);
+        addAutoMistake(tag.id);
       }
     });
   }
@@ -171,6 +209,7 @@ export function applyCheckResult(
     userInput: trimmed,
     skipped: substantive ? false : Boolean(prob.state?.skipped),
     mistakes: Array.from(newMistakes),
+    autoMistakes: newAutoMistakes.size ? Object.fromEntries(newAutoMistakes) : undefined,
     lastCheck: sanitizedResult,
     attempts: [...currentAttempts, attempt],
     hintsRevealed: hintsCount,
@@ -242,7 +281,7 @@ export function applyDivergedStep(
 /**
  * Reset a single problem for a new retry cycle: clears the visible/active state and
  * strips revealed solutions, sets `cycleStartedAt = now`, and preserves all history
- * (`attempts`, `mistakes`, `mistakeNote`, `revisitNote`, `reviews`, variant history).
+ * (`attempts`, learner tags and notes, `reviews`, variant history).
  */
 export function resetProblemForRetry(
   prob: Problem,
@@ -262,7 +301,7 @@ export function resetProblemForRetry(
     userCode: prob.starterCode || prob.codeSnippet || "",
     score: null,
     divergedStep: null,
-    mistakes: Array.isArray(prevState?.mistakes) ? [...prevState.mistakes] : [],
+    ...mistakesInCycle(prevState, nowIso),
     mistakeNote: prevState?.mistakeNote || "",
     ...(prevState?.revisitNote ? { revisitNote: prevState.revisitNote } : {}),
     skipped: false,
@@ -294,6 +333,7 @@ export function resetAnswerForReviewRetry(
 ): ProblemState {
   const next: ProblemState = {
     ...state,
+    ...mistakesInCycle(state, nowIso),
     userInput: "",
     score: null,
     divergedStep: null,

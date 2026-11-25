@@ -15,6 +15,8 @@ All artifacts are written strictly under gitignored `pilot/quality/<run-id>/`:
 - `items.jsonl` — append-only item attempt and revision records.
 - `summary.md` — optional answer-free markdown summary created by `summary --write-md`.
 
+The pilot terminal checker (`scripts/practice.py`) records automatic mistake tags with check timestamps, matching the Practice Studio progress format.
+
 At `init`, the CLI hashes `progress/` and `drills/workspace/` (SHA-256 digests only, never copying file contents) into `isolation_check.protected_snapshot` in `run.json`, and defaults `allowed_materials` to `[]` (canonical `drills/data/`, vaults, and hidden dotfiles are rejected for learner roles in prospective modes). While a run is **open**, `validate`, `finish`, and `summary` re-hash live protected directories against `protected_snapshot` to detect isolation mismatches. When `finish` closes a run cleanly, it stores `isolation_check.end_protected_snapshot`, `closed_observed_at`, and `closure_status: "closed"`. Once **closed**, `validate` and `summary` compare `protected_snapshot` against stored `end_protected_snapshot` rather than live protected paths, so legitimate later learner activity does not invalidate an already-closed run. Legacy already-ended runs lacking `end_protected_snapshot` remain readable (`valid: true`) with `isolation_status: "unknown"`, `isolation_ok: null`, `clean_run_eligible: false`, and warning `missing_end_protected_snapshot` (never backfilling an invented historical snapshot). Traversal (`..`), absolute refs, symlink components, and existing-run overwrites are rejected.
 
 ## Commands

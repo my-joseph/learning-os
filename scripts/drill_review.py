@@ -30,6 +30,7 @@ from progress_store import (
     find_repo_root,
     has_practice,
     is_timestamp_in_cycle,
+    mistake_tags_in_cycle,
     progress_root,
     score_problem,
     score_variant,
@@ -272,7 +273,7 @@ def _build_item_report(
         int(raw_dur) if isinstance(raw_dur, (int, float)) and not isinstance(raw_dur, bool) and raw_dur >= 0 else None
     )
 
-    mistakes = [str(m).strip() for m in (state.get("mistakes") or []) if isinstance(m, str) and m.strip()]
+    mistakes = [tag.strip() for tag in mistake_tags_in_cycle(state) if tag.strip()]
     mistake_note = state.get("mistakeNote").strip() if isinstance(state.get("mistakeNote"), str) else ""
     revisit_note = state.get("revisitNote").strip() if isinstance(state.get("revisitNote"), str) else ""
 

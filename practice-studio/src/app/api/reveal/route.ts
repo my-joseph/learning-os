@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toggleMistakeTag } from "@/lib/applyCheckResult";
 import { isSafeId, loadProblemFromDisk, loadVariantFromDisk } from "@/lib/paths";
 import { mutateProblemState, readProgress, resolveVariantToken, updateVariantSession } from "@/lib/progress";
 import {
@@ -243,12 +244,7 @@ export async function POST(req: NextRequest) {
     }
     if (action === "toggle-mistake" && body.tag !== "concept-gap" &&
         doc.mistakeTags?.some((tag) => tag.id === body.tag)) {
-      mutateProblemState(drillId, doc.unitCode, qid, (state) => {
-        const tags = new Set(state.mistakes);
-        if (tags.has(body.tag)) tags.delete(body.tag);
-        else tags.add(body.tag);
-        state.mistakes = Array.from(tags);
-      });
+      mutateProblemState(drillId, doc.unitCode, qid, (state) => toggleMistakeTag(state, body.tag));
       return NextResponse.json({ ok: true });
     }
     if (action === "self-score" && (

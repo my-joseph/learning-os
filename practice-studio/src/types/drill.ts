@@ -311,6 +311,8 @@ export interface ProblemState {
   score: number | null;
   divergedStep: number | null;
   mistakes: string[];
+  /** Tags in mistakes added by the checker, keyed by tag ID with the check timestamp. */
+  autoMistakes?: Record<string, string>;
   mistakeNote?: string;
   revisitNote?: string;
   skipped?: boolean;

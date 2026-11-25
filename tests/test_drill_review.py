@@ -316,6 +316,43 @@ def test_zero_leak_and_scoring_outcomes_and_cycle_scoping(tmp_path: Path):
     assert q3["score"] is None and q3["outcome"] == "notTried"
 
 
+def test_report_scopes_automatic_mistakes_to_the_current_cycle(tmp_path: Path):
+    root = _setup_fixture_repo(tmp_path)
+    drill_id = "DRL-MTH-T02-C01-U01-02"
+    previous_skip = {"ts": "2026-11-19T10:00:00Z", "verdict": "skipped"}
+    cycle = "2026-11-21T10:00:00Z"
+    current_attempt = "2026-11-21T10:01:00Z"
+    _write(
+        root / "progress" / f"{drill_id}.json",
+        {
+            "drillId": drill_id,
+            "problems": {
+                "Q01": {
+                    "cycleStartedAt": cycle,
+                    "attempts": [previous_skip, {"ts": current_attempt, "verdict": "correct"}],
+                    "mistakes": ["concept-gap", "old-auto", "learner-tag"],
+                    "autoMistakes": {"old-auto": previous_skip["ts"]},
+                },
+                "Q02": {
+                    "cycleStartedAt": cycle,
+                    "attempts": [{"ts": current_attempt, "verdict": "skipped"}],
+                    "mistakes": ["concept-gap"],
+                },
+                "Q03": {
+                    "cycleStartedAt": cycle,
+                    "attempts": [previous_skip],
+                    "mistakes": ["concept-gap"],
+                },
+            },
+        },
+    )
+
+    report = _run_review(root, drill_id)
+    assert [item["mistakes"] for item in report["items"]] == [["learner-tag"], ["concept-gap"], []]
+    assert report["totals"]["mistakesCategories"] == {"concept-gap": 1, "learner-tag": 1}
+    assert report["items"][0]["outcomeBucket"] == "clean"
+
+
 def test_clean_l1_l2_with_mastery_cap_recommends_l3_l4_lift(tmp_path: Path):
     root = _setup_fixture_repo(tmp_path)
     _write(

@@ -16,6 +16,7 @@ Run every command from the repo root with `.venv/bin/python`. This skill is stri
 ```
 
 `scripts/drill_review.py` honours `PROGRESS_DIR` and `LEARNINGOS_PILOT` via `progress_store.py`.
+- `mistakes` includes checker-added tags from the current cycle and any learner-selected tags.
 - If the drill ID is missing or not found, say so plainly in Thai and stop.
 - If the ID is a programming drill or lab (`DRL-PRG-*` or `LAB-*`), refuse clearly in Thai and tell the learner to use `review-code` (`"ตรวจโค้ด <DRILL_ID> <QID>"` or `"ตรวจโค้ด <LAB_ID> M1"`) instead, then stop.
 - If `totals.attemptedCount == 0` (`practiceStatus == "Not started"`), tell the learner in 2–3 polite Thai lines that this drill has not been attempted yet (`0/<problemCount>` ข้อ) and recommend opening it in Practice Studio first instead of writing an empty review.

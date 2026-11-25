@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/shadcn/Button";
 import { Card } from "@/components/ui/shadcn/Card";
 import { Input } from "@/components/ui/shadcn/Input";
 import { Skeleton } from "@/components/ui/shadcn/Skeleton";
-import { applyDivergedStep } from "@/lib/applyCheckResult";
+import { applyDivergedStep, toggleMistakeTag } from "@/lib/applyCheckResult";
 import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
 import { readLastDrillId } from "@/lib/lastDrillStorage";
@@ -1342,13 +1342,7 @@ export const DailyReviewPage: React.FC = () => {
         void sendPracticeAction(currentDrill.drillId, currentItem.qid, { action: "toggle-mistake", tag: tagId },
           currentProblem.state.cycleStartedAt ?? null);
         updateCurrentProblem(
-          (p) => {
-            const list = p.state.mistakes || [];
-            const next = list.includes(tagId)
-              ? list.filter((t) => t !== tagId)
-              : [...list, tagId];
-            return { ...p, state: { ...p.state, mistakes: next } };
-          }
+          (p) => ({ ...p, state: toggleMistakeTag(p.state, tagId) })
         );
       }}
       onMistakeNoteChange={(note) =>

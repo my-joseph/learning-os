@@ -11,8 +11,9 @@ import { POST as reviewPOST } from "../src/app/api/review-items/route";
 import { POST as savePOST } from "../src/app/api/save-state/route";
 import { getDueReviewItems, getReviewItemsSchedule, loadSavedReviewItems, normalizeReviewDate, addDays, writeReviewItemsStore } from "../src/lib/reviewItems";
 import { loadPracticeDocument, recordOriginalCheck } from "../src/lib/practiceEvidence";
-import { readProgress, mutateProblemState, writeProgress } from "../src/lib/progress";
+import { applyProgress, readProgress, mutateProblemState, writeProgress } from "../src/lib/progress";
 import { saveReviewProblemState } from "../src/lib/reviewSession";
+import { buildSessionSummary } from "../src/lib/sessionSummary";
 import type { ProblemState } from "../src/types/drill";
 
 const drillId = "DRL-MTH-T01-C01-U01-99";
@@ -107,6 +108,32 @@ test("B1: variant requests cannot undo an original reset or erase variant eviden
   fs.unlinkSync(f.drillPath);
   assert.equal((await f.variant("reset-all")).status, 400);
   assert.deepEqual(f.read(), state);
+});
+
+test("Skip then Reset clears old automatic tags from saved progress and Review & Sync", async (t) => {
+  const f = fixture(t);
+  const { cycleStartedAt } = await (await f.reveal("reset")).json();
+  assert.ok(f.check("incorrect", cycleStartedAt).eventId);
+  mutateProblemState(drillId, unitCode, qid, (state) => { state.mistakes.push("learner-tag"); });
+  assert.equal((await f.reveal("skip", cycleStartedAt)).status, 200);
+  const skipped = f.read();
+  assert.deepEqual(skipped.mistakes, ["unclassified", "learner-tag", "concept-gap"]);
+
+  const reset = await f.reveal("reset");
+  assert.equal(reset.status, 200);
+  const nextCycle = (await reset.json()).cycleStartedAt;
+  assert.deepEqual(f.read().mistakes, ["learner-tag"]);
+  assert.ok(f.check("correct", nextCycle).eventId);
+
+  writeProgress({ drillId, unitCode, reviewMerge: true, problems: [{ id: qid, state: skipped }] });
+  const progress = readProgress(drillId);
+  const snapshot = JSON.parse(fs.readFileSync(path.join(f.progressDir, `${drillId}.json`), "utf8"));
+  assert.deepEqual(snapshot.problems[qid].mistakes, ["learner-tag"]);
+  assert.deepEqual(f.read().attempts?.map(({ verdict }) => verdict), ["incorrect", "skipped", "correct"]);
+  const summary = buildSessionSummary(applyProgress(loadPracticeDocument(drillId)!, progress));
+  assert.equal(summary.score, 1);
+  assert.equal(summary.skippedCount, 0);
+  assert.deepEqual(summary.mistakeCategories, ["learner-tag"]);
 });
 
 test("B2: an unfinished review stays due and retains help across reset and reload", async (t) => {

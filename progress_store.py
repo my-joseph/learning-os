@@ -266,7 +266,11 @@ def apply_progress(drill_doc: dict[str, Any], progress: dict[str, Any] | None) -
     states = progress.get("problems") or {}
     for p in drill_doc.get("problems", []):
         if p.get("id") in states:
-            p["state"] = states[p["id"]]
+            state = states[p["id"]]
+            if isinstance(state, dict) and isinstance(state.get("mistakes"), list):
+                state = dict(state)
+                _set_mistake_tags(state, mistake_tags_in_cycle(state))
+            p["state"] = state
     return drill_doc
 
 
@@ -517,7 +521,7 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
                     if cmp_rep > 0 if cmp_rep is not None else prev_ts > next_ts:
                         st["lastTestReport"] = prev_report
 
-        for key in ("mistakes", "mistakeNote", "revisitNote"):
+        for key in ("mistakeNote", "revisitNote"):
             if _is_empty_value(st.get(key)) and not _is_empty_value(prev.get(key)):
                 st[key] = prev[key]
 
@@ -565,6 +569,16 @@ def _merge_problem_state(prev: dict[str, Any] | None, incoming: dict[str, Any]) 
         if (incoming_cycle and max_cycle)
         else incoming_cycle == max_cycle
     )
+    if isinstance(st.get("mistakes"), list) or (prev and isinstance(prev.get("mistakes"), list)):
+        previous_tags = mistake_tags_in_cycle({**(prev or {}), "cycleStartedAt": max_cycle})
+        incoming_tags = mistake_tags_in_cycle({**incoming, "cycleStartedAt": max_cycle})
+        if same_prev_cycle and same_inc_cycle:
+            tags = dict(incoming_tags or previous_tags)
+        else:
+            tags = previous_tags | incoming_tags
+        for source in (previous_tags, incoming_tags):
+            tags.update({tag: None for tag, stamp in source.items() if stamp is None and tag in tags})
+        _set_mistake_tags(st, tags)
     if isinstance(prev, dict) and same_prev_cycle and "reviewBaseLevel" in prev:
         st["reviewBaseLevel"] = prev["reviewBaseLevel"]
     elif not same_inc_cycle:
@@ -741,6 +755,46 @@ def _is_in_cycle(ts: Any, cycle_started_at: str | None) -> bool:
 
 
 is_timestamp_in_cycle = _is_in_cycle
+
+
+def mistake_tags_in_cycle(state: dict[str, Any]) -> dict[str, str | None]:
+    """Return active mistake tags, with timestamps for automatic tags and None for learner tags."""
+    tags = state.get("mistakes")
+    if not isinstance(tags, list):
+        return {}
+    cycle = _non_empty_str(state.get("cycleStartedAt"))
+    auto = state.get("autoMistakes")
+    auto = auto if isinstance(auto, dict) else {}
+    attempts = state.get("attempts")
+    active_skip = not cycle or (
+        isinstance(attempts, list)
+        and any(
+            isinstance(attempt, dict)
+            and attempt.get("kind") != "variant"
+            and attempt.get("verdict") == "skipped"
+            and _is_in_cycle(attempt.get("ts"), cycle)
+            for attempt in attempts
+        )
+    )
+    active = {}
+    for tag in tags:
+        if not isinstance(tag, str) or (tag == "concept-gap" and not active_skip):
+            continue
+        stamp = auto.get(tag)
+        if not isinstance(stamp, str):
+            active[tag] = None
+        elif _is_in_cycle(stamp, cycle):
+            active[tag] = stamp
+    return active
+
+
+def _set_mistake_tags(state: dict[str, Any], tags: dict[str, str | None]) -> None:
+    state["mistakes"] = list(tags)
+    automatic = {tag: stamp for tag, stamp in tags.items() if stamp is not None}
+    if automatic:
+        state["autoMistakes"] = automatic
+    else:
+        state.pop("autoMistakes", None)
 
 
 def _is_substantive_verdict(verdict: Any) -> bool:
