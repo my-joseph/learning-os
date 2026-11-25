@@ -4,11 +4,17 @@ import { cn } from "@/lib/cn";
 
 export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   asChild?: boolean;
+  variant?: "default" | "feedback";
 }
 
 export const Card = React.forwardRef<HTMLElement, CardProps>(
-  ({ asChild = false, className, ...props }, ref) => {
-    const cardClassName = cn("w-full min-w-0 rounded-2xl border border-zinc-200 bg-white text-foreground shadow-sm dark:border-zinc-800 dark:bg-zinc-900", className);
+  ({ asChild = false, variant = "default", className, ...props }, ref) => {
+    const cardClassName = cn(
+      variant === "feedback"
+        ? "rounded-xl p-space-3_5 sm:p-space-4 space-y-space-2_5"
+        : "w-full min-w-0 rounded-2xl border border-zinc-200 bg-white text-foreground shadow-sm dark:border-zinc-800 dark:bg-zinc-900",
+      className
+    );
 
     if (asChild) {
       return <Slot ref={ref} className={cardClassName} {...props} />;

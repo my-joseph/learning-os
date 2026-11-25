@@ -4,8 +4,11 @@ import React from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { m } from "motion/react";
 import { FormattedText } from "@/components/FormattedText";
+import { Badge } from "@/components/ui/shadcn/Badge";
+import { Button } from "@/components/ui/shadcn/Button";
 import { ChoiceResultStatus } from "@/lib/answerFeedback";
-import { choiceTapPress, quick } from "@/lib/motion";
+import { cn } from "@/lib/cn";
+import { quick } from "@/lib/motion";
 import { statusTone } from "@/lib/statusTone";
 import { ChoiceOption } from "@/types/drill";
 
@@ -39,121 +42,64 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
       aria-label={ariaLabel}
       className={
         layout === "stack"
-          ? "grid grid-cols-1 gap-2"
-          : "flex flex-wrap gap-2 w-full"
+          ? "grid grid-cols-1 gap-space-2"
+          : "flex flex-wrap gap-space-2 w-full"
       }
     >
       {options.map((opt) => {
         const isCheckingThis = checkingOptionId === opt.id;
         const isSelected = activeSelected === opt.id;
-        const isCorrectChosen = isSelected && !isCheckingThis && resultStatus === "correct";
-        const isAssistedChosen = isSelected && !isCheckingThis && resultStatus === "assisted";
-        const isWrongChosen = isSelected && !isCheckingThis && resultStatus === "wrong";
-
-        let buttonCls =
-          "bg-surface-panel text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
-        let badgeCls =
-          "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800";
-
-        if (isCheckingThis) {
-          buttonCls =
-            "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100";
-          badgeCls = "bg-indigo-600 dark:bg-indigo-500 text-white";
-        } else if (isCorrectChosen) {
-          buttonCls = `${statusTone.correct.choiceCard} text-zinc-900 dark:text-zinc-100`;
-          badgeCls = statusTone.correct.solidBadge;
-        } else if (isAssistedChosen) {
-          buttonCls = `${statusTone.assisted.choiceCard} text-zinc-900 dark:text-zinc-100`;
-          badgeCls = statusTone.assisted.solidBadge;
-        } else if (isWrongChosen) {
-          buttonCls = `${statusTone.wrong.choiceCard} text-zinc-900 dark:text-zinc-100`;
-          badgeCls = statusTone.wrong.solidBadge;
-        } else if (isSelected) {
-          buttonCls =
-            "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100";
-          badgeCls = "bg-indigo-600 dark:bg-indigo-500 text-white";
-        }
-
-        const disabledCls =
-          disabled && !isSelected && !isCheckingThis
-            ? "opacity-60 cursor-not-allowed"
-            : disabled
-            ? "cursor-default"
-            : "";
+        const outcome = isSelected && !isCheckingThis ? resultStatus : null;
+        const tone = outcome ? statusTone[outcome] : null;
+        const OutcomeIcon = outcome === "wrong" ? X : Check;
+        const buttonTone = tone
+          ? cn(tone.choiceCard, "text-foreground")
+          : isSelected
+            ? "bg-surface-hover border-accent-field text-foreground"
+            : "bg-surface-panel text-foreground-answer border-border hover:border-foreground-faint dark:hover:border-surface-hover-strong";
+        const badgeTone = tone?.solidBadge ?? (isSelected
+          ? "bg-accent-field text-accent-on-primary"
+          : "bg-surface-raised text-muted border border-border");
+        const disabledStyle = disabled && (isSelected ? "cursor-default" : "opacity-secondary cursor-not-allowed");
 
         return (
-          <m.button
+          <Button
+            variant="choice"
+            size={layout === "stack" ? "choiceStack" : "choiceWrap"}
             key={opt.id}
             type="button"
             role="radio"
             aria-checked={isSelected}
             disabled={disabled}
-            whileTap={disabled ? undefined : choiceTapPress}
-            transition={quick}
+            aria-busy={isCheckingThis || undefined}
             onClick={() => onSelect(opt.id)}
-            className={
-              layout === "stack"
-                ? `w-full min-h-[44px] text-left p-3.5 rounded-xl border transition-colors flex items-center justify-between gap-3 ${buttonCls} ${disabledCls}`
-                : `min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-0 px-3.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center gap-2 ${buttonCls} ${disabledCls}`
-            }
+            className={cn(buttonTone, disabledStyle)}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span
-                className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-display font-semibold shrink-0 transition-colors ${badgeCls}`}
-              >
+            <div className="flex items-center gap-space-2_5 min-w-0 flex-1">
+              <Badge variant="choice" className={badgeTone}>
                 {opt.id}
-              </span>
+              </Badge>
               <div className="min-w-0 flex-1 text-left text-xs sm:text-sm leading-relaxed">
                 <FormattedText text={opt.label} />
               </div>
             </div>
 
-            {isCheckingThis && (
-              <Loader2
-                className="w-3.5 h-3.5 animate-spin text-indigo-600 dark:text-indigo-400 shrink-0"
-                aria-hidden="true"
-              />
-            )}
-            {isCorrectChosen && (
+            {(isCheckingThis || tone) && (
               <m.span
-                initial={{ opacity: 0, scale: 0.7 }}
+                key={outcome ?? "checking"}
+                initial={isCheckingThis ? false : { opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={quick}
-                className="inline-flex shrink-0"
+                className="inline-flex shrink-0 size-space-4 items-center justify-center"
               >
-                <Check
-                  className={`w-4 h-4 ${statusTone.correct.text} shrink-0`}
-                  aria-hidden="true"
-                />
+                {isCheckingThis ? (
+                  <Loader2 className="size-space-3_5 animate-spin text-accent" aria-hidden="true" />
+                ) : (
+                  <OutcomeIcon className={cn("size-space-4 shrink-0", tone?.text)} aria-hidden="true" />
+                )}
               </m.span>
             )}
-            {isAssistedChosen && (
-              <m.span
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={quick}
-                className="inline-flex shrink-0"
-              >
-                <Check
-                  className={`w-4 h-4 ${statusTone.assisted.text} shrink-0`}
-                  aria-hidden="true"
-                />
-              </m.span>
-            )}
-            {isWrongChosen && (
-              <m.span
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={quick}
-                className="inline-flex shrink-0"
-              >
-                <X
-                  className={`w-4 h-4 ${statusTone.wrong.text} shrink-0`}
-                  aria-hidden="true"
-                />
-              </m.span>
-            )}
-          </m.button>
+          </Button>
         );
       })}
     </div>

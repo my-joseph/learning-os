@@ -76,6 +76,12 @@ html.light {
   --muted: 113 113 122;
   --foreground-control: 63 63 70;
   --foreground-menu: var(--foreground-control);
+  --foreground-answer: 39 39 42;
+  --foreground-answer-detail: var(--foreground-control);
+  --foreground-action-hover: 9 9 11;
+  --accent-field: var(--accent-primary);
+  --accent-strong: 67 56 202;
+  --accent-tint: 238 242 255;
   --foreground-faint: 161 161 170;
   --foreground-section-hover: 39 39 42;
   --surface-hover-strong: var(--border-control);
@@ -122,6 +128,10 @@ html.dark,
   --muted: 161 161 170;
   --foreground-control: 212 212 216;
   --foreground-menu: 228 228 231;
+  --foreground-answer: var(--foreground-menu);
+  --foreground-action-hover: 244 244 245;
+  --accent-field: var(--accent-primary-hover);
+  --accent-tint: 30 27 75;
   --foreground-faint: 113 113 122;
   --foreground-section-hover: var(--foreground-menu);
   --surface-hover-strong: 82 82 91;
@@ -198,6 +208,9 @@ html.dark,
   --control-md: 36px;
   --tree-depth-3: calc(var(--space-4) + var(--space-2-5));
   --touch: 44px;
+  --control-answer: calc(var(--touch) + 2 * var(--space-px));
+  --icon-math-quick: 22px;
+  --icon-math-quick-max: 26px;
   --panel-left: 287px;
   --panel-right: 276px;
   --control-lg: 48px;

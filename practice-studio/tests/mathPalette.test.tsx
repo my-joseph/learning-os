@@ -4,6 +4,7 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MathKeyIcon, MATH_KEY_ICONS } from "../src/components/math/MathKeyIcons";
+import { IconButton } from "../src/components/ui/shadcn/Button";
 import { MathPalette, MathPaletteView } from "../src/components/math/MathPalette";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import {
@@ -94,6 +95,13 @@ async function main() {
     plainToolbarHtml,
     /<button[^>]*aria-pressed="true"[^>]*>.*?Plain text<\/span><\/button>/
   );
+  const modeGeometry = (html: string) =>
+    Array.from(html.matchAll(/<button(?=[^>]*aria-pressed)[^>]*class="([^"]+)"[^>]*>/g))
+      .slice(0, 2).map((match) => match[1]);
+  const modeClasses = modeGeometry(mathToolbarHtml);
+  assert.equal(modeClasses.length, 2);
+  assert.deepEqual(modeGeometry(plainToolbarHtml), modeClasses);
+  assert.ok(modeClasses.every((classes) => classes.includes("min-h-touch") && classes.includes("sm:h-control-xs")));
   assert.doesNotMatch(plainToolbarHtml, /aria-label="Quick math templates"/);
   assert.doesNotMatch(plainToolbarHtml, /aria-label="Fraction"/);
   assert.doesNotMatch(plainToolbarHtml, /aria-label="Math symbol palette"/);
@@ -115,7 +123,7 @@ async function main() {
   assert.match(openNoTrigHtml, /role="region" aria-label="Math symbol palette"/);
   assert.match(
     openNoTrigHtml,
-    /role="region" aria-label="Math symbol palette" class="rounded-xl border border-zinc-200/,
+    /role="region" aria-label="Math symbol palette" class="rounded-xl border border-border/,
     "Expanded palette panel must be its own quiet rounded-xl bordered block"
   );
   assert.doesNotMatch(
@@ -248,7 +256,7 @@ async function main() {
 
   const fracButtons = findElements(
     tree,
-    (el) => el.type === "button" && el.props["aria-label"] === "Fraction"
+    (el) => el.type === IconButton && el.props["aria-label"] === "Fraction"
   );
   assert.equal(fracButtons.length, 2, "Expected quick-insert + panel Fraction buttons");
   (fracButtons[0].props.onClick as () => void)();
@@ -261,7 +269,7 @@ async function main() {
 
   const logBaseButtons = findElements(
     tree,
-    (el) => el.type === "button" && el.props["aria-label"] === "Logarithm with base"
+    (el) => el.type === IconButton && el.props["aria-label"] === "Logarithm with base"
   );
   assert.equal(logBaseButtons.length, 1);
   (logBaseButtons[0].props.onClick as () => void)();
@@ -274,7 +282,7 @@ async function main() {
 
   const arcsinButtons = findElements(
     tree,
-    (el) => el.type === "button" && el.props["aria-label"] === "Inverse sine (arcsin)"
+    (el) => el.type === IconButton && el.props["aria-label"] === "Inverse sine (arcsin)"
   );
   assert.equal(arcsinButtons.length, 1);
   (arcsinButtons[0].props.onClick as () => void)();
@@ -440,10 +448,10 @@ async function main() {
   assert.doesNotMatch(focusRingHtml, /Quick math templates/, "Quick keys toolbar must live outside the focused field");
   assert.doesNotMatch(focusRingHtml, /Math symbol palette/, "Expanded palette must live outside the focused field");
 
-  assert.match(mathWorkspaceHtml, /class="space-y-2"/, "Field and toolbar row should use tight 8px spacing");
-  assert.match(mathToolbarHtml, /min-h-\[44px\] min-w-\[44px\][^"]*sm:h-7/, "Math/Plain mode buttons must keep >=44px mobile target height");
-  assert.match(mathToolbarHtml, /min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-7 sm:h-7/, "Quick palette keys must keep 44x44px mobile hit targets");
-  assert.match(openNoTrigHtml, /min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8/, "Expanded palette keys must keep 44x44px mobile hit targets");
+  assert.match(mathWorkspaceHtml, /class="space-y-space-2"/, "Field and toolbar row should use tight 8px spacing");
+  assert.match(mathToolbarHtml, /min-h-touch min-w-touch[^"]*sm:h-control-xs/, "Math/Plain mode buttons must keep >=44px mobile target height");
+  assert.match(mathToolbarHtml, /size-control-xs[^"]*max-sm:size-touch/, "Quick palette keys must keep 44x44px mobile hit targets");
+  assert.match(openNoTrigHtml, /size-control-sm[^"]*max-sm:size-touch/, "Expanded palette keys must keep 44x44px mobile hit targets");
 
   console.log("mathPalette tests passed");
 }

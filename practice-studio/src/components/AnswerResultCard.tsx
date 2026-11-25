@@ -12,6 +12,8 @@ import {
   ResultCardTone,
 } from "@/lib/answerFeedback";
 import { statusTone } from "@/lib/statusTone";
+import { Badge } from "@/components/ui/shadcn/Badge";
+import { Card } from "@/components/ui/shadcn/Card";
 import { Button } from "@/components/ui/shadcn/Button";
 import { dialogCard, presence } from "@/lib/motion";
 import { CheckResult, MistakeTag, Problem, ProblemState } from "@/types/drill";
@@ -53,18 +55,18 @@ export interface AnswerResultCardProps {
 
 function ToneIcon({ tone }: { tone: ResultCardTone }) {
   if (tone === "correct" || tone === "assisted") {
-    return <Check className="w-4 h-4" aria-hidden="true" />;
+    return <Check className="size-space-4" aria-hidden="true" />;
   }
   if (tone === "almost") {
-    return <Minus className="w-4 h-4" aria-hidden="true" />;
+    return <Minus className="size-space-4" aria-hidden="true" />;
   }
   if (tone === "inputError") {
-    return <AlertCircle className="w-4 h-4" aria-hidden="true" />;
+    return <AlertCircle className="size-space-4" aria-hidden="true" />;
   }
   if (tone === "skipped") {
-    return <SkipForward className="w-3.5 h-3.5" aria-hidden="true" />;
+    return <SkipForward className="size-space-3_5" aria-hidden="true" />;
   }
-  return <X className="w-4 h-4" aria-hidden="true" />;
+  return <X className="size-space-4" aria-hidden="true" />;
 }
 
 /** Calm rounded-xl answer result card directly under the answer area. */
@@ -125,15 +127,6 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
     };
   }, [shouldAutoFocusPrimary, resultKey]);
 
-  const actionButtonClass =
-    "inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0 h-11 sm:h-8 px-3.5 sm:px-3 rounded-lg text-xs font-medium bg-white/90 dark:bg-zinc-900/80 border border-zinc-200/90 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
-
-  const backButtonClass =
-    "inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0 h-11 sm:h-8 px-4 sm:px-3.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1";
-
-  const secondaryLinkClass =
-    "inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 py-1 sm:py-0.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
-
   const displayTitle =
     titleOverride ||
     (isReviewSession && (model?.tone === "correct" || model?.tone === "assisted") && isCorrectOnRetry
@@ -145,183 +138,172 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
     <Reveal show={Boolean(model)}>
       <AnimatePresence mode="wait" initial={false}>
         {model && (
-          <m.div
-            key={model.resultKey}
-            variants={dialogCard}
-            {...presence}
-            role="status"
-            className={`rounded-xl p-3.5 sm:p-4 space-y-2.5 ${CARD_STYLES[model.tone]}`}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-start gap-3 min-w-0 flex-1">
-                <span
-                  className={`w-7 h-7 rounded-full inline-flex items-center justify-center shrink-0 ${ICON_CIRCLE_STYLES[model.tone]}`}
-                >
-                  <ToneIcon tone={model.tone} />
-                </span>
+          <Card key={model.resultKey} variant="feedback" asChild className={CARD_STYLES[model.tone]}>
+            <m.div variants={dialogCard} {...presence} role="status">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-3">
+                <div className="flex items-start gap-space-3 min-w-0 flex-1">
+                  <span
+                    className={`size-control-xs rounded-full inline-flex items-center justify-center shrink-0 ${ICON_CIRCLE_STYLES[model.tone]}`}
+                  >
+                    <ToneIcon tone={model.tone} />
+                  </span>
 
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {displayTitle}
-                      {scheduleNote && (
-                        <span className="font-normal text-zinc-600 dark:text-zinc-400">
-                          {" "}· {scheduleNote}
+                  <div className="min-w-0 flex-1 space-y-space-1">
+                    <div className="min-h-control-xs flex flex-wrap items-center gap-x-space-2_5 gap-y-space-0_5">
+                      <span className="text-sm font-semibold text-foreground">
+                        {displayTitle}
+                        {scheduleNote && (
+                          <span className="font-normal text-foreground-subtle">
+                            {" "}· {scheduleNote}
+                          </span>
+                        )}
+                      </span>
+                      {model.attemptNumber !== null && !isReviewSession && (
+                        <span className="text-xs font-display tabular-nums text-muted">
+                          Attempt {model.attemptNumber}
                         </span>
                       )}
-                    </span>
-                    {model.attemptNumber !== null && !isReviewSession && (
-                      <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
-                        Attempt {model.attemptNumber}
-                      </span>
+                    </div>
+
+                    {model.body && (
+                      <div className="text-sm text-foreground-answer-detail leading-snug">
+                        <FormattedText text={model.body} />
+                      </div>
+                    )}
+
+                    {/* Part-by-part breakdown only when it adds information (2+ parts, e.g. real/imaginary). */}
+                    {model.components.length > 1 && (
+                      <div className="flex flex-wrap gap-space-1_5 pt-space-0_5">
+                        {model.components.map((c, i) => (
+                          <Badge
+                            key={i}
+                            variant="answerPart"
+                            className={c.ok ? statusTone.correct.text : statusTone.wrong.text}
+                          >
+                            {c.ok ? (
+                              <Check className="size-space-3" aria-hidden="true" />
+                            ) : (
+                              <X className="size-space-3" aria-hidden="true" />
+                            )}
+                            <FormattedText text={c.label} />
+                            <span className="sr-only">{c.ok ? " correct" : " not correct"}</span>
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
-
-                  {model.body && (
-                    <div className="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">
-                      <FormattedText text={model.body} />
-                    </div>
-                  )}
-
-                  {/* Part-by-part breakdown only when it adds information (2+ parts, e.g. real/imaginary). */}
-                  {model.components.length > 1 && (
-                    <div className="flex flex-wrap gap-1.5 pt-0.5">
-                      {model.components.map((c, i) => (
-                        <span
-                          key={i}
-                          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs bg-white/70 dark:bg-zinc-900/50 ${
-                            c.ok ? statusTone.correct.text : statusTone.wrong.text
-                          }`}
-                        >
-                          {c.ok ? (
-                            <Check className="w-3 h-3" aria-hidden="true" />
-                          ) : (
-                            <X className="w-3 h-3" aria-hidden="true" />
-                          )}
-                          <FormattedText text={c.label} />
-                          <span className="sr-only">{c.ok ? " correct" : " not correct"}</span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
+
+                {actionKind === "back" && onBack && (
+                  <div className="flex sm:justify-end pl-space-10 sm:pl-space-0 shrink-0">
+                    <Button
+                      variant="resultPrimary"
+                      size="resultAction"
+                      ref={primaryBtnRef}
+                      type="button"
+                      onClick={onBack}
+                      data-review-primary-action={isReviewSession ? "true" : undefined}
+                    >
+                      <span>{backLabel || "Back to question"}</span>
+                      <ChevronRight className="size-space-3_5" aria-hidden="true" />
+                    </Button>
+                  </div>
+                )}
+
+                {actionKind === "next" && onNextQuestion && (
+                  <div className="flex sm:justify-end pl-space-10 sm:pl-space-0 shrink-0">
+                    <Button
+                      variant="resultOutline"
+                      size="resultAction"
+                      ref={primaryBtnRef}
+                      type="button"
+                      onClick={onNextQuestion}
+                      data-review-primary-action={isReviewSession ? "true" : undefined}
+                    >
+                      <span>{nextLabel}</span>
+                      <ArrowRight className="size-space-3_5" aria-hidden="true" />
+                    </Button>
+                  </div>
+                )}
+
+                {actionKind === "review" && onOpenReview && (
+                  <div className="flex sm:justify-end pl-space-10 sm:pl-space-0 shrink-0">
+                    <Button
+                      variant="resultOutline"
+                      size="resultAction"
+                      ref={primaryBtnRef}
+                      type="button"
+                      onClick={onOpenReview}
+                      data-review-primary-action={isReviewSession ? "true" : undefined}
+                    >
+                      <span>Review</span>
+                      <ArrowRight className="size-space-3_5" aria-hidden="true" />
+                    </Button>
+                  </div>
+                )}
+
+                {actionKind === "retry" && onTryAgain && (
+                  <div className="flex sm:justify-end pl-space-10 sm:pl-space-0 shrink-0">
+                    <Button
+                      variant="resultOutline"
+                      size="resultAction"
+                      ref={primaryBtnRef}
+                      type="button"
+                      onClick={onTryAgain}
+                      aria-label={retryAriaLabel || undefined}
+                      data-review-primary-action={isReviewSession ? "true" : undefined}
+                    >
+                      <span>{retryLabel}</span>
+                    </Button>
+                  </div>
+                )}
+
+                {actionKind === "show_steps" && onShowSteps && (
+                  <div className="flex sm:justify-end pl-space-10 sm:pl-space-0 shrink-0">
+                    <Button
+                      variant="resultOutline"
+                      size="resultAction"
+                      ref={primaryBtnRef}
+                      type="button"
+                      onClick={onShowSteps}
+                      data-review-primary-action={isReviewSession ? "true" : undefined}
+                    >
+                      <span>Show steps</span>
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              {actionKind === "back" && onBack && (
-                <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <Button
-                    variant="primary"
-                    size="compact"
-                    ref={primaryBtnRef}
-                    type="button"
-                    onClick={onBack}
-                    data-review-primary-action={isReviewSession ? "true" : undefined}
-                    className={backButtonClass}
-                  >
-                    <span>{backLabel || "Back to question"}</span>
-                    <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </Button>
+              {visibleSecondary.length > 0 && (
+                <div className="pl-space-10 flex flex-wrap items-center gap-x-space-4 gap-y-space-1">
+                  {visibleSecondary.map((act) => (
+                    <Button
+                      variant="resultLink"
+                      size="resultLink"
+                      key={act.label}
+                      type="button"
+                      onClick={act.onClick}
+                      disabled={act.disabled || act.loading}
+                    >
+                      {act.loading && (
+                        <Loader2 className="size-space-3_5 animate-spin" aria-hidden="true" />
+                      )}
+                      <span>{act.label}</span>
+                      {act.trailingChevron && !act.loading && (
+                        <ChevronRight className="size-space-3_5" aria-hidden="true" />
+                      )}
+                    </Button>
+                  ))}
                 </div>
               )}
 
-              {actionKind === "next" && onNextQuestion && (
-                <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    ref={primaryBtnRef}
-                    type="button"
-                    onClick={onNextQuestion}
-                    data-review-primary-action={isReviewSession ? "true" : undefined}
-                    className={actionButtonClass}
-                  >
-                    <span>{nextLabel}</span>
-                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </Button>
-                </div>
+              {footnote && (
+                <p className="pl-space-10 text-xs text-muted leading-relaxed">
+                  {footnote}
+                </p>
               )}
-
-              {actionKind === "review" && onOpenReview && (
-                <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    ref={primaryBtnRef}
-                    type="button"
-                    onClick={onOpenReview}
-                    data-review-primary-action={isReviewSession ? "true" : undefined}
-                    className={actionButtonClass}
-                  >
-                    <span>Review</span>
-                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </Button>
-                </div>
-              )}
-
-              {actionKind === "retry" && onTryAgain && (
-                <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    ref={primaryBtnRef}
-                    type="button"
-                    onClick={onTryAgain}
-                    aria-label={retryAriaLabel || undefined}
-                    data-review-primary-action={isReviewSession ? "true" : undefined}
-                    className={actionButtonClass}
-                  >
-                    <span>{retryLabel}</span>
-                  </Button>
-                </div>
-              )}
-
-              {actionKind === "show_steps" && onShowSteps && (
-                <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    ref={primaryBtnRef}
-                    type="button"
-                    onClick={onShowSteps}
-                    data-review-primary-action={isReviewSession ? "true" : undefined}
-                    className={actionButtonClass}
-                  >
-                    <span>Show steps</span>
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {visibleSecondary.length > 0 && (
-              <div className="pl-10 flex flex-wrap items-center gap-x-4 gap-y-1">
-                {visibleSecondary.map((act) => (
-                  <Button
-                    variant="ghost"
-                    size="compact"
-                    key={act.label}
-                    type="button"
-                    onClick={act.onClick}
-                    disabled={act.disabled || act.loading}
-                    className={secondaryLinkClass}
-                  >
-                    {act.loading && (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                    )}
-                    <span>{act.label}</span>
-                    {act.trailingChevron && !act.loading && (
-                      <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                    )}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {footnote && (
-              <p className="pl-10 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                {footnote}
-              </p>
-            )}
-          </m.div>
+            </m.div>
+          </Card>
         )}
       </AnimatePresence>
     </Reveal>

@@ -24,6 +24,33 @@ import type { MistakeTag, Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
 
+for (const layout of ["wrap", "stack"] as const) {
+  const states = [
+    { checkingOptionId: "A" },
+    { resultStatus: "wrong" },
+    { resultStatus: "correct" },
+    { resultStatus: "assisted" },
+  ] as const;
+  for (const state of states) {
+    const html = renderToStaticMarkup(
+      <ChoiceOptionGroup
+        layout={layout}
+        options={[{ id: "A", label: "First" }]}
+        selectedValue="A"
+        onSelect={noop}
+        disabled
+        {...state}
+      />
+    );
+    const attrs = html.match(/<button\b([^>]*)>/)?.[1] ?? "";
+    assert.match(attrs, /aria-checked="true"/);
+    assert.match(attrs, /min-h-touch/);
+    assert.match(attrs, layout === "wrap" ? /sm:min-h-space-10/ : /p-space-3_5/);
+    assert.match(html, /inline-flex shrink-0 size-space-4 items-center justify-center/);
+    if ("checkingOptionId" in state) assert.match(attrs, /aria-busy="true"/);
+  }
+}
+
 function baseState(overrides: Partial<ProblemState> = {}): ProblemState {
   return {
     userInput: "",
