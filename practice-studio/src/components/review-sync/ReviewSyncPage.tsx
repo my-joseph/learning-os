@@ -361,7 +361,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
             >
               To review
             </h2>
-            <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-sans tabular-nums text-zinc-500 dark:text-zinc-400">
               {sortedNeedsAttention.length}
             </span>
           </div>
@@ -426,7 +426,7 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
               />
               <span>Got right</span>
             </span>
-            <span className="text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-sans tabular-nums text-zinc-500 dark:text-zinc-400">
               {groups.correct.length}
             </span>
           </button>

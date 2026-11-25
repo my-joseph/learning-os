@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  b,
+  strong {
+    font-weight: var(--weight-semibold);
+  }
+
   :focus:not(:focus-visible) {
     outline: none;
   }
@@ -308,11 +313,9 @@ html.dark,
   --text-4xl: 2.25rem;
   --text-4xl-leading: 2.5rem;
   --weight-normal: 400;
-  --weight-medium: 500;
+  --weight-heading-medium: 500;
   --weight-semibold: 600;
-  --weight-bold: 700;
-  --weight-extrabold: 800;
-  --weight-black: 900;
+  --tracking-heading: -0.01em;
   --leading-none: 1;
   --leading-tight: 1.25;
   --leading-snug: 1.375;
@@ -380,7 +383,7 @@ html.dark,
 :root,
 body {
   --font-sans: var(--font-geist-sans), "Geist", "Geist Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Roboto Slab Variable", "Roboto Slab", Georgia, serif;
+  --font-heading: "Roboto Slab Variable", "Roboto Slab", Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 

@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import ts from "typescript";
 import config from "../tailwind.config";
 import { auditDesignSystem, sourceFiles, studioRoot } from "./designSystemAudit";
+import { Heading } from "../src/components/ui/Heading";
+import { Numeral } from "../src/components/ui/Numeral";
 
 const read = (file: string) => readFileSync(path.join(studioRoot, file), "utf8");
 const tokensDoc = read("../docs/design/system.md");
@@ -58,6 +62,8 @@ test("Design tokens agree across CSS, Tailwind and the reference", () => {
     }
   }
   inspect(config.theme?.extend, "");
+  assert.deepEqual(Object.keys(config.theme?.extend?.fontFamily ?? {}).sort(), ["heading", "mono", "sans"]);
+  assert.deepEqual(Object.keys(config.theme?.extend?.fontWeight ?? {}).sort(), ["heading-medium", "normal", "semibold"]);
 
   const documented = new Set<string>();
   for (const [, token, keys, lightValue, darkValue] of Array.from(tokensDoc.matchAll(
@@ -73,6 +79,20 @@ test("Design tokens agree across CSS, Tailwind and the reference", () => {
 
   assert.deepEqual(Array.from(declared).sort(), Array.from(documented).sort(), "Undocumented or missing CSS tokens");
   assert.deepEqual(Array.from(exposure.keys()).sort(), Array.from(documented).sort(), "Undocumented or missing Tailwind tokens");
+});
+
+test("Typography roles preserve heading semantics and tabular numbers", () => {
+  const page = renderToStaticMarkup(createElement(Heading, { eyebrow: "LAB-PRG-T01-C01-99" }, "Lab title"));
+  assert.match(page, /<p class="[^"]*font-mono text-2xs[^"]*text-muted">LAB-PRG-T01-C01-99<\/p>/);
+  assert.match(page, /<h1 class="[^"]*font-heading text-lg tracking-heading[^"]*font-semibold">Lab title<\/h1>/);
+  const section = renderToStaticMarkup(createElement(Heading, { variant: "section" }, "Section title"));
+  assert.match(section, /<h2 class="[^"]*font-heading text-lg[^"]*font-heading-medium">Section title<\/h2>/);
+
+  const small = renderToStaticMarkup(createElement(Numeral, { variant: "sm" }, "Q1"));
+  assert.match(small, /class="font-sans tabular-nums">Q1/);
+  const large = renderToStaticMarkup(createElement(Numeral, { variant: "lg", className: "text-base" }, "8 / 10"));
+  assert.match(large, /class="[^"]*font-heading[^"]*tracking-heading tabular-nums text-base">8 \/ 10/);
+  assert.doesNotMatch(large, /\btext-sm\b/);
 });
 
 test("Shared UI exports appear in the component catalog", () => {

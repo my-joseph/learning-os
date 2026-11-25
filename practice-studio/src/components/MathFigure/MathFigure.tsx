@@ -30,7 +30,7 @@ export const MathFigure: React.FC<MathFigureProps> = ({
       >
         {figure.title && (
           <div className="w-full flex items-center justify-start mb-2 px-1">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
               {figure.title}
             </span>
           </div>

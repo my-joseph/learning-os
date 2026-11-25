@@ -180,12 +180,12 @@ export const Interactive3DCylinder: React.FC<Interactive3DCylinderProps> = ({
               {hoveredPart === "top" || hoveredPart === "bottom" ? (
                 <span>
                   <strong className="text-indigo-600 dark:text-indigo-400">Base Circle (A = πr²):</strong>{" "}
-                  π × {r}² = <span className="text-white font-mono">{r * r}π ≈ {baseArea}</span>
+                  π × {r}² = <span className="text-white font-sans tabular-nums">{r * r}π ≈ {baseArea}</span>
                 </span>
               ) : hoveredPart === "lateral" ? (
                 <span>
                   <strong className="text-indigo-600 dark:text-indigo-400">Lateral Surface (Unfolded Rectangle = 2πrh):</strong>{" "}
-                  2π × {r} × {h} = <span className="text-white font-mono">{2 * r * h}π ≈ {lateralArea}</span>
+                  2π × {r} × {h} = <span className="text-white font-sans tabular-nums">{2 * r * h}π ≈ {lateralArea}</span>
                 </span>
               ) : (
                 <span className="text-zinc-500 dark:text-zinc-400">
@@ -203,9 +203,9 @@ export const Interactive3DCylinder: React.FC<Interactive3DCylinderProps> = ({
           <label className="flex flex-col gap-1">
             <div className="flex justify-between items-center">
               <span className="text-zinc-700 dark:text-zinc-300">
-                Radius <strong className="text-amber-700 dark:text-amber-400 font-mono">r = {r}</strong>
+                Radius <strong className="text-amber-700 dark:text-amber-400 font-sans tabular-nums">r = {r}</strong>
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400 font-mono">Base Area = {r * r}π</span>
+              <span className="text-zinc-500 dark:text-zinc-400 font-sans tabular-nums">Base Area = {r * r}π</span>
             </div>
             <input
               type="range"
@@ -221,9 +221,9 @@ export const Interactive3DCylinder: React.FC<Interactive3DCylinderProps> = ({
           <label className="flex flex-col gap-1">
             <div className="flex justify-between items-center">
               <span className="text-zinc-700 dark:text-zinc-300">
-                Height <strong className="text-emerald-700 dark:text-emerald-400 font-mono">h = {h}</strong>
+                Height <strong className="text-emerald-700 dark:text-emerald-400 font-sans tabular-nums">h = {h}</strong>
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400 font-mono">Lateral Area = {2 * r * h}π</span>
+              <span className="text-zinc-500 dark:text-zinc-400 font-sans tabular-nums">Lateral Area = {2 * r * h}π</span>
             </div>
             <input
               type="range"
@@ -238,14 +238,14 @@ export const Interactive3DCylinder: React.FC<Interactive3DCylinderProps> = ({
         </div>
 
         {/* Real-Time Parameter Telemetry */}
-        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap justify-between items-center gap-2 text-center font-mono">
+        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap justify-between items-center gap-2 text-center font-sans tabular-nums">
           <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
             <span className="text-zinc-500 dark:text-zinc-400">Volume V = πr²h: </span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">{r * r * h}π ≈ {volume}</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{r * r * h}π ≈ {volume}</span>
           </div>
           <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
             <span className="text-zinc-500 dark:text-zinc-400">Total Surface Area: </span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">{2 * r * r + 2 * r * h}π ≈ {totalSurfaceArea}</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{2 * r * r + 2 * r * h}π ≈ {totalSurfaceArea}</span>
           </div>
           <button
             type="button"

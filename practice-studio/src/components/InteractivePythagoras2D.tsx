@@ -124,7 +124,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               )}
             </span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
+          <span className="text-[10px] font-sans tabular-nums px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
             2D Interactive
           </span>
         </div>
@@ -174,7 +174,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={(oy + topY) / 2}
             textAnchor="middle"
             dominantBaseline="central"
-            className="fill-indigo-600 dark:fill-indigo-400/60 font-mono text-[10px] pointer-events-none select-none"
+            className="fill-indigo-600 dark:fill-indigo-400/60 font-sans tabular-nums text-[10px] pointer-events-none select-none"
           >
             a&sup2;={aSq}
           </text>
@@ -198,7 +198,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={oy + Math.min(42, legB * scale * 0.4) / 2}
             textAnchor="middle"
             dominantBaseline="central"
-            className="fill-emerald-700 dark:fill-emerald-400/60 font-mono text-[10px] pointer-events-none select-none"
+            className="fill-emerald-700 dark:fill-emerald-400/60 font-sans tabular-nums text-[10px] pointer-events-none select-none"
           >
             b&sup2;={bSq}
           </text>
@@ -264,8 +264,8 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y={(oy + topY) / 2}
               textAnchor="end"
               dominantBaseline="central"
-              className={`font-mono text-xs font-bold transition-all ${
-                hovered === "legA" || hovered === "vertA" ? "fill-indigo-600 dark:fill-indigo-400 font-extrabold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
+              className={`font-sans tabular-nums text-xs font-semibold transition-all ${
+                hovered === "legA" || hovered === "vertA" ? "fill-indigo-600 dark:fill-indigo-400 font-semibold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
               }`}
             >
               a = {legA}
@@ -298,8 +298,8 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y={oy + 18}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`font-mono text-xs font-bold transition-all ${
-                hovered === "legB" || hovered === "vertB" ? "fill-emerald-700 dark:fill-emerald-400 font-extrabold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
+              className={`font-sans tabular-nums text-xs font-semibold transition-all ${
+                hovered === "legB" || hovered === "vertB" ? "fill-emerald-700 dark:fill-emerald-400 font-semibold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
               }`}
             >
               b = {legB}
@@ -331,8 +331,8 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y={(topY + oy) / 2 - 12}
               textAnchor="start"
               dominantBaseline="central"
-              className={`font-mono text-xs font-bold transition-all ${
-                hovered === "hyp" ? "fill-amber-700 dark:fill-amber-400 font-extrabold text-sm" : "fill-amber-700 dark:fill-amber-400"
+              className={`font-sans tabular-nums text-xs font-semibold transition-all ${
+                hovered === "hyp" ? "fill-amber-700 dark:fill-amber-400 font-semibold text-sm" : "fill-amber-700 dark:fill-amber-400"
               }`}
             >
               c = {hyp}
@@ -394,24 +394,24 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
       </div>
 
       {/* Live Telemetry & Equation Proof Bar */}
-      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
+      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-sans tabular-nums text-xs">
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 dark:text-zinc-400">Equation:</span>
-          <span className="text-indigo-600 dark:text-indigo-400 font-bold">{legA}&sup2;</span>
+          <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{legA}&sup2;</span>
           <span className="text-zinc-500 dark:text-zinc-400">+</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-bold">{legB}&sup2;</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{legB}&sup2;</span>
           <span className="text-zinc-500 dark:text-zinc-400">=</span>
           <span className="text-indigo-600 dark:text-indigo-400">{aSq}</span>
           <span className="text-zinc-500 dark:text-zinc-400">+</span>
           <span className="text-emerald-700 dark:text-emerald-400">{bSq}</span>
           <span className="text-zinc-500 dark:text-zinc-400">=</span>
-          <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{cSq}</span>
+          <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{cSq}</span>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-950/40 border border-amber-600/30">
             <span className="text-zinc-500 dark:text-zinc-400">c = &radic;{cSq} =</span>
-            <span className="text-amber-700 dark:text-amber-400 font-black text-sm">{hyp}</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold text-sm">{hyp}</span>
           </div>
 
           <button
@@ -422,7 +422,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             }}
             disabled={!isChanged}
             title="Reset triangle to problem default values"
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-normal transition-all ${
               isChanged
                 ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"

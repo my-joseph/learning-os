@@ -85,7 +85,7 @@ export const ListRow = React.forwardRef<HTMLElement, ListRowProps>(
       className
     );
     const title = label != null && (
-      <span className={cn("min-w-0 flex-1 truncate", isTree && treeLeaf && "text-sm", emphasis === "medium" && "font-medium")}>
+      <span className={cn("min-w-0 flex-1 truncate", isTree && treeLeaf && "text-sm", emphasis === "medium" && "font-semibold")}>
         {label}
       </span>
     );

@@ -1,5 +1,6 @@
 "use client";
 
+import { Numeral } from "@/components/ui/Numeral";
 import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -142,7 +143,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
             Due today
           </h2>
           {!dueLoading && dueReviewCount + otherWorkspaceDueCount > 0 && (
-            <span className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="font-sans tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
               {dueReviewCount + otherWorkspaceDueCount} total across workspaces
             </span>
           )}
@@ -163,17 +164,16 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           </p>
         ) : dueReviewCount > 0 ? (
           <div className="space-y-2.5 min-w-0">
-            <p className="font-display tabular-nums text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed break-words">
-              <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                {dueReviewCount} due · next {sessionSize} · ~{sessionMinutes} min
-              </span>
+            <p className="font-sans tabular-nums text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed break-words">
+              <Numeral variant="lg" className="leading-none text-foreground">{dueReviewCount}</Numeral>
+              {" "}due · next {sessionSize} · ~{sessionMinutes} min
             </p>
 
             {otherWorkspaceDueCount > 0 && (
               <Link
                 href={otherReviewHref}
                 onClick={onNavigate}
-                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs tabular-nums text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
                 {otherWorkspaceDueCount} due in the other workspace
               </Link>
@@ -186,7 +186,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               className="w-full rounded-xl px-3.5 text-xs"
             >
               <Link href={workspaceReviewHref} onClick={onNavigate}>
-                <span>Start review · {sessionSize} of {dueReviewCount}</span>
+                <Numeral>Start review · {sessionSize} of {dueReviewCount}</Numeral>
                 <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
               </Link>
             </Button>
@@ -197,7 +197,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               Nothing due today — you&apos;re all caught up.
             </p>
             {nextDueDate && (
-              <p className="font-display tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="font-sans tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
                 Next due: {nextDueDate}
               </p>
             )}
@@ -205,7 +205,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               <Link
                 href={otherReviewHref}
                 onClick={onNavigate}
-                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs font-display tabular-nums text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs font-sans tabular-nums text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
                 {otherWorkspaceDueCount} due in the other workspace
               </Link>
@@ -231,14 +231,15 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
         {!drillLoading && unitContext && (
           <div className="space-y-1 min-w-0 pb-1">
             <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-snug truncate min-w-0">
+              <span className="text-xs font-normal text-zinc-700 dark:text-zinc-300 leading-snug truncate min-w-0">
                 {plainTitle(unitContext.title)}
               </span>
               <MasteryDots mastery={unitContext.mastery} />
             </div>
             {unitContext.masteryCap?.capped && unitContext.masteryCap.reason && (
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug break-words">
-                Capped at {unitContext.mastery} · {unitContext.masteryCap.reason}
+                Capped at <Numeral variant="lg" className="leading-none">{unitContext.mastery}</Numeral>
+                {" "}· {unitContext.masteryCap.reason}
               </p>
             )}
           </div>
@@ -271,14 +272,14 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               >
                 <div className="flex items-baseline justify-between gap-2 min-w-0">
                   <span
-                    className={`text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words [overflow-wrap:anywhere] min-w-0 ${
-                      spot.name ? "" : "font-display"
+                    className={`text-xs font-normal text-zinc-800 dark:text-zinc-200 break-words [overflow-wrap:anywhere] min-w-0 ${
+                      spot.name ? "" : "font-mono"
                     }`}
                     title={spot.name ? spot.id : undefined}
                   >
                     {spot.name ?? spot.id}
                   </span>
-                  <span className="text-[11px] font-display tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
+                  <span className="text-[11px] font-sans tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
                     {spot.matches}x
                   </span>
                 </div>

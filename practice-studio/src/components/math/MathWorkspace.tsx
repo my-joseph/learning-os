@@ -1,5 +1,6 @@
 "use client";
 
+import { Heading } from "@/components/ui/Heading";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { tabPanel } from "@/lib/motion";
@@ -27,7 +28,7 @@ import {
   resultCardActions,
   slotToTabId,
 } from "@/lib/similarTabs";
-import { plainTitle } from "@/lib/titleText";
+import { isCurriculumId, plainTitle } from "@/lib/titleText";
 import type { SkipOptions } from "@/hooks/types";
 
 export interface MathWorkspaceProps {
@@ -258,25 +259,28 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
 
   const displayTitle = plainTitle(drillTitle);
+  const reviewTitle = plainTitle(reviewUnitTitle) || unitCode || "";
 
   const questionHeader = (
-    <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+    <div className="flex items-center justify-between gap-2 text-xs font-normal text-zinc-500 dark:text-zinc-400">
       <div className="flex items-center gap-x-2 sm:gap-x-3 min-w-0 truncate">
         {isReviewSession ? (
           <>
-            {(plainTitle(reviewUnitTitle) || unitCode) && (
-              <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300 truncate">
-                {plainTitle(reviewUnitTitle) || unitCode}
+            {reviewTitle && (
+              <span className={`text-foreground-control truncate ${
+                isCurriculumId(reviewTitle) ? "font-mono" : ""
+              }`}>
+                {reviewTitle}
               </span>
             )}
             {typeof problem.level === "number" && problem.level > 0 && (
-              <span className="shrink-0 font-display tabular-nums" title={problem.levelLabel?.trim() || undefined}>
+              <span className="shrink-0 font-sans tabular-nums" title={problem.levelLabel?.trim() || undefined}>
                 Difficulty {problem.level}
               </span>
             )}
           </>
         ) : (
-          <span className="truncate font-display tabular-nums">
+          <span className="truncate font-sans tabular-nums">
             Question {questionNumber}
             {typeof totalQuestions === "number" && totalQuestions > 0
               ? ` of ${totalQuestions}`
@@ -338,9 +342,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       </div>
 
       {displayTitle && (
-        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {displayTitle}
-        </h1>
+        <Heading eyebrow={drillId}>
+          {isCurriculumId(displayTitle) ? "Math drill" : displayTitle}
+        </Heading>
       )}
 
       <article
@@ -425,21 +429,21 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                         ref={similarItemRef}
                         problem={activeSimilarProblem}
                         header={
-                          <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                          <div className="flex items-center justify-between gap-2 text-xs font-normal text-zinc-500 dark:text-zinc-400">
                             <div className="min-w-0 truncate">
                               <span className="hidden sm:inline">
                                 Similar question{" "}
-                                <span className="font-display tabular-nums">
+                                <span className="font-sans tabular-nums">
                                   {activeSimilarTab.slot}
                                 </span>{" "}
                                 of{" "}
-                                <span className="font-display tabular-nums">
+                                <span className="font-sans tabular-nums">
                                   {tabs.length}
                                 </span>
                               </span>
                               <span className="sm:hidden">
                                 Similar{" "}
-                                <span className="font-display tabular-nums">
+                                <span className="font-sans tabular-nums">
                                   {activeSimilarTab.slot}/{tabs.length}
                                 </span>
                               </span>

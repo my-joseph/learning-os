@@ -276,7 +276,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 className="overflow-visible pointer-events-none"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                     <FormattedText text={textStr.startsWith("$") ? textStr : `$${textStr}$`} />
                   </span>
                 </div>
@@ -333,7 +333,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                   <div
                     className={`px-1.5 py-0.5 rounded text-xs font-semibold backdrop-blur-[2px] ${
                       isHighlight
-                        ? "bg-amber-100/90 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 font-bold shadow-sm"
+                        ? "bg-amber-100/90 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 font-semibold shadow-sm"
                         : "bg-white/70 dark:bg-zinc-900/70 text-zinc-800 dark:text-zinc-200"
                     }`}
                   >
@@ -459,7 +459,7 @@ const AngleArcMarkerSvg: React.FC<{
           className="overflow-visible pointer-events-none"
         >
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400">
+            <span className="text-[11px] font-sans tabular-nums font-semibold text-amber-700 dark:text-amber-400">
               <FormattedText
                 text={marker.label.startsWith("$") ? marker.label : `$${marker.label}$`}
               />

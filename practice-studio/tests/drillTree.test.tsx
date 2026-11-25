@@ -367,7 +367,7 @@ assert.doesNotMatch(
 // Set 3 (current, no notes, not due) renders StatusDot directly followed by label "Set 3"
 assert.match(
   mathTreeHtml,
-  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="text-xs truncate min-w-0 flex-1 font-medium[^>]*>Set 3<\/span>/
+  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="text-xs truncate min-w-0 flex-1 font-semibold[^>]*>Set 3<\/span>/
 );
 // Set 4 (hasNotes: true) renders StatusDot followed by NoteBadge
 assert.match(mathTreeHtml, /<span class="sr-only">Needs retry<\/span>/);

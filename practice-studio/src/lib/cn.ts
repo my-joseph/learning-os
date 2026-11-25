@@ -9,6 +9,8 @@ const twMerge = extendTailwindMerge({
     classGroups: {
       "border-w": ["border-status"],
       "font-size": ["text-micro", "text-micro-compact"],
+      "font-family": ["font-heading"],
+      "font-weight": ["font-heading-medium"],
       rounded: ["rounded-answer-action"],
       z: ["z-base", "z-local", "z-sticky", "z-overlay", "z-overlay-menu", "z-tooltip"],
       shadow: ["shadow-ui-none", "shadow-ui-sm", "shadow-ui-md", "shadow-ui-lg", "shadow-ui-xl", "shadow-ui-inner"],

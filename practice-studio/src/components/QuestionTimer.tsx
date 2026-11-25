@@ -1,5 +1,6 @@
 "use client";
 
+import { Numeral } from "@/components/ui/Numeral";
 import React from "react";
 import { AnimatePresence, m } from "motion/react";
 import { Clock, Pause, Play } from "lucide-react";
@@ -39,7 +40,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
   return (
     <div className="inline-flex items-center gap-space-2 ml-auto shrink-0">
       <span
-        className={`inline-flex items-center gap-space-1 text-xs font-medium tabular-nums transition-colors ${
+        className={`inline-flex items-center gap-space-1 text-xs transition-colors ${
           isPaused ? warningTone.text : "text-muted"
         }`}
       >
@@ -56,7 +57,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
           <TooltipContent
             side="bottom"
             sideOffset={8}
-            className="rounded-full px-space-3 py-space-1 font-display tabular-nums whitespace-nowrap"
+            className="rounded-full px-space-3 py-space-1 font-sans tabular-nums whitespace-nowrap"
           >
             Total {totalClock}
           </TooltipContent>
@@ -68,7 +69,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
             </m.span>
           )}
         </AnimatePresence>
-        <span className="font-display">{questionClock}</span>
+        <Numeral variant="lg" className="leading-none">{questionClock}</Numeral>
       </span>
 
       <Tooltip>

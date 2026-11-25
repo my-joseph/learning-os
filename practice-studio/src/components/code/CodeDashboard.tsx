@@ -1,5 +1,6 @@
 "use client";
 
+import { Heading } from "@/components/ui/Heading";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
@@ -64,7 +65,7 @@ import {
   ReviewRunResult,
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
-import { plainTitle } from "@/lib/titleText";
+import { isCurriculumId, plainTitle } from "@/lib/titleText";
 import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
 import {
@@ -520,13 +521,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.prompt.includes(problem.codeSnippet!.trim().slice(0, 32));
 
   const displayTitle = plainTitle(drillTitle);
+  const reviewTitle = plainTitle(reviewUnitTitle);
 
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
       {displayTitle && (
-        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {displayTitle}
-        </h1>
+        <Heading eyebrow={drillId}>
+          {isCurriculumId(displayTitle) ? (isLab ? "Lab" : "Programming drill") : displayTitle}
+        </Heading>
       )}
 
       <article
@@ -538,18 +540,20 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
       >
         {/* 1. Brief: problem/milestone title + timer + prompt (text-base), then Visible tests */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-normal text-zinc-500 dark:text-zinc-400">
             <h2 className="flex flex-wrap items-center gap-x-3 gap-y-1">
               {isReviewSession ? (
                 <>
-                  {plainTitle(reviewUnitTitle) && (
-                    <span className="font-display tabular-nums text-zinc-700 dark:text-zinc-300">
-                      {plainTitle(reviewUnitTitle)}
+                  {reviewTitle && (
+                    <span className={`text-foreground-control ${
+                      isCurriculumId(reviewTitle) ? "font-mono" : ""
+                    }`}>
+                      {reviewTitle}
                     </span>
                   )}
                   {typeof problem.level === "number" && problem.level > 0 && (
                     <span
-                      className="font-display tabular-nums"
+                      className="font-sans tabular-nums"
                       title={problem.levelLabel?.trim() || undefined}
                     >
                       Difficulty {problem.level}
@@ -557,7 +561,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   )}
                 </>
               ) : (
-                <span className="font-display tabular-nums">
+                <span className="font-sans tabular-nums">
                   {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
                   {typeof totalQuestions === "number" && totalQuestions > 0
                     ? isLab
@@ -625,7 +629,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
         {problem.constraints && problem.constraints.length > 0 && (
           <section aria-label="Constraints" className="space-y-1.5">
-            <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <h3 className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
               Constraints
             </h3>
             <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
@@ -670,7 +674,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                     >
                       <ChevronDown
                         aria-hidden="true"
@@ -718,7 +722,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               (problem.visibleTestFiles && problem.visibleTestFiles.length > 0)) && (
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <h3 className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
                     Visible tests
                   </h3>
                   {(problem.visibleTestFiles?.length || problem.testCommand) && (
@@ -895,7 +899,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={handleRunChecks}
                   disabled={isRunningChecks}
-                  className="inline-flex items-center justify-center sm:justify-start gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center justify-center sm:justify-start gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
                 >
                   {isRunningChecks ? (
                     <>
@@ -911,7 +915,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={vscodeFolderUrl}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -920,9 +924,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {vscodeUrl && problem.mainFile && (
                   <a
                     href={vscodeUrl}
-                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center justify-center sm:justify-start gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
-                    <span>Open {problem.mainFile}</span>
+                    <span>Open <code className="font-mono">{problem.mainFile}</code></span>
                   </a>
                 )}
 
@@ -930,7 +934,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      className="inline-flex min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 items-center justify-center sm:justify-start gap-1 text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                     >
                       <ChevronDown
                         aria-hidden="true"
@@ -967,7 +971,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
-                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                   >
                     <span>
                       Review history
@@ -998,7 +1002,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                               }`}
                             >
                               <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
-                                <span className="font-display tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+                                <span className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
                                   #{r.attempt ?? rIdx + 1} {r.verdict}
                                 </span>
                                 {r.at && (
@@ -1009,7 +1013,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                                 {r.tests && (
                                   <span className="text-zinc-500 dark:text-zinc-400">
                                     tests{" "}
-                                    <span className="font-display tabular-nums">
+                                    <span className="font-sans tabular-nums">
                                       {r.tests.passed}/{r.tests.total}
                                     </span>
                                   </span>
@@ -1051,7 +1055,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
-                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                    className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                   >
                     <span>Explain</span>
                     <ChevronDown
@@ -1096,7 +1100,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     <CollapsibleTrigger asChild>
                       <button
                         type="button"
-                        className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                        className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                       >
                         <span>Lab README</span>
                         <ChevronDown
@@ -1125,7 +1129,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                      className="w-full min-h-[44px] sm:min-h-0 flex items-center justify-between text-left text-xs font-normal text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors motion-reduce:transition-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
                     >
                       <span>Reference</span>
                       <span className="inline-flex items-center gap-2">
@@ -1219,6 +1223,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </div>
                 ) : (
                   <PlainAnswerField
+                    code
                     inputRef={answerInputRef}
                     value={problem.state.userInput}
                     onChange={onInputChange}

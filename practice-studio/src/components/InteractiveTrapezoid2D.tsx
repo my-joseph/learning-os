@@ -152,7 +152,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               )}
             </span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-800/50 shrink-0 hidden sm:inline-block">
+          <span className="text-[10px] font-sans tabular-nums px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-800/50 shrink-0 hidden sm:inline-block">
             2D Interactive
           </span>
         </div>
@@ -290,8 +290,8 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               y={p4.y - 14}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`font-mono text-xs font-bold transition-all ${
-                hovered === "b1" ? "fill-indigo-600 dark:fill-indigo-400 font-extrabold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
+              className={`font-sans tabular-nums text-xs font-semibold transition-all ${
+                hovered === "b1" ? "fill-indigo-600 dark:fill-indigo-400 font-semibold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
               }`}
             >
               b&sub1; = {b1}
@@ -321,8 +321,8 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
               y={oy + 18}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`font-mono text-xs font-bold transition-all ${
-                hovered === "b2" ? "fill-emerald-700 dark:fill-emerald-400 font-extrabold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
+              className={`font-sans tabular-nums text-xs font-semibold transition-all ${
+                hovered === "b2" ? "fill-emerald-700 dark:fill-emerald-400 font-semibold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
               }`}
             >
               b&sub2; = {b2}
@@ -337,8 +337,8 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
             dominantBaseline="central"
             onPointerOver={() => setHovered("height")}
             onPointerOut={() => setHovered(null)}
-            className={`font-mono text-xs font-bold transition-all cursor-pointer ${
-              hovered === "height" ? "fill-amber-700 dark:fill-amber-400 font-extrabold text-sm" : "fill-amber-700 dark:fill-amber-400"
+            className={`font-sans tabular-nums text-xs font-semibold transition-all cursor-pointer ${
+              hovered === "height" ? "fill-amber-700 dark:fill-amber-400 font-semibold text-sm" : "fill-amber-700 dark:fill-amber-400"
             }`}
           >
             h = {h}
@@ -404,16 +404,16 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
       </div>
 
       {/* Live Telemetry & Equation Proof Bar */}
-      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
+      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-sans tabular-nums text-xs">
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 dark:text-zinc-400">Formula:</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-bold">&frac12; &times; (b&sub1; + b&sub2;) &times; h</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">&frac12; &times; (b&sub1; + b&sub2;) &times; h</span>
           <span className="text-zinc-500 dark:text-zinc-400">=</span>
           <span className="text-zinc-500 dark:text-zinc-400">&frac12;({b1} + {b2})({h})</span>
           <span className="text-zinc-500 dark:text-zinc-400">=</span>
           <span className="text-zinc-500 dark:text-zinc-400">&frac12;({b1 + b2})({h})</span>
           <span className="text-zinc-500 dark:text-zinc-400">=</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-black text-sm">{totalArea}</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold text-sm">{totalArea}</span>
         </div>
 
         <button
@@ -425,7 +425,7 @@ export const InteractiveTrapezoid2D: React.FC<InteractiveTrapezoid2DProps> = ({
           }}
           disabled={!isChanged}
           title="Reset trapezoid to problem default values"
-          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-normal transition-all ${
             isChanged
               ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
               : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"

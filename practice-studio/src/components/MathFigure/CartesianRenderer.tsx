@@ -450,7 +450,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                           : "justify-start"
                       }`}
                     >
-                      <span className="whitespace-nowrap text-[11px] font-bold px-1 py-0.5 rounded bg-white/85 dark:bg-zinc-900/85 text-zinc-800 dark:text-zinc-100 shadow-sm border border-zinc-200/50 dark:border-zinc-700/50">
+                      <span className="whitespace-nowrap text-[11px] font-semibold px-1 py-0.5 rounded bg-white/85 dark:bg-zinc-900/85 text-zinc-800 dark:text-zinc-100 shadow-sm border border-zinc-200/50 dark:border-zinc-700/50">
                         <FormattedText
                           text={toMathText(plot.label)}
                         />
@@ -477,7 +477,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                   }`}
                 >
                   <span
-                    className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100"
+                    className="text-[11px] font-semibold text-zinc-800 dark:text-zinc-100"
                     style={plot.color ? { color: plot.color } : undefined}
                   >
                     <FormattedText text={toMathText(plot.text)} />

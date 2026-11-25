@@ -198,9 +198,9 @@ export const Stepper: React.FC<StepperProps> = ({
     : "size-stepper-marker text-micro sm:size-space-6 sm:text-2xs";
   const buttonSize = compact ? "stepperCompact" : "stepper";
   const connectorCls = compact ? "stepper-connector stepper-connector-compact" : "stepper-connector";
-  const labelCls = `hidden sm:block max-w-full truncate px-space-1 font-display ${
+  const labelCls = `hidden sm:block max-w-full truncate px-space-1 font-sans tabular-nums ${
     compact ? "mt-space-0_5 text-micro" : "mt-space-1 text-xs"
-  } font-medium leading-tight text-muted`;
+  } font-normal leading-tight text-muted`;
 
   return (
     <div

@@ -1,5 +1,7 @@
 "use client";
 
+import { Heading } from "@/components/ui/Heading";
+import { Numeral } from "@/components/ui/Numeral";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { sendPracticeAction } from "@/lib/practiceActions";
 import Link from "next/link";
@@ -68,7 +70,7 @@ import {
   setVisibility,
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
-import { plainTitle, trapName } from "@/lib/titleText";
+import { isCurriculumId, plainTitle, trapName } from "@/lib/titleText";
 import { formatReviewDueDate } from "@/lib/reviewDate";
 
 export interface DailyReviewViewProps {
@@ -203,14 +205,14 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
       <div className="mx-auto w-full max-w-[720px] space-y-4">
         {/* Slim header row: one h1 ("Daily review"), progress "3 of 8", back link, theme toggle */}
         <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 sm:px-3.5 py-1.5 sm:py-2.5 shadow-sm flex items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-baseline gap-2 sm:gap-3 min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight whitespace-nowrap">
+          <div className="flex flex-wrap items-end gap-x-2 sm:gap-x-3 min-w-0">
+            <Heading eyebrow={currentItem?.drillId} className="leading-tight">
               Daily review
-            </h1>
+            </Heading>
             {showProgressCounter && (
               <span
                 aria-label="Review progress"
-                className="text-xs sm:text-sm font-display tabular-nums text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
+                className="text-xs font-sans tabular-nums text-muted whitespace-nowrap"
               >
                 Review {currentIndex + 1} of {items.length}
               </span>
@@ -221,7 +223,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             <Link
               href={resolvedBackHref}
               aria-label="Back to drill"
-              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-8 px-2 sm:px-2.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-8 px-2 sm:px-2.5 rounded-lg text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap"
             >
               <ArrowLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               <span className="sm:hidden">Back</span>
@@ -256,9 +258,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             </Card>
           ) : error ? (
             <Card className="shadow-none p-6 space-y-3">
-              <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                Could not load daily review
-              </p>
+              <Heading variant="section">Could not load daily review</Heading>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{error}</p>
               <Button asChild variant="primary" size="compact" className="rounded-xl px-3.5">
                 <Link href={resolvedBackHref}>
@@ -271,9 +271,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             /* Empty state when nothing is due */
             <Card className="shadow-none p-6 sm:p-8 space-y-4">
               <div className="space-y-1.5">
-                <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                  Nothing to review today
-                </p>
+                <Heading variant="section">Nothing to review today</Heading>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   {nextDueDate
                     ? `Next due: ${nextDueDate}`
@@ -297,11 +295,10 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <Check className="w-4 h-4" aria-hidden="true" />
                 </span>
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                    Review complete
-                  </h2>
-                  <p className="text-sm font-display tabular-nums text-zinc-600 dark:text-zinc-400">
-                    {computedSummary.correctCount} / {computedSummary.totalCount} correct
+                  <Heading variant="section">Review complete</Heading>
+                  <p className="text-sm tabular-nums text-muted">
+                    <Numeral variant="lg">{computedSummary.correctCount} / {computedSummary.totalCount}</Numeral>
+                    {" "}correct
                     {stillDueCount > 0 ? ` · Still due ${stillDueCount}` : ""}
                   </p>
                 </div>
@@ -312,8 +309,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved up
                   </div>
-                  <div className={`font-display font-semibold ${statusTone.correct.text} tabular-nums`}>
-                    {computedSummary.movedUpCount} moved up a level
+                  <div className={statusTone.correct.text}>
+                    <Numeral variant="lg">{computedSummary.movedUpCount}</Numeral> moved up a level
                   </div>
                 </div>
 
@@ -321,8 +318,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved down
                   </div>
-                  <div className={`font-display font-semibold ${statusTone.wrong.text} tabular-nums`}>
-                    {computedSummary.movedDownCount} moved down a level
+                  <div className={statusTone.wrong.text}>
+                    <Numeral variant="lg">{computedSummary.movedDownCount}</Numeral> moved down a level
                   </div>
                 </div>
 
@@ -330,7 +327,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Next due
                   </div>
-                  <div className="font-display font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  <div className="font-sans tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
                     {formatReviewDueDate(computedSummary.nextDueDate, today || undefined)}
                   </div>
                 </div>
@@ -343,7 +340,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     if (!rows.length) return null;
                     return (
                       <section key={group} className="space-y-1.5">
-                        <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        <h3 className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
                           {group} ({rows.length})
                         </h3>
                         <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-surface-panel/60">
@@ -354,7 +351,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                                 className="flex min-h-[44px] items-center justify-between gap-3 px-3.5 py-2.5 text-xs hover:bg-zinc-100/80 dark:hover:bg-zinc-900 transition-colors"
                               >
                                 <span className="min-w-0 whitespace-normal text-zinc-800 dark:text-zinc-200">
-                                  <span className="block font-medium leading-snug">{missed.unitTitle}</span>
+                                  <span className={`block leading-snug ${isCurriculumId(missed.unitTitle) ? "font-mono" : "font-sans"}`}>{missed.unitTitle}</span>
                                   {missed.questionLine && <span className="block mt-0.5 text-zinc-500 dark:text-zinc-400 leading-snug">{missed.questionLine}</span>}
                                 </span>
                                 <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-400 shrink-0">
@@ -386,7 +383,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     </button>
                     <Link
                       href={resolvedBackHref}
-                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-3 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-10 px-3 rounded-xl text-xs font-normal text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                       <span>Back to drill</span>
                     </Link>
@@ -441,7 +438,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   {plainTrapTitle && (
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
                       Trap:{" "}
-                      <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                      <span className="font-normal text-zinc-800 dark:text-zinc-200">
                         {plainTrapTitle}
                       </span>
                     </p>
@@ -451,7 +448,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     <div className="space-y-1.5">
                       <label
                         htmlFor={`revisit-note-${safeProblem.id}`}
-                        className="block text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                        className="block text-xs font-normal text-zinc-600 dark:text-zinc-400"
                       >
                         Next time I will…
                       </label>

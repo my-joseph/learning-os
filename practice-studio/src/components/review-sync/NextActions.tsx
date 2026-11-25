@@ -39,7 +39,7 @@ const PRIMARY_CLS =
   "w-full sm:w-auto inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
 const GHOST_CLS =
-  "w-full sm:w-auto inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
+  "w-full sm:w-auto inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:h-9 px-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
 /** Section E: "What next" actions. Ghost before sync; first action becomes primary after a successful sync. */
 export const NextActions: React.FC<NextActionsProps> = ({
@@ -63,7 +63,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
           label: (
             <>
               <span>Daily review · </span>
-              <span className="font-display tabular-nums">{dueReviewCount}</span>
+              <span className="font-sans tabular-nums">{dueReviewCount}</span>
               <span> due</span>
             </>
           ),
@@ -84,7 +84,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
         label: (
           <>
             <span>Retry </span>
-            <span className="font-display">{firstWrong.label}</span>
+            <span className="font-sans tabular-nums">{firstWrong.label}</span>
           </>
         ),
         onClick: () => onOpenItem(firstWrong.index),

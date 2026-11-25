@@ -548,21 +548,21 @@ assert.doesNotMatch(lastLiMatch[0], /of 6 answered|&amp; sync<\/span>/);
 assert.match(lastLiMatch[0], /<svg[^>]*>/);
 assert.doesNotMatch(lastLiMatch[0], />07<\/span>/);
 
-// Visible desktop labels carry aria-hidden="true" and hidden sm:block + font-display
+// Visible desktop labels carry aria-hidden="true" and hidden sm:block + font-sans
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*text-xs[^"]*">Level 2<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-sans[^"]*text-xs[^"]*">Level 2<\/span>/
 );
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*text-xs[^"]*">Level 2<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-sans[^"]*text-xs[^"]*">Level 2<\/span>/
 );
 
 // Every step button keeps a 44px minimum hit area while circles remain compact.
 assert.match(sixHtml, /min-w-space-11 min-h-space-11/);
 assert.match(sixHtml, /size-stepper-marker text-micro sm:size-space-6 sm:text-2xs/);
 assert.doesNotMatch(sixHtml, /group-focus-visible:outline/);
-assert.match(sixHtml, /font-display[^"]*text-xs font-medium leading-tight text-muted/);
+assert.match(sixHtml, /font-sans[^"]*text-xs font-normal leading-tight text-muted/);
 
 // ---------------------------------------------------------------------------
 // 4. Connectors: current = 2 => segments 0 & 1 indigo, rest zinc; review => all indigo
@@ -642,8 +642,8 @@ assert.match(twelveHtml, />Q7<\/span>/);
 assert.match(twelveHtml, />Q12<\/span>/);
 assert.match(
   twelveHtml,
-  /<span aria-hidden="true" class="[^"]*font-display[^"]*text-xs font-medium[^"]*">Level 4<\/span>/,
-  "step labels use the card meta style (text-xs font-medium)"
+  /<span aria-hidden="true" class="[^"]*font-sans[^"]*text-xs font-normal[^"]*">Level 4<\/span>/,
+  "step labels use the card meta style (text-xs font-normal)"
 );
 
 console.log("stepper tests passed");

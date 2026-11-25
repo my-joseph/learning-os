@@ -217,7 +217,7 @@ function HoverRowCode({ code, isSidebar = false }: { code: string; isSidebar?: b
       <span
         data-sidebar-row-code={isSidebar || undefined}
         aria-hidden={isSidebar || undefined}
-        className={`pointer-events-none absolute right-space-1_5 top-1/2 -translate-y-1/2 hidden ${isSidebar ? "" : "group-hover:block group-focus-visible:block "}whitespace-nowrap rounded px-space-1 bg-surface-hover font-display text-2xs text-muted tabular-nums`}
+        className={`pointer-events-none absolute right-space-1_5 top-1/2 -translate-y-1/2 hidden ${isSidebar ? "" : "group-hover:block group-focus-visible:block "}whitespace-nowrap rounded px-space-1 bg-surface-hover font-mono text-2xs text-muted`}
       >
         {code}
       </span>
@@ -229,7 +229,7 @@ function CountPill({ count, isSidebar = false }: { count: number; isSidebar?: bo
   return (
     <Badge
       variant="status"
-      className={`text-2xs font-display tabular-nums text-muted ${
+      className={`text-2xs font-sans tabular-nums text-muted ${
         isSidebar ? "bg-transparent" : "bg-surface-hover"
       } px-space-1_5 py-space-0_5 rounded-full shrink-0`}
     >
@@ -754,7 +754,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           isSidebar
             ? "px-space-2 min-h-touch lg:min-h-control-md bg-surface-raised dark:bg-surface-raised/60 hover:bg-surface-hover dark:hover:bg-surface-selected/40"
             : "px-space-2 bg-surface-raised hover:bg-background dark:hover:bg-surface-hover/70"
-        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-medium text-foreground-control transition-colors whitespace-nowrap`}
+        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-normal text-foreground-control transition-colors whitespace-nowrap`}
       >
         <ChevronsUpDown className={`${isSidebar ? "size-space-3_5" : "size-space-3"} text-foreground-faint dark:text-muted shrink-0`} aria-hidden="true" />
         <span>Expand all</span>
@@ -767,7 +767,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           isSidebar
             ? "px-space-2 min-h-touch lg:min-h-control-md bg-surface-raised dark:bg-surface-raised/60 hover:bg-surface-hover dark:hover:bg-surface-selected/40"
             : "px-space-2 bg-surface-raised hover:bg-background dark:hover:bg-surface-hover/70"
-        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-medium text-foreground-control transition-colors whitespace-nowrap`}
+        } py-space-1 rounded-md border border-border disabled:opacity-40 ${isSidebar ? "text-sm" : "text-2xs"} font-normal text-foreground-control transition-colors whitespace-nowrap`}
       >
         <ChevronsDownUp className={`${isSidebar ? "size-space-3_5" : "size-space-3"} text-foreground-faint dark:text-muted shrink-0`} aria-hidden="true" />
         <span>Collapse all</span>
@@ -827,14 +827,14 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             className={kind === "topic" ? "text-foreground" : undefined}
             emphasis="medium"
             leading={leading}
-            label={plainTitle(title)}
+            label={title === code ? <span className="font-mono">{title}</span> : plainTitle(title)}
             trailing={trailing}
           />
         ) : (
           <button {...rowProps} type="button" className={`${BRANCH_ROW_CLASS} flex-1`}>
             {leading}
-            <span className={`text-xs font-medium truncate min-w-0 flex-1 ${kind === "topic" ? "text-foreground" : "text-foreground-control"}`}>
-              {plainTitle(title)}
+            <span className={`text-xs font-normal truncate min-w-0 flex-1 ${kind === "topic" ? "text-foreground" : "text-foreground-control"}`}>
+              {title === code ? <span className="font-mono">{title}</span> : plainTitle(title)}
             </span>
             {trailing}
           </button>
@@ -928,7 +928,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           }`}
         >
           {leading}
-          <span className={`text-xs truncate min-w-0 flex-1 ${isCurrent ? "font-medium text-foreground" : "text-foreground-control"}`}>
+          <span className={`text-xs truncate min-w-0 flex-1 ${isCurrent ? "font-semibold text-foreground" : "text-foreground-control"}`}>
             {plainTitle(label)}
           </span>
           {trailing}
@@ -1009,10 +1009,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           aria-controls={undefined}
                           className={`relative z-local inline-flex ${
                             isSidebar ? "h-8" : "min-h-0"
-                          } items-center justify-center gap-space-1_5 rounded-md bg-transparent px-space-2_5 py-space-1 ${isSidebar ? "text-sm" : "text-xs"} font-medium text-muted shadow-none transition-colors whitespace-nowrap hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:hover:text-foreground-menu`}
+                          } items-center justify-center gap-space-1_5 rounded-md bg-transparent px-space-2_5 py-space-1 ${isSidebar ? "text-sm" : "text-xs"} font-normal text-muted shadow-none transition-colors whitespace-nowrap hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:hover:text-foreground-menu`}
                         >
                           <span>{tab.label}</span>
-                          <span className="text-2xs font-display tabular-nums text-muted">
+                          <span className="text-2xs font-sans tabular-nums text-muted">
                             {tab.count}
                           </span>
                         </TabsTrigger>
@@ -1039,7 +1039,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         aria-expanded={isViewOpen}
                         className={`inline-flex items-center gap-space-1 ${
                           isSidebar ? "px-space-2 min-h-touch lg:min-h-control-md " : "px-space-2 "
-                        }py-space-1 rounded-md border ${isSidebar ? "text-sm" : "text-2xs"} font-medium transition-colors whitespace-nowrap ${
+                        }py-space-1 rounded-md border ${isSidebar ? "text-sm" : "text-2xs"} font-normal transition-colors whitespace-nowrap ${
                           isViewOpen || isFilterActive
                             ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-foreground"
                             : isSidebar
@@ -1075,7 +1075,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       className="w-space-52 rounded-xl p-space-2_5 z-tooltip space-y-space-2_5"
                     >
                       <div className="space-y-space-1">
-                        <div className="px-space-1 text-2xs font-medium text-muted">
+                        <div className="px-space-1 text-2xs font-normal text-muted">
                           Status
                         </div>
                         <div
@@ -1096,7 +1096,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                 }}
                                 className={`w-full flex items-center justify-between px-space-2 py-space-1 rounded-md text-xs transition-colors ${
                                   isActive
-                                    ? "bg-surface-hover text-foreground font-medium"
+                                    ? "bg-surface-hover text-foreground font-normal"
                                     : "text-foreground-subtle hover:bg-background dark:hover:bg-surface-hover/60"
                                 } ${isSidebar ? "text-sm min-h-control-md" : "text-xs"}`}
                               >
@@ -1114,7 +1114,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       </div>
 
                       <div className="pt-space-2 border-t border-border space-y-space-1_5">
-                        <div className="px-space-1 text-2xs font-medium text-muted">
+                        <div className="px-space-1 text-2xs font-normal text-muted">
                           Legend
                         </div>
                         <div className="grid grid-cols-2 gap-x-space-2 gap-y-space-1 px-space-1">
@@ -1159,7 +1159,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             {/* Pinned Current Row */}
             {currentPinnedItem && (
               <div className="shrink-0 pb-space-2 mb-space-2 border-b border-border space-y-space-1">
-                <div className="px-space-1 text-2xs font-medium text-muted">
+                <div className="px-space-1 text-2xs font-normal text-muted">
                   Current
                 </div>
                 <button
@@ -1177,7 +1177,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     hasNotes={currentPinnedHasNotes}
                     isDueToday={currentPinnedIsDue}
                   />
-                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-foreground truncate min-w-0 flex-1`}>
+                  <span className={`${isSidebar ? "text-sm" : "text-xs"} font-normal text-foreground truncate min-w-0 flex-1`}>
                     {currentPinnedItem.setLabel
                       ? `${plainTitle(currentPinnedItem.title)} · ${currentPinnedItem.setLabel}`
                       : plainTitle(currentPinnedItem.title)}
@@ -1210,7 +1210,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         setActiveTab(activeTab === "labs" ? "drills" : "labs");
                         setActiveNodeId(null);
                       }}
-                      className={`${isSidebar ? "text-sm" : "text-xs"} font-medium text-accent hover:underline`}
+                      className={`${isSidebar ? "text-sm" : "text-xs"} font-normal text-accent hover:underline`}
                     >
                       Show {otherTabMatchCount} matching{" "}
                       {activeTab === "labs"
@@ -1429,7 +1429,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         aria-label="Switch practice drill"
         className="w-full sm:w-auto inline-flex items-center justify-between gap-space-2 h-control-md px-space-3 rounded-lg bg-surface-hover/80 dark:bg-surface-hover/70 hover:bg-surface-selected/70 dark:hover:bg-surface-hover border border-border text-left transition-colors min-w-0"
       >
-        <span className="text-xs sm:text-sm font-medium text-foreground truncate max-w-picker-title-sm sm:max-w-picker-title-md md:max-w-picker-title-lg">
+        <span className="text-xs sm:text-sm font-normal text-foreground truncate max-w-picker-title-sm sm:max-w-picker-title-md md:max-w-picker-title-lg">
           {currentDrill
             ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
             : "Select practice drill"}

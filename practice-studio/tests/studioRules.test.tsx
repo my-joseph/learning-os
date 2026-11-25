@@ -610,12 +610,12 @@ const reviewHtml = renderToStaticMarkup(
 assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
 assert.match(
   reviewHtml,
-  /class="[^"]*font-display[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
+  /class="[^"]*font-sans[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
   "Review & Sync counts must use the display typeface"
 );
 assert.match(
   reviewHtml,
-  /class="[^"]*font-display[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
+  /class="[^"]*font-sans[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
   "Review & Sync totals must use the display typeface"
 );
 
@@ -711,7 +711,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   }
 }
 
-// Learner 2026-11-22: Geist / Geist Fallback (font-sans), Roboto Slab (font-display accent), Geist Mono (code only), KaTeX (math).
+// Learner 2026-11-25: Geist for UI, Roboto Slab for headings and prominent numerals, Geist Mono for code and curriculum IDs.
 {
   const layoutSrc = readFileSync("src/app/layout.tsx", "utf8");
   const packageJson = readFileSync("package.json", "utf8");
@@ -721,7 +721,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.doesNotMatch(layoutSrc, /@fontsource\/source-sans-pro/);
   assert.doesNotMatch(packageJson, /@fontsource\/source-sans-pro/);
   assert.match(globalsCss, /--font-sans:\s*var\(--font-geist-sans\),\s*"Geist",\s*"Geist Fallback"/);
-  assert.match(globalsCss, /--font-display:\s*"Roboto Slab Variable"/);
+  assert.match(globalsCss, /--font-heading:\s*"Roboto Slab Variable"/);
 }
 
 // Rev 2 Flat 3-pane Sidebar + Header + Frameless workspace SSR & invariant checks

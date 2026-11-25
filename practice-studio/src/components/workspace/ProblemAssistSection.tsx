@@ -222,7 +222,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
               >
                 {showStepsHeader && (
                   <div className="flex flex-wrap justify-between items-center gap-space-2 pb-space-2 border-b border-border text-xs text-muted">
-                    <span className="font-medium">Steps</span>
+                    <span className="font-normal">Steps</span>
                     {problem.answerDisplay && (
                       <span>
                         Answer:{" "}

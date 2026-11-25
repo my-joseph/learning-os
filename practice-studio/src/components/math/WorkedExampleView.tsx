@@ -88,7 +88,7 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
     <div className="space-y-space-6" aria-label="Worked example — a similar question, not yours">
       {/* Breadcrumb header + honest label */}
       <div className="space-y-space-2">
-        <div className="flex flex-wrap items-center gap-x-space-2 gap-y-space-1 text-xs font-medium text-muted">
+        <div className="flex flex-wrap items-center gap-x-space-2 gap-y-space-1 text-xs font-normal text-muted">
           <Button
             onClick={onBackToQuestion}
             variant="exampleBack"
@@ -142,7 +142,7 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
               size="examplePrimary"
             >
               <span>Show next step</span>
-              <span className="font-display text-accent-on-primary-muted/80 tabular-nums">
+              <span className="font-sans tabular-nums text-accent-on-primary-muted/80">
                 Step {Math.min(revealedCount + 1, steps.length)} of {steps.length}
               </span>
             </Button>
