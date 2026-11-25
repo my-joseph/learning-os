@@ -35,11 +35,10 @@ const runningHtml = renderToStaticMarkup(
 );
 assert.match(runningHtml, /lucide-clock/);
 assert.match(runningHtml, /tabular-nums/);
-assert.match(runningHtml, /text-zinc-500/);
+assert.match(runningHtml, /text-muted/);
 assert.match(runningHtml, />01:15</);
 assert.match(runningHtml, /Total 03:15/);
 assert.match(runningHtml, /aria-label="Pause timer"/);
-assert.match(runningHtml, /min-h-\[44px\][^"]*min-w-\[44px\][^"]*sm:w-6 sm:h-6/, "Pause timer must keep a 44x44px mobile hit target");
 assert.match(runningHtml, /aria-pressed="false"/);
 assert.match(runningHtml, /lucide-pause/);
 assert.doesNotMatch(runningHtml, />Paused</);
@@ -59,6 +58,13 @@ assert.match(pausedHtml, /Total 2:02:05/);
 assert.match(pausedHtml, /aria-label="Resume timer"/);
 assert.match(pausedHtml, /aria-pressed="true"/);
 assert.match(pausedHtml, /lucide-play/);
+for (const markup of [runningHtml, pausedHtml]) {
+  const toggle = markup.match(/<button[^>]+aria-label="(?:Pause|Resume) timer"[^>]*>/)?.[0];
+  assert.ok(toggle);
+  for (const size of ["size-space-11", "min-h-touch", "min-w-touch", "sm:size-space-6"]) {
+    assert.ok(toggle.includes(size), `Timer toggle keeps ${size} in both states`);
+  }
+}
 
 // 2. MathWorkspace meta line renders per-question timer and total on the right
 const mathProb: Problem = {

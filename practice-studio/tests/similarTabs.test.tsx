@@ -472,24 +472,22 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(html, /role="tablist"/);
   assert.match(html, /aria-label="Question 2 and similar questions"/);
   assert.match(html, /<button(?=[^>]*id="tab-Q02-q")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")[^>]*>/);
+  function assertMark(markup: string, status: string, tone: string) {
+    const tag = markup.match(new RegExp(`<span(?=[^>]*data-status="${status}")[^>]*>`))?.[0];
+    assert.ok(tag, `Expected a ${status} status marker`);
+    const classes = tag.match(/class="([^"]+)"/)?.[1].split(" ") ?? [];
+    for (const cls of ["size-space-4", "rounded-full", ...tone.split(" ")]) {
+      assert.ok(classes.includes(cls), `${status} status marker uses ${cls}`);
+    }
+  }
   assert.match(html, /aria-label="Question 2, not correct yet"/);
-  assert.ok(
-    html.includes(`data-status="wrong" class="w-4 h-4 rounded-full ${statusTone.wrong.tabMark}`),
-    "wrong tab mark must use statusTone.wrong.tabMark"
-  );
+  assertMark(html, "wrong", statusTone.wrong.tabMark);
   assert.match(html, /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="true")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 1, correct")(?=[^>]*tabindex="0")[^>]*>/);
-  assert.ok(
-    html.includes(`data-status="correct" class="w-4 h-4 rounded-full ${statusTone.correct.tabMark}`),
-    "correct tab mark must use statusTone.correct.tabMark"
-  );
+  assertMark(html, "correct", statusTone.correct.tabMark);
   assert.match(html, /<button(?=[^>]*id="tab-Q02-s2")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 2, not tried")(?=[^>]*tabindex="-1")[^>]*>/);
-  assert.match(html, /data-status="untried"[^>]*rounded-full[^>]*border-\[1\.5px\]/);
+  assertMark(html, "untried", statusTone.notTried.tabMark);
   assert.match(html, /<button(?=[^>]*id="tab-Q02-s3")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 3, correct with help")(?=[^>]*tabindex="-1")[^>]*>/);
-  assert.ok(
-    html.includes(`data-status="assisted" class="w-4 h-4 rounded-full ${statusTone.assisted.tabMark}`),
-    "assisted tab mark must use statusTone.assisted.tabMark"
-  );
-  assert.match(html, /min-h-\[44px\]/, "mobile tabs must be at least 44px tall");
+  assertMark(html, "assisted", statusTone.assisted.tabMark);
   assert.match(html, /Q2/, "mobile compact label Q2");
   assert.doesNotMatch(html, /tab-Q02-example/, "Example tab must NOT be rendered (binding scope change)");
   assert.doesNotMatch(html, /Shown in example/i, "Shown in example must NOT exist (binding scope change)");
@@ -509,21 +507,11 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     />
   );
   assert.match(skippedAndHelpHtml, /aria-label="Question 3, skipped"/);
-  assert.match(skippedAndHelpHtml, /data-status="skipped"[^>]*border-dashed/);
+  assertMark(skippedAndHelpHtml, "skipped", statusTone.skipped.tabMark);
   assert.match(skippedAndHelpHtml, /aria-label="Similar question 1, used help"/);
-  assert.ok(
-    skippedAndHelpHtml.includes(
-      `data-status="usedHelp" class="w-4 h-4 rounded-full ${statusTone.notTried.tabMark}`
-    ),
-    "usedHelp before answering renders plain outline like notTried with no colour"
-  );
+  assertMark(skippedAndHelpHtml, "usedHelp", statusTone.notTried.tabMark);
   assert.match(skippedAndHelpHtml, /aria-label="Similar question 2, almost"/);
-  assert.ok(
-    skippedAndHelpHtml.includes(
-      `data-status="partial" class="w-4 h-4 rounded-full ${statusTone.assisted.tabMark}`
-    ),
-    "partial renders assisted pale-green tab mark"
-  );
+  assertMark(skippedAndHelpHtml, "partial", statusTone.assisted.tabMark);
 
   // Locked ghost tabs before first attempt (zero-leak: no tokens, aria-disabled="true", Answer Question N first)
   const lockedStripHtml = renderToStaticMarkup(
@@ -558,6 +546,8 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     const stripTabs = stripMarkup.match(/<button\b[^>]*\brole="tab"[^>]*>/g) ?? [];
     assert.equal(stripTabs.length, 4);
     for (const tabTag of stripTabs) {
+      assert.match(tabTag, /min-h-touch/, "each selected, unselected and locked tab keeps a 44px minimum");
+      assert.match(tabTag, /sm:h-space-9 sm:min-h-0/, "each tab is 36px high on desktop");
       assert.match(tabTag, /\brounded-none\b/, "SimilarTabStrip tab trigger must use rounded-none");
       assert.doesNotMatch(
         tabTag,
@@ -723,11 +713,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     />
   );
   assert.match(usedHelpBeforeAttemptHtml, /aria-label="Question 2, used help"/);
-  assert.ok(
-    usedHelpBeforeAttemptHtml.includes(
-      `data-status="usedHelp" class="w-4 h-4 rounded-full ${statusTone.notTried.tabMark}`
-    )
-  );
+  assertMark(usedHelpBeforeAttemptHtml, "usedHelp", statusTone.notTried.tabMark);
   assert.match(usedHelpBeforeAttemptHtml, /aria-disabled="true"/, "using help before answering must keep similar tabs locked");
 
   const slots = ["va11111", "vb22222", "vc33333"];

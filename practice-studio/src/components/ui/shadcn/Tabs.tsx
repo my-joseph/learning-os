@@ -8,13 +8,14 @@ import { m } from "motion/react";
 import { cn } from "@/lib/cn";
 import { settle } from "@/lib/motion";
 
-export type TabsVariant = "default" | "underline";
+export type TabsVariant = "default" | "underline" | "similar";
 
 const segmentedListVariants = cva("", {
   variants: {
     variant: {
       default: "inline-flex min-h-[44px] items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900",
       underline: "inline-flex items-center gap-1 rounded-none bg-transparent p-0",
+      similar: "flex min-w-0 items-center gap-space-1 overflow-x-auto overflow-y-hidden rounded-none bg-transparent p-space-0 scrollbar-hidden snap-x -mb-px",
       chips: "flex shrink-0 gap-space-0_5",
       answerMode: "relative inline-grid grid-cols-2 items-center rounded-lg bg-surface-selected/70 dark:bg-surface-panel p-space-0_5",
       rail: "fixed left-space-3 top-1/2 z-sticky hidden -translate-y-1/2 grid-rows-2 items-center rounded-xl border border-border bg-surface-hover/95 p-space-1 shadow-ui-sm backdrop-blur-glass dark:bg-surface-hover/80 lg:grid",
@@ -42,6 +43,11 @@ const chipVariants = cva(
 );
 
 const TabsVariantContext = React.createContext<TabsVariant>("default");
+const tabTriggerVariants: Record<TabsVariant, string> = {
+  default: "min-h-[44px] rounded-md px-3 text-sm font-medium text-zinc-600 transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-300 dark:focus-visible:ring-indigo-400 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+  underline: "min-h-[44px] rounded-none border-b-2 -mb-px bg-transparent px-3 text-sm font-medium text-zinc-600 shadow-none transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:focus-visible:ring-indigo-400 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-indigo-400",
+  similar: "inline-flex min-h-touch shrink-0 snap-start items-center justify-center gap-space-1_5 whitespace-nowrap rounded-none border-b-2 border-transparent -mb-px bg-transparent px-space-3 text-sm font-medium text-foreground-subtle hover:text-foreground transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent sm:h-space-9 sm:min-h-0 data-[state=active]:border-accent data-[state=active]:font-semibold data-[state=active]:text-foreground disabled:cursor-not-allowed disabled:select-none disabled:text-foreground-faint disabled:opacity-soft",
+};
 const slidingPill = "pointer-events-none absolute bottom-space-0_5 left-space-0_5 top-space-0_5 w-[calc(50%-var(--space-0-5))] rounded-md bg-surface-raised shadow-ui-sm";
 const answerModeChip = "relative z-local inline-flex min-h-touch min-w-touch items-center justify-center gap-space-1_5 rounded-md px-space-2_5 text-xs font-medium text-muted transition-colors duration-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent data-[selected=true]:text-foreground data-[selected=false]:hover:text-foreground dark:data-[selected=false]:hover:text-foreground-menu disabled:opacity-disabled sm:h-control-xs sm:min-h-0 sm:min-w-0";
 
@@ -75,12 +81,7 @@ export const TabsTrigger = React.forwardRef<
   return (
     <TabsPrimitive.Trigger
       ref={ref}
-      className={cn(
-        resolvedVariant === "underline"
-          ? "min-h-[44px] rounded-none border-b-2 -mb-px bg-transparent px-3 text-sm font-medium text-zinc-600 shadow-none transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:text-zinc-400 dark:focus-visible:ring-indigo-400 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-indigo-400"
-          : "min-h-[44px] rounded-md px-3 text-sm font-medium text-zinc-600 transition-colors hover:text-foreground motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:text-zinc-300 dark:focus-visible:ring-indigo-400 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-        className
-      )}
+      className={cn(tabTriggerVariants[resolvedVariant], className)}
       {...props}
     />
   );

@@ -496,7 +496,7 @@ async function testSyntheticLabAndProgress() {
       />
     );
     assert.match(stepperHtml, /<nav[^>]*aria-label="Lab milestones"/);
-    assert.match(stepperHtml, /first:ml-auto/, "Lab milestone stepper must be centred inside header");
+    assert.match(stepperHtml, /class="stepper-item"/, "Lab milestones use the shared centring layout");
     assert.match(stepperHtml, />Contracts</);
     assert.match(stepperHtml, />Pool</);
     assert.match(stepperHtml, />Abort</);
@@ -514,12 +514,12 @@ async function testSyntheticLabAndProgress() {
       "M1 (passed) circle must use statusTone.correct.solidCircle"
     );
     assert.match(stepperHtml, />M2<\/span>/, "untried milestones show their M number");
-    assert.match(stepperHtml, /bg-indigo-600/, "Active connector must remain indigo");
+    assert.match(stepperHtml, /bg-accent-primary/, "Active connector must use the accent token");
     assert.ok(
       stepperHtml.includes(statusTone.notTried.solidCircle),
       "M3 (not started) circle must use statusTone.notTried.solidCircle"
     );
-    assert.match(stepperHtml, /ring-4 ring-indigo-600\/15/, "Current milestone must have indigo halo");
+    assert.match(stepperHtml, /ring-4 ring-accent\/15/, "Current milestone must have indigo halo");
     assert.match(stepperHtml, /overflow-x-auto/);
 
     // Verify regressed milestone renders amber circle

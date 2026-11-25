@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { JSDOM } from "jsdom";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ShadcnPocShowcase } from "../src/components/ui-poc/ShadcnPocShowcase";
@@ -16,6 +17,33 @@ import { HoverCard, HoverCardTrigger } from "../src/components/ui/shadcn/HoverCa
 import { Input } from "../src/components/ui/shadcn/Input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../src/components/ui/shadcn/Card";
 import { Skeleton } from "../src/components/ui/shadcn/Skeleton";
+import { ProblemSelfEval } from "../src/components/workspace/ProblemSelfEval";
+
+for (const [selected, disabled] of [[false, false], [true, false], [true, true]]) {
+  const markup = renderToStaticMarkup(
+    <ProblemSelfEval
+      hasAttempt
+      disabled={disabled}
+      score={selected ? 1 : null}
+      mistakes={selected ? ["sign"] : []}
+      mistakeTags={[{ id: "sign", label: "Sign error", name: "Sign error", autoFrom: [] }]}
+      noteAriaLabel="Mistake note"
+      onSetScore={() => {}}
+      onToggleMistakeTag={() => {}}
+      onMistakeNoteChange={() => {}}
+    />
+  );
+  const buttons = Array.from(JSDOM.fragment(markup).querySelectorAll("button"));
+  for (const label of ["1.0", "Sign error"]) {
+    const button = buttons.find((element) => element.textContent === label);
+    assert.ok(button, `Expected a button for ${label}`);
+    assert.equal(button.getAttribute("aria-pressed"), String(selected));
+    assert.equal(button.disabled, disabled);
+    for (const cls of ["border", "min-h-touch", "min-w-touch", "sm:min-h-control-xs"]) {
+      assert.ok(button.classList.contains(cls), `${label} keeps ${cls}`);
+    }
+  }
+}
 
 const html = renderToStaticMarkup(<ShadcnPocShowcase />);
 assert.match(html, /shadcn\/ui \+ Radix/);

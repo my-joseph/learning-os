@@ -357,12 +357,12 @@ const labHtml = renderToStaticMarkup(
 assert.match(
   labHtml,
   new RegExp(
-    `aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\\s\\S]*?${escapeRe(statusTone.correct.solidCircle)}[\\s\\S]*?ring-4 ring-indigo-600\\/15[\\s\\S]*?<svg`
+    `aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\\s\\S]*?${escapeRe(statusTone.correct.solidCircle)}[\\s\\S]*?ring-4 ring-accent\\/15[\\s\\S]*?<svg`
   )
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 2, Primitive &amp; Object Parsers, tests passing"[\s\S]*?border-zinc-400[\s\S]*?>M2<\/span>[\s\S]*?(?!Tests passing)/
+  /aria-label="Milestone 2, Primitive &amp; Object Parsers, tests passing"[\s\S]*?border-foreground-faint[\s\S]*?>M2<\/span>[\s\S]*?(?!Tests passing)/
 );
 assert.match(
   labHtml,
@@ -410,7 +410,7 @@ assert.equal(ariaCurrentMatches.length, 1, "exactly one step carries aria-curren
 // Current step Q3 shows "Q3" with indigo outline + halo
 assert.match(
   sixHtml,
-  /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q3<\/span>/
+  /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-accent[\s\S]*?ring-4 ring-accent\/15[\s\S]*?>Q3<\/span>/
 );
 // Q01 correct -> correct statusTone + svg check
 assert.match(
@@ -455,7 +455,7 @@ const usedHelpHtml = renderToStaticMarkup(
 );
 assert.match(
   usedHelpHtml,
-  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q1<\/span>/
+  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?border-accent[\s\S]*?ring-4 ring-accent\/15[\s\S]*?>Q1<\/span>/
 );
 assert.doesNotMatch(usedHelpHtml, /bg-amber|bg-status-assisted/);
 
@@ -518,7 +518,7 @@ assert.match(syncedReviewHtml, /aria-label="Review &amp; sync — synced"/);
 const syncedReviewStepMarkup = syncedReviewHtml.match(/<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/)?.[0];
 assert.ok(syncedReviewStepMarkup, "Review step markup must exist");
 assert.match(syncedReviewStepMarkup, new RegExp(escapeRe(statusTone.correct.solidCircle)));
-assert.doesNotMatch(syncedReviewStepMarkup, /ring-4 ring-indigo-600\/15/);
+assert.doesNotMatch(syncedReviewStepMarkup, /ring-4 ring-accent\/15/);
 const currentSyncedReviewHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}
@@ -536,7 +536,7 @@ const currentSyncedReviewStepMarkup = currentSyncedReviewHtml.match(
 assert.ok(currentSyncedReviewStepMarkup, "Current Review step markup must exist");
 assert.match(
   currentSyncedReviewStepMarkup,
-  new RegExp(`${escapeRe(statusTone.correct.solidCircle)} ring-4 ring-indigo-600/15`)
+  new RegExp(`${escapeRe(statusTone.correct.solidCircle)} ring-4 ring-accent/15`)
 );
 
 // Review step is last, has an svg, and has no step number inside its circle
@@ -551,19 +551,18 @@ assert.doesNotMatch(lastLiMatch[0], />07<\/span>/);
 // Visible desktop labels carry aria-hidden="true" and hidden sm:block + font-display
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display text-xs[^"]*">Level 2<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*text-xs[^"]*">Level 2<\/span>/
 );
 assert.match(
   sixHtml,
-  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display text-xs[^"]*">Level 2<\/span>/
+  /<span aria-hidden="true" class="[^"]*hidden sm:block[^"]*font-display[^"]*text-xs[^"]*">Level 2<\/span>/
 );
 
 // Every step button keeps a 44px minimum hit area while circles remain compact.
-assert.match(sixHtml, /min-w-11 min-h-11/);
-assert.match(sixHtml, /w-\[22px\] h-\[22px\] sm:w-6 sm:h-6/);
-assert.match(sixHtml, /text-\[10px\] sm:text-\[11px\]/);
+assert.match(sixHtml, /min-w-space-11 min-h-space-11/);
+assert.match(sixHtml, /size-stepper-marker text-micro sm:size-space-6 sm:text-2xs/);
 assert.doesNotMatch(sixHtml, /group-focus-visible:outline/);
-assert.match(sixHtml, /font-display text-xs font-medium leading-tight text-zinc-500/);
+assert.match(sixHtml, /font-display[^"]*text-xs font-medium leading-tight text-muted/);
 
 // ---------------------------------------------------------------------------
 // 4. Connectors: current = 2 => segments 0 & 1 indigo, rest zinc; review => all indigo
@@ -620,7 +619,7 @@ assert.match(stepperSrc, /<TooltipContent side="bottom">\{review\.ariaLabel\}<\/
 assert.doesNotMatch(stepperSrc, /focus-visible:ring-2|group-focus-visible:outline/);
 
 // ---------------------------------------------------------------------------
-// 6. 12 problems render 13 <li> with min-w-[72px] and Q1..Q12 labels
+// 6. 12 problems render 13 <li> with the shared item sizing and Q1..Q12 labels
 // ---------------------------------------------------------------------------
 const twelveProblems = Array.from({ length: 12 }, (_, i) =>
   makeProblem(`Q${String(i + 1).padStart(2, "0")}`, { level: (i % 4) + 1 }, {})
@@ -637,13 +636,13 @@ const twelveHtml = renderToStaticMarkup(
 );
 const liMatches = twelveHtml.match(/<li\b/g) ?? [];
 assert.equal(liMatches.length, 13, "12 problems + Review step must render 13 <li> items");
-assert.match(twelveHtml, /min-w-\[72px\]/);
+assert.match(twelveHtml, /class="stepper-item"/);
 assert.match(twelveHtml, />Q1<\/span>/);
 assert.match(twelveHtml, />Q7<\/span>/);
 assert.match(twelveHtml, />Q12<\/span>/);
 assert.match(
   twelveHtml,
-  /<span aria-hidden="true" class="[^"]*font-display text-xs font-medium[^"]*">Level 4<\/span>/,
+  /<span aria-hidden="true" class="[^"]*font-display[^"]*text-xs font-medium[^"]*">Level 4<\/span>/,
   "step labels use the card meta style (text-xs font-medium)"
 );
 

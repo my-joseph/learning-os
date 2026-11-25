@@ -130,7 +130,7 @@ const studioSidebar = readFileSync("src/components/shell/StudioSidebar.tsx", "ut
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*(?:\(\s*)?(?:<CollapsibleTrigger\s+asChild>\s*)?<button/);
-assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\)?\s*&&\s*(?:\(\s*)?(?:<Collapsible\b[\s\S]*?<CollapsibleTrigger\s+asChild>\s*)?<button/);
+assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\)?\s*&&\s*(?:\(\s*)?(?:<Collapsible\b[\s\S]*?<CollapsibleTrigger\s+asChild>\s*)?<Button/);
 assert.match(problemAssistSection, /<StepRow/);
 assert.doesNotMatch(codeDashboard, /Diverged here/);
 assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);
@@ -160,12 +160,9 @@ assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
 assert.match(stepper, /statusTone\.correct\.solidCircle/);
-assert.match(stepper, /bg-indigo-600/);
+assert.match(stepper, /bg-accent-primary/);
 assert.match(stepper, /overflow-x-auto/);
-assert.match(stepper, /justify-center/);
 assert.match(stepper, /^\s*Review$/m);
-assert.match(stepper, /w-\[22px\] h-\[22px\] sm:w-6 sm:h-6/);
-assert.match(stepper, /text-\[10px\] sm:text-\[11px\]/);
 // Learner 2026-11-19: no keyboard focus ring on the stepper (the current-step halo is enough).
 assert.doesNotMatch(stepper, /group-focus-visible:outline/);
 assert.doesNotMatch(stepper, /focus-visible:ring-2/);
@@ -212,7 +209,7 @@ assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8
   assert.match(mathPaletteSrc, /<SegmentedChips\s+variant="answerMode"/);
   assert.match(mathPaletteSrc, /bg-surface-panel/);
 }
-assert.match(problemAssistSection, /bg-surface-panel/);
+assert.match(problemAssistSection, /variant="assistPanel"/);
 assert.match(mathItemView, /bg-surface-panel/);
 assert.match(mathItemView, /bg-white dark:bg-zinc-900/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
@@ -649,7 +646,7 @@ const reviewTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   reviewTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*>.*ring-indigo-600\/15.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*>.*ring-accent\/15.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
 );
 
 // Verify DrillNotFoundCard renders visible h1 for drills and labs
@@ -854,8 +851,8 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       onToggleViewMode={noop}
     />
   );
-  assert.doesNotMatch(compactTilesHtml, /border-t border-zinc-200/);
-  assert.match(compactTilesHtml, /w-\[18px\] h-\[18px\] sm:w-5 sm:h-5/);
+  assert.doesNotMatch(compactTilesHtml, /border-t border-border/);
+  assert.match(compactTilesHtml, /size-stepper-marker-compact text-micro-compact sm:size-space-5 sm:text-micro/);
 
   const headerClosedHtml = renderToStaticMarkup(
     <StudioHeader

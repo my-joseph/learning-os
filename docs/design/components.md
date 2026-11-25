@@ -69,3 +69,18 @@ Use these shared controls when working on the Studio shell.
 | Choice option | Button with `variant="choice"`, `size="choiceWrap"` or `size="choiceStack"`, and Badge with `variant="choice"` | Keep the radio semantics on the button. Use the status recipes for the option and its label badge. The touch height is at least 44 px. |
 | Previous, Next, Review & sync | Button with `size="answerNav"`, `variant="answerNav"` or `variant="answerNavReview"` | The quiet navigation controls are 44 px tall on phones and 32 px on desktop. |
 | Result card and actions | Card with `variant="feedback"`, Button with `variant="resultOutline"`, `variant="resultPrimary"` or `variant="resultLink"`, Badge with `variant="answerPart"` | Use `size="resultAction"` for the outline and primary variants and `size="resultLink"` for secondary actions. All have 44 px targets on phones. |
+
+## Math assist variants
+
+| Role | Shared variant | Geometry and state |
+| :--- | :--- | :--- |
+| Reset, Hint, equation set-up and Show steps | Button with `variant="assist"` and `size="assistInline"` | Use Collapsible for disclosures. Buttons are at least 44 px square on phones and size to their labels on desktop. |
+| Skip | Button with `variant="assist"` and `size="assistSkip"` | Keeps a 44 px phone target and a 36 px desktop height. |
+| Solution or worked example steps | Card with `variant="assistPanel"` for a group and `variant="assistStep"` for each row | The panel uses the secondary surface and the rows use the raised surface. |
+| Flag a diverged step | Button with `variant="assistFlag"` and `size="assistFlag"` | The quiet flag appears on row hover or focus. Use the wrong-status recipe on the active row. |
+| Self-score and mistake tags | Button with matching `variant` and `size` of `assistScore` or `assistTag` | Keep `aria-pressed`, the appropriate status recipe, and the existing disabled opacity. Both use 44 px phone targets and a 28 px desktop minimum. |
+| Similar questions | TabsList with `variant="similar"`, inherited by TabsTrigger, and Badge with `variant="tabMark"` | A scrolling underline tab list with manual activation. Tabs are 44 px tall on phones and 36 px on desktop. Use a status recipe for the 16 px marker. |
+| Similar list retry | Button with `variant="assistRetry"` and `size="assistRetry"` | Compact text action with a 44 px phone target. |
+| Timer pause and resume | IconButton with `hitArea="timer"`, `size="timer"`, and `tone="timer"` or `"timerPaused"` | The toggle is 44 px on phones and 24 px on desktop. Keep the accessible label and pressed state. |
+| Pagination and Review | Button with `variant="stepper"`, `size="stepper"` or `"stepperCompact"`, and Badge with `variant="stepMarker"` | Use navigation semantics and the status recipes on the circles. Both densities preserve the 44 px phone target. The marker can use `asChild` for its scale animation. |
+| Worked example navigation | Button with matching `variant` and `size` of `exampleBack`, `exampleQuiet`, or `examplePrimary` | Breadcrumb, text disclosure and filled action share the worked example's text scale and preserve 44 px phone heights. |

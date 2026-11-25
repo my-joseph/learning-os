@@ -6,6 +6,8 @@ import { Check, ClipboardCheck, Minus, X } from "lucide-react";
 import type { ReviewStepMeta, StepItem, StepResult } from "@/lib/stepperModel";
 import { statusTone } from "@/lib/statusTone";
 import { quick, settle } from "@/lib/motion";
+import { Badge } from "@/components/ui/shadcn/Badge";
+import { Button } from "@/components/ui/shadcn/Button";
 import {
   Tooltip,
   TooltipContent,
@@ -23,25 +25,11 @@ export interface StepperProps {
   compact?: boolean;
 }
 
-const CIRCLE_BASE_CLS =
-  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color,filter] duration-150";
-
-const COMPACT_CIRCLE_BASE_CLS =
-  "relative flex items-center justify-center shrink-0 w-[18px] h-[18px] sm:w-5 sm:h-5 rounded-full border-2 font-display text-[9px] sm:text-[10px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color,filter] duration-150";
-
-const CURRENT_HALO_CLS = "ring-4 ring-indigo-600/15 dark:ring-indigo-400/25";
-
-const BUTTON_CLS =
-  "group relative z-10 flex w-full flex-col items-center justify-start min-w-11 min-h-11 py-1 sm:min-w-0 rounded-lg cursor-pointer focus:outline-none focus-visible:outline-none";
-
-const COMPACT_BUTTON_CLS =
-  "group relative z-10 flex w-full flex-col items-center justify-start min-w-11 min-h-11 py-1 sm:min-w-0 sm:min-h-0 sm:py-0.5 rounded-lg cursor-pointer focus:outline-none focus-visible:outline-none";
-
-const STEP_LI_CLS =
-  "relative first:ml-auto last:mr-auto flex-none w-11 sm:flex-1 sm:basis-0 sm:min-w-[72px] sm:max-w-[160px]";
+const CURRENT_HALO = "ring-4 ring-accent/15 dark:ring-accent/25";
+const CURRENT_MARKER = "border-accent bg-surface-raised text-accent-current";
 
 function getCircleClass(result: StepResult, isCurrent: boolean): string {
-  const halo = isCurrent ? ` ${CURRENT_HALO_CLS}` : "";
+  const halo = isCurrent ? ` ${CURRENT_HALO}` : "";
 
   switch (result) {
     case "correct":
@@ -55,19 +43,19 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
       return `${statusTone.wrong.solidCircle}${halo}`;
     case "skipped":
       return isCurrent
-        ? `border-dashed border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
+        ? `border-dashed ${CURRENT_MARKER}${halo}`
         : statusTone.skipped.solidCircle;
     case "inProgress":
     case "awaitingReview":
       return isCurrent
-        ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
-        : "border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
+        ? `${CURRENT_MARKER}${halo}`
+        : "border-foreground-faint bg-surface-raised text-foreground-control group-hover:border-muted";
     case "usedHelp":
     case "notTried":
     case "notStarted":
     default:
       return isCurrent
-        ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
+        ? `${CURRENT_MARKER}${halo}`
         : statusTone.notTried.solidCircle;
   }
 }
@@ -78,8 +66,8 @@ function renderCircleContent(
   compact = false
 ): React.ReactNode {
   const iconCls = compact
-    ? "w-2.5 h-2.5 shrink-0"
-    : "w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0";
+    ? "size-space-2_5 shrink-0"
+    : "size-space-3 sm:size-space-3_5 shrink-0";
   if (result === "correct" || result === "passed" || result === "assisted") {
     return (
       <Check
@@ -200,54 +188,54 @@ export const Stepper: React.FC<StepperProps> = ({
   }, [currentIndex, isReview, steps.length]);
 
   const reviewCircleCls = review.synced
-    ? `${statusTone.correct.solidCircle}${isReview ? ` ${CURRENT_HALO_CLS}` : ""}`
+    ? `${statusTone.correct.solidCircle}${isReview ? ` ${CURRENT_HALO}` : ""}`
     : isReview
-    ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300 ${CURRENT_HALO_CLS}`
-    : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
+    ? `${CURRENT_MARKER} ${CURRENT_HALO}`
+    : "border-border-control bg-surface-raised text-muted group-hover:border-muted";
 
-  const circleBaseCls = compact ? COMPACT_CIRCLE_BASE_CLS : CIRCLE_BASE_CLS;
-  const buttonCls = compact ? COMPACT_BUTTON_CLS : BUTTON_CLS;
-  const connectorCls = compact
-    ? "pointer-events-none absolute top-[13px] sm:top-[12px] -translate-y-1/2 left-[calc(50%_+_13px)] w-[34px] sm:left-[calc(50%_+_14px)] sm:w-[calc(100%_-_28px)] h-0.5 rounded-full z-0"
-    : "pointer-events-none absolute top-[15px] sm:top-4 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0";
-  const labelCls = compact
-    ? "hidden sm:block mt-0.5 max-w-full truncate px-1 font-display text-[10px] font-medium leading-tight text-zinc-500 dark:text-zinc-400"
-    : "hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400";
+  const circleSize = compact
+    ? "size-stepper-marker-compact text-micro-compact sm:size-space-5 sm:text-micro"
+    : "size-stepper-marker text-micro sm:size-space-6 sm:text-2xs";
+  const buttonSize = compact ? "stepperCompact" : "stepper";
+  const connectorCls = compact ? "stepper-connector stepper-connector-compact" : "stepper-connector";
+  const labelCls = `hidden sm:block max-w-full truncate px-space-1 font-display ${
+    compact ? "mt-space-0_5 text-micro" : "mt-space-1 text-xs"
+  } font-medium leading-tight text-muted`;
 
   return (
     <div
       className={
         compact
           ? "min-w-0"
-          : "pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 min-w-0"
+          : "pt-space-2 border-t border-border/80 min-w-0"
       }
     >
       <nav ref={navRef} aria-label={navLabel} className="min-w-0">
         <div
           ref={scrollerRef}
           data-overflow={overflow ? "true" : "false"}
-          className={`overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 ${
+          className={`overflow-x-auto overscroll-x-contain scrollbar-hidden min-w-0 ${
             overflow
-              ? "[mask-image:linear-gradient(to_right,transparent,#000_16px,#000_calc(100%_-_16px),transparent)]"
+              ? "scroll-fade-edges"
               : ""
           }`}
         >
-          <ol className="flex w-full min-w-0 py-0.5 px-1 gap-4 sm:gap-0">
+          <ol className="flex w-full min-w-0 py-space-0_5 px-space-1 gap-space-4 sm:gap-0">
             {steps.map((step, idx) => {
               const isCurrent = !isReview && currentIndex === idx;
               const isSegmentIndigo = idx + 1 <= currentPosition;
               const fullLabel = isCurrent ? `${step.ariaLabel}, current` : step.ariaLabel;
 
               return (
-                <li key={step.key} className={STEP_LI_CLS}>
+                <li key={step.key} className="stepper-item">
                   <span
                     aria-hidden="true"
                     data-connector-active={isSegmentIndigo ? "true" : "false"}
                     className={connectorCls}
                   >
-                    <span className="block w-full h-full bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+                    <span className="block w-full h-full bg-border rounded-full" />
                     <m.span
-                      className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 rounded-full origin-left"
+                      className="absolute inset-0 bg-accent-primary dark:bg-accent-primary-hover rounded-full origin-left"
                       initial={false}
                       animate={{ scaleX: isSegmentIndigo ? 1 : 0 }}
                       transition={settle}
@@ -257,31 +245,32 @@ export const Stepper: React.FC<StepperProps> = ({
                   {/* Native title stays as SSR/no-JS fallback; TooltipTrigger strips it after hydration. */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button
+                      <Button
                         ref={(el) => {
                           stepBtnRefs.current[idx] = el;
                         }}
-                        type="button"
+                        variant="stepper"
+                        size={buttonSize}
                         onClick={() => onSelect(idx)}
                         aria-label={fullLabel}
                         title={fullLabel}
                         aria-current={isCurrent ? "step" : undefined}
-                        className={buttonCls}
                       >
-                        <m.span
-                          aria-hidden="true"
-                          initial={false}
-                          animate={{ scale: isCurrent ? 1 : 0.92 }}
-                          transition={quick}
-                          className={`${circleBaseCls} ${getCircleClass(step.result, isCurrent)}`}
-                        >
-                          {renderCircleContent(step.result, step.circleLabel, compact)}
-                        </m.span>
+                        <Badge asChild variant="stepMarker" className={`${circleSize} leading-none ${getCircleClass(step.result, isCurrent)}`}>
+                          <m.span
+                            aria-hidden="true"
+                            initial={false}
+                            animate={{ scale: isCurrent ? 1 : 0.92 }}
+                            transition={quick}
+                          >
+                            {renderCircleContent(step.result, step.circleLabel, compact)}
+                          </m.span>
+                        </Badge>
 
                         <span aria-hidden="true" className={labelCls}>
                           {step.title}
                         </span>
-                      </button>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{fullLabel}</TooltipContent>
                   </Tooltip>
@@ -289,37 +278,38 @@ export const Stepper: React.FC<StepperProps> = ({
               );
             })}
 
-            <li className={STEP_LI_CLS}>
+            <li className="stepper-item">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
+                  <Button
                     ref={reviewBtnRef}
-                    type="button"
+                    variant="stepper"
+                    size={buttonSize}
                     onClick={onToggleReview}
                     aria-label={review.ariaLabel}
                     aria-pressed={isReview}
                     aria-current={isReview ? "step" : undefined}
                     title={review.ariaLabel}
-                    className={buttonCls}
                   >
-                    <m.span
-                      aria-hidden="true"
-                      initial={false}
-                      animate={{ scale: isReview ? 1 : 0.92 }}
-                      transition={quick}
-                      className={`${circleBaseCls} ${reviewCircleCls}`}
-                    >
-                      <ClipboardCheck
-                        className={compact ? "w-2.5 h-2.5 shrink-0" : "w-3 h-3 shrink-0"}
-                        strokeWidth={2}
+                    <Badge asChild variant="stepMarker" className={`${circleSize} leading-none ${reviewCircleCls}`}>
+                      <m.span
                         aria-hidden="true"
-                      />
-                    </m.span>
+                        initial={false}
+                        animate={{ scale: isReview ? 1 : 0.92 }}
+                        transition={quick}
+                      >
+                        <ClipboardCheck
+                          className={compact ? "size-space-2_5 shrink-0" : "size-space-3 shrink-0"}
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        />
+                      </m.span>
+                    </Badge>
 
                     <span aria-hidden="true" className={labelCls}>
                       Review
                     </span>
-                  </button>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">{review.ariaLabel}</TooltipContent>
               </Tooltip>

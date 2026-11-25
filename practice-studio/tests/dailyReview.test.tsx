@@ -187,7 +187,11 @@ async function runTests() {
     assert.match(activeHtml, /Difficulty 2/, "Meta line must rename Level to Difficulty on /review");
     assert.doesNotMatch(activeHtml, /Question 1 of 3/, "Card must not duplicate header counter on /review");
     assert.match(activeHtml, /Skip · due tomorrow/, "Skip button must show due-tomorrow cost on /review");
-    assert.match(activeHtml, /min-h-\[36px\]/, "Skip must have a mobile tap target of at least 36px");
+    assert.match(
+      activeHtml,
+      /<button[^>]*class="[^"]*min-h-touch[^"]*min-w-touch[^"]*sm:min-h-control-md[^"]*"[^>]*><span>Skip · due tomorrow<\/span>/,
+      "Skip keeps its 44px mobile target and its 36px desktop height"
+    );
     assert.match(
       activeHtml,
       /<button[^>]*disabled=""[^>]*><span>Next<\/span>/,

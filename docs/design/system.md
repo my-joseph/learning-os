@@ -29,6 +29,8 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--accent-field` | `colors.accent-field` | `var(--accent-primary)` | `var(--accent-primary-hover)` | Selected choice and focused answer-field border. |
 | `--accent-strong` | `colors.accent-strong` | `67 56 202` | `67 56 202` | Filled answer action hover in both themes. |
 | `--accent-tint` | `colors.accent-tint` | `238 242 255` | `30 27 75` | Pressed or selected palette control background. |
+| `--accent-on-primary-muted` | `colors.accent-on-primary-muted` | `224 231 255` | `224 231 255` | Secondary text on a filled action. |
+| `--accent-current` | `colors.accent-current` | `var(--accent)` | `165 180 252` | Number on the current stepper marker. |
 | `--foreground-faint` | `colors.foreground-faint` | `161 161 170` | `113 113 122` | Secondary tree glyphs and empty section labels. |
 | `--foreground-section-hover` | `colors.foreground-section-hover` | `39 39 42` | `var(--foreground-menu)` | Section header label on hover. |
 | `--foreground-subtle` | `colors.foreground-subtle` | `82 82 91` | `161 161 170` | Descriptions and supporting labels currently using zinc-600 and zinc-400. |
@@ -97,6 +99,8 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--control-answer` | `spacing.control-answer` | `calc(var(--touch) + 2 * var(--space-px))` | `calc(var(--touch) + 2 * var(--space-px))` | Mobile answer field including the two hairlines. |
 | `--icon-math-quick` | `spacing.icon-math-quick` | `22px` | `22px` | Quick math template glyph height. |
 | `--icon-math-quick-max` | `spacing.icon-math-quick-max` | `26px` | `26px` | Maximum width of a quick math template glyph. |
+| `--stepper-marker` | `spacing.stepper-marker` | `22px` | `22px` | Regular stepper marker on phones. |
+| `--stepper-marker-compact` | `spacing.stepper-marker-compact` | `18px` | `18px` | Compact stepper marker on phones. |
 | `--panel-left` | `spacing.panel-left` | `287px` | `287px` | Open desktop navigation pane. |
 | `--panel-right` | `spacing.panel-right` | `276px` | `276px` | Open desktop review pane. |
 | `--control-lg` | `spacing.control-lg` | `48px` | `48px` | Large buttons. |
@@ -117,6 +121,8 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--font-display` | `fontFamily.display` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | `"Roboto Slab Variable", "Roboto Slab", Georgia, serif` | Scores, counters, Q labels, curriculum IDs and timers. |
 | `--font-mono` | `fontFamily.mono` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | `var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` | Code, tests, identifiers and typed code answers. |
 | `--text-2xs` | `fontSize.2xs` | `11px` | `11px` | Compact metadata and secondary chips. |
+| `--text-micro` | `fontSize.micro` | `10px` | `10px` | Stepper numerals and compact labels. |
+| `--text-micro-compact` | `fontSize.micro-compact` | `9px` | `9px` | Compact stepper numerals on phones. |
 | `--text-caption` | `fontSize.caption` | `13px` | `13px` | Compact link and helper copy where the 13 px size is already used. |
 | `--text-xs` | `fontSize.xs` | `0.75rem` | `0.75rem` | Metadata, badges and compact labels. |
 | `--text-xs-leading` | `fontSize.xs (line height)` | `1rem` | `1rem` | Default line height paired with text-xs. |

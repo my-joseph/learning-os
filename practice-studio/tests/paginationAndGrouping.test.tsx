@@ -134,7 +134,7 @@ const drillReviewTiles = renderToStaticMarkup(
 );
 assert.match(
   drillReviewTiles,
-  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[\s\S]*ring-indigo-600\/15/
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[\s\S]*ring-accent\/15/
 );
 
 const labQuizStepper = renderToStaticMarkup(
@@ -173,7 +173,7 @@ assert.match(
 );
 assert.match(
   labReviewStepper,
-  /aria-label="Review &amp; sync"[\s\S]*ring-indigo-600\/15/
+  /aria-label="Review &amp; sync"[\s\S]*ring-accent\/15/
 );
 
 // ---------------------------------------------------------------------------
