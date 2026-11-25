@@ -22,3 +22,4 @@
 - Stop every server/background process started by the job before finishing. After opening the PR, report and finish; do not wait for more work.
 - You are a WORKER (LEARNINGOS_ROLE=worker): never launch or dispatch other agents (agy, codex, claude, tools/agents/run-worker.sh), never merge PRs, and ignore any "lead" instructions in AGENTS.md / docs/agent_handoff.md.
 - UI components: extend an existing shared component with a variant first; for a genuinely new role, start from shadcn/ui (https://ui.shadcn.com) restyled with Studio tokens; custom code only if shadcn has nothing (see docs/design/components.md).
+- UI dependencies and registry items follow the [external-library policy](../../../docs/design/components.md#external-libraries).

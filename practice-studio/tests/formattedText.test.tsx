@@ -62,7 +62,7 @@ async function main() {
       ),
       `expected dual-theme Shiki highlighting for \`\`\`${sample.fence}`
     );
-    assert.match(html, /bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl/);
+    assert.match(html, /data-code-variant="full-file">.*title="[^"]+">[^<]+<.*<span>Copy<\/span>.*<pre[^>]*data-numbered="true"[^>]*dir="ltr"[^>]*tabindex="0"/s);
   }
 
   // 3. Unknown or missing fence language falls back to plain text inside the same frame
@@ -70,13 +70,15 @@ async function main() {
     <FormattedText text={"```rust\nfn main() {}\n```"} />
   );
   assert.doesNotMatch(unknownHtml, /class="shiki-token"/);
-  assert.match(unknownHtml, /<pre[^>]*rounded-xl[^>]*><code>fn main\(\) \{\}<\/code><\/pre>/);
+  assert.match(unknownHtml, /title="rust">rust</);
+  assert.match(unknownHtml, /data-slot="code-block-line-content">fn main\(\) \{\}<\/span>/);
 
   const plainHtml = renderToStaticMarkup(
     <FormattedText text={"```\nplain output line\n```"} />
   );
   assert.doesNotMatch(plainHtml, /class="shiki-token"/);
-  assert.match(plainHtml, /<pre[^>]*rounded-xl[^>]*><code>plain output line<\/code><\/pre>/);
+  assert.match(plainHtml, /title="Code">Code</);
+  assert.match(plainHtml, /data-slot="code-block-line-content">plain output line<\/span>/);
 
   console.log("formattedText tests passed");
 }

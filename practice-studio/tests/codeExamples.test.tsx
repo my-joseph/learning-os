@@ -93,12 +93,11 @@ assert.match(drillHtml, /Output:\s*<\/span><span[^>]*>2<\/span>/);
 assert.doesNotMatch(drillHtml, /Explanation:/, "no Explanation: prefix");
 assert.doesNotMatch(drillHtml, />Examples</, "no small Examples label");
 // explanation sits between the Example heading and its code block
-assert.match(drillHtml, />Example 1<\/h4><p[^>]*>[\s\S]*?5 is already at index 2\.[\s\S]*?<\/p><div[^>]*font-mono/);
+assert.match(drillHtml, />Example 1<\/h4><div[^>]*>[\s\S]*?5 is already at index 2\.[\s\S]*?<\/div><div[^>]*data-code-variant="inline-example"/);
 assert.match(drillHtml, /0 &lt;= nums\.length &lt;= 10\^4/);
 assert.match(drillHtml, /<code[^>]*>nums<\/code> is sorted ascending/);
-// Quiet zinc rounded block with no left accent border
-assert.match(drillHtml, /bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl px-3\.5 py-2\.5 font-mono/);
-assert.doesNotMatch(drillHtml, /aria-label="Examples"[\s\S]*border-l-2/);
+// Paired examples use the shared wrapping code surface.
+assert.match(drillHtml, /data-code-variant="inline-example"><pre[^>]*data-wrap="true"/);
 
 // Visible test names with code are collapsed Radix Collapsible disclosures by default.
 assert.match(drillHtml, /<button(?=[^>]*aria-expanded="false")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
@@ -130,6 +129,7 @@ const expandedDrillHtml = renderToStaticMarkup(
 );
 assert.match(expandedDrillHtml, /<button(?=[^>]*aria-expanded="true")(?=[^>]*aria-controls="visible-test-code-0")[^>]*>/);
 assert.match(expandedDrillHtml, /searchInsert\(\[1, 3, 5\], 3\), 1/);
+assert.match(expandedDrillHtml, /data-code-variant="wrapped"/);
 assert.doesNotMatch(expandedDrillHtml, /searchInsert\(\[2\], 1\)/, "other collapsed tests stay unmounted");
 
 // Zero-leak Collapsible guard: closed hints, reference solutions, review history, and explain stay unmounted.
@@ -386,7 +386,7 @@ assert.match(labExpandedHtml, /<button(?=[^>]*aria-expanded="true")(?=[^>]*aria-
 assert.match(labExpandedHtml, /consumeRetry\(4, 1\), 3\);/);
 
 // 4. After Shiki warms up, Examples Input and Output render highlighted JS token spans
-//    while Input:/Output: labels remain plain zinc and inline <code> in requirements/constraints stays plain.
+//    while Input:/Output: labels and inline code in prose stay plain.
 async function testHighlightedExamples() {
   await preloadShiki(["javascript"]);
   const highlightedHtml = renderToStaticMarkup(
@@ -407,25 +407,25 @@ async function testHighlightedExamples() {
     />
   );
 
-  // Plain zinc labels stay unhighlighted
+  // Labels stay unhighlighted.
   assert.match(
     highlightedHtml,
-    /<span class="text-zinc-500 dark:text-zinc-400 select-none">Input: <\/span>/
+    /<span class="select-none text-muted">Input: <\/span>/
   );
   assert.match(
     highlightedHtml,
-    /<span class="text-zinc-500 dark:text-zinc-400 select-none">Output: <\/span>/
+    /<span class="select-none text-muted">Output: <\/span>/
   );
 
   // Input value contains Shiki dual-theme token spans (e.g. `=` and numbers)
   assert.match(
     highlightedHtml,
-    /Input: <\/span><span class="whitespace-pre-wrap break-words">(?:<span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">[^<]*<\/span>)+<\/span>/
+    /Input: <\/span><span>(?:<span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">[^<]*<\/span>)+<\/span>/
   );
   // Output value (`2`) is highlighted as a JS number token
   assert.match(
     highlightedHtml,
-    /Output: <\/span><span class="whitespace-pre-wrap break-words"><span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">2<\/span><\/span>/
+    /Output: <\/span><span><span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">2<\/span><\/span>/
   );
   // Inline <code> in requirements and constraints stays as plain <code> without shiki-token spans
   assert.match(

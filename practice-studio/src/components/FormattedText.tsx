@@ -1,64 +1,24 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
-import type { ThemedToken } from "shiki/core";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import { ListDot, listKindForHeading } from "@/components/ui/ListDot";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
-import { normalizeShikiLanguage, type SupportedShikiLang } from "@/lib/shikiLanguages";
-import { getRegisteredShikiHighlighter } from "@/lib/shikiRegistry";
-import { renderShikiLineTokens } from "@/lib/shikiTokens";
 
-interface CodeFenceSpanProps {
-  code: string;
-  language: SupportedShikiLang;
-}
-
-const CodeFenceSpan: React.FC<CodeFenceSpanProps> = ({ code, language }) => {
-  const lines = useMemo(() => code.split("\n"), [code]);
-  const highlighter = getRegisteredShikiHighlighter();
-  const syncTokens = useMemo(
-    () => (highlighter ? highlighter.highlightTokensSync(code, language) : null),
-    [highlighter, code, language]
-  );
-  const requestKey = `${language}:${code}`;
-  const [asyncResult, setAsyncResult] = useState<{
-    key: string;
-    tokens: ThemedToken[][];
-  } | null>(null);
-
-  useEffect(() => {
-    if (!highlighter || syncTokens) return;
-    let cancelled = false;
-    void highlighter.highlightCode(code, language).then((tokens) => {
-      if (!cancelled && tokens) {
-        setAsyncResult({ key: requestKey, tokens });
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [highlighter, code, language, requestKey, syncTokens]);
-
-  const highlightedLines =
-    syncTokens ?? (asyncResult?.key === requestKey ? asyncResult.tokens : null);
-
-  if (!highlightedLines || highlightedLines.length !== lines.length) {
-    return <span>{code}</span>;
-  }
-
-  return (
-    <span>
-      {highlightedLines.map((lineTokens, lineIdx) => (
-        <React.Fragment key={lineIdx}>
-          {lineIdx > 0 ? "\n" : null}
-          {renderShikiLineTokens(lineTokens)}
-        </React.Fragment>
-      ))}
-    </span>
-  );
+const CODE_LANGUAGE_LABELS: Record<string, string> = {
+  js: "JavaScript", javascript: "JavaScript", jsx: "JSX", mjs: "JavaScript", cjs: "JavaScript",
+  ts: "TypeScript", typescript: "TypeScript", tsx: "TSX",
+  py: "Python", python: "Python", json: "JSON", bash: "Shell", sh: "Shell", shell: "Shell", zsh: "Shell",
+  sql: "SQL", html: "HTML", css: "CSS", md: "Markdown", markdown: "Markdown", text: "Text", txt: "Text",
 };
+
+/** Header label for a fenced code block: its language, or "Code" when the fence has none. */
+export function codeLanguageLabel(lang: string | null | undefined): string {
+  if (!lang) return "Code";
+  return CODE_LANGUAGE_LABELS[lang.toLowerCase()] ?? lang;
+}
 
 interface FormattedTextProps {
   text: string;
@@ -233,20 +193,14 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     <div className={`space-y-1.5 ${className}`}>
       {blocks.map((block) => {
         if (block.kind === "code") {
-          const supportedLang = normalizeShikiLanguage(block.lang);
           return (
-            <pre
+            <CodeBlock
               key={block.lineIdx}
-              className="px-3.5 py-2.5 bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
-            >
-              <code>
-                {supportedLang ? (
-                  <CodeFenceSpan code={block.code} language={supportedLang} />
-                ) : (
-                  block.code
-                )}
-              </code>
-            </pre>
+              variant="full-file"
+              code={block.code}
+              language={block.lang}
+              filename={codeLanguageLabel(block.lang)}
+            />
           );
         }
 

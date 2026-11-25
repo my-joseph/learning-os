@@ -12,12 +12,38 @@ Learner decision, 2026-11-25.
 4. Create a shared component only for a genuinely new role. Explain the role and why existing components cannot serve it in the PR. Add the export and its props or variants to this catalog in the same change. Get learner approval before introducing a colour.
 5. Source a new role from shadcn/ui first (https://ui.shadcn.com, the Studio's base library — learner decision 2026-11-22/25): if the shadcn registry has a component for the role, add it into `practice-studio/src/components/ui/shadcn/` (shadcn CLI or its published source), keep its Radix behaviour and accessibility, restyle it only with Studio tokens, express differences as variants, and add it to this catalog. Write a custom component only when shadcn/ui has nothing for the role; say so in the PR body with the shadcn components you checked.
 
+## External libraries
+
+Learner decision, 2026-11-25.
+
+- Allowed categories are shadcn-ecosystem registries that distribute Tailwind and Radix copy-paste components, headless libraries, and domain libraries for charts, code editors, math input (MathLive), or 3D rendering (three.js).
+- Themed UI kits such as MUI, Mantine, Chakra, and Ant Design are excluded.
+- Get learner approval for every new library and reuse one library per role. Wrap external UI in a Studio component, restyle it with Studio tokens, and add it to this catalog. Check the bundle size impact and lazy-load heavy libraries.
+
+### Approved libraries
+
+The dates record policy approval for these existing Studio choices and the Code Block integration.
+
+| Library | Role | Reason | Approved date |
+| :--- | :--- | :--- | :--- |
+| Radix / shadcn/ui | Headless primitives and component registry | Accessible controls with local source styled by Studio tokens. Includes the Code Block registry item and shared Button. | 2026-11-25 |
+| `cmdk` | Command palette | Keyboard navigation and command selection for Studio Search. | 2026-11-25 |
+| `motion` | Motion | Shared animation and reduced-motion support. | 2026-11-25 |
+| `lucide-react` | Icons | Shared semantic icons, including Code Block copy feedback. | 2026-11-25 |
+| `shiki` | Syntax highlighting | Code Block uses Studio's existing lazy language loader and GitHub themes. | 2026-11-25 |
+| `katex` | Math display | Renders mathematical notation in learning content. | 2026-11-25 |
+| `mathlive` | Math input | Provides structured math editing and the virtual keyboard. | 2026-11-25 |
+| `three`, `@react-three/fiber`, `@react-three/drei` | 3D figures | Renders interactive geometry in lazy-loaded views. | 2026-11-25 |
+| `class-variance-authority` | Component variants | Defines shared variants, including Code Block surfaces and lines. | 2026-11-25 |
+| `clsx`, `tailwind-merge` | Class composition | Power Studio's `cn` helper, which supplies the Code Block registry's `cn` dependency. | 2026-11-25 |
+
 ## Shared UI exports
 
 Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept the underlying primitive props unless the catalog says otherwise. DOM parts accept the native element props and support `className`. forwarded refs follow their rendered elements.
 
 | File | Exports | Variants, props and use |
 | :--- | :--- | :--- |
+| `CodeBlock.tsx` | `CodeBlock` | Use `variant="full-file"` for a filename, line numbers, and Copy, with optional selectable lines. Use `snippet` (default) for fenced code, `inline-example` for paired Input and Output, or `wrapped` for short assertions and diagnostic output. Pass `language` to highlight supported code with Studio's Shiki themes. |
 | `ConfirmDialog.tsx` | `ConfirmDialog` | `open`, `title`, `description`, `onConfirm`, `onCancel`. Optional `confirmLabel`, `cancelLabel`, `destructive` (defaults to true). Focus starts on Cancel. |
 | `CopyButton.tsx` | `CopyButton` | `text`, `className`, `children`, `copiedContent`. Optional `timeoutMs`, `title`, `ariaLabel`, `requireClipboard`. Switches to copied feedback. |
 | `ListDot.tsx` | `ListDot`, `listKindForHeading` | `kind` is `task` (default), `info`, or `limit` with optional `className`. Use the heading helper to select a kind. |
@@ -29,6 +55,7 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 | `shadcn/Badge.tsx` | `Badge`, `badgeVariants` | `variant` accepts `default`, `status`, `secondary`, `outline`, `destructive`, `success` or `ghost`. Use `choice` for a fixed 24 px option marker and `answerPart` for a result breakdown. Supports `asChild` and span props. Use status recipes for verdict colours. |
 | `shadcn/Button.tsx` | `Button`, `buttonVariants`, `IconButton` | `variant` accepts `primary` (default), `secondary`, `outline`, `ghost` or `destructive`. `size` accepts `default`, `sm`, `compact`, `lg`, `icon` or `iconSm`. Supports `asChild` and native button props. Use `IconButton` for a labelled icon-only action. Its `hitArea` is `expanded` (uses surrounding padding) or `padded` (an inset highlight inside the touch box). Use `sidebarToggle` for the 44 px mobile and 32 px desktop navigation toggle, or `sidebarAction` for a tree leaf’s 44 px mobile and 28 px desktop action trigger. See the math answer variants below for answer fields, palette keys and feedback actions. |
 | `shadcn/Card.tsx` | `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter` | Framed surface with `variant="default"` or `variant="feedback"`. Pair feedback geometry with a status recipe. Card accepts `asChild`. Parts take div, heading or paragraph props as appropriate. |
+| `shadcn/CodeBlock.tsx` | `CodeBlock`, `CodeBlockHeader`, `CodeBlockTitle`, `CodeBlockActions`, `CodeBlockContent`, `CodeBlockLine` | Local adaptation of the shadcn Code Block registry parts. Feature code uses the Studio `CodeBlock` wrapper for highlighting, copy feedback, and named variants. |
 | `shadcn/Collapsible.tsx` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | In-place disclosure. Use the root's controlled `open` and `onOpenChange`, or `defaultOpen`. |
 | `shadcn/Command.tsx` | `Command`, `CommandLoading`, `CommandInput`, `CommandList`, `CommandGroup`, `CommandItem` | cmdk parts for command menus. Pass cmdk props such as `shouldFilter`, input `value` and `onValueChange`, group `heading`, and item `onSelect`. CommandItem adds the ListRow slots and defaults to size `md` and tone `secondary`. A trailing action sits next to the option in the DOM to keep it independently focusable. Pass `selected` to show that action while the option or its menu is active. |
 | `shadcn/Dialog.tsx` | `Dialog`, `DialogTrigger`, `DialogClose`, `DialogPortal`, `DialogOverlay`, `DialogContent`, `DialogTitle`, `DialogDescription` | DialogContent takes `position` (`center` or `top`), `closeButtonSize`, `closeButtonClassName`, `overlayPreset` and `overlayClassName`. DialogOverlay has `preset="default"` or `preset="search"`. Use `top` with the `search` scrim for command search. The search scrim has no blur. |
