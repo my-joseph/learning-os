@@ -24,6 +24,7 @@ import { statusTone, warningTone } from "@/lib/statusTone";
 import { syncFailureLabel } from "@/lib/syncStatus";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { Button } from "@/components/ui/shadcn/Button";
 import { Badge } from "@/components/ui/shadcn/Badge";
@@ -561,9 +562,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                     <Reveal show={showErrorDetails}>
                       {showErrorDetails && (
-                        <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
-                          {errorFullText}
-                        </pre>
+                        <CodeBlock variant="wrapped" code={errorFullText} className={warningTone.borderSoft} />
                       )}
                     </Reveal>
                   </>
@@ -647,9 +646,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                     <Reveal show={showErrorDetails}>
                       {showErrorDetails && (
-                        <pre className={`font-mono text-xs bg-white/80 dark:bg-surface-panel/80 border ${statusTone.wrong.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
-                          {errorFullText}
-                        </pre>
+                        <CodeBlock variant="wrapped" code={errorFullText} className={statusTone.wrong.borderSoft} />
                       )}
                     </Reveal>
                   </>

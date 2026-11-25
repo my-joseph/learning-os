@@ -1,15 +1,15 @@
 /**
- * Unit and render tests for Shiki syntax highlighting, VSCodeBlock features,
+ * Unit and render tests for Shiki syntax highlighting, CodeBlock variants,
  * dual-theme CSS variables, unknown-language fallback, and /math isolation.
  * Run: npx tsx tests/shiki.test.tsx (from practice-studio/)
  */
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import React from "react";
+import { JSDOM } from "jsdom";
+import React, { act } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { VSCodeBlock, getSelectableLineRowProps } from "../src/components/VSCodeBlock";
-import { HighlightedCode } from "../src/components/HighlightedCode";
+import { CodeBlock } from "../src/components/ui/CodeBlock";
 import {
   SUPPORTED_SHIKI_LANGS,
   getExtensionForLanguage,
@@ -61,7 +61,8 @@ async function main() {
 
   assert.equal(highlightTokensSync(tsSnippet, "typescript"), null);
   const coldHtml = renderToStaticMarkup(
-    <VSCodeBlock
+    <CodeBlock
+      variant="full-file"
       code={tsSnippet}
       language="typescript"
       filename="findItem.ts"
@@ -77,7 +78,7 @@ async function main() {
   // 3. Unknown language never triggers highlighting and falls back to plain text
   assert.equal(await highlightCode("fn main() {}", "rust"), null);
 
-  // 4. Preload Shiki and verify all 7 supported grammars tokenize with dual-theme CSS vars
+  // 4. Preload Shiki and verify all supported grammars tokenize with dual-theme CSS vars
   await preloadShiki();
   for (const lang of SUPPORTED_SHIKI_LANGS) {
     const tokens = await highlightCode("const x = 1;", lang);
@@ -90,9 +91,10 @@ async function main() {
     );
   }
 
-  // 5. Highlighted VSCodeBlock render for a TS snippet contains token spans with colours
+  // 5. Highlighted full-file render for a TS snippet contains token spans with colours
   const tsHtml = renderToStaticMarkup(
-    <VSCodeBlock
+    <CodeBlock
+      variant="full-file"
       code={tsSnippet}
       language="typescript"
       filename="findItem.ts"
@@ -106,16 +108,18 @@ async function main() {
     tsHtml,
     /<span class="shiki-token" style="--shiki-light:#[^;]+;--shiki-dark:#[^"]+">function<\/span>/
   );
-  // Line numbers, filename header, breadcrumbs, and Copy button preserved
-  assert.match(tsHtml, />1<\/td>/);
-  assert.match(tsHtml, />4<\/td>/);
-  assert.match(tsHtml, />TS<\/span>/);
-  assert.match(tsHtml, />findItem\.ts<\/span>/);
+  // Line numbers, filename, and Copy remain available. Numbering is visual.
+  assert.match(tsHtml, /data-numbered="true"/);
+  assert.match(tsHtml, /aria-hidden="true"[^>]*>1<\/span>/);
+  assert.match(tsHtml, /aria-hidden="true"[^>]*>4<\/span>/);
+  assert.match(tsHtml, /data-slot="code-block-title"[^>]*>findItem\.ts<\/div>/);
+  assert.doesNotMatch(tsHtml, /role="button"/, "plain lines do not become controls");
   assert.match(tsHtml, />Copy<\/span>/);
 
   // 6. Unknown language falls back to plain text even when Shiki is warmed
   const unknownHtml = renderToStaticMarkup(
-    <VSCodeBlock
+    <CodeBlock
+      variant="full-file"
       code={"fn main() {\n  println!(\"hi\");\n}"}
       language="unknown"
       filename="main.rs"
@@ -123,11 +127,11 @@ async function main() {
   );
   assert.doesNotMatch(unknownHtml, /class="shiki-token"/);
   assert.match(unknownHtml, /fn main\(\) \{/);
-  assert.match(unknownHtml, />TXT<\/span>/);
 
   // 7. Selectable lines keep aria attributes and click/keyboard handlers
   const selectableHtml = renderToStaticMarkup(
-    <VSCodeBlock
+    <CodeBlock
+      variant="full-file"
       code={tsSnippet}
       language="typescript"
       filename="buggy.ts"
@@ -141,34 +145,41 @@ async function main() {
   assert.match(selectableHtml, /aria-pressed="false"[^>]*aria-label="Select line 1"/);
   assert.match(selectableHtml, /aria-pressed="true"[^>]*aria-label="Select line 3"/);
 
-  const selectedCalls: number[] = [];
-  const row3Props = getSelectableLineRowProps(3, true, false, (line) => selectedCalls.push(line));
-  assert.equal(row3Props.role, "button");
-  assert.equal(row3Props["aria-pressed"], false);
-  assert.equal(row3Props["aria-label"], "Select line 3");
-  row3Props.onClick?.({} as React.MouseEvent<HTMLTableRowElement>);
-  assert.deepEqual(selectedCalls, [3]);
+  const { window } = new JSDOM("<div id='root'></div>");
+  Object.assign(globalThis, { window, document: window.document, IS_REACT_ACT_ENVIRONMENT: true });
+  const { createRoot } = await import("react-dom/client");
+  const root = createRoot(window.document.getElementById("root")!);
+  try {
+    const selectedCalls: number[] = [];
+    await act(() => root.render(
+      <CodeBlock
+        variant="full-file"
+        code={tsSnippet}
+        language="typescript"
+        filename="buggy.ts"
+        selectableLines
+        onSelectLine={(line) => selectedCalls.push(line)}
+      />
+    ));
+    const row = window.document.querySelector<HTMLElement>('[aria-label="Select line 3"]');
+    assert.ok(row);
+    row.click();
+    for (const key of ["Enter", " "]) {
+      const event = new window.KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+      assert.equal(row.dispatchEvent(event), false);
+    }
+    assert.deepEqual(selectedCalls, [3, 3, 3]);
+  } finally {
+    await act(() => root.unmount());
+    window.close();
+    for (const key of ["window", "document", "IS_REACT_ACT_ENVIRONMENT"]) {
+      Reflect.deleteProperty(globalThis, key);
+    }
+  }
 
-  let prevented = false;
-  row3Props.onKeyDown?.({
-    key: "Enter",
-    preventDefault: () => {
-      prevented = true;
-    },
-  } as unknown as React.KeyboardEvent<HTMLTableRowElement>);
-  assert.equal(prevented, true);
-  assert.deepEqual(selectedCalls, [3, 3]);
-
-  const nonSelectableProps = getSelectableLineRowProps(3, false, false, (line) =>
-    selectedCalls.push(line)
-  );
-  assert.equal(nonSelectableProps.role, undefined);
-  assert.equal(nonSelectableProps.onClick, undefined);
-  assert.deepEqual(selectedCalls, [3, 3]);
-
-  // 8. HighlightedCode inline component renders JS tokens with dual-theme colors
+  // 8. The inline example renders JS tokens with dual-theme colors
   const inlineHtml = renderToStaticMarkup(
-    <HighlightedCode code="nums = [1, 3], target = 5" language="javascript" />
+    <CodeBlock variant="inline-example" input="nums = [1, 3], target = 5" output="5" language="javascript" />
   );
   assert.match(
     inlineHtml,
@@ -179,23 +190,24 @@ async function main() {
     /<span class="shiki-token" style="--shiki-light:#[^;]+;--shiki-dark:#[^"]+">5<\/span>/
   );
 
-  // 9. Old regex tokenizer and CSS overrides are removed; /math never imports shiki or VSCodeBlock
-  const vsCodeBlockSrc = readFileSync("src/components/VSCodeBlock.tsx", "utf8");
-  assert.doesNotMatch(vsCodeBlockSrc, /tokenizeLine|TOKEN_COLOR_MAP|vscode-token-/);
+  // 9. Shared code surfaces never load the Shiki runtime on Math routes.
+  const codeBlockSrc = readFileSync("src/components/ui/CodeBlock.tsx", "utf8");
+  assert.doesNotMatch(codeBlockSrc, /@\/lib\/shiki["']/);
+  assert.doesNotMatch(codeBlockSrc, /tokenizeLine|TOKEN_COLOR_MAP|vscode-token-/);
   const globalsCss = readFileSync("src/app/globals.css", "utf8");
   assert.doesNotMatch(globalsCss, /vscode-token-/);
   assert.match(globalsCss, /\.shiki-token/);
 
   const mathWorkspaceSrc = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
-  assert.doesNotMatch(mathWorkspaceSrc, /VSCodeBlock|HighlightedCode|shiki/);
+  assert.doesNotMatch(mathWorkspaceSrc, /CodeBlock|shiki/);
   const mathPageSrc = readFileSync("src/app/math/[drillId]/page.tsx", "utf8");
-  assert.doesNotMatch(mathPageSrc, /VSCodeBlock|HighlightedCode|shiki|CodeStudioClient|CodeDashboard/);
+  assert.doesNotMatch(mathPageSrc, /CodeBlock|shiki|CodeStudioClient|CodeDashboard/);
   const mathClientSrc = readFileSync("src/components/shell/MathStudioClient.tsx", "utf8");
-  assert.doesNotMatch(mathClientSrc, /from\s+["'][^"']*(?:CodeDashboard|VSCodeBlock|shiki)[^"']*["']/);
+  assert.doesNotMatch(mathClientSrc, /from\s+["'][^"']*(?:CodeDashboard|CodeBlock|shiki)[^"']*["']/);
   const codeClientSrc = readFileSync("src/components/shell/CodeStudioClient.tsx", "utf8");
   assert.doesNotMatch(codeClientSrc, /from\s+["'][^"']*(?:MathWorkspace|MathLiveInput|Interactive3DCylinder)[^"']*["']/);
   const formattedTextSrc = readFileSync("src/components/FormattedText.tsx", "utf8");
-  assert.doesNotMatch(formattedTextSrc, /@\/components\/HighlightedCode|@\/lib\/shiki["']/);
+  assert.doesNotMatch(formattedTextSrc, /@\/lib\/shiki["']/);
 
   // 10. shiki.ts uses fine-grained shiki/core + JS regex engine (no WASM / full bundle)
   const shikiLibSrc = readFileSync("src/lib/shiki.ts", "utf8");

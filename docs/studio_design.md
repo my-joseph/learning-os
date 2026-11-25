@@ -21,6 +21,12 @@ Review & Sync shows an amber **Synced with problems** banner when a Notion write
 - `Badge` supports default, secondary, outline, destructive, success, ghost, and layout-only `status` variants. Status badges use `statusTone` or `warningTone` recipes through caller classes; do not add raw status palette classes.
 - Tabs keep rounded corners on segmented/contained switchers (`TabsList` `rounded-lg`, `TabsTrigger` and active pill `rounded-md`), while outline/underline tab strips (`variant="underline"` or `variant="similar"` for the Math similar-question strip) use square corners (`rounded-none`).
 
+## Code display
+
+- Full-file blocks show the filename, line numbers, and a Copy button. Bug-finding problems also let learners select lines by click or keyboard. Fenced snippets and full-file blocks scroll within the code surface when a line exceeds the available width.
+- Input and Output examples, visible test assertions, and sync diagnostics wrap. Supported programming snippets use Studio's lazy-loaded Shiki grammars and GitHub light and dark themes.
+- Fences in worked steps and review text use the same shared block. Reference files appear in the Reference disclosure after a passing review in the current attempt cycle.
+
 ## Layout
 - Edge-to-edge flat hairline 3-pane desktop layout (`>=1024 px`) separated by `1 px` `zinc-200` / `zinc-800` hairlines:
   - **Left Sidebar**: `287 px` wide when open, collapsing smoothly to `0 px` via the sidebar toggle (`PanelLeft`) or `Cmd/Ctrl+B` (below `1024 px` opens as a mobile left Drawer). Contains the icon-only `Σ` / `</>` `WorkspaceSwitch` (height-matched to `PanelLeft`) a full-width **Search** row, and the persistent `DrillSwitcher` tree (in Programming, `Labs` and `Drills` in one scrolling list). Collapsing hides `MTH/PRG` along with the sidebar, leaving the expand button, icon-only Search, and active drill title on the left of the Top Bar. The mobile Top Bar has the same Search icon.

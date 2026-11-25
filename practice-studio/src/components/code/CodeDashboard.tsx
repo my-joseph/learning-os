@@ -17,8 +17,7 @@ import {
   CheckResult,
   TestRunReport,
 } from "@/types/drill";
-import { VSCodeBlock } from "@/components/VSCodeBlock";
-import { HighlightedCode } from "@/components/HighlightedCode";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import { FormattedText } from "@/components/FormattedText";
 import {
   getExtensionForLanguage,
@@ -574,32 +573,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     Example {exIdx + 1}
                   </h4>
                   {ex.explanation && ex.explanation.trim() && (
-                    <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    <div className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                       <FormattedText text={ex.explanation} />
-                    </p>
+                    </div>
                   )}
-                  <div className="bg-surface-panel border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-xs text-zinc-800 dark:text-zinc-200 space-y-1 overflow-x-auto">
-                    <div>
-                      <span className="text-zinc-500 dark:text-zinc-400 select-none">
-                        Input:{" "}
-                      </span>
-                      <HighlightedCode
-                        code={ex.input}
-                        language="javascript"
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-zinc-500 dark:text-zinc-400 select-none">
-                        Output:{" "}
-                      </span>
-                      <HighlightedCode
-                        code={ex.output}
-                        language="javascript"
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    </div>
-                  </div>
+                  <CodeBlock
+                    variant="inline-example"
+                    input={ex.input}
+                    output={ex.output}
+                    language="javascript"
+                  />
                 </div>
               ))}
             </div>
@@ -627,7 +610,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         {isKata && openInDrillHref ? (
           <>
             {problem.codeSnippet && !snippetInPrompt && (
-              <VSCodeBlock
+              <CodeBlock
+                variant="full-file"
                 code={problem.codeSnippet}
                 language={snippetLanguage}
                 filename={filename}
@@ -687,7 +671,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         ) : isKata ? (
           <>
             {problem.codeSnippet && !snippetInPrompt && (
-              <VSCodeBlock
+              <CodeBlock
+                variant="full-file"
                 code={problem.codeSnippet}
                 language={snippetLanguage}
                 filename={filename}
@@ -751,12 +736,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                             </div>
                             <CollapsibleContent
                               id={`visible-test-code-${idx}`}
-                              className="ml-4 overflow-x-auto rounded-lg border border-zinc-200 bg-surface-panel px-3 py-2 font-mono text-xs text-zinc-800 dark:border-zinc-800 dark:text-zinc-200"
+                              className="ml-space-4"
                             >
-                              <HighlightedCode
+                              <CodeBlock
+                                variant="wrapped"
                                 code={t.testCode}
                                 language={snippetLanguage}
-                                className="whitespace-pre-wrap break-words"
                               />
                             </CollapsibleContent>
                           </li>
@@ -1052,9 +1037,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <Reveal show={Boolean(openExplain)}>
                     {openExplain && (
                       <div className="pt-2 pb-1 space-y-2 text-xs">
-                        <p className="text-zinc-700 dark:text-zinc-300">
+                        <div className="text-zinc-700 dark:text-zinc-300">
                           <FormattedText text={explainQuestion} />
-                        </p>
+                        </div>
                         {recordedExplain ? (
                           <div className={`border-l-2 ${statusTone.correct.border} pl-3 py-0.5 text-zinc-800 dark:text-zinc-200`}>
                             <FormattedText text={recordedExplain} />
@@ -1142,7 +1127,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                               Loading reference…
                             </p>
                           ) : problem.solutionCode || revealedSolutionCode ? (
-                            <VSCodeBlock
+                            <CodeBlock
+                              variant="full-file"
                               code={(problem.solutionCode || revealedSolutionCode)!}
                               language={snippetLanguage}
                               filename={`reference-${filename}`}
@@ -1166,7 +1152,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           /* =================================================================== */
           <>
             {problem.codeSnippet && (
-              <VSCodeBlock
+              <CodeBlock
+                variant="full-file"
                 code={problem.codeSnippet}
                 language={snippetLanguage}
                 filename={`challenge-${problem.id.toLowerCase()}.${getExtensionForLanguage(

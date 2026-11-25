@@ -156,7 +156,6 @@ const EXCLUDED_PATHS = [
   /^src\/components\/MathFigure\//,
   /^src\/components\/Interactive[^/]*\.tsx$/,
   /^src\/components\/VisualRenderer\.tsx$/,
-  /^src\/components\/VSCodeBlock\.tsx$/,
 ];
 
 function walkSrc(dir: string): string[] {
