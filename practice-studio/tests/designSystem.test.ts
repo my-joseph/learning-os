@@ -82,8 +82,8 @@ test("Design tokens agree across CSS, Tailwind and the reference", () => {
 });
 
 test("Typography roles preserve heading semantics and tabular numbers", () => {
-  const page = renderToStaticMarkup(createElement(Heading, { eyebrow: "LAB-PRG-T01-C01-99" }, "Lab title"));
-  assert.match(page, /<p class="[^"]*font-mono text-2xs[^"]*text-muted">LAB-PRG-T01-C01-99<\/p>/);
+  const page = renderToStaticMarkup(createElement(Heading, null, "Lab title"));
+  assert.doesNotMatch(page, /font-mono/);
   assert.match(page, /<h1 class="[^"]*font-heading text-lg tracking-heading[^"]*font-semibold">Lab title<\/h1>/);
   const section = renderToStaticMarkup(createElement(Heading, { variant: "section" }, "Section title"));
   assert.match(section, /<h2 class="[^"]*font-heading text-lg[^"]*font-heading-medium">Section title<\/h2>/);

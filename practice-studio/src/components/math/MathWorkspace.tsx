@@ -342,7 +342,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       </div>
 
       {displayTitle && (
-        <Heading eyebrow={drillId}>
+        <Heading>
           {isCurriculumId(displayTitle) ? "Math drill" : displayTitle}
         </Heading>
       )}

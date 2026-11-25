@@ -206,7 +206,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
         {/* Slim header row: one h1 ("Daily review"), progress "3 of 8", back link, theme toggle */}
         <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 sm:px-3.5 py-1.5 sm:py-2.5 shadow-sm flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex flex-wrap items-end gap-x-2 sm:gap-x-3 min-w-0">
-            <Heading eyebrow={currentItem?.drillId} className="leading-tight">
+            <Heading className="leading-tight">
               Daily review
             </Heading>
             {showProgressCounter && (

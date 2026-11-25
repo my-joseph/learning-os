@@ -526,7 +526,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
       {displayTitle && (
-        <Heading eyebrow={drillId}>
+        <Heading>
           {isCurriculumId(displayTitle) ? (isLab ? "Lab" : "Programming drill") : displayTitle}
         </Heading>
       )}

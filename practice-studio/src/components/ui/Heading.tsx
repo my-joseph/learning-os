@@ -3,12 +3,12 @@ import { cn } from "@/lib/cn";
 
 interface HeadingProps extends ComponentPropsWithoutRef<"h1"> {
   variant?: "page" | "section";
-  eyebrow?: string;
 }
 
-export function Heading({ variant = "page", eyebrow, className, children, ...props }: HeadingProps) {
+/** Page or section title in Roboto Slab. Curriculum IDs are not shown above titles (learner 2026-11-25: copy them from the row menu). */
+export function Heading({ variant = "page", className, children, ...props }: HeadingProps) {
   const Tag = variant === "page" ? "h1" : "h2";
-  const heading = (
+  return (
     <Tag
       {...props}
       className={cn(
@@ -20,11 +20,4 @@ export function Heading({ variant = "page", eyebrow, className, children, ...pro
       {children}
     </Tag>
   );
-
-  return eyebrow ? (
-    <div className="min-w-0">
-      <p className="font-mono text-2xs font-normal leading-snug text-muted">{eyebrow}</p>
-      {heading}
-    </div>
-  ) : heading;
 }

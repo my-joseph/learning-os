@@ -171,7 +171,7 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
       <section aria-labelledby="review-sync-heading">
       {/* Top row: h1 title + right-aligned quiet sync status link */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <Heading id="review-sync-heading" eyebrow={drill.drillId} className="min-w-0 break-words">
+        <Heading id="review-sync-heading" className="min-w-0 break-words">
           {isCurriculumId(drillTitle) ? "Review & sync" : drillTitle}
         </Heading>
 
