@@ -1,13 +1,16 @@
-import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { StudioClient } from "./StudioClient";
 import { Workspace, drillHref, isLabId, labHref, subjectOf } from "@/lib/routes";
 
-interface WorkspaceDrillRouteProps {
+interface ResolveWorkspaceRouteInput {
   workspace: Workspace;
   drillId: string;
   searchParams: { q?: string | string[]; m?: string | string[] };
   isLabRoute?: boolean;
+}
+
+export interface ResolvedWorkspaceRoute {
+  decodedId: string;
+  q?: string;
 }
 
 function safeDecode(value: string): string {
@@ -18,13 +21,13 @@ function safeDecode(value: string): string {
   }
 }
 
-/** Shared server route handler for `/math/[drillId]`, `/code/[drillId]`, and `/code/lab/[labId]`. */
-export function WorkspaceDrillRoute({
+/** Shared server route validation and redirect helper for `/math/[drillId]`, `/code/[drillId]`, and `/code/lab/[labId]`. */
+export function resolveWorkspaceDrillRoute({
   workspace,
   drillId,
   searchParams,
   isLabRoute = false,
-}: WorkspaceDrillRouteProps) {
+}: ResolveWorkspaceRouteInput): ResolvedWorkspaceRoute {
   const decodedId = safeDecode(drillId);
   const rawParam = isLabRoute
     ? searchParams.m ?? searchParams.q
@@ -51,14 +54,5 @@ export function WorkspaceDrillRoute({
     }
   }
 
-  return (
-    <Suspense fallback={null}>
-      <StudioClient
-        workspace={workspace}
-        drillId={decodedId}
-        initialQuestionId={q}
-        isLabRoute={isLabRoute || undefined}
-      />
-    </Suspense>
-  );
+  return { decodedId, q };
 }

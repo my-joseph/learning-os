@@ -189,7 +189,13 @@ async function main() {
   const mathWorkspaceSrc = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
   assert.doesNotMatch(mathWorkspaceSrc, /VSCodeBlock|HighlightedCode|shiki/);
   const mathPageSrc = readFileSync("src/app/math/[drillId]/page.tsx", "utf8");
-  assert.doesNotMatch(mathPageSrc, /VSCodeBlock|HighlightedCode|shiki/);
+  assert.doesNotMatch(mathPageSrc, /VSCodeBlock|HighlightedCode|shiki|CodeStudioClient|CodeDashboard/);
+  const mathClientSrc = readFileSync("src/components/shell/MathStudioClient.tsx", "utf8");
+  assert.doesNotMatch(mathClientSrc, /from\s+["'][^"']*(?:CodeDashboard|VSCodeBlock|shiki)[^"']*["']/);
+  const codeClientSrc = readFileSync("src/components/shell/CodeStudioClient.tsx", "utf8");
+  assert.doesNotMatch(codeClientSrc, /from\s+["'][^"']*(?:MathWorkspace|MathLiveInput|Interactive3DCylinder)[^"']*["']/);
+  const formattedTextSrc = readFileSync("src/components/FormattedText.tsx", "utf8");
+  assert.doesNotMatch(formattedTextSrc, /@\/components\/HighlightedCode|@\/lib\/shiki["']/);
 
   // 10. shiki.ts uses fine-grained shiki/core + JS regex engine (no WASM / full bundle)
   const shikiLibSrc = readFileSync("src/lib/shiki.ts", "utf8");

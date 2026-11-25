@@ -7,6 +7,9 @@ import {
   highlightTokensSync,
   normalizeShikiLanguage,
 } from "@/lib/shiki";
+import { renderShikiLineTokens } from "@/lib/shikiTokens";
+
+export { renderShikiLineTokens };
 
 /**
  * React hook that yields Shiki dual-theme tokens without blocking first paint:
@@ -48,26 +51,6 @@ export function useShikiTokens(
     return asyncResult.tokens;
   }
   return null;
-}
-
-/**
- * Render one tokenized line as Shiki dual-theme `<span>` elements.
- */
-export function renderShikiLineTokens(tokens: ThemedToken[]): React.ReactNode {
-  return tokens.map((tok, tIdx) => {
-    if (!tok.htmlStyle) {
-      return <React.Fragment key={tIdx}>{tok.content}</React.Fragment>;
-    }
-    return (
-      <span
-        key={tIdx}
-        className="shiki-token"
-        style={tok.htmlStyle as React.CSSProperties}
-      >
-        {tok.content}
-      </span>
-    );
-  });
 }
 
 interface HighlightedCodeProps {

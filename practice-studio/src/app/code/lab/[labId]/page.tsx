@@ -1,4 +1,6 @@
-import { WorkspaceDrillRoute } from "@/components/shell/WorkspaceDrillRoute";
+import React, { Suspense } from "react";
+import { CodeStudioClient } from "@/components/shell/CodeStudioClient";
+import { resolveWorkspaceDrillRoute } from "@/components/shell/WorkspaceDrillRoute";
 
 interface CodeLabPageProps {
   params: { labId: string };
@@ -6,12 +8,21 @@ interface CodeLabPageProps {
 }
 
 export default function CodeLabPage({ params, searchParams }: CodeLabPageProps) {
+  const { decodedId, q } = resolveWorkspaceDrillRoute({
+    workspace: "code",
+    drillId: params.labId,
+    searchParams,
+    isLabRoute: true,
+  });
+
   return (
-    <WorkspaceDrillRoute
-      workspace="code"
-      drillId={params.labId}
-      searchParams={searchParams}
-      isLabRoute={true}
-    />
+    <Suspense fallback={null}>
+      <CodeStudioClient
+        workspace="code"
+        drillId={decodedId}
+        initialQuestionId={q}
+        isLabRoute={true}
+      />
+    </Suspense>
   );
 }
