@@ -122,7 +122,7 @@ export function CodeBlockContent({
 }
 
 const codeBlockLineVariants = cva(
-  "col-span-2 grid grid-cols-subgrid gap-x-space-3 rounded-sm px-space-1",
+  "col-span-2 grid grid-cols-subgrid items-baseline gap-x-space-3 rounded-sm px-space-1",
   {
     variants: {
       variant: {
@@ -149,7 +149,7 @@ export function CodeBlockLine({
       className={cn(codeBlockLineVariants({ variant }), className)}
       {...props}
     >
-      <span aria-hidden="true" className="select-none text-end text-xs tabular-nums text-muted">
+      <span aria-hidden="true" className="select-none text-end tabular-nums text-muted">
         {number}
       </span>
       <span data-slot="code-block-line-content">{children || "\n"}</span>
