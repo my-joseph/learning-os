@@ -34,7 +34,7 @@ const DynamicMathLiveInput = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex-1 min-w-0 h-11 pl-3 pr-12 py-2 flex items-center text-sm text-zinc-400 dark:text-zinc-500">
+      <div className="flex-1 min-w-0 h-touch pl-space-3 pr-space-12 py-space-2 flex items-center text-sm text-foreground-faint">
         Loading math input…
       </div>
     ),
@@ -271,7 +271,7 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
                 mathLiveRef.current?.focus();
               }
             }}
-            className="space-y-2"
+            className="space-y-space-2"
           >
             {useMathLive ? (
               <div className={ANSWER_FIELD_CONTAINER_CLASS}>

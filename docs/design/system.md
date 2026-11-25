@@ -23,6 +23,12 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--muted` | `colors.muted` | `113 113 122` | `161 161 170` | Legacy muted labels where that exact light/dark pair is needed. |
 | `--foreground-control` | `colors.foreground-control` | `63 63 70` | `212 212 216` | Neutral labels on sidebar controls. |
 | `--foreground-menu` | `colors.foreground-menu` | `var(--foreground-control)` | `228 228 231` | Menu action labels. |
+| `--foreground-answer` | `colors.foreground-answer` | `39 39 42` | `var(--foreground-menu)` | Answer fields, unselected choices and result actions. |
+| `--foreground-answer-detail` | `colors.foreground-answer-detail` | `var(--foreground-control)` | `var(--foreground-control)` | Answer details, palette keys and quiet actions. |
+| `--foreground-action-hover` | `colors.foreground-action-hover` | `9 9 11` | `244 244 245` | Hover text for a quiet result action. |
+| `--accent-field` | `colors.accent-field` | `var(--accent-primary)` | `var(--accent-primary-hover)` | Selected choice and focused answer-field border. |
+| `--accent-strong` | `colors.accent-strong` | `67 56 202` | `67 56 202` | Filled answer action hover in both themes. |
+| `--accent-tint` | `colors.accent-tint` | `238 242 255` | `30 27 75` | Pressed or selected palette control background. |
 | `--foreground-faint` | `colors.foreground-faint` | `161 161 170` | `113 113 122` | Secondary tree glyphs and empty section labels. |
 | `--foreground-section-hover` | `colors.foreground-section-hover` | `39 39 42` | `var(--foreground-menu)` | Section header label on hover. |
 | `--foreground-subtle` | `colors.foreground-subtle` | `82 82 91` | `161 161 170` | Descriptions and supporting labels currently using zinc-600 and zinc-400. |
@@ -88,6 +94,9 @@ Use the token roles below when adding a [component variant](components.md). Exis
 | `--control-md` | `spacing.control-md` | `36px` | `36px` | Desktop action icons and roomy search result rows. |
 | `--tree-depth-3` | `spacing.tree-depth-3` | `calc(var(--space-4) + var(--space-2-5))` | `calc(var(--space-4) + var(--space-2-5))` | Content inset at the third depth of a tree row. |
 | `--touch` | `spacing.touch` | `44px` | `44px` | Minimum touch targets. |
+| `--control-answer` | `spacing.control-answer` | `calc(var(--touch) + 2 * var(--space-px))` | `calc(var(--touch) + 2 * var(--space-px))` | Mobile answer field including the two hairlines. |
+| `--icon-math-quick` | `spacing.icon-math-quick` | `22px` | `22px` | Quick math template glyph height. |
+| `--icon-math-quick-max` | `spacing.icon-math-quick-max` | `26px` | `26px` | Maximum width of a quick math template glyph. |
 | `--panel-left` | `spacing.panel-left` | `287px` | `287px` | Open desktop navigation pane. |
 | `--panel-right` | `spacing.panel-right` | `276px` | `276px` | Open desktop review pane. |
 | `--control-lg` | `spacing.control-lg` | `48px` | `48px` | Large buttons. |
@@ -275,12 +284,12 @@ The inventory scans authored code and CSS under `practice-studio/src`, including
 
 | Category | Occurrences | Examples |
 | :--- | ---: | :--- |
-| arbitrary utilities | 277 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
-| raw neutral text utilities | 973 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
+| arbitrary utilities | 250 | `min-h-[44px]`, `min-w-[44px]`, `text-[11px]`, `sm:min-h-[32px]` |
+| raw neutral text utilities | 905 | `text-zinc-400`, `text-zinc-500`, `text-zinc-100`, `text-zinc-900` |
 | raw hex colours | 50 | `#818cf8`, `#4f46e5`, `#a1a1aa`, `#18181b` |
 | other raw colours | 12 | `239`, `rgba(250, 204, 21, 0.4)`, `rgba(250, 204, 21, 0.3)`, `rgba(245, 158, 11, 0.25)` |
-| inline values | 393 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
+| inline values | 389 | `stroke: currentColor`, `fill: currentColor`, `opacity: 0`, `fill: none` |
 | CSS literals | 23 | `outline: 2px solid #4f46e5`, `transition: background-color 0.15s ease, color 0.15s ease`, `animation-duration: 0.01ms`, `transition-duration: 0.01ms` |
-| **Total** | **1728** | |
+| **Total** | **1629** | |
 
 The ratchet counts arbitrary Tailwind values, raw neutral text palette utilities, literal colours, and literal inline styles, CSS and Motion values. Token definitions, CSS variable references, and standard Tailwind scale utilities are excluded. A hex or colour function inside an arbitrary utility counts under literal colours. Existing uses are reported by the Studio test suite. A higher total fails the test. Lower the committed baseline as migrations remove literals.

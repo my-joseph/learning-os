@@ -16,6 +16,7 @@ const segmentedListVariants = cva("", {
       default: "inline-flex min-h-[44px] items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900",
       underline: "inline-flex items-center gap-1 rounded-none bg-transparent p-0",
       chips: "flex shrink-0 gap-space-0_5",
+      answerMode: "relative inline-grid grid-cols-2 items-center rounded-lg bg-surface-selected/70 dark:bg-surface-panel p-space-0_5",
       rail: "fixed left-space-3 top-1/2 z-sticky hidden -translate-y-1/2 grid-rows-2 items-center rounded-xl border border-border bg-surface-hover/95 p-space-1 shadow-ui-sm backdrop-blur-glass dark:bg-surface-hover/80 lg:grid",
       header: "relative grid shrink-0 grid-cols-2 items-center rounded-lg border border-border bg-surface-hover p-space-0_5 dark:bg-surface-hover/80 lg:hidden",
       sidebar: "relative grid shrink-0 grid-cols-2 rounded-lg bg-surface-selected/70 p-space-0_5 dark:bg-surface-raised/75 lg:p-space-0",
@@ -41,6 +42,8 @@ const chipVariants = cva(
 );
 
 const TabsVariantContext = React.createContext<TabsVariant>("default");
+const slidingPill = "pointer-events-none absolute bottom-space-0_5 left-space-0_5 top-space-0_5 w-[calc(50%-var(--space-0-5))] rounded-md bg-surface-raised shadow-ui-sm";
+const answerModeChip = "relative z-local inline-flex min-h-touch min-w-touch items-center justify-center gap-space-1_5 rounded-md px-space-2_5 text-xs font-medium text-muted transition-colors duration-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent data-[selected=true]:text-foreground data-[selected=false]:hover:text-foreground dark:data-[selected=false]:hover:text-foreground-menu disabled:opacity-disabled sm:h-control-xs sm:min-h-0 sm:min-w-0";
 
 export const Tabs = TabsPrimitive.Root;
 export const TabsList = React.forwardRef<
@@ -107,10 +110,9 @@ export function SegmentedNav({ variant, activeIndex, className, children, ...pro
         <m.span
           aria-hidden
           className={cn(
-            "pointer-events-none absolute bg-surface-raised shadow-ui-sm",
             rail
-              ? "left-space-1 right-space-1 top-space-1 h-[calc(50%-var(--space-1))] rounded-lg"
-              : "bottom-space-0_5 left-space-0_5 top-space-0_5 w-[calc(50%-var(--space-0-5))] rounded-md",
+              ? "pointer-events-none absolute bg-surface-raised shadow-ui-sm left-space-1 right-space-1 top-space-1 h-[calc(50%-var(--space-1))] rounded-lg"
+              : slidingPill,
             variant === "sidebar" && "dark:bg-surface-selected/80"
           )}
           initial={false}
@@ -151,19 +153,31 @@ SegmentedNavItem.displayName = "SegmentedNavItem";
 
 type SegmentedChipsProps<T extends string> = VariantProps<typeof chipVariants> & {
   label: string;
-  options: readonly { value: T; label: string; disabled?: boolean }[];
+  options: readonly { value: T; label: string; icon?: React.ReactNode; disabled?: boolean }[];
   value: T;
   onValueChange: (value: T) => void;
   disabled?: boolean;
   loading?: boolean;
   className?: string;
+  variant?: "chips" | "answerMode";
 };
 
 export function SegmentedChips<T extends string>({
-  label, options, value, onValueChange, size, tone, disabled, loading, className,
+  label, options, value, onValueChange, size, tone, disabled, loading, className, variant = "chips",
 }: SegmentedChipsProps<T>) {
+  const isAnswerMode = variant === "answerMode";
+  const activeIndex = options.findIndex((option) => option.value === value);
   return (
-    <div role="group" aria-label={label} aria-busy={loading || undefined} className={cn(segmentedListVariants({ variant: "chips" }), className)}>
+    <div role="group" aria-label={label} aria-busy={loading || undefined} className={cn(segmentedListVariants({ variant }), className)}>
+      {isAnswerMode && (
+        <m.span
+          aria-hidden="true"
+          className={cn(slidingPill, "dark:bg-surface-selected/80")}
+          initial={false}
+          animate={{ x: activeIndex === 1 ? "100%" : "0%" }}
+          transition={settle}
+        />
+      )}
       {options.map((option, index) => (
         <button
           key={option.value}
@@ -173,11 +187,12 @@ export function SegmentedChips<T extends string>({
           disabled={disabled || loading || option.disabled}
           onClick={() => onValueChange(option.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") event.stopPropagation();
+            if (!isAnswerMode && (event.key === "Enter" || event.key === " ")) event.stopPropagation();
           }}
-          className={cn(chipVariants({ size, tone }), index === 0 && "expand-touch-start")}
+          className={isAnswerMode ? answerModeChip : cn(chipVariants({ size, tone }), index === 0 && "expand-touch-start")}
         >
-          {option.label}
+          {option.icon}
+          {isAnswerMode ? <span>{option.label}</span> : option.label}
         </button>
       ))}
     </div>

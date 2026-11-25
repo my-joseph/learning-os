@@ -8,6 +8,7 @@ import type {
   convertAsciiMathToLatex as ConvertAsciiFn,
   convertLatexToAsciiMath as ConvertLatexFn,
 } from "mathlive";
+import { InlineCheckButton } from "../src/components/workspace/PlainAnswerField";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { isEditableEventTarget } from "../src/lib/answerFeedback";
 import {
@@ -253,7 +254,7 @@ const mathEntryHtml = renderToStaticMarkup(
 assert.match(mathEntryHtml, />Plain text</, "Supported math entry should expose Plain text toggle");
 assert.match(
   mathEntryHtml,
-  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button(?=[^>]*aria-label="Check answer")(?=[^>]*title="Check \(Enter\)")(?=[^>]*class="[^"]*size-control-sm[^"]*max-sm:size-touch[^"]*rounded-answer-action sm:rounded-lg)[^>]*><svg[^>]*lucide-equal/
 );
 
 const unsupportedFallbackHtml = renderToStaticMarkup(
@@ -274,18 +275,32 @@ const unsupportedFallbackHtml = renderToStaticMarkup(
 );
 assert.match(
   unsupportedFallbackHtml,
-  /<input[^>]*type="text"[^>]*aria-label="Answer for question Q01"[^>]*class="[^"]*pr-12[^"]*"/,
+  /<input[^>]*type="text"[^>]*aria-label="Answer for question Q01"[^>]*class="[^"]*pr-space-12[^"]*"/,
   "Unsupported answerSpec type must fall back to plain-text input with reserved right padding"
 );
 assert.match(
   unsupportedFallbackHtml,
-  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button(?=[^>]*aria-label="Check answer")(?=[^>]*title="Check \(Enter\)")(?=[^>]*class="[^"]*size-control-sm[^"]*max-sm:size-touch[^"]*rounded-answer-action sm:rounded-lg)[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(
   unsupportedFallbackHtml,
   />Plain text</,
   "Plain-text fallback should not show Math/Plain toggle"
 );
+
+const checkStates = [
+  { disabled: false, isChecking: false },
+  { disabled: true, isChecking: false },
+  { disabled: false, isChecking: true },
+].map((state) => renderToStaticMarkup(<InlineCheckButton onClick={noop} {...state} />));
+const checkClasses = checkStates.map((html) => html.match(/<button[^>]*class="([^"]+)"/)?.[1]);
+assert.ok(checkClasses[0]?.includes("max-sm:size-touch"));
+assert.ok(checkClasses[0]?.includes("size-control-sm"));
+assert.ok(!checkClasses[0]?.split(" ").includes("rounded-md"), "Use the answer radius on phones");
+assert.deepEqual(checkClasses, Array(3).fill(checkClasses[0]), "Checking preserves the control geometry");
+assert.match(checkStates[2], /aria-busy="true"/);
+assert.match(checkStates[2], /disabled=""/);
+assert.match(checkStates[2], /<svg[^>]*size-space-4[^>]*animate-spin/);
 
 // ---------------------------------------------------------------------------
 // 4. Corpus-wide round-trip check across every MTH drill in drills/data/

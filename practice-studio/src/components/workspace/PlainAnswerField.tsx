@@ -2,11 +2,11 @@
 
 import React from "react";
 import { Equal, Loader2 } from "lucide-react";
+import { IconButton } from "@/components/ui/shadcn/Button";
 import { Input } from "@/components/ui/shadcn/Input";
-import { cn } from "@/lib/cn";
 
 export const ANSWER_FIELD_CONTAINER_CLASS =
-  "relative flex items-center min-h-[46px] sm:min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
+  "relative flex items-center min-h-control-answer sm:min-h-touch rounded-xl border border-border-control bg-surface-raised transition-colors focus-within:border-accent-field focus-within:ring-2 focus-within:ring-accent-field/20 dark:focus-within:ring-accent-field/25";
 
 export interface InlineCheckButtonProps {
   onClick: () => void;
@@ -22,22 +22,24 @@ export const InlineCheckButton: React.FC<InlineCheckButtonProps> = ({
   isChecking,
   embedded = true,
 }) => {
-  const posCls = embedded ? "absolute right-0 sm:right-1.5 top-1/2 -translate-y-1/2 " : "";
   return (
-    <button
-      type="button"
+    <IconButton
+      tone="answerCheck"
+      hitArea="answer"
+      size="sm"
+      loading={isChecking}
       onClick={onClick}
       disabled={disabled}
       aria-label="Check answer"
       title="Check (Enter)"
-      className={`${posCls}inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-8 sm:h-8 rounded-[11px] sm:rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1`}
+      className={embedded ? "absolute right-0 sm:right-space-1_5 top-1/2 -translate-y-1/2" : undefined}
     >
       {isChecking ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="size-space-4 animate-spin" aria-hidden="true" />
       ) : (
-        <Equal className="w-4 h-4" />
+        <Equal className="size-space-4" aria-hidden="true" />
       )}
-    </button>
+    </IconButton>
   );
 };
 
@@ -68,7 +70,7 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
       <Input
         ref={inputRef}
         type="text"
-        variant="embedded"
+        variant="answer"
         value={value}
         readOnly={locked}
         aria-readonly={locked || undefined}
@@ -83,10 +85,7 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className={cn(
-          "h-11 font-mono text-sm text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
-          locked && "opacity-75 cursor-default"
-        )}
+        className={locked ? "opacity-muted cursor-default" : undefined}
       />
       <InlineCheckButton
         onClick={onCheck}

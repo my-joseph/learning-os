@@ -206,11 +206,10 @@ assert.match(studioSidebar, /bg-surface-panel/);
 assert.match(studioSidebar, /<WorkspaceSwitch/);
 assert.match(studioSidebar, /<DrillSwitcher/);
 assert.doesNotMatch(studioSidebar, /Generate drill set|Reset all/);
-assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8"), /bg-white dark:bg-zinc-900/);
+assert.match(readFileSync("src/components/workspace/PlainAnswerField.tsx", "utf8"), /bg-surface-raised/);
 {
   const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
-  assert.match(mathPaletteSrc, /<m\.span/);
-  assert.match(mathPaletteSrc, /dark:bg-zinc-700\/80/);
+  assert.match(mathPaletteSrc, /<SegmentedChips\s+variant="answerMode"/);
   assert.match(mathPaletteSrc, /bg-surface-panel/);
 }
 assert.match(problemAssistSection, /bg-surface-panel/);
@@ -549,7 +548,7 @@ assert.match(beforeAttemptHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear E
 assert.match(beforeAttemptHtml, /class="text-base leading-relaxed[^"]*">[^]*Solve/);
 assert.match(
   beforeAttemptHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button(?=[^>]*disabled="")(?=[^>]*aria-label="Check answer")(?=[^>]*title="Check \(Enter\)")(?=[^>]*class="[^"]*size-control-sm[^"]*max-sm:size-touch[^"]*rounded-answer-action sm:rounded-lg)[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(beforeAttemptHtml, />Check<\/span>/);
 
@@ -582,7 +581,7 @@ assert.match(inBrowserCodeHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Output P
 assert.match(inBrowserCodeHtml, /class="text-base leading-relaxed[^"]*"/);
 assert.match(
   inBrowserCodeHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*min-h-\[44px\] min-w-\[44px\] w-11 h-11[^"]*sm:w-8 sm:h-8 rounded-\[11px\] sm:rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+  /<button(?=[^>]*disabled="")(?=[^>]*aria-label="Check answer")(?=[^>]*title="Check \(Enter\)")(?=[^>]*class="[^"]*size-control-sm[^"]*max-sm:size-touch[^"]*rounded-answer-action sm:rounded-lg)[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(inBrowserCodeHtml, />Check<\/span>/);
 
@@ -698,7 +697,7 @@ assert.match(codeGenerateHtml, />Level 5<\/option>/);
 // no CAS copy row on choice questions (their plain text is only the prompt).
 const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
 const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8");
-assert.match(mathPaletteSrc, /justify-center min-h-\[44px\] min-w-\[44px\] w-11 h-11 sm:min-h-0 sm:min-w-0 sm:w-8 sm:h-8 rounded-lg bg-white dark:bg-zinc-700\/70/);
+assert.match(mathPaletteSrc, /<IconButton\s+size="sm"\s+tone="paletteKey"\s+hitArea="answer"/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
 assert.match(mathItemView, /problem\.plainText && !isChoice/);

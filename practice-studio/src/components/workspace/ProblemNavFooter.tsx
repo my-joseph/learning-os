@@ -31,39 +31,36 @@ export const ProblemNavFooter: React.FC<ProblemNavFooterProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
+    <div className="flex items-center justify-between px-space-1 text-xs text-muted">
       <Button
-        variant="ghost"
-        size="compact"
+        variant="answerNav"
+        size="answerNav"
         onClick={onPrevQuestion}
         disabled={index === 0}
-        className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="size-space-4" />
         <span>Previous</span>
       </Button>
 
       {hideNext ? null : isLastQuestion && onOpenReview ? (
         <Button
-          variant="ghost"
-          size="compact"
+          variant="answerNavReview"
+          size="answerNav"
           onClick={onOpenReview}
           disabled={nextDisabled}
-          className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
         >
           <span>{lastQuestionLabel || <>Review &amp; sync</>}</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="size-space-4" />
         </Button>
       ) : (
         <Button
-          variant="ghost"
-          size="compact"
+          variant="answerNav"
+          size="answerNav"
           onClick={onNextQuestion}
           disabled={isLastQuestion || nextDisabled}
-          className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
         >
           <span>Next</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="size-space-4" />
         </Button>
       )}
     </div>
