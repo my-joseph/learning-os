@@ -66,7 +66,6 @@ import {
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
 import { isCurriculumId, plainTitle } from "@/lib/titleText";
-import { ListDot } from "@/components/ui/ListDot";
 import { CopyButton } from "@/components/ui/CopyButton";
 import {
   Collapsible,
@@ -570,16 +569,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     : ""}
                 </span>
               )}
-              {problem.entryPoint && (
-                isLab ? (
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    {problem.entryPoint}
-                  </span>
-                ) : (
-                  <code className="inline-code text-foreground-control">
-                    {problem.entryPoint}
-                  </code>
-                )
+              {isLab && problem.entryPoint && (
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  {problem.entryPoint}
+                </span>
               )}
               {!problem.entryPoint &&
                 problem.context &&
@@ -635,7 +628,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
               {problem.constraints.map((constraint, cIdx) => (
                 <li key={cIdx} className="flex items-start gap-2 leading-relaxed">
-                  <ListDot kind="limit" />
                   <span className="leading-relaxed">
                     <FormattedText text={constraint} density="compact" />
                   </span>
@@ -755,7 +747,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                         >
                           <li className="space-y-1">
                             <div className="flex items-start gap-2">
-                              <ListDot className="mt-3 sm:mt-0" />
                               <CollapsibleTrigger asChild>
                                 <button
                                   type="button"
@@ -787,7 +778,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ) : (
                         <li key={t.id || idx} className="space-y-1">
                           <div className="flex items-start gap-2">
-                            <ListDot />
                             <span>
                               <FormattedText text={t.name} density="compact" />
                             </span>
@@ -1023,7 +1013,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                                 <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-sans">
                                   {r.findings.map((f, fIdx) => (
                                     <li key={fIdx} className="flex items-start gap-2">
-                                      <ListDot kind="info" />
                                       <span className="min-w-0 break-words">
                                         <code className="inline-code">{f.check}</code> ({f.severity}
                                         {f.line ? `, line ${f.line}` : ""}
