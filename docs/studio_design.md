@@ -1,5 +1,7 @@
 # Practice Studio — design guide (v2, 2026-11-18)
 
+For the learner's cross-screen taste and visual examples, read [design principles](design/principles.md) and the [reference gallery](design/references/README.md) before changing Studio UI. Build with shared components and their variants.
+
 The learner's brief: clean, few tags, easy to work a problem, no confusing buttons, no visual noise or text that does not help, a clear hierarchy, and colour and type chosen for ease of use. Every Studio PR follows this file.
 
 ## Principles

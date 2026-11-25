@@ -1,0 +1,14 @@
+# Practice Studio design principles
+
+Each surface has a different job. Use these principles to carry the learner's taste across the Studio without making every screen look the same. Use existing design-system tokens and shared component variants; get the learner's approval before adding colors.
+
+- Keep surfaces calm and low-noise; give the active task the strongest hierarchy. See: [approved search palette](references/studio-search-palette-approved.png), [search palette reference](references/search-palette.png).
+- Let secondary text and its icons start muted, then become primary together on hover or selection. See: [search row hover](references/search-row-hover.png), [approved hover](references/studio-search-hover-approved.png).
+- Show secondary affordances such as `⌘K` hints and `⋯` menus only on hover or keyboard focus. See: [search row hover](references/search-row-hover.png), [row menu](references/search-row-menu.png), [approved row menu](references/studio-row-menu-approved.png).
+- Keep density compact but breathable: use 28/32/36 px control and row sizes where the surface calls for them, and preserve 44 px touch targets. See: [sidebar sections](references/prg-sidebar-sections.png), [approved row menu](references/studio-row-menu-approved.png).
+- Align related controls to one left edge per surface; desktop sidebar toggles and workspace tabs share a 32 px height, while touch controls remain at least 44 px. See: [sidebar sections](references/prg-sidebar-sections.png).
+- Use collapsible section headers with a trailing chevron and show curriculum as a nested tree when hierarchy matters. See: [sidebar chevron](references/prg-sidebar-chevron.png), [sidebar sections](references/prg-sidebar-sections.png).
+- Avoid clutter: omit codes, badges, and decorative icons unless they help identify or act on an item; keep titles on one line where practical. See: [search palette](references/search-palette.png), [approved search palette](references/studio-search-palette-approved.png).
+- Give overlays enough room for their task: the search palette is about 671 px wide, with 28 px type chips and close control, tight chip gaps, roomier 36 px result rows, and comfortable card padding. See: [search palette](references/search-palette.png), [approved search palette](references/studio-search-palette-approved.png).
+- Let modal overlays recede with a darker scrim (about `#0006`) and slight blur, while keeping modal surfaces light and legible. See: [approved search palette](references/studio-search-palette-approved.png).
+- Keep motion subtle and respect reduced-motion preferences. See: [sidebar chevron](references/prg-sidebar-chevron.png), [sidebar sections](references/prg-sidebar-sections.png).

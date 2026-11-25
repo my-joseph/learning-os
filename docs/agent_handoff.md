@@ -13,6 +13,8 @@ Read these in order before acting:
 3. `rules/00_core.md`
 4. `.claude/skills/dispatch-worker/SKILL.md`
 
+For any Studio UI work, also read [design principles](design/principles.md) and the [reference gallery](design/references/README.md) before planning or implementation.
+
 ## Learner decisions
 
 ### Working style
