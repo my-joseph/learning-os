@@ -597,7 +597,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             />
           </div>
 
-          <div className="min-w-0 text-base leading-relaxed text-foreground">
+          <div className="text-base leading-relaxed text-foreground min-w-0">
             <FormattedText text={problem.prompt} block />
           </div>
         </div>

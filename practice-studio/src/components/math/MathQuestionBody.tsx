@@ -39,7 +39,7 @@ export const MathQuestionBody: React.FC<MathQuestionBodyProps> = ({
       <div className="space-y-2">
         {header}
 
-        <div className="min-w-0 text-base leading-relaxed text-foreground">
+        <div className="text-base leading-relaxed text-foreground min-w-0">
           {lineChoiceData ? (
             <LineChoicePrompt
               parsed={lineChoiceData}
