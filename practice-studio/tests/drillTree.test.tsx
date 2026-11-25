@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  buildFlatLabTreeRows,
   buildPickerSections,
   buildVisibleTreeRows,
   classifyPickerItemType,
@@ -18,8 +19,14 @@ import {
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
   resolveTreeKeyAction,
+  sortLabPickerItems,
 } from "../src/lib/drillGrouping";
-import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
+import {
+  DrillSwitcher,
+  PRG_SECTION_STORAGE_KEYS,
+  readSidebarSectionExpanded,
+  writeSidebarSectionExpanded,
+} from "../src/components/shell/DrillSwitcher";
 import { WorkspaceSwitch } from "../src/components/workspace/WorkspaceSwitch";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
@@ -535,5 +542,282 @@ const bridgeSections = buildPickerSections({
 const bridgeTopic = bridgeSections.topicGroups.find((t) => t.topicCode === "MTH-BRIDGE");
 assert.ok(bridgeTopic, "MTH-BRIDGE topic group must appear in drill picker");
 assert.equal(bridgeTopic.containsCurrent, true);
+
+// ---------------------------------------------------------------------------
+// 5. PRG sidebar unified Labs + Drills sections, collapsible headers & localStorage
+// ---------------------------------------------------------------------------
+const prgSidebarDrills: DrillListItem[] = [
+  makeDrill("DRL-PRG-T01-C01-U01-01", "PRG-T01-C01-U01", "Execution Context & Scope", {
+    topicCode: "PRG-T01",
+    topicTitle: "JS, TS & Data Structures",
+    chapterCode: "PRG-T01-C01",
+    chapterTitle: "JS Execution & Async",
+    practiceStatus: "In Progress",
+  }),
+  makeDrill("DRL-PRG-T01-C01-U02-01", "PRG-T01-C01-U02", "Closures", {
+    topicCode: "PRG-T01",
+    topicTitle: "JS, TS & Data Structures",
+    chapterCode: "PRG-T01-C01",
+    chapterTitle: "JS Execution & Async",
+    hasNotes: true,
+  }),
+];
+const prgSidebarLabs: LabListItem[] = [
+  makeLab("LAB-PRG-T01-C04-02", "PRG-T01-C04", "SQL Ledger", {
+    practiceStatus: "Ready",
+    hasNotes: true,
+  }),
+  makeLab("LAB-PRG-T01-C01-01", "PRG-T01-C01", "TinyEventEmitter & PromisePool", {
+    practiceStatus: "In Progress",
+  }),
+];
+
+const sortedPrgLabs = sortLabPickerItems(normalizeLabPickerItems(prgSidebarLabs));
+assert.deepEqual(
+  sortedPrgLabs.map((l) => l.id),
+  ["LAB-PRG-T01-C01-01", "LAB-PRG-T01-C04-02"],
+  "PRG sidebar labs sort by curriculum code"
+);
+
+const flatLabRows = buildFlatLabTreeRows({
+  items: sortedPrgLabs,
+  currentId: "LAB-PRG-T01-C01-01",
+  dueUnitCodes: new Set(["PRG-T01-C04"]),
+});
+assert.equal(flatLabRows.length, 2);
+assert.equal(flatLabRows[0].level, 1);
+assert.equal(flatLabRows[0].parentNodeId, null);
+if (flatLabRows[0].kind === "leaf" && flatLabRows[1].kind === "leaf") {
+  assert.equal(flatLabRows[0].isCurrent, true);
+  assert.equal(flatLabRows[1].isDueToday, true);
+  assert.equal(flatLabRows[1].hasNotes, true);
+}
+
+const prgDrillSections = buildPickerSections({
+  items: normalizeDrillPickerItems(prgSidebarDrills),
+  currentId: "DRL-PRG-T01-C01-U01-01",
+  recentIds: [],
+  search: "",
+  filter: "ALL",
+});
+const combinedRows = [
+  ...flatLabRows,
+  ...buildVisibleTreeRows({
+    topicGroups: prgDrillSections.topicGroups,
+    currentId: "DRL-PRG-T01-C01-U01-01",
+    expandedTopics: new Set(prgDrillSections.defaultExpandedTopics),
+    expandedChapters: new Set(prgDrillSections.defaultExpandedChapters),
+    expandedUnits: new Set(prgDrillSections.defaultExpandedUnits),
+  }),
+];
+assert.deepEqual(
+  resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C04-02", "ArrowDown"),
+  { type: "focus", nodeId: "topic:PRG-T01" },
+  "ArrowDown navigates seamlessly from Labs section into Drills section"
+);
+assert.deepEqual(
+  resolveTreeKeyAction(combinedRows, "topic:PRG-T01", "ArrowUp"),
+  { type: "focus", nodeId: "leaf:LAB-PRG-T01-C04-02" },
+  "ArrowUp navigates seamlessly from Drills section back to Labs section"
+);
+assert.deepEqual(
+  resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C01-01", "Enter"),
+  { type: "select", itemId: "LAB-PRG-T01-C01-01" },
+  "Enter selects a lab row"
+);
+assert.deepEqual(
+  resolveTreeKeyAction(combinedRows, "leaf:LAB-PRG-T01-C01-01", "ArrowLeft"),
+  { type: "none" },
+  "ArrowLeft on top-level lab leaf is a no-op"
+);
+
+// PRG sidebar SSR: no Drills/Labs tabs, both sections in one scrolling tree, collapsible headers with trailing chevrons
+const prgSidebarHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={prgSidebarLabs}
+    dueUnitCodes={["PRG-T01-C04", "PRG-T01-C01-U02"]}
+    selectedDrillId="LAB-PRG-T01-C01-01"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.doesNotMatch(prgSidebarHtml, /role="tablist"/, "PRG sidebar removes Drills/Labs switch tabs");
+assert.doesNotMatch(prgSidebarHtml, /aria-label="Practice type"/);
+assert.match(prgSidebarHtml, /data-sidebar-section="labs"/);
+assert.match(prgSidebarHtml, /data-sidebar-section="drills"/);
+assert.ok(
+  prgSidebarHtml.indexOf('data-sidebar-section="labs"') <
+    prgSidebarHtml.indexOf('data-sidebar-section="drills"'),
+  "Labs section appears before Drills section"
+);
+assert.match(
+  prgSidebarHtml,
+  /<button[^>]*aria-expanded="true"[^>]*><span>Labs<\/span><svg[^>]*lucide-chevron-right[^>]*rotate-90[^>]*><path[^>]*><\/path><\/svg><\/button>/,
+  "Labs section header has aria-expanded and small muted trailing chevron rotated when expanded"
+);
+assert.match(
+  prgSidebarHtml,
+  /<button[^>]*aria-expanded="true"[^>]*><span>Drills<\/span><svg[^>]*lucide-chevron-right[^>]*rotate-90[^>]*><path[^>]*><\/path><\/svg><\/button>/,
+  "Drills section header has aria-expanded and small muted trailing chevron rotated when expanded"
+);
+assert.match(prgSidebarHtml, /motion-reduce:transition-none/);
+assert.match(prgSidebarHtml, /data-sidebar-leaf="LAB-PRG-T01-C01-01"/);
+assert.match(prgSidebarHtml, /data-sidebar-row="leaf-1"/);
+assert.doesNotMatch(prgSidebarHtml, /aria-label="Actions for LAB-/, "Lab rows must not have action menus");
+assert.match(prgSidebarHtml, /Due today/);
+assert.match(prgSidebarHtml, /aria-current="true"/);
+
+const prgSidebarDrillSelectedHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={prgSidebarLabs}
+    dueUnitCodes={["PRG-T01-C04", "PRG-T01-C01-U02"]}
+    selectedDrillId="DRL-PRG-T01-C01-U01-01"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.match(
+  prgSidebarDrillSelectedHtml,
+  /aria-label="Actions for DRL-PRG-T01-C01-U01-01"/,
+  "Drill leaves keep action menus"
+);
+assert.match(prgSidebarDrillSelectedHtml, /data-sidebar-leaf="DRL-PRG-T01-C01-U01-01"/);
+
+// Empty Labs section shows quiet "No labs yet"
+const prgSidebarNoLabsHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={[]}
+    selectedDrillId="DRL-PRG-T01-C01-U01-01"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.match(prgSidebarNoLabsHtml, />No labs yet</);
+assert.match(prgSidebarNoLabsHtml, /data-sidebar-section="drills"/);
+
+// Searching hides non-matching empty section; no matches shows combined empty state
+const prgSidebarSearchDrillsHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={prgSidebarLabs}
+    selectedDrillId="DRL-PRG-T01-C01-U01-01"
+    drillSearch="closures"
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.doesNotMatch(prgSidebarSearchDrillsHtml, /data-sidebar-section="labs"/);
+assert.match(prgSidebarSearchDrillsHtml, /data-sidebar-section="drills"/);
+
+const prgSidebarSearchEmptyHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    mode="sidebar"
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={prgSidebarDrills}
+    labs={prgSidebarLabs}
+    selectedDrillId="DRL-PRG-T01-C01-U01-01"
+    drillSearch="nonexistent-xyz"
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.match(prgSidebarSearchEmptyHtml, /No drills or labs match the current search or filter\./);
+
+// Math sidebar remains unchanged (no Labs/Drills section headers)
+assert.doesNotMatch(sidebarTreeHtml, /data-sidebar-section="labs"/);
+assert.doesNotMatch(sidebarTreeHtml, /data-sidebar-section="drills"/);
+
+// localStorage persistence for PRG sidebar sections (defaults true, persists, wraps errors safely)
+{
+  const originalWindow = (globalThis as { window?: unknown }).window;
+  try {
+    const store = new Map<string, string>();
+    (globalThis as { window: unknown }).window = {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => {
+          store.set(k, String(v));
+        },
+      },
+    };
+    assert.equal(readSidebarSectionExpanded("labs"), true);
+    assert.equal(readSidebarSectionExpanded("drills"), true);
+    writeSidebarSectionExpanded("labs", false);
+    assert.equal(store.get(PRG_SECTION_STORAGE_KEYS.labs), "false");
+    assert.equal(readSidebarSectionExpanded("labs"), false);
+    assert.equal(readSidebarSectionExpanded("drills"), true);
+    writeSidebarSectionExpanded("labs", true);
+    assert.equal(readSidebarSectionExpanded("labs"), true);
+
+    // Throwing localStorage falls back safely
+    (globalThis as { window: unknown }).window = {
+      localStorage: {
+        getItem: () => {
+          throw new Error("denied");
+        },
+        setItem: () => {
+          throw new Error("quota");
+        },
+      },
+    };
+    assert.equal(readSidebarSectionExpanded("labs"), true);
+    writeSidebarSectionExpanded("drills", false);
+  } finally {
+    if (originalWindow === undefined) {
+      delete (globalThis as { window?: unknown }).window;
+    } else {
+      (globalThis as { window: unknown }).window = originalWindow;
+    }
+  }
+}
 
 console.log("drill tree tests passed");

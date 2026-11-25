@@ -940,8 +940,8 @@ export type VisibleTreeRow =
   | {
       kind: "leaf";
       nodeId: string;
-      level: 3 | 4;
-      parentNodeId: string;
+      level: 1 | 3 | 4;
+      parentNodeId: string | null;
       topicCode: string;
       chapterCode: string;
       item: PickerItem;
@@ -1132,6 +1132,56 @@ export function buildVisibleTreeRows(options: {
   }
 
   return rows;
+}
+
+/** Sort lab picker items in natural curriculum order (chapter/unit code, then lab ID). */
+export function sortLabPickerItems(items: readonly PickerItem[]): PickerItem[] {
+  return [...items].sort((a, b) => {
+    const codeCmp = compareCurriculumCodes(
+      a.chapterCode || a.unitCode,
+      b.chapterCode || b.unitCode
+    );
+    if (codeCmp !== 0) return codeCmp;
+    return compareCurriculumCodes(a.id, b.id);
+  });
+}
+
+/** Flatten a flat list of labs into top-level `VisibleTreeRow` leaves for the PRG sidebar. */
+export function buildFlatLabTreeRows(options: {
+  items: readonly PickerItem[];
+  currentId: string;
+  dueUnitCodes?: ReadonlySet<string>;
+  currentHasNotesOverride?: boolean | null;
+}): VisibleTreeRow[] {
+  const { items, currentId, dueUnitCodes, currentHasNotesOverride = null } = options;
+  return items.map((item, idx) => {
+    const isCurrent = item.id === currentId;
+    const hasNotes =
+      isCurrent && currentHasNotesOverride !== null
+        ? item.hasNotes || currentHasNotesOverride
+        : item.hasNotes;
+    return {
+      kind: "leaf",
+      nodeId: `leaf:${item.id}`,
+      level: 1,
+      parentNodeId: null,
+      topicCode: item.topicCode,
+      chapterCode: item.chapterCode,
+      item,
+      label: item.title,
+      shortCode: extractShortCode(item),
+      hoverCode: extractLeafHoverCode(item),
+      fullCode: formatFullRowCode(item),
+      drillType: classifyPickerItemType(item),
+      status: item.practiceStatus,
+      hasNotes,
+      isDueToday: Boolean(dueUnitCodes?.has(item.unitCode)),
+      isCurrent,
+      expandable: false,
+      expanded: false,
+      treeIndex: idx,
+    };
+  });
 }
 
 export type TreeNavKey = "ArrowDown" | "ArrowUp" | "ArrowRight" | "ArrowLeft" | "Enter";
