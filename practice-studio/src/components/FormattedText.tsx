@@ -7,6 +7,19 @@ import { CodeBlock } from "@/components/ui/CodeBlock";
 import { ListDot, listKindForHeading } from "@/components/ui/ListDot";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 
+const CODE_LANGUAGE_LABELS: Record<string, string> = {
+  js: "JavaScript", javascript: "JavaScript", jsx: "JSX", mjs: "JavaScript", cjs: "JavaScript",
+  ts: "TypeScript", typescript: "TypeScript", tsx: "TSX",
+  py: "Python", python: "Python", json: "JSON", bash: "Shell", sh: "Shell", shell: "Shell", zsh: "Shell",
+  sql: "SQL", html: "HTML", css: "CSS", md: "Markdown", markdown: "Markdown", text: "Text", txt: "Text",
+};
+
+/** Header label for a fenced code block: its language, or "Code" when the fence has none. */
+export function codeLanguageLabel(lang: string | null | undefined): string {
+  if (!lang) return "Code";
+  return CODE_LANGUAGE_LABELS[lang.toLowerCase()] ?? lang;
+}
+
 interface FormattedTextProps {
   text: string;
   className?: string;
@@ -181,7 +194,13 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
       {blocks.map((block) => {
         if (block.kind === "code") {
           return (
-            <CodeBlock key={block.lineIdx} code={block.code} language={block.lang} />
+            <CodeBlock
+              key={block.lineIdx}
+              variant="full-file"
+              code={block.code}
+              language={block.lang}
+              filename={codeLanguageLabel(block.lang)}
+            />
           );
         }
 
