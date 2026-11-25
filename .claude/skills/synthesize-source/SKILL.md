@@ -33,7 +33,7 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
 
 ## 3. Extract source-free core cards in bounded worker batches (`extract_cards_job` + `run-worker.sh`)
 
-Run extraction in batches (default 10 pages/chunks per batch) on a **worker model** (Neon/Argon/Luna via `tools/agents/run-worker.sh` with `DONE_FILE`) rather than a Claude subagent reading raw PDFs or code repos — **Claude only reviews `source_gap` output** in steps 4–5.
+Run extraction in batches (default 10 pages/chunks per batch) on a **worker model** (Luna/Sol/Hydrogen via `tools/agents/run-worker.sh` with `DONE_FILE`) rather than a Claude subagent reading raw PDFs or code repos — **Claude only reviews `source_gap` output** in steps 4–5.
 
 For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
 
