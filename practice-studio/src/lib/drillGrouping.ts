@@ -31,6 +31,7 @@ export interface PickerItem {
   subject: "MATH" | "PRG";
   id: string;
   title: string;
+  unitTitle?: string;
   setLabel: string | null;
   unitCode: string;
   chapterCode: string;
@@ -288,25 +289,30 @@ export function normalizeDrillPickerItems(drills: readonly DrillListItem[]): Pic
   });
 }
 
-/** Normalize raw `LabListItem[]` into uniform `PickerItem[]` with Topic/Chapter metadata. */
+/** Normalize raw `LabListItem[]` into uniform `PickerItem[]` with Topic/Chapter/Unit metadata. */
 export function normalizeLabPickerItems(labs: readonly LabListItem[]): PickerItem[] {
   return labs.map((l) => {
-    const primaryCode = (l.chapterCode || l.unitCode || l.id).trim();
+    const unitCode = (l.unitCode || l.chapterCode || l.id).trim();
     const { topicCode, chapterCode } = parseCurriculumCodes(
-      primaryCode,
+      unitCode,
       l.topicCode,
       l.chapterCode
     );
     const chapterTitle = cleanCurriculumTitle(l.chapterTitle) || chapterCode;
     const topicTitle = cleanCurriculumTitle(l.topicTitle) || topicCode;
+    const unitTitle =
+      unitCode && unitCode !== chapterCode
+        ? cleanCurriculumTitle(l.unitTitle) || unitCode
+        : undefined;
 
     return {
       kind: "lab",
       subject: "PRG",
       id: l.id,
       title: cleanCurriculumTitle(l.title) || l.id,
+      ...(unitTitle ? { unitTitle } : {}),
       setLabel: null,
-      unitCode: primaryCode,
+      unitCode,
       chapterCode,
       chapterTitle,
       topicCode,
@@ -577,6 +583,15 @@ export function groupItemsByTopicAndChapter(
   });
 }
 
+function isUnitScopedLab(item: PickerItem, chapterCode: string): boolean {
+  return (
+    item.kind === "lab" &&
+    Boolean(item.unitCode) &&
+    item.unitCode !== chapterCode &&
+    /-(U\d+)$/i.test(item.unitCode.trim())
+  );
+}
+
 function buildChapterEntries(
   items: readonly PickerItem[],
   chapterCode: string,
@@ -584,7 +599,10 @@ function buildChapterEntries(
 ): PickerChapterEntry[] {
   const unitBuckets = new Map<string, PickerItem[]>();
   for (const item of items) {
-    const bucketKey = item.kind === "lab" ? item.id : item.unitCode;
+    const bucketKey =
+      item.kind === "lab" && !isUnitScopedLab(item, chapterCode)
+        ? item.id
+        : item.unitCode;
     const existing = unitBuckets.get(bucketKey);
     if (existing) {
       existing.push(item);
@@ -598,7 +616,8 @@ function buildChapterEntries(
 
   for (const key of sortedKeys) {
     const unitItems = unitBuckets.get(key) ?? [];
-    if (unitItems.length === 1) {
+    const isLabUnitBucket = unitItems.every((item) => isUnitScopedLab(item, chapterCode));
+    if (unitItems.length === 1 && !isLabUnitBucket) {
       entries.push({
         kind: "single",
         key: unitItems[0].id,
@@ -613,22 +632,24 @@ function buildChapterEntries(
       if (aNum !== null && bNum !== null && aNum !== bNum) return aNum - bNum;
       if (aNum !== null && bNum === null) return -1;
       if (aNum === null && bNum !== null) return 1;
-      return a.id.localeCompare(b.id);
+      return compareCurriculumCodes(a.id, b.id);
     });
 
     const unitCode = sortedSets[0].unitCode;
-    const unitTitle = sortedSets[0].title;
+    const unitTitle = isLabUnitBucket
+      ? sortedSets[0].unitTitle || unitCode
+      : sortedSets[0].title;
     entries.push({
       kind: "unit-group",
       key: unitCode,
       unitCode,
       unitTitle,
-      inlineInChapter: sortedKeys.length === 1 && unitCode === chapterCode,
+      inlineInChapter: !isLabUnitBucket && sortedKeys.length === 1 && unitCode === chapterCode,
       containsCurrent: sortedSets.some((item) => item.id === currentId),
       items: sortedSets.map((item) => ({
         item,
         setNumber: extractDrillSetNumber(item.id),
-        setLabel: formatDrillSetLabel(item.id),
+        setLabel: item.kind === "lab" ? item.title : formatDrillSetLabel(item.id),
       })),
     });
   }
@@ -971,6 +992,7 @@ export function buildVisibleTreeRows(options: {
   expandedUnits: ReadonlySet<string>;
   dueUnitCodes?: ReadonlySet<string>;
   currentHasNotesOverride?: boolean | null;
+  nodeIdPrefix?: string;
 }): VisibleTreeRow[] {
   const {
     topicGroups,
@@ -980,6 +1002,7 @@ export function buildVisibleTreeRows(options: {
     expandedUnits,
     dueUnitCodes,
     currentHasNotesOverride = null,
+    nodeIdPrefix = "",
   } = options;
 
   const rows: VisibleTreeRow[] = [];
@@ -1021,7 +1044,7 @@ export function buildVisibleTreeRows(options: {
   };
 
   for (const topic of topicGroups) {
-    const topicNodeId = `topic:${topic.topicCode}`;
+    const topicNodeId = `${nodeIdPrefix}topic:${topic.topicCode}`;
     const isTopicExpanded = expandedTopics.has(topic.topicCode);
     rows.push({
       kind: "topic",
@@ -1041,7 +1064,7 @@ export function buildVisibleTreeRows(options: {
     if (!isTopicExpanded) continue;
 
     for (const chapter of topic.chapters) {
-      const chapterNodeId = `chapter:${chapter.chapterCode}`;
+      const chapterNodeId = `${nodeIdPrefix}chapter:${chapter.chapterCode}`;
       const isChapterExpanded = expandedChapters.has(chapter.chapterCode);
       const chapterShortCode = extractChapterShortCode(chapter.chapterCode);
       rows.push({
@@ -1090,7 +1113,7 @@ export function buildVisibleTreeRows(options: {
           continue;
         }
 
-        const unitNodeId = `unit:${entry.unitCode}`;
+        const unitNodeId = `${nodeIdPrefix}unit:${entry.unitCode}`;
         const isUnitExpanded = expandedUnits.has(entry.unitCode);
         const unitShortCode = extractShortCode({
           kind: "drill",
@@ -1132,56 +1155,6 @@ export function buildVisibleTreeRows(options: {
   }
 
   return rows;
-}
-
-/** Sort lab picker items in natural curriculum order (chapter/unit code, then lab ID). */
-export function sortLabPickerItems(items: readonly PickerItem[]): PickerItem[] {
-  return [...items].sort((a, b) => {
-    const codeCmp = compareCurriculumCodes(
-      a.chapterCode || a.unitCode,
-      b.chapterCode || b.unitCode
-    );
-    if (codeCmp !== 0) return codeCmp;
-    return compareCurriculumCodes(a.id, b.id);
-  });
-}
-
-/** Flatten a flat list of labs into top-level `VisibleTreeRow` leaves for the PRG sidebar. */
-export function buildFlatLabTreeRows(options: {
-  items: readonly PickerItem[];
-  currentId: string;
-  dueUnitCodes?: ReadonlySet<string>;
-  currentHasNotesOverride?: boolean | null;
-}): VisibleTreeRow[] {
-  const { items, currentId, dueUnitCodes, currentHasNotesOverride = null } = options;
-  return items.map((item, idx) => {
-    const isCurrent = item.id === currentId;
-    const hasNotes =
-      isCurrent && currentHasNotesOverride !== null
-        ? item.hasNotes || currentHasNotesOverride
-        : item.hasNotes;
-    return {
-      kind: "leaf",
-      nodeId: `leaf:${item.id}`,
-      level: 1,
-      parentNodeId: null,
-      topicCode: item.topicCode,
-      chapterCode: item.chapterCode,
-      item,
-      label: item.title,
-      shortCode: extractShortCode(item),
-      hoverCode: extractLeafHoverCode(item),
-      fullCode: formatFullRowCode(item),
-      drillType: classifyPickerItemType(item),
-      status: item.practiceStatus,
-      hasNotes,
-      isDueToday: Boolean(dueUnitCodes?.has(item.unitCode)),
-      isCurrent,
-      expandable: false,
-      expanded: false,
-      treeIndex: idx,
-    };
-  });
 }
 
 export type TreeNavKey = "ArrowDown" | "ArrowUp" | "ArrowRight" | "ArrowLeft" | "Enter";

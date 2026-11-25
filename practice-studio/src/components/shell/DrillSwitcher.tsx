@@ -23,7 +23,6 @@ import {
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import {
-  buildFlatLabTreeRows,
   buildPickerSections,
   buildVisibleTreeRows,
   collectAllTreeCodes,
@@ -37,7 +36,6 @@ import {
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
   resolveTreeKeyAction,
-  sortLabPickerItems,
   type PickerItem,
   type PickerStatus,
   type PickerTopicGroup,
@@ -452,12 +450,18 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const drillItems = useMemo(() => normalizeDrillPickerItems(drills), [drills]);
   const labItems = useMemo(() => normalizeLabPickerItems(labs), [labs]);
 
-  const filteredSortedLabs = useMemo(
+  const labSections = useMemo(
     () =>
       isUnifiedCodeSidebar
-        ? sortLabPickerItems(filterPickerItems(labItems, drillSearch, drillFilter))
-        : [],
-    [isUnifiedCodeSidebar, labItems, drillSearch, drillFilter]
+        ? buildPickerSections({
+            items: labItems,
+            currentId: selectedDrillId,
+            recentIds: [],
+            search: drillSearch,
+            filter: drillFilter,
+          })
+        : null,
+    [isUnifiedCodeSidebar, labItems, selectedDrillId, drillSearch, drillFilter]
   );
 
   const activeItems = useMemo(
@@ -490,12 +494,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
 
   const isFilterActive = drillFilter !== "ALL";
   const isFilteringOrSearching = sections.isSearching || isFilterActive;
+  const labTopicCount = labSections?.topicGroups.length ?? 0;
   const showLabsSection =
-    isUnifiedCodeSidebar && (!isFilteringOrSearching || filteredSortedLabs.length > 0);
+    isUnifiedCodeSidebar && (!isFilteringOrSearching || labTopicCount > 0);
   const showDrillsSection =
     isUnifiedCodeSidebar && (!isFilteringOrSearching || sections.topicGroups.length > 0);
   const effectiveLabsExpanded = sections.isSearching
-    ? filteredSortedLabs.length > 0
+    ? labTopicCount > 0
     : isLabsSectionExpanded;
   const effectiveDrillsExpanded = sections.isSearching
     ? sections.topicGroups.length > 0
@@ -510,6 +515,15 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(
     () => new Set(sections.defaultExpandedUnits)
   );
+  const [expandedLabTopics, setExpandedLabTopics] = useState<Set<string>>(
+    () => new Set(labSections?.defaultExpandedTopics ?? [])
+  );
+  const [expandedLabChapters, setExpandedLabChapters] = useState<Set<string>>(
+    () => new Set(labSections?.defaultExpandedChapters ?? [])
+  );
+  const [expandedLabUnits, setExpandedLabUnits] = useState<Set<string>>(
+    () => new Set(labSections?.defaultExpandedUnits ?? [])
+  );
 
   const allTreeCodes = useMemo(
     () => collectAllTreeCodes(sections.topicGroups),
@@ -519,13 +533,17 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const visibleTreeRows = useMemo(() => {
     if (isUnifiedCodeSidebar) {
       const rows: VisibleTreeRow[] = [];
-      if (showLabsSection && effectiveLabsExpanded) {
+      if (showLabsSection && effectiveLabsExpanded && labSections) {
         rows.push(
-          ...buildFlatLabTreeRows({
-            items: filteredSortedLabs,
+          ...buildVisibleTreeRows({
+            topicGroups: labSections.topicGroups,
             currentId: selectedDrillId,
+            expandedTopics: expandedLabTopics,
+            expandedChapters: expandedLabChapters,
+            expandedUnits: expandedLabUnits,
             dueUnitCodes: dueUnitSet,
             currentHasNotesOverride: currentDrillHasNotes,
+            nodeIdPrefix: "lab:",
           })
         );
       }
@@ -557,7 +575,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     isUnifiedCodeSidebar,
     showLabsSection,
     effectiveLabsExpanded,
-    filteredSortedLabs,
+    labSections,
+    expandedLabTopics,
+    expandedLabChapters,
+    expandedLabUnits,
     showDrillsSection,
     effectiveDrillsExpanded,
     sections.topicGroups,
@@ -599,6 +620,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const defaultTopicsKey = sections.defaultExpandedTopics.join("|");
   const defaultChaptersKey = sections.defaultExpandedChapters.join("|");
   const defaultUnitsKey = sections.defaultExpandedUnits.join("|");
+  const defaultLabTopicsKey = (labSections?.defaultExpandedTopics ?? []).join("|");
+  const defaultLabChaptersKey = (labSections?.defaultExpandedChapters ?? []).join("|");
+  const defaultLabUnitsKey = (labSections?.defaultExpandedUnits ?? []).join("|");
 
   // Expand matching branches on search, initial data arrival, or open/tab/drill/filter change.
   useEffect(() => {
@@ -606,6 +630,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     setExpandedTopics(new Set(sections.defaultExpandedTopics));
     setExpandedChapters(new Set(sections.defaultExpandedChapters));
     setExpandedUnits(new Set(sections.defaultExpandedUnits));
+    if (labSections) {
+      setExpandedLabTopics(new Set(labSections.defaultExpandedTopics));
+      setExpandedLabChapters(new Set(labSections.defaultExpandedChapters));
+      setExpandedLabUnits(new Set(labSections.defaultExpandedUnits));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isOpen,
@@ -616,6 +645,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     defaultTopicsKey,
     defaultChaptersKey,
     defaultUnitsKey,
+    defaultLabTopicsKey,
+    defaultLabChaptersKey,
+    defaultLabUnitsKey,
   ]);
 
   // Keep active keyboard node aligned with search results or visible rows.
@@ -669,7 +701,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const setBranchExpanded = (
     kind: "topic" | "chapter" | "unit",
     code: string,
-    mode: "toggle" | "expand" | "collapse"
+    mode: "toggle" | "expand" | "collapse",
+    scope: "drills" | "labs" = "drills"
   ) => {
     const updater = (prev: Set<string>) => {
       const next = new Set(prev);
@@ -681,6 +714,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       }
       return next;
     };
+    if (scope === "labs") {
+      if (kind === "topic") setExpandedLabTopics(updater);
+      else if (kind === "chapter") setExpandedLabChapters(updater);
+      else setExpandedLabUnits(updater);
+      return;
+    }
     if (kind === "topic") setExpandedTopics(updater);
     else if (kind === "chapter") setExpandedChapters(updater);
     else setExpandedUnits(updater);
@@ -770,14 +809,15 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     if (action.type === "none") return;
 
     e.preventDefault();
+    const actionScope = activeNodeId?.startsWith("lab:") ? "labs" : "drills";
     if (action.type === "focus") {
       focusTreeNode(action.nodeId);
     } else if (action.type === "expand") {
-      setBranchExpanded(action.nodeKind, action.code, "expand");
+      setBranchExpanded(action.nodeKind, action.code, "expand", actionScope);
     } else if (action.type === "collapse") {
-      setBranchExpanded(action.nodeKind, action.code, "collapse");
+      setBranchExpanded(action.nodeKind, action.code, "collapse", actionScope);
     } else if (action.type === "toggle") {
-      setBranchExpanded(action.nodeKind, action.code, "toggle");
+      setBranchExpanded(action.nodeKind, action.code, "toggle", actionScope);
     } else if (action.type === "select") {
       handlePick(action.itemId);
     }
@@ -1235,10 +1275,25 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   className={`${isUnifiedCodeSidebar ? "space-y-3" : "space-y-0.5"} py-0.5`}
                 >
                   {(() => {
-                    const renderTopicGroups = (groups: readonly PickerTopicGroup[]) =>
-                      groups.map((topic) => {
-                        const topicNodeId = `topic:${topic.topicCode}`;
-                        const isTopicExpanded = expandedTopics.has(topic.topicCode);
+                    const renderTopicGroups = (
+                      groups: readonly PickerTopicGroup[],
+                      scope: "drills" | "labs" = "drills"
+                    ) => {
+                      const isLabsScope = scope === "labs";
+                      const nodeIdPrefix = isLabsScope ? "lab:" : "";
+                      const activeExpandedTopics = isLabsScope
+                        ? expandedLabTopics
+                        : expandedTopics;
+                      const activeExpandedChapters = isLabsScope
+                        ? expandedLabChapters
+                        : expandedChapters;
+                      const activeExpandedUnits = isLabsScope
+                        ? expandedLabUnits
+                        : expandedUnits;
+
+                      return groups.map((topic) => {
+                        const topicNodeId = `${nodeIdPrefix}topic:${topic.topicCode}`;
+                        const isTopicExpanded = activeExpandedTopics.has(topic.topicCode);
                         const showTopicCode = topic.topicTitle !== topic.topicCode;
 
                         return (
@@ -1255,7 +1310,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                               title={topic.topicCode}
                               onClick={() => {
                                 setActiveNodeId(topicNodeId);
-                                setBranchExpanded("topic", topic.topicCode, "toggle");
+                                setBranchExpanded("topic", topic.topicCode, "toggle", scope);
                               }}
                               className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "px-1.5" : ""}`}
                             >
@@ -1282,8 +1337,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                 className={`${isSidebar ? "w-full " : "ml-3 "}space-y-0.5 py-0.5`}
                               >
                                 {topic.chapters.map((chapter) => {
-                                  const chapterNodeId = `chapter:${chapter.chapterCode}`;
-                                  const isChapterExpanded = expandedChapters.has(
+                                  const chapterNodeId = `${nodeIdPrefix}chapter:${chapter.chapterCode}`;
+                                  const isChapterExpanded = activeExpandedChapters.has(
                                     chapter.chapterCode
                                   );
                                   const chapterShortCode = extractChapterShortCode(
@@ -1309,7 +1364,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                           setBranchExpanded(
                                             "chapter",
                                             chapter.chapterCode,
-                                            "toggle"
+                                            "toggle",
+                                            scope
                                           );
                                         }}
                                         className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-4 pr-1.5" : ""}`}
@@ -1356,8 +1412,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                               );
                                             }
 
-                                            const unitNodeId = `unit:${entry.unitCode}`;
-                                            const isUnitExpanded = expandedUnits.has(
+                                            const unitNodeId = `${nodeIdPrefix}unit:${entry.unitCode}`;
+                                            const isUnitExpanded = activeExpandedUnits.has(
                                               entry.unitCode
                                             );
                                             const unitShortCode = extractShortCode({
@@ -1385,7 +1441,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                     setBranchExpanded(
                                                       "unit",
                                                       entry.unitCode,
-                                                      "toggle"
+                                                      "toggle",
+                                                      scope
                                                     );
                                                   }}
                                                   className={`${isSidebar ? branchRowCls : `${BRANCH_ROW_CLASS} flex-1`} ${isSidebar ? "pl-[26px] pr-1.5" : ""}`}
@@ -1432,6 +1489,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           </div>
                         );
                       });
+                    };
 
                     if (!isUnifiedCodeSidebar) {
                       return renderTopicGroups(sections.topicGroups);
@@ -1451,14 +1509,14 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                             }}
                             panelId={labsPanelId}
                           >
-                            {filteredSortedLabs.length === 0 ? (
+                            {labTopicCount === 0 ? (
                               <p className="px-1.5 py-1.5 text-xs text-zinc-400 dark:text-zinc-500">
                                 No labs yet
                               </p>
                             ) : (
-                              filteredSortedLabs.map((lab) =>
-                                renderLeafRow(lab, lab.title, 1, `leaf:${lab.id}`)
-                              )
+                              <div className="space-y-0.5">
+                                {renderTopicGroups(labSections?.topicGroups ?? [], "labs")}
+                              </div>
                             )}
                           </CollapsibleSidebarSection>
                         )}
