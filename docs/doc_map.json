@@ -68,6 +68,9 @@
     ".claude/skills/review-code/SKILL.md",
     "docs/prg_reviewer_spec.md"
   ],
+  "code_engine/runners.py": [
+    "rules/04_code.md"
+  ],
   "code_engine/drill_ids.py": [
     "CLAUDE.md"
   ],
