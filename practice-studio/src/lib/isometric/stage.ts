@@ -94,20 +94,25 @@ let io: IntersectionObserver | null = null
 let motion: MediaQueryList | null = null
 
 function frame(now: number) {
+  if (document.hidden) {
+    raf = 0
+    return
+  }
   const dt = Math.min(0.05, Math.max(0, (now - last) / 1000))
   last = now
   let any = false
   for (const e of entries.slice()) {
     if (!e.visible || !e.awake) continue
-    e.awake = !!e.tick(dt, now)
+    e.awake = false
+    e.awake = !!e.tick(dt, now) || e.awake
     any ||= e.awake
   }
-  raf = any ? requestAnimationFrame(frame) : 0
+  raf = any && entries.length ? requestAnimationFrame(frame) : 0
 }
 
 function wake(e: Entry) {
   e.awake = true
-  if (!raf) {
+  if (e.visible && !raf && !document.hidden) {
     last = performance.now()
     raf = requestAnimationFrame(frame)
   }
@@ -116,6 +121,15 @@ function wake(e: Entry) {
 const onMotion = () => {
   setReducedMotion(!!motion?.matches)
   entries.forEach(wake)
+}
+
+const onVisibility = () => {
+  if (document.hidden) {
+    if (raf) cancelAnimationFrame(raf)
+    raf = 0
+  } else {
+    entries.forEach(wake)
+  }
 }
 
 function start() {
@@ -129,11 +143,11 @@ function start() {
         if (e.visible) wake(e)
       }
     },
-    { rootMargin: "80px" },
   )
   motion = matchMedia("(prefers-reduced-motion: reduce)")
   setReducedMotion(motion.matches)
   motion.addEventListener("change", onMotion)
+  document.addEventListener("visibilitychange", onVisibility)
 }
 
 function halt() {
@@ -143,11 +157,12 @@ function halt() {
   io = null
   motion?.removeEventListener("change", onMotion)
   motion = null
+  document.removeEventListener("visibilitychange", onVisibility)
 }
 
 /**
  * Joins the shared loop. The tick runs once now so the figure is drawn before
- * it is seen, then every frame while it is within 80px of the viewport and
+ * it is seen, then every frame while it intersects the viewport and
  * keeps returning true.
  */
 export function loop(node: Element, tick: Tick): Loop {
@@ -202,11 +217,15 @@ export function pointer(stage: HTMLElement, on: PointerHandlers): () => void {
   }
   const down = (e: PointerEvent) => {
     clearTimeout(timer)
-    if (e.pointerType !== "mouse") stage.releasePointerCapture?.(e.pointerId)
+    if (on.down && (e.pointerType === "mouse" || e.pointerType === "pen")) stage.setPointerCapture(e.pointerId)
     if (on.down) on.down(at(e), e)
     else on.move(at(e), e)
   }
   const up = (e: PointerEvent) => on.up?.(at(e), e)
+  const cancel = () => {
+    clearTimeout(timer)
+    on.leave()
+  }
   const leave = (e: PointerEvent) => {
     clearTimeout(timer)
     timer = window.setTimeout(() => on.leave(), e.pointerType === "mouse" ? 0 : 1200)
@@ -215,12 +234,14 @@ export function pointer(stage: HTMLElement, on: PointerHandlers): () => void {
   stage.addEventListener("pointerdown", down)
   stage.addEventListener("pointerup", up)
   stage.addEventListener("pointerleave", leave)
+  stage.addEventListener("pointercancel", cancel)
   return () => {
     clearTimeout(timer)
     stage.removeEventListener("pointermove", move)
     stage.removeEventListener("pointerdown", down)
     stage.removeEventListener("pointerup", up)
     stage.removeEventListener("pointerleave", leave)
+    stage.removeEventListener("pointercancel", cancel)
   }
 }
 

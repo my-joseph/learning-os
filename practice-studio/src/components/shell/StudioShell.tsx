@@ -6,7 +6,7 @@ import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { SyncState } from "@/hooks/useProgressSync";
 import type { LabListItem } from "@/lib/labModel";
 import { PracticeStatusOverride, StatusMessage, ViewMode } from "@/hooks/types";
-import { useSidePanelData } from "@/hooks/useSidePanelData";
+import { useRecentMistakes, useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { settle } from "@/lib/motion";
 import { cn } from "@/lib/cn";
@@ -38,6 +38,8 @@ interface StudioShellProps {
   isSyncing?: boolean;
   isLoadingDrill?: boolean;
   drillNotFound?: boolean;
+  mistakesContext?: string | null;
+  mistakesUnitCode?: string;
   currentProblemIndex: number;
   theme: "light" | "dark";
   onToggleTheme: () => void;
@@ -76,6 +78,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   isSyncing,
   isLoadingDrill = false,
   drillNotFound = false,
+  mistakesContext = null,
+  mistakesUnitCode,
   currentProblemIndex,
   theme,
   onToggleTheme,
@@ -188,17 +192,18 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     currentUnitMastery,
     dueLoading,
     dueError,
-    weakSpotUnits,
-    weakLoading,
-    weakError,
   } = useSidePanelData(
     workspace,
     currentDrill?.unitCode,
     currentDrill?.sessionSummary?.syncedToNotionAt
   );
+  const { mistakes, mistakesLoading, mistakesError } = useRecentMistakes(
+    workspace,
+    mistakesUnitCode ?? currentDrill?.unitCode,
+    mistakesContext
+  );
 
-  const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
-  const sidePanelCount = dueReviewCount + openWeakCount;
+
 
   // Close mobile drawers when switching drills or changing viewMode
   useEffect(() => {
@@ -254,7 +259,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           isRightPanelOpen={isRightPanelOpen}
           onToggleRightPanel={toggleRightPanel}
           onOpenSideDrawer={() => setIsSideDrawerOpen(true)}
-          sidePanelCount={sidePanelCount}
+          sidePanelCount={dueReviewCount}
         />
 
         {/* Below Top Bar: Center Pane + collapsible Right Panel (visible in both quiz & review views) */}
@@ -285,7 +290,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           </div>
 
           <m.aside
-            aria-label="Due today and weak spots"
+            aria-label="Due today and What I get wrong"
             aria-hidden={!isRightPanelOpen || undefined}
             initial={false}
             animate={{
@@ -317,9 +322,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
                 currentUnitMastery={currentUnitMastery}
                 dueLoading={dueLoading}
                 dueError={dueError}
-                weakSpotUnits={weakSpotUnits}
-                weakLoading={weakLoading}
-                weakError={weakError}
+                mistakes={mistakes}
+                mistakesLoading={mistakesLoading}
+                mistakesError={mistakesError}
+                showMistakes={mistakesContext !== null}
                 embedded
                 onNavigate={() => setIsSideDrawerOpen(false)}
               />
@@ -390,7 +396,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         </DrawerContent>
       </Drawer>
 
-      {/* Mobile / Tablet (<1024px): Right Due today & weak spots Drawer */}
+      {/* Mobile / Tablet (<1024px): Right Due today & What I get wrong Drawer */}
       <Drawer
         open={drawerActive}
         onOpenChange={(nextOpen) => {
@@ -402,7 +408,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         <DrawerContent
           overlayClassName="lg:hidden"
           aria-modal="true"
-          aria-label="Due today & weak spots"
+          aria-label="Due today & What I get wrong"
           aria-describedby={drawerDescId}
           onOpenAutoFocus={() => {
             drawerPrevFocusRef.current =
@@ -422,10 +428,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         >
           <div className="flex items-center justify-between gap-2 min-w-0 pb-2 pr-11 border-b border-zinc-200 dark:border-zinc-800">
             <DrawerTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-              Due today &amp; weak spots
+              Due today &amp; What I get wrong
             </DrawerTitle>
             <DrawerDescription id={drawerDescId} className="sr-only">
-              Review queue and open weak spots for the current workspace and unit.
+              Review queue and recent mistakes for the current workspace.
             </DrawerDescription>
           </div>
           <StudioSidePanel
@@ -440,9 +446,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             currentUnitMastery={currentUnitMastery}
             dueLoading={dueLoading}
             dueError={dueError}
-            weakSpotUnits={weakSpotUnits}
-            weakLoading={weakLoading}
-            weakError={weakError}
+            mistakes={mistakes}
+            mistakesLoading={mistakesLoading}
+            mistakesError={mistakesError}
+            showMistakes={mistakesContext !== null}
             embedded
             onNavigate={() => setIsSideDrawerOpen(false)}
           />
