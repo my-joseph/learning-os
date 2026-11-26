@@ -1,4 +1,4 @@
-"""Tests for math_engine.variant_bank gates, template generation, and variantId answer checking."""
+"""Tests for math_engine.variant_bank gates, adding variants, coverage, and variantId answer checking."""
 
 from __future__ import annotations
 
@@ -146,28 +146,14 @@ def test_gate_rejects_choice_plaintext_and_learner_state_and_bad_vault() -> None
     assert any("plainText" in e for e in errs_choice), errs_choice
 
 
-def test_from_templates_deterministic_generation_and_add(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_add_variants_appends_next_id_and_rejects_duplicate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     variants_dir = tmp_path / "variants"
     monkeypatch.setenv("VARIANTS_DIR", str(variants_dir))
 
-    doc1 = variant_bank.generate_variants_from_templates(
-        "MTH-T01-C04",
-        per_archetype=3,
-        seed=20261119,
-        variants_dir=str(variants_dir),
-    )
-    assert len(doc1["variants"]) == 15
-    assert variant_bank.check_variant_bank(doc1) == []
-
-    # Determinism check: regenerating with the same seed and overwrite produces identical variants.
-    doc2 = variant_bank.generate_variants_from_templates(
-        "MTH-T01-C04",
-        per_archetype=3,
-        seed=20261119,
-        variants_dir=str(variants_dir),
-        overwrite=True,
-    )
-    assert [v["prompt"] for v in doc1["variants"]] == [v["prompt"] for v in doc2["variants"]]
+    seed_bank = _load_seed_bank()
+    initial_count = len(seed_bank["variants"])
+    variant_bank.save_bank("MTH-T01-C04", seed_bank, variants_dir=str(variants_dir))
+    assert variant_bank.check_variant_bank(seed_bank) == []
 
     # --add appends a new distinct variant and auto-assigns the next variantId.
     fresh = {
@@ -212,8 +198,8 @@ def test_from_templates_deterministic_generation_and_add(tmp_path: Path, monkeyp
         {"unitCode": "MTH-T01-C04", "variants": [fresh]},
         variants_dir=str(variants_dir),
     )
-    assert len(updated["variants"]) == 16
-    assert updated["variants"][-1]["variantId"] == "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-04"
+    assert len(updated["variants"]) == initial_count + 1
+    assert updated["variants"][-1]["variantId"].startswith("VAR-MTH-T01-C04-c04-fraction-simplification-gcf-")
 
     # Re-adding the same draft is rejected and leaves the bank untouched.
     with pytest.raises(variant_bank.VariantBankError):
@@ -221,7 +207,7 @@ def test_from_templates_deterministic_generation_and_add(tmp_path: Path, monkeyp
             {"unitCode": "MTH-T01-C04", "variants": [fresh]},
             variants_dir=str(variants_dir),
         )
-    assert len(variant_bank.load_bank("MTH-T01-C04", variants_dir=str(variants_dir))["variants"]) == 16
+    assert len(variant_bank.load_bank("MTH-T01-C04", variants_dir=str(variants_dir))["variants"]) == initial_count + 1
 
 
 def test_answer_check_with_variant_id_python_and_cli() -> None:

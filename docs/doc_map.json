@@ -26,20 +26,19 @@
     "rules/03_stem.md"
   ],
   "math_engine/answer_check.py": [
-    "rules/06_template_contract.md",
+    "rules/06_quality_contract.md",
     "docs/backlog.md"
   ],
   "math_engine/answer_spec_registry.py": [
-    "rules/06_template_contract.md"
+    "rules/06_quality_contract.md"
   ],
   "math_engine/verify.py": [
-    "rules/06_template_contract.md"
+    "rules/06_quality_contract.md"
   ],
   "math_engine/audit.py": [
-    "rules/06_template_contract.md"
+    "rules/06_quality_contract.md"
   ],
-  "math_engine/generate.py": [
-    "rules/06_template_contract.md",
+  "math_engine/drill_ids.py": [
     "CLAUDE.md"
   ],
   "code_engine/ai_drill_ingest.py": [
@@ -51,7 +50,7 @@
     "rules/04_code.md"
   ],
   "code_engine/workspace.py": [
-    "rules/06_template_contract.md",
+    "rules/06_quality_contract.md",
     "docs/prg_reviewer_spec.md"
   ],
   "code_engine/test_runner.py": [
@@ -69,8 +68,7 @@
     ".claude/skills/review-code/SKILL.md",
     "docs/prg_reviewer_spec.md"
   ],
-  "code_engine/generate.py": [
-    "rules/06_template_contract.md",
+  "code_engine/drill_ids.py": [
     "CLAUDE.md"
   ],
   "code_engine/submit.py": [
@@ -109,11 +107,11 @@
     "docs/studio_design.md"
   ],
   "quality_rules.py": [
-    "rules/06_template_contract.md",
+    "rules/06_quality_contract.md",
     "rules/07_problem_generation.md"
   ],
   "skills_taxonomy.json": [
-    "rules/06_template_contract.md",
+    "rules/06_quality_contract.md",
     "CLAUDE.md"
   ],
   "scripts/page_audit.py": [
@@ -172,16 +170,8 @@
     "docs/pilot_quality_runner.md",
     "CLAUDE.md"
   ],
-  "scripts/accept_template.py": [
-    "rules/06_template_contract.md"
-  ],
-  "scripts/sample_sheet.py": [
-    "rules/06_template_contract.md",
-    "math_engine/templates/README.md"
-  ],
   "scripts/coverage_report.py": [
-    "rules/06_template_contract.md",
-    "math_engine/templates/README.md"
+    "rules/06_quality_contract.md"
   ],
   "scripts/doc_refs.py": [
     "CLAUDE.md",

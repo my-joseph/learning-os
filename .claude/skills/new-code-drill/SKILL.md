@@ -22,7 +22,7 @@ State the brief in one line and continue without waiting.
 
 ## 2. Load only the rules this task needs
 
-Read `rules/00_core.md` §5–§6, §8, §11; `rules/04_code.md` (Part 1, Part 2, Part 5, Part 10); `rules/06_template_contract.md` §1.3, §2.2; `rules/07_problem_generation.md` §4; and `docs/prg_reviewer_spec.md`.
+Read `rules/00_core.md` §5–§6, §8, §11; `rules/04_code.md` (Part 1, Part 2, Part 5, Part 10); `rules/06_quality_contract.md` §1.2, §2.2; `rules/07_problem_generation.md` §4; and `docs/prg_reviewer_spec.md`.
 
 ## 3. Pick archetypes from the vault
 

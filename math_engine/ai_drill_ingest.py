@@ -28,6 +28,7 @@ from math_engine.answer_check import (
 )
 from math_engine.answer_spec_registry import validate_answer_spec
 from math_engine.bridge import BRIDGE_SCOPE, BRIDGE_TITLE, MIN_BRIDGE_UNITS, validate_bridge_problem
+from math_engine.drill_ids import next_drill_id
 from math_engine.figure_autofill import (
     archetype_requires_figure,
     autofill_problem_figure,
@@ -35,7 +36,6 @@ from math_engine.figure_autofill import (
     figure_decision_missing,
 )
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
-from math_engine.generate import next_drill_id
 from math_engine.latex_guard import find_bare_words
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
