@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { frame } from "@/lib/isometric/entity";
 import { clamp, unproject, type Vec2 } from "@/lib/isometric/iso";
 import { box, cylinder, frustum, rotateX, rotateZ, translate, zToX } from "@/lib/isometric/mesh";
@@ -11,7 +11,6 @@ import {
   cartHeightMeters,
   cartWidthMeters,
   clampCartPosition,
-  DEFAULT_COLLISION_INPUT,
   INITIAL_CART1_POS_M,
   INITIAL_CART2_POS_M,
   MASS_STEP_KG,
@@ -34,11 +33,8 @@ import {
   TRACK_TICKS,
   type PointerTrackSample,
 } from "@/lib/playground/collisionsLayout";
-import {
-  precomputeCollisionRun,
-  type CollisionFrame,
-  type PrecomputedCollisionRun,
-} from "@/lib/playground/collisionsSim";
+import type { CollisionFrame } from "@/lib/playground/collisionsSim";
+import { useCollisionPlayback } from "./useCollisionPlayback";
 import "../isometric/isometric.css";
 import "./collisions.css";
 
@@ -54,38 +50,6 @@ const WHEEL_THICK = 1.3;
 const WHEEL_CZ = TRACK_TOP_Z + WHEEL_R;
 const CART_BASE_Z = TRACK_TOP_Z + WHEEL_R * 1.25;
 const CART_MID_Z = CART_BASE_Z + 6.5;
-
-export type SimPhase = "ready" | "running" | "paused" | "done";
-
-export type CollisionSimSnapshot = {
-  phase: SimPhase;
-  hasCollided: boolean;
-  t: number;
-  frameIndex: number;
-  x1: number;
-  x2: number;
-  v1: number;
-  v2: number;
-  measuredV1After: number | null;
-  measuredV2After: number | null;
-  reducedMotion: boolean;
-};
-
-export type CollisionsProps = {
-  input?: CollisionInput;
-  onInputChange?: (next: CollisionInput, meta?: { autoPlay?: boolean }) => void;
-  selectedCart?: 1 | 2;
-  onSelectCart?: (cart: 1 | 2) => void;
-  frameIndex?: number;
-  onFrameIndexChange?: (frameIndex: number) => void;
-  playing?: boolean;
-  onPlayingChange?: (playing: boolean) => void;
-  onRunReady?: (run: PrecomputedCollisionRun) => void;
-  onSnapshot?: (snapshot: CollisionSimSnapshot) => void;
-  /** `"card"` shows a drag-to-launch + click/Enter-to-play figure for the grid; `"detail"` adds cart selection and keyboard controls. */
-  interactive?: "card" | "detail";
-  className?: string;
-};
 
 type PartId = "cart1" | "cart2";
 type DragPreview = { cart: 1 | 2; xM: number; liveV: number };
@@ -396,161 +360,24 @@ function buildCollisionsScene(params: {
   return out;
 }
 
+export function CollisionsPreview() {
+  const playback = useCollisionPlayback();
+  return <Collisions playback={playback} interactive="card" />;
+}
+
 export function Collisions({
-  input: controlledInput,
-  onInputChange,
-  selectedCart: controlledSelected,
-  onSelectCart,
-  frameIndex: controlledFrameIndex,
-  onFrameIndexChange,
-  playing: controlledPlaying,
-  onPlayingChange,
-  onRunReady,
-  onSnapshot,
-  interactive = "detail",
-  className,
-}: CollisionsProps) {
-  const [internalInput, setInternalInput] = useState<CollisionInput>(DEFAULT_COLLISION_INPUT);
-  const input = controlledInput ?? internalInput;
-  const setInput = useCallback(
-    (next: CollisionInput, meta?: { autoPlay?: boolean }) => {
-      if (onInputChange) onInputChange(next, meta);
-      else setInternalInput(normalizeCollisionPositions(next));
-    },
-    [onInputChange],
-  );
-
-  const [internalSelected, setInternalSelected] = useState<1 | 2>(1);
-  const selectedCart = controlledSelected ?? internalSelected;
-  const selectCart = useCallback(
-    (cart: 1 | 2) => {
-      if (onSelectCart) onSelectCart(cart);
-      else setInternalSelected(cart);
-    },
-    [onSelectCart],
-  );
-
-  const [internalFrameIndex, setInternalFrameIndex] = useState(0);
-  const rawFrameIndex = controlledFrameIndex ?? internalFrameIndex;
-  const setFrameIndex = useCallback(
-    (next: number) => {
-      if (onFrameIndexChange) onFrameIndexChange(next);
-      else setInternalFrameIndex(next);
-    },
-    [onFrameIndexChange],
-  );
-
-  const [internalPlaying, setInternalPlaying] = useState(false);
-  const playing = controlledPlaying ?? internalPlaying;
-  const setPlaying = useCallback(
-    (next: boolean) => {
-      if (onPlayingChange) onPlayingChange(next);
-      else setInternalPlaying(next);
-    },
-    [onPlayingChange],
-  );
-
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const reducedMotionRef = useRef(false);
-  reducedMotionRef.current = reducedMotion;
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    reducedMotionRef.current = mq.matches;
-    const onChange = () => {
-      setReducedMotion(mq.matches);
-      reducedMotionRef.current = mq.matches;
-    };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  // Pre-compute all frames synchronously whenever input changes (no rendering during precompute).
-  const run = useMemo(() => precomputeCollisionRun(input), [input]);
-  const lastFrameIndex = Math.max(0, run.frames.length - 1);
-  const frameIndex = clamp(rawFrameIndex, 0, lastFrameIndex);
-  const x1Start = input.x1 ?? INITIAL_CART1_POS_M;
-  const x2Start = input.x2 ?? INITIAL_CART2_POS_M;
-  const currentFrame: CollisionFrame = useMemo(
-    () =>
-      run.frames[frameIndex] ?? {
-        t: 0,
-        x1: x1Start,
-        x2: x2Start,
-        v1: input.v1,
-        v2: input.v2,
-        p1: input.m1 * input.v1,
-        p2: input.m2 * input.v2,
-        P: input.m1 * input.v1 + input.m2 * input.v2,
-        KE1: 0.5 * input.m1 * input.v1 * input.v1,
-        KE2: 0.5 * input.m2 * input.v2 * input.v2,
-        KE: 0.5 * input.m1 * input.v1 * input.v1 + 0.5 * input.m2 * input.v2 * input.v2,
-      },
-    [frameIndex, input.m1, input.m2, input.v1, input.v2, run.frames, x1Start, x2Start],
-  );
-
+  playback,
+  interactive,
+}: {
+  playback: ReturnType<typeof useCollisionPlayback>;
+  interactive: "card" | "detail";
+}) {
+  const { stageRef, run, frameIndex, pose, selectedCart, setSelectedCart, changeInput, seek, togglePlayback, reset } = playback;
+  const input = run.input;
+  const currentFrame = run.frames[frameIndex];
   const hasCollided = run.impactFrameIndex !== null && frameIndex >= run.impactFrameIndex;
-  const postFrames = hasCollided && run.impactFrameIndex !== null ? frameIndex - run.impactFrameIndex : 0;
-  const phase: SimPhase = playing
-    ? "running"
-    : frameIndex === 0
-      ? "ready"
-      : frameIndex >= lastFrameIndex
-        ? "done"
-        : "paused";
-
-  const snapshot: CollisionSimSnapshot = useMemo(
-    () => ({
-      phase,
-      hasCollided,
-      t: currentFrame.t,
-      frameIndex,
-      x1: currentFrame.x1,
-      x2: currentFrame.x2,
-      v1: currentFrame.v1,
-      v2: currentFrame.v2,
-      measuredV1After: run.measuredV1After,
-      measuredV2After: run.measuredV2After,
-      reducedMotion,
-    }),
-    [currentFrame.t, currentFrame.v1, currentFrame.v2, currentFrame.x1, currentFrame.x2, frameIndex, hasCollided, phase, reducedMotion, run.measuredV1After, run.measuredV2After],
-  );
-
-  const pendingAutoPlayRef = useRef(false);
-
-  // Notify parent when precomputed run changes and handle playback reset or drag-release auto-play.
-  useEffect(() => {
-    onRunReady?.(run);
-    if (pendingAutoPlayRef.current) {
-      pendingAutoPlayRef.current = false;
-      const isReduced = reducedMotionRef.current;
-      const targetEnd = Math.max(0, run.frames.length - 1);
-      if (controlledFrameIndex === undefined) {
-        setInternalFrameIndex(isReduced ? targetEnd : 0);
-      } else if (isReduced) {
-        onFrameIndexChange?.(targetEnd);
-      }
-      if (controlledPlaying === undefined) {
-        setInternalPlaying(!isReduced);
-      } else {
-        onPlayingChange?.(!isReduced);
-      }
-      return;
-    }
-    if (controlledFrameIndex === undefined) setInternalFrameIndex(0);
-    if (controlledPlaying === undefined) setInternalPlaying(false);
-  }, [controlledFrameIndex, controlledPlaying, onFrameIndexChange, onPlayingChange, onRunReady, run]);
-
-  useEffect(() => {
-    onSnapshot?.(snapshot);
-  }, [onSnapshot, snapshot]);
-
-  const stageRef = useRef<HTMLDivElement | null>(null);
+  const postFrames = run.impactFrameIndex === null ? 0 : frameIndex - run.impactFrameIndex;
   const painterRef = useRef<Painter | null>(null);
-  const rafRef = useRef<number>(0);
-  const frameIndexRef = useRef<number>(frameIndex);
-  frameIndexRef.current = frameIndex;
   const suppressNextClickRef = useRef(false);
 
   const [hoverCart, setHoverCart] = useState<1 | 2 | null>(null);
@@ -559,83 +386,9 @@ export function Collisions({
 
   const activeCamera = interactive === "detail" ? COLLISION_DETAIL_CAMERA : COLLISION_CARD_CAMERA;
   const activeViewBoxH = interactive === "detail" ? VIEWBOX_H_DETAIL : VIEWBOX_H_CARD;
-
-  const latestRef = useRef({
-    input,
-    currentFrame,
-    lastFrameIndex,
-    selectedCart,
-    hoverCart,
-    focusedCart,
-    interactive,
-    activeCamera,
-    activeViewBoxH,
-    setInput,
-    selectCart,
-    setFrameIndex,
-    setPlaying,
-  });
-  latestRef.current = {
-    input,
-    currentFrame,
-    lastFrameIndex,
-    selectedCart,
-    hoverCart,
-    focusedCart,
-    interactive,
-    activeCamera,
-    activeViewBoxH,
-    setInput,
-    selectCart,
-    setFrameIndex,
-    setPlaying,
-  };
-
-  // Real-time playback across precomputed frames; reduced motion jumps straight to the end.
-  useEffect(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = 0;
-    }
-    if (!playing) return;
-
-    if (reducedMotion) {
-      latestRef.current.setFrameIndex(lastFrameIndex);
-      latestRef.current.setPlaying(false);
-      return;
-    }
-
-    const startIdx = frameIndexRef.current >= lastFrameIndex ? 0 : frameIndexRef.current;
-    if (frameIndexRef.current >= lastFrameIndex) {
-      latestRef.current.setFrameIndex(0);
-    }
-
-    let lastEmitted = startIdx;
-    const startTime = performance.now();
-
-    const tick = (now: number) => {
-      const elapsedSec = Math.max(0, (now - startTime) / 1000);
-      const nextIdx = Math.min(lastFrameIndex, startIdx + Math.floor(elapsedSec / run.dtSeconds));
-      if (nextIdx !== lastEmitted) {
-        lastEmitted = nextIdx;
-        latestRef.current.setFrameIndex(nextIdx);
-      }
-      if (nextIdx < lastFrameIndex) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        rafRef.current = 0;
-        latestRef.current.setPlaying(false);
-      }
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = 0;
-      }
-    };
-  }, [lastFrameIndex, playing, reducedMotion, run.dtSeconds]);
+  const latest = { input, currentFrame, pose, frameIndex, hoverCart, interactive, activeCamera, activeViewBoxH, changeInput, setSelectedCart, seek };
+  const latestRef = useRef(latest);
+  latestRef.current = latest;
 
   // Mount Isometric SVG & drag-to-launch pointer handlers once on the host div.
   useEffect(() => {
@@ -702,7 +455,7 @@ export function Collisions({
       const p = toViewBox(e);
       if (!dragMoved && Math.hypot(p[0] - dragStartP[0], p[1] - dragStartP[1]) > 3) {
         dragMoved = true;
-        latestRef.current.setPlaying(false);
+        latestRef.current.seek(latestRef.current.frameIndex);
         if (latestRef.current.interactive === "card") {
           suppressNextClickRef.current = true;
         }
@@ -781,30 +534,7 @@ export function Collisions({
           ? { ...cur, x1: finalXM, v1: releaseV }
           : { ...cur, x2: finalXM, v2: releaseV };
 
-      const autoPlay = Math.abs(releaseV) >= FLING_DEADZONE_MPS;
-      const sameAsCurrent =
-        Math.abs((cur.x1 ?? INITIAL_CART1_POS_M) - (nextInput.x1 ?? INITIAL_CART1_POS_M)) < 1e-9 &&
-        Math.abs((cur.x2 ?? INITIAL_CART2_POS_M) - (nextInput.x2 ?? INITIAL_CART2_POS_M)) < 1e-9 &&
-        Math.abs(cur.v1 - nextInput.v1) < 1e-9 &&
-        Math.abs(cur.v2 - nextInput.v2) < 1e-9;
-
-      if (autoPlay) {
-        pendingAutoPlayRef.current = true;
-        latestRef.current.setInput(nextInput, { autoPlay: true });
-        if (sameAsCurrent) {
-          pendingAutoPlayRef.current = false;
-          const isReduced = reducedMotionRef.current;
-          latestRef.current.setFrameIndex(isReduced ? latestRef.current.lastFrameIndex : 0);
-          latestRef.current.setPlaying(!isReduced);
-        }
-      } else {
-        pendingAutoPlayRef.current = false;
-        latestRef.current.setInput(nextInput, { autoPlay: false });
-        if (sameAsCurrent) {
-          latestRef.current.setPlaying(false);
-          latestRef.current.setFrameIndex(0);
-        }
-      }
+      latestRef.current.changeInput(nextInput, Math.abs(releaseV) >= FLING_DEADZONE_MPS);
 
       stage.style.cursor = latestRef.current.hoverCart ? "grab" : "";
     };
@@ -814,19 +544,19 @@ export function Collisions({
 
     const onStageDown = (e: PointerEvent) => {
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      if (e.pointerType !== "mouse") stage.releasePointerCapture?.(e.pointerId);
       const p = toViewBox(e);
       const picked = sc.pick(p);
       if (picked === "cart1" || picked === "cart2") {
         const cart = picked === "cart1" ? 1 : 2;
         if (latestRef.current.interactive === "detail") {
-          latestRef.current.selectCart(cart);
+          latestRef.current.setSelectedCart(cart);
         }
         const cam = latestRef.current.activeCamera;
         dragCart = cart;
         dragStartP = p;
         dragStartWx = unproject(cam, p[0], p[1], CART_MID_Z)[0];
-        dragGrabXM = cart === 1 ? latestRef.current.currentFrame.x1 : latestRef.current.currentFrame.x2;
+        const activePose = latestRef.current.pose ?? latestRef.current.currentFrame;
+        dragGrabXM = cart === 1 ? activePose.x1 : activePose.x2;
         dragMoved = false;
         dragSamples = [{ xM: dragGrabXM, tMs: performance.now() }];
         setHoverCart(cart);
@@ -872,7 +602,7 @@ export function Collisions({
     });
 
     return () => b.dispose();
-  }, []);
+  }, [stageRef]);
 
   // Re-render Isometric SVG whenever the active frame, input, drag preview, or selection changes.
   useEffect(() => {
@@ -889,7 +619,7 @@ export function Collisions({
         : hoverCart;
     const items = buildCollisionsScene({
       input,
-      frameData: currentFrame,
+      frameData: pose ? { ...currentFrame, ...pose } : currentFrame,
       hasCollided,
       impactX: run.impactX,
       postFrames,
@@ -907,31 +637,12 @@ export function Collisions({
     hoverCart,
     input,
     interactive,
+    pose,
     postFrames,
     run.impactX,
     selectedCart,
+    stageRef,
   ]);
-
-  const togglePlayPause = useCallback(() => {
-    if (playing) {
-      setPlaying(false);
-    } else {
-      if (reducedMotion) {
-        setFrameIndex(lastFrameIndex);
-        setPlaying(false);
-        return;
-      }
-      if (frameIndex >= lastFrameIndex) {
-        setFrameIndex(0);
-      }
-      setPlaying(true);
-    }
-  }, [frameIndex, lastFrameIndex, playing, reducedMotion, setFrameIndex, setPlaying]);
-
-  const resetPlayback = useCallback(() => {
-    setPlaying(false);
-    setFrameIndex(0);
-  }, [setFrameIndex, setPlaying]);
 
   const adjustCartVelocity = useCallback(
     (cart: 1 | 2, delta: number) => {
@@ -939,9 +650,9 @@ export function Collisions({
       const nextVal = Number(
         clamp(roundToStep(raw, VELOCITY_STEP_MPS), MIN_VELOCITY_MPS, MAX_VELOCITY_MPS).toFixed(1),
       );
-      setInput(cart === 1 ? { ...input, v1: nextVal } : { ...input, v2: nextVal });
+      changeInput(cart === 1 ? { ...input, v1: nextVal } : { ...input, v2: nextVal });
     },
-    [input, setInput],
+    [input, changeInput],
   );
 
   const adjustCartMass = useCallback(
@@ -951,9 +662,9 @@ export function Collisions({
           1,
         ),
       );
-      setInput(normalizeCollisionPositions(cart === 1 ? { ...input, m1: nextVal } : { ...input, m2: nextVal }));
+      changeInput(normalizeCollisionPositions(cart === 1 ? { ...input, m1: nextVal } : { ...input, m2: nextVal }));
     },
-    [input, setInput],
+    [input, changeInput],
   );
 
   const handleCartKeyDown = (cart: 1 | 2, e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -971,10 +682,10 @@ export function Collisions({
       adjustCartMass(cart, -MASS_STEP_KG);
     } else if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
-      togglePlayPause();
+      togglePlayback();
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
-      resetPlayback();
+      reset();
     }
   };
 
@@ -982,10 +693,10 @@ export function Collisions({
     if (interactive !== "card") return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      togglePlayPause();
+      togglePlayback();
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
-      resetPlayback();
+      reset();
     }
   };
 
@@ -995,7 +706,7 @@ export function Collisions({
       suppressNextClickRef.current = false;
       return;
     }
-    togglePlayPause();
+    togglePlayback();
   };
 
   const ariaLabel =
@@ -1012,11 +723,14 @@ export function Collisions({
       role={interactive === "card" ? "button" : "group"}
       tabIndex={interactive === "card" ? 0 : -1}
       aria-label={ariaLabel}
+      onMouseDown={(e) => {
+        if (e.button === 0) e.preventDefault();
+      }}
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
-      className={`iso-studio-surface iso-figure-box w-full ${className ?? ""}`.trim()}
+      className="iso-studio-surface iso-figure-box w-full"
     >
-      <span data-iso-live="" aria-live="polite">
+      <span data-iso-live="" aria-live="off">
         {dragPreview
           ? `Dragging Cart ${dragPreview.cart}: position ${formatSigned(dragPreview.xM, 2)} m, velocity approximately ${formatSigned(dragPreview.liveV)} m/s`
           : hasCollided
@@ -1043,7 +757,7 @@ export function Collisions({
             aria-valuetext={`Cart ${id}, mass ${mass.toFixed(1)} kg, velocity ${formatSigned(vel)} meters per second`}
             onFocus={() => {
               setFocusedCart(id);
-              selectCart(id);
+              setSelectedCart(id);
             }}
             onBlur={() => setFocusedCart((prev) => (prev === id ? null : prev))}
             onKeyDown={(e) => handleCartKeyDown(id, e)}

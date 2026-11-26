@@ -5,6 +5,7 @@ import {
   computeCollisionTheory,
   computeInstantaneousMetrics,
   computeTheoreticalImpactTime,
+  DEFAULT_COLLISION_INPUT,
   INITIAL_CART1_POS_M,
   INITIAL_CART2_POS_M,
   TRACK_HALF_SPAN_M,
@@ -246,5 +247,45 @@ export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollis
     impactX,
     measuredV1After,
     measuredV2After,
+  };
+}
+
+const SHOWCASE_SETUP_SECONDS = 0.5;
+const SHOWCASE_IMPACT_SECONDS = 1.5;
+const SHOWCASE_EXIT_SECONDS = 0.65;
+
+export function createCollisionShowcase(defaultRun: PrecomputedCollisionRun) {
+  const runs = [
+    defaultRun,
+    precomputeCollisionRun({ ...DEFAULT_COLLISION_INPUT, v2: -2 }),
+    precomputeCollisionRun({ ...DEFAULT_COLLISION_INPUT, m1: 4, m2: 1, v1: 1.5 }),
+    precomputeCollisionRun({ ...DEFAULT_COLLISION_INPUT, e: 0 }),
+  ];
+  let duration = 0;
+  const segments = runs.map((run) => {
+    const start = duration;
+    const impact = run.impactTime ?? 0;
+    const exit = Math.min(SHOWCASE_EXIT_SECONDS, run.frames[run.frames.length - 1].t - impact);
+    duration += SHOWCASE_SETUP_SECONDS + impact + SHOWCASE_IMPACT_SECONDS + exit;
+    return { run, start, end: duration, impact };
+  });
+
+  return {
+    duration,
+    at(seconds: number) {
+      const time = seconds % duration;
+      const { run, start, impact } = segments.find(({ end }) => time < end) ?? segments[0];
+      const elapsed = time - start - SHOWCASE_SETUP_SECONDS;
+      const last = run.frames.length - 1;
+      if (elapsed >= impact && elapsed < impact + SHOWCASE_IMPACT_SECONDS) {
+        return { run, frameIndex: run.impactFrameIndex ?? 0, playing: false };
+      }
+      const t = elapsed < impact ? Math.max(0, elapsed) : elapsed - SHOWCASE_IMPACT_SECONDS;
+      return {
+        run,
+        frameIndex: Math.min(last, Math.floor(t / run.dtSeconds)),
+        playing: elapsed >= 0,
+      };
+    },
   };
 }

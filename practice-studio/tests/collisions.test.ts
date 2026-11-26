@@ -6,6 +6,7 @@ import {
   computeCollisionTheory,
   computeInstantaneousMetrics,
   computeTheoreticalImpactTime,
+  DEFAULT_COLLISION_INPUT,
   normalizeCollisionPositions,
   TRACK_HALF_SPAN_M,
   velocityErrorPercent,
@@ -15,7 +16,7 @@ import {
   computeReleaseVelocityMps,
   computeVelocityAnnotationLayout,
 } from "../src/lib/playground/collisionsLayout";
-import { precomputeCollisionRun } from "../src/lib/playground/collisionsSim";
+import { createCollisionShowcase, precomputeCollisionRun } from "../src/lib/playground/collisionsSim";
 
 const approx = (actual: number, expected: number, eps = 1e-9) => {
   assert.ok(
@@ -342,4 +343,28 @@ test("Velocity annotation layout stacks labels vertically when carts touch so la
   });
   assert.equal(far2.stacked, false);
   approx(far1.labelZ, far2.labelZ);
+});
+
+test("Showcase holds all four impacts, shows the aftermath, and wraps to the default run", () => {
+  const defaultRun = precomputeCollisionRun(DEFAULT_COLLISION_INPUT);
+  const showcase = createCollisionShowcase(defaultRun);
+  const elapsed = Array.from({ length: Math.ceil(showcase.duration * 100) }, (_, i) => i / 100);
+  const demo = elapsed.map(showcase.at);
+  const runs = [...new Set(demo.map(({ run }) => run))];
+
+  assert.ok(showcase.duration >= 8 && showcase.duration <= 14);
+  assert.deepEqual(runs.map(({ input: { m1, m2, v1, v2, e } }) => [m1, m2, v1, v2, e]), [
+    [2, 2, 2, 0, 1],
+    [2, 2, 2, -2, 1],
+    [4, 1, 1.5, 0, 1],
+    [2, 2, 2, 0, 0],
+  ]);
+  for (const run of runs) {
+    assert.ok(run.impactFrameIndex !== null);
+    const hold = demo.filter((state) => state.run === run && !state.playing && state.frameIndex === run.impactFrameIndex);
+    approx(hold.length / 100, 1.5, 0.02);
+    const impactFrameIndex = run.impactFrameIndex;
+    assert.ok(demo.some((state) => state.run === run && state.frameIndex > impactFrameIndex && state.playing));
+  }
+  assert.deepEqual(showcase.at(showcase.duration), { run: defaultRun, frameIndex: 0, playing: false });
 });

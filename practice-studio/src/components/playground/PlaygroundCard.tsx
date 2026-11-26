@@ -22,9 +22,8 @@ export function PlaygroundCardFooter({ title, caption, className }: {
  * Playground card: the figure is live and interactive right in the grid (drag, hover,
  * keyboard). The footer title links to the detail page with the full readout.
  */
-export function PlaygroundCard({ experiment, caption, children }: {
+export function PlaygroundCard({ experiment, children }: {
   experiment: PlaygroundExperiment;
-  caption?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -41,7 +40,7 @@ export function PlaygroundCard({ experiment, caption, children }: {
             <ArrowUpRight aria-hidden="true" className="size-space-3_5 text-foreground-secondary" />
           </Link>
         }
-        caption={caption ?? experiment.caption}
+        caption={experiment.caption}
       />
     </Card>
   );

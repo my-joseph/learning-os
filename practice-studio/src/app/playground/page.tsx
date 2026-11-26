@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { PlaygroundExperimentCard } from "@/components/playground/PlaygroundPreview";
+import { PlaygroundCard } from "@/components/playground/PlaygroundCard";
+import { PlaygroundPreview } from "@/components/playground/PlaygroundPreview";
 import { playgroundExperiments } from "@/components/playground/experiments";
 import { Heading } from "@/components/ui/Heading";
 
@@ -15,7 +16,9 @@ export default function LabPage() {
       <ul className="grid grid-cols-1 gap-space-4 md:grid-cols-2 lg:grid-cols-4">
         {playgroundExperiments.map((experiment) => (
           <li key={experiment.id} className="min-w-0">
-            <PlaygroundExperimentCard experiment={experiment} />
+            <PlaygroundCard experiment={experiment}>
+              <PlaygroundPreview id={experiment.id} />
+            </PlaygroundCard>
           </li>
         ))}
       </ul>

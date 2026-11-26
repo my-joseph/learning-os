@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import { Crosshair, Pause, Play, RotateCcw } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
-import { LazyCollisions } from "@/components/playground/LazyCollisions";
+import { Collisions } from "./Collisions";
+import { useCollisionPlayback } from "./useCollisionPlayback";
 import { PlaygroundReadout, PlaygroundShowcase, PlaygroundStat, PlaygroundStats } from "@/components/playground/PlaygroundShowcase";
 import { Numeral } from "@/components/ui/Numeral";
 import { Badge } from "@/components/ui/shadcn/Badge";
@@ -13,8 +14,6 @@ import {
   cartStartBounds,
   clampCartPosition,
   computeCollisionTheory,
-  computeInstantaneousMetrics,
-  DEFAULT_COLLISION_INPUT,
   INITIAL_CART1_POS_M,
   INITIAL_CART2_POS_M,
   MASS_STEP_KG,
@@ -24,15 +23,11 @@ import {
   MIN_MASS_KG,
   MIN_RESTITUTION,
   MIN_VELOCITY_MPS,
-  normalizeCollisionPositions,
   POSITION_STEP_M,
   RESTITUTION_STEP,
   VELOCITY_STEP_MPS,
-  velocityErrorPercent,
-  type CollisionInput,
 } from "@/lib/playground/collisions";
 import { formatSigned } from "@/lib/playground/collisionsLayout";
-import type { CollisionFrame, PrecomputedCollisionRun } from "@/lib/playground/collisionsSim";
 import { statusTone } from "@/lib/statusTone";
 
 type CollisionMode = "elastic" | "inelastic" | "stick";
@@ -49,218 +44,55 @@ function modeForRestitution(e: number): CollisionMode {
   return "inelastic";
 }
 
-function inputsMatch(a: CollisionInput, b: CollisionInput): boolean {
-  return (
-    Math.abs(a.m1 - b.m1) < 1e-9 &&
-    Math.abs(a.m2 - b.m2) < 1e-9 &&
-    Math.abs(a.v1 - b.v1) < 1e-9 &&
-    Math.abs(a.v2 - b.v2) < 1e-9 &&
-    Math.abs(a.e - b.e) < 1e-9 &&
-    Math.abs((a.x1 ?? INITIAL_CART1_POS_M) - (b.x1 ?? INITIAL_CART1_POS_M)) < 1e-9 &&
-    Math.abs((a.x2 ?? INITIAL_CART2_POS_M) - (b.x2 ?? INITIAL_CART2_POS_M)) < 1e-9
-  );
-}
-
 export function CollisionsShowcase() {
-  const [input, setInput] = useState<CollisionInput>(DEFAULT_COLLISION_INPUT);
-  const [selectedCart, setSelectedCart] = useState<1 | 2>(1);
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [run, setRun] = useState<PrecomputedCollisionRun | null>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const pendingAutoPlayRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const onChange = () => setReducedMotion(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
+  const playback = useCollisionPlayback();
+  const { run, frameIndex, playing: isPlaying, selectedCart, setSelectedCart, changeInput, seek, togglePlayback, reset } = playback;
+  const input = run.input;
   const theory = useMemo(() => computeCollisionTheory(input), [input]);
   const x1Start = input.x1 ?? INITIAL_CART1_POS_M;
   const x2Start = input.x2 ?? INITIAL_CART2_POS_M;
+  const maxFrameIndex = run.frames.length - 1;
+  const currentFrame = run.frames[frameIndex];
+  const durationSec = run.frames[maxFrameIndex].t;
 
-  const fallbackFrame: CollisionFrame = useMemo(() => {
-    const metrics = computeInstantaneousMetrics(input.m1, input.m2, input.v1, input.v2);
-    return {
-      t: 0,
-      x1: x1Start,
-      x2: x2Start,
-      v1: input.v1,
-      v2: input.v2,
-      p1: metrics.p1,
-      p2: metrics.p2,
-      P: metrics.totalP,
-      KE1: metrics.ke1,
-      KE2: metrics.ke2,
-      KE: metrics.totalKe,
-    };
-  }, [input.m1, input.m2, input.v1, input.v2, x1Start, x2Start]);
-
-  const activeRun = run && inputsMatch(run.input, input) ? run : null;
-  const maxFrameIndex = activeRun ? Math.max(0, activeRun.frames.length - 1) : 0;
-  const clampedFrameIndex = Math.max(0, Math.min(maxFrameIndex, frameIndex));
-  const currentFrame = activeRun?.frames[clampedFrameIndex] ?? fallbackFrame;
-  const durationSec = activeRun && activeRun.frames.length > 0 ? activeRun.frames[activeRun.frames.length - 1].t : 0;
-
-  const impactFrameIndex = activeRun?.impactFrameIndex ?? null;
-  const impactTime = activeRun?.impactTime ?? null;
-  const impactRatio =
-    impactFrameIndex !== null && maxFrameIndex > 0 ? impactFrameIndex / maxFrameIndex : null;
-  const atImpact = impactFrameIndex !== null && clampedFrameIndex === impactFrameIndex;
-  const hasCollided = impactFrameIndex !== null && clampedFrameIndex >= impactFrameIndex;
-  const impactBeforeFrame =
-    atImpact && activeRun && impactFrameIndex !== null
-      ? activeRun.frames[Math.max(0, impactFrameIndex - 1)] ?? currentFrame
-      : null;
-  const impactAfterFrame =
-    atImpact && activeRun && impactFrameIndex !== null
-      ? activeRun.frames[impactFrameIndex] ?? currentFrame
-      : null;
-
+  const { impactFrameIndex, impactTime } = run;
+  const impactRatio = impactFrameIndex !== null ? impactFrameIndex / maxFrameIndex : null;
+  const atImpact = impactFrameIndex === frameIndex;
+  const hasCollided = impactFrameIndex !== null && frameIndex >= impactFrameIndex;
+  const impactBeforeFrame = atImpact ? run.frames[Math.max(0, frameIndex - 1)] : null;
   const mode = modeForRestitution(input.e);
 
-  const handleRunReady = useCallback(
-    (nextRun: PrecomputedCollisionRun) => {
-      setRun(nextRun);
-      if (pendingAutoPlayRef.current) {
-        pendingAutoPlayRef.current = false;
-        const lastIdx = Math.max(0, nextRun.frames.length - 1);
-        if (reducedMotion) {
-          setFrameIndex(lastIdx);
-          setIsPlaying(false);
-        } else {
-          setFrameIndex(0);
-          setIsPlaying(true);
-        }
-      }
-    },
-    [reducedMotion],
-  );
+  const handleModeChange = (next: string) => {
+    const e = next === "elastic" ? 1 : next === "stick" ? 0 : 0.5;
+    if (next !== mode) changeInput({ ...input, e });
+  };
 
-  const handleInputChange = useCallback(
-    (next: CollisionInput, meta?: { autoPlay?: boolean }) => {
-      const normalized = normalizeCollisionPositions(next);
-      setInput(normalized);
-      if (meta?.autoPlay) {
-        if (inputsMatch(normalized, input) && activeRun) {
-          const lastIdx = Math.max(0, activeRun.frames.length - 1);
-          if (reducedMotion) {
-            setFrameIndex(lastIdx);
-            setIsPlaying(false);
-          } else {
-            setFrameIndex(0);
-            setIsPlaying(true);
-          }
-          return;
-        }
-        pendingAutoPlayRef.current = true;
-        if (reducedMotion) {
-          setIsPlaying(false);
-        } else {
-          setFrameIndex(0);
-          setIsPlaying(true);
-        }
-      } else {
-        pendingAutoPlayRef.current = false;
-        setIsPlaying(false);
-        setFrameIndex(0);
-      }
-    },
-    [activeRun, input, reducedMotion],
-  );
+  const handleCartField = (field: "m1" | "m2" | "v1" | "v2" | "e", value: number) => {
+    changeInput({ ...input, [field]: value });
+  };
 
-  const handleModeChange = useCallback(
-    (next: string) => {
-      if (next === "elastic") {
-        handleInputChange({ ...input, e: 1 });
-      } else if (next === "stick") {
-        handleInputChange({ ...input, e: 0 });
-      } else if (next === "inelastic") {
-        handleInputChange({ ...input, e: input.e > 0.05 && input.e < 0.95 ? input.e : 0.5 });
-      }
-    },
-    [handleInputChange, input],
-  );
+  const handleCartPosition = (cart: 1 | 2, value: number) => {
+    const other = cart === 1 ? x2Start : x1Start;
+    const clamped = Number(clampCartPosition(cart, value, input.m1, input.m2, other).toFixed(2));
+    changeInput(cart === 1 ? { ...input, x1: clamped } : { ...input, x2: clamped });
+  };
 
-  const handleCartField = useCallback(
-    (field: "m1" | "m2" | "v1" | "v2" | "e", value: number) => {
-      handleInputChange({ ...input, [field]: value });
-    },
-    [handleInputChange, input],
-  );
-
-  const handleCartPosition = useCallback(
-    (cart: 1 | 2, value: number) => {
-      const other = cart === 1 ? x2Start : x1Start;
-      const clamped = Number(clampCartPosition(cart, value, input.m1, input.m2, other).toFixed(2));
-      handleInputChange(cart === 1 ? { ...input, x1: clamped } : { ...input, x2: clamped });
-    },
-    [handleInputChange, input, x1Start, x2Start],
-  );
-
-  const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      setIsPlaying(false);
-      return;
+  const handleScrubberKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    let next: number;
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowUp": next = frameIndex + 1; break;
+      case "ArrowLeft":
+      case "ArrowDown": next = frameIndex - 1; break;
+      case "PageUp": next = frameIndex + 10; break;
+      case "PageDown": next = frameIndex - 10; break;
+      case "Home": next = 0; break;
+      case "End": next = maxFrameIndex; break;
+      default: return;
     }
-    if (reducedMotion) {
-      setIsPlaying(false);
-      setFrameIndex(maxFrameIndex);
-      return;
-    }
-    if (clampedFrameIndex >= maxFrameIndex) {
-      setFrameIndex(0);
-    }
-    setIsPlaying(true);
-  }, [clampedFrameIndex, isPlaying, maxFrameIndex, reducedMotion]);
-
-  const handleReset = useCallback(() => {
-    setIsPlaying(false);
-    setFrameIndex(0);
-  }, []);
-
-  const handleScrubTo = useCallback(
-    (nextIndex: number) => {
-      setIsPlaying(false);
-      setFrameIndex(Math.max(0, Math.min(maxFrameIndex, nextIndex)));
-    },
-    [maxFrameIndex],
-  );
-
-  const handleJumpToImpact = useCallback(() => {
-    if (impactFrameIndex === null) return;
-    setIsPlaying(false);
-    setFrameIndex(impactFrameIndex);
-  }, [impactFrameIndex]);
-
-  const handleScrubberKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (maxFrameIndex <= 0) return;
-      let next: number | null = null;
-      if (e.key === "ArrowRight" || e.key === "ArrowUp") next = Math.min(maxFrameIndex, clampedFrameIndex + 1);
-      else if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = Math.max(0, clampedFrameIndex - 1);
-      else if (e.key === "PageUp") next = Math.min(maxFrameIndex, clampedFrameIndex + 10);
-      else if (e.key === "PageDown") next = Math.max(0, clampedFrameIndex - 10);
-      else if (e.key === "Home") next = 0;
-      else if (e.key === "End") next = maxFrameIndex;
-
-      if (next !== null) {
-        e.preventDefault();
-        handleScrubTo(next);
-      }
-    },
-    [clampedFrameIndex, handleScrubTo, maxFrameIndex],
-  );
-
-  const hasMeasuredAfter =
-    activeRun !== null && activeRun.measuredV1After !== null && activeRun.measuredV2After !== null;
-  const err1Pct = hasMeasuredAfter ? velocityErrorPercent(activeRun.measuredV1After!, theory.v1After) : null;
-  const err2Pct = hasMeasuredAfter ? velocityErrorPercent(activeRun.measuredV2After!, theory.v2After) : null;
-  const maxErrPct = err1Pct !== null && err2Pct !== null ? Math.max(err1Pct, err2Pct) : null;
+    event.preventDefault();
+    seek(Math.max(0, Math.min(maxFrameIndex, next)));
+  };
 
   const captionText = theory.willCollide
     ? `${input.m1.toFixed(1)} kg @ ${formatSigned(input.v1)} m/s · ${input.m2.toFixed(1)} kg @ ${formatSigned(input.v2)} m/s · e = ${input.e.toFixed(2)}`
@@ -278,7 +110,7 @@ export function CollisionsShowcase() {
             : theory.collisionKind === "perfectly-inelastic"
               ? "Stuck together"
               : "Inelastic impact"
-          : clampedFrameIndex > 0
+          : frameIndex > 0
             ? "Before impact"
             : "Ready";
 
@@ -297,18 +129,7 @@ export function CollisionsShowcase() {
       caption={<span data-testid="collisions-caption">{captionText}</span>}
       figure={
         <div className="space-y-space-3">
-          <LazyCollisions
-            input={input}
-            onInputChange={handleInputChange}
-            selectedCart={selectedCart}
-            onSelectCart={setSelectedCart}
-            frameIndex={clampedFrameIndex}
-            onFrameIndexChange={setFrameIndex}
-            playing={isPlaying}
-            onPlayingChange={setIsPlaying}
-            onRunReady={handleRunReady}
-            interactive="detail"
-          />
+          <Collisions playback={playback} interactive="detail" />
 
           {/* Time scrubber */}
           <div
@@ -339,7 +160,7 @@ export function CollisionsShowcase() {
                   variant="outline"
                   size="compact"
                   disabled={impactFrameIndex === null}
-                  onClick={handleJumpToImpact}
+                  onClick={() => { if (impactFrameIndex !== null) seek(impactFrameIndex); }}
                   data-testid="collisions-jump-impact-btn"
                 >
                   <Crosshair aria-hidden="true" className="size-space-3_5" />
@@ -368,12 +189,11 @@ export function CollisionsShowcase() {
                 min={0}
                 max={maxFrameIndex}
                 step={1}
-                value={clampedFrameIndex}
+                value={frameIndex}
                 disabled={maxFrameIndex === 0}
                 aria-label="Time"
                 aria-valuetext={`${currentFrame.t.toFixed(2)} seconds${atImpact ? ", at impact" : ""}`}
-                onPointerDown={() => setIsPlaying(false)}
-                onChange={(e) => handleScrubTo(Number(e.target.value))}
+                onChange={(e) => seek(Number(e.target.value))}
                 onKeyDown={handleScrubberKeyDown}
                 className="collision-scrubber relative z-local min-h-touch w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-disabled"
               />
@@ -405,7 +225,7 @@ export function CollisionsShowcase() {
                 type="button"
                 variant="primary"
                 size="compact"
-                onClick={handlePlayPause}
+                onClick={togglePlayback}
                 data-testid="collisions-play-btn"
               >
                 {isPlaying ? (
@@ -413,13 +233,16 @@ export function CollisionsShowcase() {
                 ) : (
                   <Play aria-hidden="true" className="size-space-3_5" />
                 )}
-                {isPlaying ? "Pause" : clampedFrameIndex >= maxFrameIndex && maxFrameIndex > 0 ? "Replay" : "Play"}
+                {isPlaying ? "Pause" : frameIndex >= maxFrameIndex && maxFrameIndex > 0 ? "Replay" : "Play"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="compact"
-                onClick={handleReset}
+                onClick={(event) => {
+                  reset();
+                  if (event.detail > 0) event.currentTarget.blur();
+                }}
                 data-testid="collisions-reset-btn"
               >
                 <RotateCcw aria-hidden="true" className="size-space-3_5" />
@@ -444,7 +267,7 @@ export function CollisionsShowcase() {
                 P total stays {formatSigned(theory.pBefore, 2)} kg·m/s
               </span>
             </div>
-            {atImpact && impactBeforeFrame && impactAfterFrame ? (
+            {impactBeforeFrame ? (
               <div className="grid grid-cols-2 gap-space-3 border-t border-border pt-space-2 text-xs">
                 <div className="space-y-space-1_5" data-testid="readout-impact-before">
                   <div className="flex items-baseline justify-between gap-space-1">
@@ -478,26 +301,26 @@ export function CollisionsShowcase() {
                   <div className="flex items-baseline justify-between gap-space-1">
                     <span className="font-semibold text-foreground">After</span>
                     <span className="font-mono tabular-nums text-foreground-secondary">
-                      t = {impactAfterFrame.t.toFixed(2)} s
+                      t = {currentFrame.t.toFixed(2)} s
                     </span>
                   </div>
                   <dl className="space-y-space-1">
                     <div>
                       <dt className="text-foreground-secondary">Velocities (v₁, v₂)</dt>
                       <dd className="font-mono tabular-nums text-foreground">
-                        {formatSigned(impactAfterFrame.v1, 2)}, {formatSigned(impactAfterFrame.v2, 2)} m/s
+                        {formatSigned(currentFrame.v1, 2)}, {formatSigned(currentFrame.v2, 2)} m/s
                       </dd>
                     </div>
                     <div>
                       <dt className="text-foreground-secondary">Momenta (p₁, p₂)</dt>
                       <dd className="font-mono tabular-nums text-foreground">
-                        {formatSigned(impactAfterFrame.p1, 2)}, {formatSigned(impactAfterFrame.p2, 2)} kg·m/s
+                        {formatSigned(currentFrame.p1, 2)}, {formatSigned(currentFrame.p2, 2)} kg·m/s
                       </dd>
                     </div>
                     <div>
                       <dt className="text-foreground-secondary">Total P / KE</dt>
                       <dd className="font-mono font-semibold tabular-nums text-foreground">
-                        {formatSigned(impactAfterFrame.P, 2)} kg·m/s · {impactAfterFrame.KE.toFixed(2)} J
+                        {formatSigned(currentFrame.P, 2)} kg·m/s · {currentFrame.KE.toFixed(2)} J
                       </dd>
                     </div>
                   </dl>
@@ -701,7 +524,7 @@ export function CollisionsShowcase() {
             </div>
           </div>
 
-          {/* Authoritative theory + Matter measured readout */}
+          {/* Predicted collision outcomes */}
           <PlaygroundStats>
             <PlaygroundStat
               label="Before velocities"
@@ -710,16 +533,11 @@ export function CollisionsShowcase() {
               testId="readout-before-vel"
             />
             <PlaygroundStat
-              label="After velocities (theory)"
+              label="Predicted velocities after impact"
               value={
                 theory.willCollide
                   ? `${formatSigned(theory.v1After, 2)}, ${formatSigned(theory.v2After, 2)} m/s`
                   : "No collision"
-              }
-              detail={
-                hasMeasuredAfter
-                  ? `Matter: ${formatSigned(activeRun.measuredV1After!, 2)}, ${formatSigned(activeRun.measuredV2After!, 2)} m/s`
-                  : `At t = ${currentFrame.t.toFixed(2)} s: ${formatSigned(currentFrame.v1, 2)}, ${formatSigned(currentFrame.v2, 2)} m/s`
               }
               testId="readout-after-vel"
             />
@@ -740,20 +558,6 @@ export function CollisionsShowcase() {
               value={`${theory.keLost.toFixed(2)} J`}
               detail={`${keLostPct.toFixed(0)}% dissipated`}
               testId="readout-ke-lost"
-            />
-            <PlaygroundStat
-              label="Measured vs theory"
-              value={
-                hasMeasuredAfter && maxErrPct !== null
-                  ? `${maxErrPct.toFixed(2)}% diff`
-                  : "—"
-              }
-              detail={
-                hasMeasuredAfter
-                  ? `Δv₁ = ${Math.abs(activeRun.measuredV1After! - theory.v1After).toFixed(3)}, Δv₂ = ${Math.abs(activeRun.measuredV2After! - theory.v2After).toFixed(3)} m/s`
-                  : "No impact on the 6 m track"
-              }
-              testId="readout-accuracy"
             />
           </PlaygroundStats>
 
