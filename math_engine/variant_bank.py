@@ -35,22 +35,23 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.ai_drill_ingest import (
     AiContractError,
-    autofill_problem_figure,
+    _run_problem_gates,
     load_scope_archetypes,
     normalize_prompt_numbers,
-    require_figure_decision,
-    require_figure_if_declared,
     story_text,
-    validate_against_vault,
-    validate_ai_problem_contract,
     validate_review,
 )
+from math_engine.ai_drill_ingest import autofill_problem_figure as autofill_problem_figure
+from math_engine.ai_drill_ingest import require_figure_decision as require_figure_decision
+from math_engine.ai_drill_ingest import require_figure_if_declared as require_figure_if_declared
+from math_engine.ai_drill_ingest import validate_against_vault as validate_against_vault
+from math_engine.ai_drill_ingest import validate_ai_problem_contract as validate_ai_problem_contract
 from math_engine.answer_check import check_answer
 from math_engine.figure_autofill import collect_figure_title_warnings
 from math_engine.fmt import LEVEL_LABELS
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
-from math_engine.verify import verify_problem
+from math_engine.verify import verify_problem as verify_problem
 from progress_store import find_repo_root, strip_progress
 from quality_rules import (
     QUALITY_RULES,
@@ -415,32 +416,10 @@ def check_variant_bank(
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
 
-        var_errors_before = len(errors)
-        try:
-            validate_against_vault(prob, vault_archs, unit_code)
-            if "review" in prob:
-                validate_review(prob)
-        except AiContractError as exc:
-            errors.append(str(exc))
-
-        try:
-            require_figure_decision(prob, vault_archs)
-            autofill_problem_figure(prob, vault_archs)
-            require_figure_if_declared(prob, vault_archs)
-            validate_ai_problem_contract(prob)
-            verify_problem(prob, rules=active_rules)
-        except Exception as exc:  # noqa: BLE001 - report every gate error in one pass
-            msg = str(exc)
-            errors.append(msg if pid in msg else f"[{pid}] {msg}")
-
-        uniq_errors = check_variant_uniqueness(prob, drill_items + accepted)
-        errors.extend(uniq_errors)
-
-        if len(errors) == var_errors_before:
-            accepted.append((pid, prob))
-        else:
-            # Still record for duplicate detection against later variants in the same bank
-            accepted.append((pid, prob))
+        _run_problem_gates(prob, vault_archs, unit_code, active_rules, errors=errors)
+        errors.extend(check_variant_uniqueness(prob, drill_items + accepted))
+        # Include failed variants when checking later entries for duplicates.
+        accepted.append((pid, prob))
 
     if check_originality:
         orig_errors, _ = check_document_originality(bank_doc, unit_code=unit_code, sources_dir=sources_dir)

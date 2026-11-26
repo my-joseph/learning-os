@@ -6,10 +6,14 @@ Tests for AI Drill Ingest and Reasoning Vault:
 3. Verify context rotation and usedContext tracking
 """
 
+import json
 import os
 import tempfile
 import unittest
 
+import pytest
+
+from math_engine import ai_drill_ingest as ingest
 from math_engine.ai_drill_ingest import (
     AiContractError,
     ingest_ai_drill,
@@ -133,6 +137,16 @@ class TestAiDrillIngest(unittest.TestCase):
             saved_doc = ingest_ai_drill(sample_drill, data_root=tmp_dir)
             self.assertEqual(saved_doc["drillId"], "DRL-MTH-T01-C06-TEST-99")
             self.assertEqual(saved_doc["sourceAttribution"]["publisher"], "OpenStax")
+            self.assertEqual(saved_doc["unitTitle"], "Percents")
+            self.assertEqual(saved_doc["title"], "Percents — Verified Math Drill (1 Qs)")
+            self.assertEqual(saved_doc["topicCode"], "MTH-T01")
+            self.assertEqual(saved_doc["chapterCode"], "MTH-T01-C06")
+            self.assertEqual(saved_doc["schemaVersion"], "2.0-math")
+            self.assertEqual(saved_doc["subject"], "MATH")
+            self.assertEqual(
+                saved_doc["config"],
+                {"questionCount": 1, "difficulty": "ALL", "difficultyMode": "AI Synthesized Reasoning Mode"},
+            )
             saved_file = os.path.join(tmp_dir, "MTH-T01-C06", "DRL-MTH-T01-C06-TEST-99.json")
             self.assertTrue(os.path.exists(saved_file))
 
@@ -413,6 +427,107 @@ class TestAiDrillIngest(unittest.TestCase):
                             bool(broken_pattern.search(latex_val)),
                             f"{filepath} [{pid}] step {s_idx + 1} contains broken LaTeX macro: {repr(latex_val)}",
                         )
+
+
+def test_characterize_math_vault_scope_and_rotation(tmp_path, monkeypatch):
+    chapter = "MTH-T01-C04"
+    unit = f"{chapter}-U02"
+    child = {"archetypeKey": "child", "unitCode": unit, "usedContexts": ["first"]}
+    legacy = {"archetypeKey": "legacy"}
+    vault = tmp_path / "vault"
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(vault))
+
+    assert ingest.get_vault_path(chapter) == str(vault / f"{chapter}.json")
+    assert ingest.load_reasoning_vault(chapter) == {"unitCode": chapter, "archetypes": []}
+    payload = {"unitCode": chapter, "archetypes": [child, legacy]}
+    assert ingest.save_reasoning_vault(chapter, payload) == str(vault / f"{chapter}.json")
+    (vault / "invalid.json").write_text("{", encoding="utf-8")
+    assert ingest.load_scope_archetypes(chapter) == [
+        {**child, "_vaultFile": chapter},
+        {**legacy, "_vaultFile": chapter},
+    ]
+    assert ingest.load_scope_archetypes(unit) == [{**child, "_vaultFile": chapter}]
+    assert ingest.archetype_owner(ingest.load_scope_archetypes(unit)[0]) == unit
+
+    for _ in range(2):
+        assert ingest.mark_context_used(unit, "child", "second") is None
+    updated = {**child, "usedContexts": ["second", "third"], "name": "Updated"}
+    assert ingest.register_archetype(chapter, updated) is updated
+    assert ingest.load_reasoning_vault(chapter) == {
+        "unitCode": chapter,
+        "archetypes": [{**updated, "usedContexts": ["first", "second", "third"]}, legacy],
+    }
+    assert not (vault / f"{unit}.json").exists()
+    with pytest.raises(ValueError) as exc:
+        ingest.register_archetype(chapter, {})
+    assert str(exc.value) == "Archetype must have an 'archetypeKey'."
+
+
+def test_characterize_math_bridge_scope(tmp_path):
+    chapter = "MTH-T01-C04"
+    first, second, third = (f"{chapter}-U0{i}" for i in range(1, 4))
+    bridge = {"archetypeKey": "bridge", "unitCode": first, "unitCodes": [f" {first} ", second, None]}
+    other = {"archetypeKey": "other", "unitCodes": [first, third]}
+    repeated = {"archetypeKey": "repeated", "unitCodes": [first, first]}
+    vault = tmp_path / "MTH-BRIDGE.json"
+    vault.write_text(json.dumps({"archetypes": [bridge, other, repeated, "invalid"]}), encoding="utf-8")
+
+    assert ingest.load_scope_archetypes("MTH-BRIDGE", str(tmp_path), [first]) == []
+    eligible = [first, f" {second} ", None, ""]
+    assert ingest.load_scope_archetypes("MTH-BRIDGE", str(tmp_path), eligible) == [
+        {**bridge, "_vaultFile": "MTH-BRIDGE"}
+    ]
+    assert ingest.load_scope_archetypes(chapter, str(tmp_path), eligible) == []
+    ingest.mark_context_used("MTH-BRIDGE", "bridge", "bridge-context", str(tmp_path), eligible)
+    assert json.loads(vault.read_text(encoding="utf-8"))["archetypes"][0] == {
+        **bridge,
+        "usedContexts": ["bridge-context"],
+    }
+
+
+def test_characterize_math_review_and_gate_errors(tmp_path, monkeypatch):
+    from math_engine import variant_bank
+
+    unit = "MTH-T01-C04-U02"
+    review = {"verdict": "fix", "note": "Adjust the draft."}
+    review_error = "Reviewer asked for a fix: Adjust the draft. (07 §4 V3). Fix or drop the problem."
+    missing = "Needs 'review' {verdict: pass|fix, note} from the reviewer subagent (07 §4 V3) before ingest."
+    with pytest.raises(ingest.AiContractError) as exc:
+        ingest.validate_review({"review": {"verdict": "pass", "note": " "}})
+    assert str(exc.value) == f"[?] {missing}"
+
+    monkeypatch.setattr(ingest, "load_scope_archetypes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(variant_bank, "load_scope_archetypes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(ingest, "check_gate_g3_set", lambda *args, **kwargs: None)
+    monkeypatch.setattr(variant_bank, "check_variant_uniqueness", lambda *args: [])
+
+    def figure_error(*args):
+        raise ValueError("Figure gate failed.")
+
+    def vault_pass(*args):
+        pass
+
+    for module in (ingest, variant_bank):
+        monkeypatch.setattr(module, "validate_against_vault", vault_pass)
+        monkeypatch.setattr(module, "require_figure_decision", figure_error)
+
+    draft = {"unitCode": unit, "problems": [{"review": review}]}
+    assert ingest.check_ai_drill(draft) == [f"[Q01] {review_error}", "[Q01] Figure gate failed."]
+    assert draft == {"unitCode": unit, "problems": [{"review": review}]}
+    assert ingest.check_ai_drill({"unitCode": unit, "problems": [{}]}) == ["[Q01] Figure gate failed."]
+    with pytest.raises(ingest.AiContractError) as exc:
+        ingest.ingest_ai_drill(draft, data_root=str(tmp_path))
+    assert str(exc.value) == f"[Q01] {review_error}"
+    assert list(tmp_path.iterdir()) == []
+
+    vid = f"VAR-{unit}-sample-01"
+    bank = {"unitCode": unit, "variants": [{"variantId": vid, "archetypeKey": "sample", "sourceArchetype": "sample"}]}
+    assert variant_bank.check_variant_bank(bank, data_root=str(tmp_path)) == [f"[{vid}] Figure gate failed."]
+    bank["variants"][0]["review"] = review
+    assert variant_bank.check_variant_bank(bank, data_root=str(tmp_path)) == [
+        f"[{vid}] {review_error}",
+        f"[{vid}] Figure gate failed.",
+    ]
 
 
 if __name__ == "__main__":
