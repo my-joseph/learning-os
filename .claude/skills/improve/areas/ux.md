@@ -8,7 +8,7 @@ Use the `AUDIT_SHA` pinned by `.claude/skills/improve/SKILL.md` for repository e
 
 ## Inspect
 
-- Start the Studio locally on `127.0.0.1:3000` with `npm run dev` in `practice-studio/`, then use the browser tool (Puppeteer) to click through relevant key flows: drill, Similar, review, due today, weak spots, and lab. Record which flows were actually exercised.
+- Start the Studio locally on `127.0.0.1:3000` with `npm run dev` in `practice-studio/`, then use the browser tool (Puppeteer) to click through relevant key flows: drill, Similar, review, Due today, What I get wrong, and lab. Record which flows were actually exercised.
 - Capture desktop and phone-width screenshots. Compare spacing, hierarchy, interaction and status colors with `docs/studio_design.md` and `practice-studio/src/lib/statusTone.ts`.
 - Check keyboard operation, visible focus, basic contrast, and loading, empty, and error states. Use only seeded mock content; never reveal prompts, answers, solution steps, or hidden tests before a real attempt.
 - Read `/Users/Joseph/.claude/projects/<main-checkout-project>/memory/ux-build-loop.md` when available. Proposed UX execution follows the learner's loop: design-agent proposal → build → tester-agent click-through → adjustment.
