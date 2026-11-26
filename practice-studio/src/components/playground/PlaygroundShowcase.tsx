@@ -5,17 +5,30 @@ import { Card } from "@/components/ui/shadcn/Card";
 import { cn } from "@/lib/cn";
 import { PlaygroundCardFooter } from "./PlaygroundCard";
 
-export function PlaygroundShowcase({ title, caption, figure, readout }: {
+export function PlaygroundShowcase({
+  title,
+  caption,
+  figure,
+  readout,
+  layout = "default",
+}: {
   title: ReactNode;
   caption: ReactNode;
   figure: ReactNode;
   readout?: ReactNode;
+  layout?: "default" | "wide";
 }) {
+  const splitWide = layout === "wide";
   return (
     <Card asChild variant="playground" className="iso-studio-surface">
       <section>
-        <div className={cn("grid", readout && "lg:grid-cols-5")}>
-          <div className={cn("flex min-w-0 flex-col justify-center p-space-4 sm:p-space-5", readout && "lg:col-span-3")}>
+        <div className={cn("grid", readout && (splitWide ? "xl:grid-cols-5" : "lg:grid-cols-5"))}>
+          <div
+            className={cn(
+              "flex min-w-0 flex-col justify-center p-space-4 sm:p-space-5",
+              readout && (splitWide ? "xl:sticky xl:top-space-6 xl:col-span-3 xl:self-start" : "lg:col-span-3"),
+            )}
+          >
             <div className="mx-auto w-full max-w-2xl">{figure}</div>
           </div>
           {readout}
@@ -26,9 +39,22 @@ export function PlaygroundShowcase({ title, caption, figure, readout }: {
   );
 }
 
-export function PlaygroundReadout({ action, children }: { action?: ReactNode; children: ReactNode }) {
+export function PlaygroundReadout({
+  action,
+  layout = "default",
+  children,
+}: {
+  action?: ReactNode;
+  layout?: "default" | "wide";
+  children: ReactNode;
+}) {
   return (
-    <div className="min-w-0 space-y-space-4 border-t border-border p-space-4 sm:p-space-5 lg:col-span-2 lg:border-l lg:border-t-0">
+    <div
+      className={cn(
+        "min-w-0 space-y-space-4 border-t border-border p-space-4 sm:p-space-5",
+        layout === "wide" ? "xl:col-span-2 xl:border-l xl:border-t-0" : "lg:col-span-2 lg:border-l lg:border-t-0",
+      )}
+    >
       <div className="flex flex-wrap items-center justify-between gap-space-2">
         <Heading variant="section">Live readout</Heading>
         {action}

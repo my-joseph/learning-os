@@ -8,6 +8,10 @@
   cursor: pointer;
 }
 
+[data-iso="collisions"][data-interactive="detail"] {
+  aspect-ratio: 5 / 3;
+}
+
 .collision-impact-marker {
   left: var(--impact-left);
 }

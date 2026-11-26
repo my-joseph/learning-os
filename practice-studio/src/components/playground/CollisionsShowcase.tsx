@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Crosshair, Pause, Play, RotateCcw } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { LazyCollisions } from "@/components/playground/LazyCollisions";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/shadcn/Badge";
 import { Button } from "@/components/ui/shadcn/Button";
 import { SegmentedChips } from "@/components/ui/shadcn/Tabs";
 import {
+  cartStartBounds,
+  clampCartPosition,
   computeCollisionTheory,
   computeInstantaneousMetrics,
   DEFAULT_COLLISION_INPUT,
@@ -22,6 +24,8 @@ import {
   MIN_MASS_KG,
   MIN_RESTITUTION,
   MIN_VELOCITY_MPS,
+  normalizeCollisionPositions,
+  POSITION_STEP_M,
   RESTITUTION_STEP,
   VELOCITY_STEP_MPS,
   velocityErrorPercent,
@@ -51,7 +55,9 @@ function inputsMatch(a: CollisionInput, b: CollisionInput): boolean {
     Math.abs(a.m2 - b.m2) < 1e-9 &&
     Math.abs(a.v1 - b.v1) < 1e-9 &&
     Math.abs(a.v2 - b.v2) < 1e-9 &&
-    Math.abs(a.e - b.e) < 1e-9
+    Math.abs(a.e - b.e) < 1e-9 &&
+    Math.abs((a.x1 ?? INITIAL_CART1_POS_M) - (b.x1 ?? INITIAL_CART1_POS_M)) < 1e-9 &&
+    Math.abs((a.x2 ?? INITIAL_CART2_POS_M) - (b.x2 ?? INITIAL_CART2_POS_M)) < 1e-9
   );
 }
 
@@ -62,6 +68,7 @@ export function CollisionsShowcase() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [run, setRun] = useState<PrecomputedCollisionRun | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const pendingAutoPlayRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
@@ -73,13 +80,15 @@ export function CollisionsShowcase() {
   }, []);
 
   const theory = useMemo(() => computeCollisionTheory(input), [input]);
+  const x1Start = input.x1 ?? INITIAL_CART1_POS_M;
+  const x2Start = input.x2 ?? INITIAL_CART2_POS_M;
 
   const fallbackFrame: CollisionFrame = useMemo(() => {
     const metrics = computeInstantaneousMetrics(input.m1, input.m2, input.v1, input.v2);
     return {
       t: 0,
-      x1: INITIAL_CART1_POS_M,
-      x2: INITIAL_CART2_POS_M,
+      x1: x1Start,
+      x2: x2Start,
       v1: input.v1,
       v2: input.v2,
       p1: metrics.p1,
@@ -89,7 +98,7 @@ export function CollisionsShowcase() {
       KE2: metrics.ke2,
       KE: metrics.totalKe,
     };
-  }, [input]);
+  }, [input.m1, input.m2, input.v1, input.v2, x1Start, x2Start]);
 
   const activeRun = run && inputsMatch(run.input, input) ? run : null;
   const maxFrameIndex = activeRun ? Math.max(0, activeRun.frames.length - 1) : 0;
@@ -103,14 +112,66 @@ export function CollisionsShowcase() {
     impactFrameIndex !== null && maxFrameIndex > 0 ? impactFrameIndex / maxFrameIndex : null;
   const atImpact = impactFrameIndex !== null && clampedFrameIndex === impactFrameIndex;
   const hasCollided = impactFrameIndex !== null && clampedFrameIndex >= impactFrameIndex;
+  const impactBeforeFrame =
+    atImpact && activeRun && impactFrameIndex !== null
+      ? activeRun.frames[Math.max(0, impactFrameIndex - 1)] ?? currentFrame
+      : null;
+  const impactAfterFrame =
+    atImpact && activeRun && impactFrameIndex !== null
+      ? activeRun.frames[impactFrameIndex] ?? currentFrame
+      : null;
 
   const mode = modeForRestitution(input.e);
 
-  const handleInputChange = useCallback((next: CollisionInput) => {
-    setIsPlaying(false);
-    setFrameIndex(0);
-    setInput(next);
-  }, []);
+  const handleRunReady = useCallback(
+    (nextRun: PrecomputedCollisionRun) => {
+      setRun(nextRun);
+      if (pendingAutoPlayRef.current) {
+        pendingAutoPlayRef.current = false;
+        const lastIdx = Math.max(0, nextRun.frames.length - 1);
+        if (reducedMotion) {
+          setFrameIndex(lastIdx);
+          setIsPlaying(false);
+        } else {
+          setFrameIndex(0);
+          setIsPlaying(true);
+        }
+      }
+    },
+    [reducedMotion],
+  );
+
+  const handleInputChange = useCallback(
+    (next: CollisionInput, meta?: { autoPlay?: boolean }) => {
+      const normalized = normalizeCollisionPositions(next);
+      setInput(normalized);
+      if (meta?.autoPlay) {
+        if (inputsMatch(normalized, input) && activeRun) {
+          const lastIdx = Math.max(0, activeRun.frames.length - 1);
+          if (reducedMotion) {
+            setFrameIndex(lastIdx);
+            setIsPlaying(false);
+          } else {
+            setFrameIndex(0);
+            setIsPlaying(true);
+          }
+          return;
+        }
+        pendingAutoPlayRef.current = true;
+        if (reducedMotion) {
+          setIsPlaying(false);
+        } else {
+          setFrameIndex(0);
+          setIsPlaying(true);
+        }
+      } else {
+        pendingAutoPlayRef.current = false;
+        setIsPlaying(false);
+        setFrameIndex(0);
+      }
+    },
+    [activeRun, input, reducedMotion],
+  );
 
   const handleModeChange = useCallback(
     (next: string) => {
@@ -126,10 +187,19 @@ export function CollisionsShowcase() {
   );
 
   const handleCartField = useCallback(
-    (field: keyof CollisionInput, value: number) => {
+    (field: "m1" | "m2" | "v1" | "v2" | "e", value: number) => {
       handleInputChange({ ...input, [field]: value });
     },
     [handleInputChange, input],
+  );
+
+  const handleCartPosition = useCallback(
+    (cart: 1 | 2, value: number) => {
+      const other = cart === 1 ? x2Start : x1Start;
+      const clamped = Number(clampCartPosition(cart, value, input.m1, input.m2, other).toFixed(2));
+      handleInputChange(cart === 1 ? { ...input, x1: clamped } : { ...input, x2: clamped });
+    },
+    [handleInputChange, input, x1Start, x2Start],
   );
 
   const handlePlayPause = useCallback(() => {
@@ -213,10 +283,17 @@ export function CollisionsShowcase() {
             : "Ready";
 
   const keLostPct = theory.keBefore > 1e-9 ? (theory.keLost / theory.keBefore) * 100 : 0;
+  const cart1Bounds = cartStartBounds(1, input.m1, input.m2, x2Start);
+  const cart2Bounds = cartStartBounds(2, input.m1, input.m2, x1Start);
+  const cart1Min = Math.ceil(cart1Bounds.min * 100) / 100;
+  const cart1Max = Math.floor(cart1Bounds.max * 100) / 100;
+  const cart2Min = Math.ceil(cart2Bounds.min * 100) / 100;
+  const cart2Max = Math.floor(cart2Bounds.max * 100) / 100;
 
   return (
     <PlaygroundShowcase
       title="Collisions"
+      layout="wide"
       caption={<span data-testid="collisions-caption">{captionText}</span>}
       figure={
         <div className="space-y-space-3">
@@ -229,7 +306,7 @@ export function CollisionsShowcase() {
             onFrameIndexChange={setFrameIndex}
             playing={isPlaying}
             onPlayingChange={setIsPlaying}
-            onRunReady={setRun}
+            onRunReady={handleRunReady}
             interactive="detail"
           />
 
@@ -310,6 +387,7 @@ export function CollisionsShowcase() {
       }
       readout={
         <PlaygroundReadout
+          layout="wide"
           action={
             <div className="flex flex-wrap items-center gap-space-2">
               <Badge
@@ -350,14 +428,14 @@ export function CollisionsShowcase() {
             </div>
           }
         >
-          {/* Current frame values at t */}
+          {/* Current frame values at t (shows before | after columns when scrubbed to impact) */}
           <div
             className="space-y-space-2 rounded-lg border border-border bg-surface-panel p-space-3"
             data-testid="readout-current-frame"
           >
             <div className="flex flex-wrap items-center justify-between gap-space-2">
               <span className="font-mono text-xs font-semibold tabular-nums text-foreground" data-testid="readout-current-time">
-                At t = {currentFrame.t.toFixed(2)} s
+                {atImpact ? `At impact (t = ${currentFrame.t.toFixed(2)} s)` : `At t = ${currentFrame.t.toFixed(2)} s`}
               </span>
               <span
                 className={`font-mono text-xs tabular-nums ${statusTone.correct.text}`}
@@ -366,32 +444,93 @@ export function CollisionsShowcase() {
                 P total stays {formatSigned(theory.pBefore, 2)} kg·m/s
               </span>
             </div>
-            <dl className="grid grid-cols-2 gap-space-2 border-t border-border pt-space-2 text-xs">
-              <div className="space-y-space-0_5">
-                <dt className="text-foreground-secondary">Velocities (v₁, v₂)</dt>
-                <dd className="font-mono tabular-nums text-foreground" data-testid="readout-current-vel">
-                  {formatSigned(currentFrame.v1, 2)}, {formatSigned(currentFrame.v2, 2)} m/s
-                </dd>
+            {atImpact && impactBeforeFrame && impactAfterFrame ? (
+              <div className="grid grid-cols-2 gap-space-3 border-t border-border pt-space-2 text-xs">
+                <div className="space-y-space-1_5" data-testid="readout-impact-before">
+                  <div className="flex items-baseline justify-between gap-space-1">
+                    <span className="font-semibold text-foreground">Before</span>
+                    <span className="font-mono tabular-nums text-foreground-secondary">
+                      t = {impactBeforeFrame.t.toFixed(2)} s
+                    </span>
+                  </div>
+                  <dl className="space-y-space-1">
+                    <div>
+                      <dt className="text-foreground-secondary">Velocities (v₁, v₂)</dt>
+                      <dd className="font-mono tabular-nums text-foreground">
+                        {formatSigned(impactBeforeFrame.v1, 2)}, {formatSigned(impactBeforeFrame.v2, 2)} m/s
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-foreground-secondary">Momenta (p₁, p₂)</dt>
+                      <dd className="font-mono tabular-nums text-foreground">
+                        {formatSigned(impactBeforeFrame.p1, 2)}, {formatSigned(impactBeforeFrame.p2, 2)} kg·m/s
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-foreground-secondary">Total P / KE</dt>
+                      <dd className="font-mono font-semibold tabular-nums text-foreground">
+                        {formatSigned(impactBeforeFrame.P, 2)} kg·m/s · {impactBeforeFrame.KE.toFixed(2)} J
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className="space-y-space-1_5 border-l border-border pl-space-3" data-testid="readout-impact-after">
+                  <div className="flex items-baseline justify-between gap-space-1">
+                    <span className="font-semibold text-foreground">After</span>
+                    <span className="font-mono tabular-nums text-foreground-secondary">
+                      t = {impactAfterFrame.t.toFixed(2)} s
+                    </span>
+                  </div>
+                  <dl className="space-y-space-1">
+                    <div>
+                      <dt className="text-foreground-secondary">Velocities (v₁, v₂)</dt>
+                      <dd className="font-mono tabular-nums text-foreground">
+                        {formatSigned(impactAfterFrame.v1, 2)}, {formatSigned(impactAfterFrame.v2, 2)} m/s
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-foreground-secondary">Momenta (p₁, p₂)</dt>
+                      <dd className="font-mono tabular-nums text-foreground">
+                        {formatSigned(impactAfterFrame.p1, 2)}, {formatSigned(impactAfterFrame.p2, 2)} kg·m/s
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-foreground-secondary">Total P / KE</dt>
+                      <dd className="font-mono font-semibold tabular-nums text-foreground">
+                        {formatSigned(impactAfterFrame.P, 2)} kg·m/s · {impactAfterFrame.KE.toFixed(2)} J
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
-              <div className="space-y-space-0_5">
-                <dt className="text-foreground-secondary">Momenta (p₁, p₂)</dt>
-                <dd className="font-mono tabular-nums text-foreground" data-testid="readout-current-momenta">
-                  {formatSigned(currentFrame.p1, 2)}, {formatSigned(currentFrame.p2, 2)} kg·m/s
-                </dd>
-              </div>
-              <div className="space-y-space-0_5">
-                <dt className="text-foreground-secondary">Total momentum P</dt>
-                <dd className="font-mono font-semibold tabular-nums text-foreground" data-testid="readout-current-P">
-                  {formatSigned(currentFrame.P, 2)} kg·m/s
-                </dd>
-              </div>
-              <div className="space-y-space-0_5">
-                <dt className="text-foreground-secondary">Total KE</dt>
-                <dd className="font-mono font-semibold tabular-nums text-foreground" data-testid="readout-current-KE">
-                  {currentFrame.KE.toFixed(2)} J
-                </dd>
-              </div>
-            </dl>
+            ) : (
+              <dl className="grid grid-cols-2 gap-space-2 border-t border-border pt-space-2 text-xs">
+                <div className="space-y-space-0_5">
+                  <dt className="text-foreground-secondary">Velocities (v₁, v₂)</dt>
+                  <dd className="font-mono tabular-nums text-foreground" data-testid="readout-current-vel">
+                    {formatSigned(currentFrame.v1, 2)}, {formatSigned(currentFrame.v2, 2)} m/s
+                  </dd>
+                </div>
+                <div className="space-y-space-0_5">
+                  <dt className="text-foreground-secondary">Momenta (p₁, p₂)</dt>
+                  <dd className="font-mono tabular-nums text-foreground" data-testid="readout-current-momenta">
+                    {formatSigned(currentFrame.p1, 2)}, {formatSigned(currentFrame.p2, 2)} kg·m/s
+                  </dd>
+                </div>
+                <div className="space-y-space-0_5">
+                  <dt className="text-foreground-secondary">Total momentum P</dt>
+                  <dd className="font-mono font-semibold tabular-nums text-foreground" data-testid="readout-current-P">
+                    {formatSigned(currentFrame.P, 2)} kg·m/s
+                  </dd>
+                </div>
+                <div className="space-y-space-0_5">
+                  <dt className="text-foreground-secondary">Total KE</dt>
+                  <dd className="font-mono font-semibold tabular-nums text-foreground" data-testid="readout-current-KE">
+                    {currentFrame.KE.toFixed(2)} J
+                  </dd>
+                </div>
+              </dl>
+            )}
           </div>
 
           {/* Parameter controls */}
@@ -462,7 +601,7 @@ export function CollisionsShowcase() {
                 <div className="space-y-space-1">
                   <div className="flex items-center justify-between text-xs">
                     <label htmlFor="cart1-vel" className="text-foreground-secondary">Initial v₁</label>
-                    <Numeral className="font-mono">{formatSigned(input.v1)} m/s</Numeral>
+                    <Numeral className="font-mono" data-testid="cart1-vel-value">{formatSigned(input.v1)} m/s</Numeral>
                   </div>
                   <input
                     id="cart1-vel"
@@ -473,6 +612,23 @@ export function CollisionsShowcase() {
                     value={input.v1}
                     aria-label="Cart 1 initial velocity in meters per second"
                     onChange={(e) => handleCartField("v1", Number(e.target.value))}
+                    className="min-h-touch w-full cursor-pointer accent-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  />
+                </div>
+                <div className="space-y-space-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <label htmlFor="cart1-pos" className="text-foreground-secondary">Start x₁</label>
+                    <Numeral className="font-mono" data-testid="cart1-pos-value">{formatSigned(x1Start, 2)} m</Numeral>
+                  </div>
+                  <input
+                    id="cart1-pos"
+                    type="range"
+                    min={cart1Min}
+                    max={cart1Max}
+                    step={POSITION_STEP_M}
+                    value={x1Start}
+                    aria-label="Cart 1 start position in meters"
+                    onChange={(e) => handleCartPosition(1, Number(e.target.value))}
                     className="min-h-touch w-full cursor-pointer accent-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   />
                 </div>
@@ -510,7 +666,7 @@ export function CollisionsShowcase() {
                 <div className="space-y-space-1">
                   <div className="flex items-center justify-between text-xs">
                     <label htmlFor="cart2-vel" className="text-foreground-secondary">Initial v₂</label>
-                    <Numeral className="font-mono">{formatSigned(input.v2)} m/s</Numeral>
+                    <Numeral className="font-mono" data-testid="cart2-vel-value">{formatSigned(input.v2)} m/s</Numeral>
                   </div>
                   <input
                     id="cart2-vel"
@@ -521,6 +677,23 @@ export function CollisionsShowcase() {
                     value={input.v2}
                     aria-label="Cart 2 initial velocity in meters per second"
                     onChange={(e) => handleCartField("v2", Number(e.target.value))}
+                    className="min-h-touch w-full cursor-pointer accent-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  />
+                </div>
+                <div className="space-y-space-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <label htmlFor="cart2-pos" className="text-foreground-secondary">Start x₂</label>
+                    <Numeral className="font-mono" data-testid="cart2-pos-value">{formatSigned(x2Start, 2)} m</Numeral>
+                  </div>
+                  <input
+                    id="cart2-pos"
+                    type="range"
+                    min={cart2Min}
+                    max={cart2Max}
+                    step={POSITION_STEP_M}
+                    value={x2Start}
+                    aria-label="Cart 2 start position in meters"
+                    onChange={(e) => handleCartPosition(2, Number(e.target.value))}
                     className="min-h-touch w-full cursor-pointer accent-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   />
                 </div>
@@ -585,7 +758,7 @@ export function CollisionsShowcase() {
           </PlaygroundStats>
 
           <p className="text-xs text-foreground-secondary">
-            Right is positive (<FormattedText text="$+x$" />). Track is level and frictionless. Click or Tab to a cart and use Left/Right arrows to adjust initial velocity, Up/Down to adjust mass, or Space to play.
+            Right is positive (<FormattedText text="$+x$" />). Track is level and frictionless. Drag a cart along the track and release to launch it (slow release repositions at 0 m/s), or Tab to a cart and use Left/Right arrows to adjust velocity by 0.1 m/s, Up/Down to adjust mass, and Space to play.
           </p>
         </PlaygroundReadout>
       }

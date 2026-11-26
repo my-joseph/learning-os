@@ -30,7 +30,9 @@ const staticPreviews = {
 function formatCollisionsCardCaption(snapshot: CollisionSimSnapshot): string {
   if (snapshot.phase === "running") return "Momentum · running";
   if (snapshot.phase === "paused") return "Momentum · paused";
-  if (snapshot.phase === "done") return "Momentum · after impact";
+  if (snapshot.phase === "done") {
+    return snapshot.hasCollided ? "Momentum · after impact" : "Momentum · no impact";
+  }
   return "Momentum · elastic";
 }
 
