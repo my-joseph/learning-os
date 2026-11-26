@@ -1,0 +1,135 @@
+/* Token-only styling for the 1D Collisions SVG figure (reuses --iso-* and Studio tokens). */
+
+.collision-track-rail {
+  stroke: var(--iso-edge);
+  stroke-width: var(--border-width-2);
+}
+
+.collision-tick-major {
+  stroke: var(--iso-edge);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-tick-label {
+  fill: var(--iso-edge);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.collision-bumper {
+  fill: var(--iso-mid);
+  stroke: var(--iso-edge);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-cart {
+  fill: var(--iso-plate);
+  stroke: var(--iso-line);
+  stroke-width: var(--border-width-status);
+  transition-property: stroke, fill;
+  transition-duration: var(--duration-color);
+  transition-timing-function: var(--ease-theme);
+}
+
+.collision-cart-inner {
+  fill: var(--iso-side);
+  stroke: var(--iso-lo);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-cart-selected {
+  fill: var(--iso-plate);
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-2);
+}
+
+.collision-cart-inner-selected {
+  fill: var(--iso-side);
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-cart-wheel {
+  fill: var(--iso-side);
+  stroke: var(--iso-line);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-cart-wheel-selected {
+  fill: var(--iso-side);
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-hairline);
+}
+
+.collision-cart-id {
+  fill: var(--iso-edge);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro-compact);
+}
+
+.collision-cart-mass {
+  fill: var(--foreground);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.collision-arrow {
+  stroke: var(--iso-hi);
+  stroke-width: var(--border-width-2);
+  stroke-linecap: round;
+}
+
+.collision-arrow-selected {
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-2);
+  stroke-linecap: round;
+}
+
+.collision-arrow-head {
+  fill: var(--iso-hi);
+}
+
+.collision-arrow-head-selected {
+  fill: var(--iso-accent);
+}
+
+.collision-vel-label {
+  fill: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.collision-vel-label-selected {
+  fill: var(--iso-accent);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.collision-impact-mark {
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-status);
+  stroke-linecap: round;
+}
+
+.collision-cart-focus {
+  outline: none;
+}
+
+.collision-cart-focus:focus-visible .collision-cart,
+.collision-cart-focus:focus-visible .collision-cart-selected {
+  stroke: var(--iso-accent);
+  stroke-width: var(--border-width-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collision-cart {
+    transition: none;
+  }
+}
