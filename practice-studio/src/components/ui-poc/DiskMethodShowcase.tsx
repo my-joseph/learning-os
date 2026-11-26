@@ -51,7 +51,7 @@ export function DiskMethodShowcase() {
   const { theme, handleToggleTheme } = useTheme();
   const [preset, setPreset] = useState<DiskPresetId>("sqrt");
   const [n, setN] = useState<number>(8);
-  const [rule, setRule] = useState<SampleRule>("midpoint");
+  const [rule, setRule] = useState<SampleRule>("right");
   const [inspectedIndex, setInspectedIndex] = useState<number | null>(null);
   const [caption, setCaption] = useState<string>(
     "n = 8 · midpoint · ΣV = 25.133 (exact 8π)",

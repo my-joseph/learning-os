@@ -84,7 +84,7 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
     {
       preset = "sqrt",
       n: rawN = 8,
-      rule = "midpoint",
+      rule = "right",
       highlightedDisk = null,
       label: ariaLabel,
       theme = "auto",
