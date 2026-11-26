@@ -29,6 +29,18 @@
     "rules/06_quality_contract.md",
     "docs/backlog.md"
   ],
+  "math_engine/_parse.py": [
+    "rules/06_quality_contract.md",
+    "docs/backlog.md"
+  ],
+  "math_engine/_equivalence.py": [
+    "rules/06_quality_contract.md",
+    "docs/backlog.md"
+  ],
+  "math_engine/_checkers.py": [
+    "rules/06_quality_contract.md",
+    "docs/backlog.md"
+  ],
   "math_engine/answer_spec_registry.py": [
     "rules/06_quality_contract.md"
   ],

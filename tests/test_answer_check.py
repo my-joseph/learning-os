@@ -164,3 +164,157 @@ def test_text_respects_case_sensitive_and_normalizes_whitespace(check):
     spec_multi_ws = {"type": "text", "accepted": ["read  committed"], "case_sensitive": True}
     assert check(spec_multi_ws, "read committed")["verdict"] == "correct"
     assert check(spec_multi_ws, "Read Committed")["verdict"] == "incorrect"
+
+
+def test_math_answer_check_public_api_contract():
+    """Lock every symbol imported across math_engine/, quality_rules.py, scripts/, and tests/."""
+    import math_engine.answer_check as ac
+
+    expected_symbols = [
+        "MAX_INPUT_LEN",
+        "WHITELIST_FUNCS",
+        "TRUSTED_INTERNAL_FUNCS",
+        "VETTED_EXTRA_FUNCS",
+        "WHITELIST_CONSTANTS",
+        "FORM_MESSAGES",
+        "TRAP_VERDICTS",
+        "SafeParseError",
+        "EqualTimeoutError",
+        "SecurityVisitor",
+        "ASTTransformer",
+        "safe_parse",
+        "parse_math",
+        "to_expr",
+        "is_equal",
+        "numeric_close",
+        "generic_value_diagnostics",
+        "form_issues",
+        "parse_interval",
+        "_intervals_equal",
+        "_split_items",
+        "check_number",
+        "check_complex",
+        "check_expression",
+        "check_solution_set",
+        "check_interval",
+        "check_tuple",
+        "check_choice",
+        "check_text",
+        "check_vector",
+        "CHECKERS",
+        "check_answer",
+        "match_trap",
+        "check_variant_answer",
+        "is_omission_trap",
+    ]
+    for name in expected_symbols:
+        assert hasattr(ac, name), f"Missing exported symbol on math_engine.answer_check: {name}"
+
+    assert set(ac.CHECKERS.keys()) == {
+        "number",
+        "complex",
+        "expression",
+        "solution_set",
+        "interval",
+        "tuple",
+        "choice",
+        "text",
+        "vector",
+    }
+    assert issubclass(ac.SafeParseError, ValueError)
+    assert issubclass(ac.EqualTimeoutError, BaseException)
+
+
+def test_math_answer_check_parsing_and_equivalence_characterization():
+    import sympy as sp
+
+    from math_engine.answer_check import (
+        SafeParseError,
+        _intervals_equal,
+        _split_items,
+        form_issues,
+        generic_value_diagnostics,
+        is_equal,
+        is_omission_trap,
+        match_trap,
+        numeric_close,
+        parse_interval,
+        parse_math,
+        safe_parse,
+        to_expr,
+    )
+
+    assert safe_parse("2x + 1", variables=["x"]) == 2 * sp.Symbol("x") + 1
+    assert parse_math("3 - 4i") == 3 - 4 * sp.I
+    assert to_expr("<3, 4>") == sp.Matrix([3, 4])
+    assert is_equal(parse_math("(x+1)**2", variables=["x"]), parse_math("x**2 + 2*x + 1", variables=["x"]), ["x"])
+    assert numeric_close(sp.Rational(2, 3), sp.Float("0.667"))
+    assert not numeric_close(sp.Rational(2, 3), sp.Rational(2, 3))
+
+    with pytest.raises(SafeParseError):
+        safe_parse("x**101", variables=["x"])
+
+    assert _split_items("{x_1 = 2, x_2 = 1 +- 3}", "x") == ["2", "(1)+( 3)", "(1)-( 3)"]
+    iv = parse_interval("[1, 3) U (4, inf)")
+    assert _intervals_equal(iv, parse_interval("(4, oo) U [1, 3)"))
+
+    tree = parse_math("2/4", evaluate=False)
+    assert "unreduced_fraction" in form_issues(tree, ["reduced_fraction"])
+
+    diags = generic_value_diagnostics(to_expr("1/5"), to_expr("5"))
+    assert diags[0]["code"] == "reciprocal"
+
+    spec_set = {"type": "solution_set", "values": ["-2", "2"], "variable": "x"}
+    assert is_omission_trap(spec_set, "2") is True
+    assert is_omission_trap(spec_set, "-2, 2") is False
+    assert match_trap(spec_set, "2", "2") is True
+
+
+def test_math_answer_check_cli_round_trips():
+    import json
+    import subprocess
+    import sys
+
+    def run_cli(payload: dict) -> dict:
+        proc = subprocess.run(
+            [sys.executable, "-m", "math_engine.answer_check"],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return json.loads(proc.stdout)
+
+    ok = run_cli({"answerSpec": {"type": "complex", "value": "3 - 4*I", "forms": ["a+bi"]}, "input": "3 - 4i"})
+    assert ok == {
+        "verdict": "correct",
+        "message": "Correct.",
+        "components": [{"label": "Real part", "ok": True}, {"label": "Imaginary part", "ok": True}],
+        "diagnostics": [],
+    }
+
+    bad_form = run_cli(
+        {"answerSpec": {"type": "number", "value": "1/2", "forms": ["reduced_fraction"]}, "input": "2/4"}
+    )
+    assert bad_form["verdict"] == "equivalent_not_in_form"
+    assert bad_form["diagnostics"][0]["code"] == "unreduced_fraction"
+
+    trap = run_cli({"answerSpec": {"type": "number", "value": "10"}, "trapValue": "-10", "input": "-10"})
+    assert trap["verdict"] == "incorrect"
+    assert trap["trapMatched"] is True
+
+    empty = run_cli({"answerSpec": {"type": "number", "value": "1"}, "input": "   "})
+    assert empty["verdict"] == "invalid input"
+
+    iv_res = run_cli({"answerSpec": {"type": "interval", "value": "[1, 5)"}, "input": "[1, 5]"})
+    assert iv_res["verdict"] == "incorrect"
+    assert iv_res["diagnostics"][0]["code"] == "wrong_bracket"
+
+    vec_res = run_cli(
+        {
+            "answerSpec": {"type": "vector", "components": ["3", "4"], "allowPartial": True},
+            "input": "<3, 5>",
+        }
+    )
+    assert vec_res["verdict"] == "partial"
+    assert vec_res["components"] == [{"label": "Component 1", "ok": True}, {"label": "Component 2", "ok": False}]
