@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FormattedText } from "../src/components/FormattedText";
@@ -10,7 +10,6 @@ import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
 import { StudioHeader } from "../src/components/shell/StudioHeader";
 import { StudioShell } from "../src/components/shell/StudioShell";
 import { StudioSidebar } from "../src/components/shell/StudioSidebar";
-import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import {
   getPrgScore,
@@ -126,6 +125,7 @@ const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "ut
 const stepper = readFileSync("src/components/Stepper.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
+const studioClient = readFileSync("src/components/shell/StudioClient.tsx", "utf8");
 const studioSidebar = readFileSync("src/components/shell/StudioSidebar.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
@@ -187,7 +187,10 @@ assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
 assert.doesNotMatch(studioHeader, /DrillSwitcher/);
 assert.match(studioHeader, /Open navigation sidebar/);
 assert.match(studioHeader, /Expand sidebar/);
-assert.match(studioHeader, /Generate drill set/);
+assert.doesNotMatch(studioHeader, /Generate drill set|onOpenGenPopover/);
+assert.doesNotMatch(studioShell, /GeneratePopover|showGenPopover|onGenerated|onOpenGenPopover/);
+assert.doesNotMatch(studioClient, /Generate drill set|showGenPopover|handleGenerated/);
+assert.equal(existsSync("src/app/api/generate-drill/route.ts"), false, "the generation API route is removed");
 assert.match(studioHeader, /Reset all questions/);
 assert.match(studioHeader, /Reset all problems/);
 assert.match(studioHeader, /Reset all milestones/);
@@ -530,7 +533,6 @@ assert.match(globalsCss, /\.dark :focus-visible\s*\{\s*outline-color:\s*#818cf8;
 
 for (const file of [
   "src/components/ui/ConfirmDialog.tsx",
-  "src/components/shell/GeneratePopover.tsx",
   "src/components/code/CodeDashboard.tsx",
 ]) {
   const src = readFileSync(file, "utf8");
@@ -659,37 +661,6 @@ const labRouteNotFoundHtml = renderToStaticMarkup(
 );
 assert.match(labRouteNotFoundHtml, /<h1[^>]*>Lab not found<\/h1>/);
 
-// Verify GeneratePopover uses workspace item nouns and includes Level 5 (A-10)
-const mathGenerateHtml = renderToStaticMarkup(
-  <GeneratePopover
-    isOpen={true}
-    onClose={noop}
-    workspace="math"
-    drills={[]}
-    currentDrill={null}
-    onGenerated={async () => {}}
-    onStatusChange={noop}
-  />
-);
-assert.match(mathGenerateHtml, />5 questions<\/option>/);
-assert.doesNotMatch(mathGenerateHtml, />5 Qs<\/option>/);
-assert.match(mathGenerateHtml, />Level 5<\/option>/);
-
-const codeGenerateHtml = renderToStaticMarkup(
-  <GeneratePopover
-    isOpen={true}
-    onClose={noop}
-    workspace="code"
-    drills={[]}
-    currentDrill={null}
-    onGenerated={async () => {}}
-    onStatusChange={noop}
-  />
-);
-assert.match(codeGenerateHtml, />5 problems<\/option>/);
-assert.doesNotMatch(codeGenerateHtml, />5 Qs<\/option>/);
-assert.match(codeGenerateHtml, />Level 5<\/option>/);
-
 // Learner 2026-11-19: 32px palette keys, no stray vertical scrollbar on line choices,
 // no CAS copy row on choice questions (their plain text is only the prompt).
 const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
@@ -767,7 +738,6 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.match(openSidebarHtml, /data-sidebar-row="search"/);
   assert.match(openSidebarHtml, /⌘K/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Search practice drills"/);
-  assert.doesNotMatch(openSidebarHtml, /aria-label="Generate drill set"/);
   assert.doesNotMatch(openSidebarHtml, /aria-label="Reset all/);
 
   const closedSidebarHtml = renderToStaticMarkup(
@@ -822,7 +792,6 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       theme="light"
       onToggleTheme={noop}
       onResetAll={noop}
-      onOpenGenPopover={noop}
       isSidebarOpen={true}
       onOpenDesktopSidebar={noop}
       onOpenSidebarDrawer={noop}
@@ -834,7 +803,7 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   );
   assert.match(headerOpenHtml, /aria-label="Open navigation sidebar"/);
   assert.doesNotMatch(headerOpenHtml, /aria-label="Expand sidebar"/);
-  assert.match(headerOpenHtml, /aria-label="Generate drill set"/);
+  assert.doesNotMatch(headerOpenHtml, /Generate drill set/);
   assert.match(headerOpenHtml, /aria-label="Reset all questions"/);
   assert.match(headerOpenHtml, /aria-label="Due today &amp; weak spots"/);
   assert.match(headerOpenHtml, /lucide-list/);
@@ -862,7 +831,6 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
       theme="light"
       onToggleTheme={noop}
       onResetAll={noop}
-      onOpenGenPopover={noop}
       isSidebarOpen={false}
       onOpenDesktopSidebar={noop}
       onOpenSidebarDrawer={noop}
@@ -933,9 +901,6 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
     searchLoadError: false,
     onSearchNavigate: noop,
     onSelectDrill: noop,
-    showGenPopover: false,
-    onShowGenPopoverChange: noop,
-    onGenerated: async () => {},
     onSelectQuestion: noop,
     onToggleViewMode: noop,
     status: null,

@@ -17,6 +17,10 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 ## Learner decisions
 
+### Completed
+
+- Studio Generate button and **C08** `/api/generate-drill` route: approved and removed in Phase 2 (2026-11-26).
+
 ### Working style
 
 - Speak with the learner in polite Thai; write learning content in English.
@@ -51,7 +55,7 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 ### ON HOLD — do not start without the learner
 
-- Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including **C08** `/api/generate-drill` validation/bounds, which waits for the Similar/template refactor); rename of `rules/06`; PRG Similar/variant bank.
+- Math and PRG template removal remains on hold for Phase 3; the Similar “+” button refactor, rename of `rules/06`, and PRG Similar/variant bank remain on hold.
 - **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” / template refactor.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
 - PR B, PR C (including issue `0852fe`, Weak spots trap-name leak), Example redesign, and learning-feature Phases 3–5.
