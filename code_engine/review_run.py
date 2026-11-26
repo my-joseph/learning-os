@@ -23,14 +23,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from code_engine.lint_check import (  # noqa: E402
-    TOOLS_LINT_DIR,
-    UNTRUSTED_TOOL_CONFIG_NAMES,
-    LintToolsMissingError,
-    build_trusted_eslint_config,
-    build_trusted_tsconfig,
-    get_lint_binaries,
-)
+from code_engine import submit as _submit  # noqa: E402
 from code_engine.quality_checks import (  # noqa: E402
     _resolve_vault_dir,
     applicable_rubric,
@@ -38,26 +31,29 @@ from code_engine.quality_checks import (  # noqa: E402
     load_archetype,
     load_universal,
 )
+from code_engine.runners import (  # noqa: E402
+    _TSC_DIAG_RE,  # noqa: F401 - re-exported for callers/tests
+    TS_PRESETS,
+    active_tools_lint_dir,
+    parse_tsc_diagnostics,
+    resolve_eslint_tools,
+    resolve_tsc_bin,
+    run_eslint_sandbox,
+    run_lab_tests,
+    run_tsc_sandbox,
+)
 from code_engine.sandbox import (  # noqa: E402
-    DEFAULT_TIMEOUT_SEC,
-    DEFAULT_TOOL_TIMEOUT_SEC,
     JSON_SUFFIXES,
     SOURCE_SUFFIXES,
     assert_safe_contained_path,
-    create_sandbox_dir,
-    run_isolated,
     run_node_isolated,
-    stage_lab_copy,
-    stage_workspace_copy,
 )
-from code_engine.submit import _parse_completed_junit_run, _run_vitest_junit, run_tests_junit  # noqa: E402
+from code_engine.submit import run_tests_junit  # noqa: E402
 from code_engine.workspace import ENVIRONMENT_PRESETS, find_drill_json, resolve_workspace_source  # noqa: E402
 from progress_store import labs_root as default_labs_root  # noqa: E402
 from progress_store import pilot_mode  # noqa: E402
 from progress_store import workspace_root as default_workspace_root  # noqa: E402
 
-TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
-_TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
 _HIDDEN_CASE_RE = re.compile(r"\[(?:[A-Z]\d+-)?HIDDEN(?:-[A-Z]?\d+)?\]|\bHIDDEN[-_](?:T?\d+|TRAP)\b", re.IGNORECASE)
 _MILESTONE_TEST_PREFIX_RE = re.compile(r"^m\d+_", re.IGNORECASE)
 
@@ -129,29 +125,12 @@ def find_drill_doc(drill_id: str, data_root: Path | None = None) -> tuple[dict[s
 
 def _active_tools_lint_dir() -> Path:
     """Resolve `tools/lint` under `LEARNINGOS_ROOT` when present, falling back to `TOOLS_LINT_DIR`."""
-    env_root = os.environ.get("LEARNINGOS_ROOT")
-    if env_root:
-        candidate = Path(env_root).resolve() / "tools" / "lint"
-        if candidate.exists() or candidate.is_symlink():
-            return candidate
-    return TOOLS_LINT_DIR
+    return active_tools_lint_dir(respect_env_root=True)
 
 
 def _resolve_eslint_tools() -> tuple[Path, Path] | None:
     """Return `(base_js, eslint_bin)` for the active lint toolkit, or `None` when not installed."""
-    lint_dir = _active_tools_lint_dir()
-    try:
-        same_as_default = lint_dir.resolve() == TOOLS_LINT_DIR.resolve()
-    except OSError:
-        same_as_default = False
-    if not same_as_default:
-        base_js = lint_dir / "base.js"
-        eslint_bin = lint_dir / "node_modules" / ".bin" / "eslint"
-        return (base_js, eslint_bin) if (base_js.exists() and eslint_bin.exists()) else None
-    try:
-        return get_lint_binaries()
-    except LintToolsMissingError:
-        return None
+    return resolve_eslint_tools(respect_env_root=True, missing_ok=True)
 
 
 def _resolve_eslint_bin() -> Path | None:
@@ -162,8 +141,7 @@ def _resolve_eslint_bin() -> Path | None:
 
 def _resolve_tsc_bin() -> Path | None:
     """Return the active TypeScript compiler (`tsc`) binary path, or `None` when not installed."""
-    tsc_bin = _active_tools_lint_dir() / "node_modules" / ".bin" / "tsc"
-    return tsc_bin if tsc_bin.exists() else None
+    return resolve_tsc_bin(respect_env_root=True, missing_ok=True)
 
 
 def find_problem(drill_doc: dict[str, Any], qid: str) -> dict[str, Any]:
@@ -184,50 +162,20 @@ def lint_workspace_file(
 ) -> list[dict[str, Any]]:
     """Run ESLint on a staged copy of `ws_dir` using a freshly generated trusted config."""
     assert_safe_contained_path(src_file, ws_dir, expect_file=True, label="source file")
-    tools = _resolve_eslint_tools()
-    if tools is None:
-        return []
-    base_js, eslint_bin = tools
-    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
-
-    with create_sandbox_dir(prefix="prg_eslint_") as sbx_str:
-        sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = stage_workspace_copy(ws_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
-        cfg_path = work_dir / "eslint.config.mjs"
-        cfg_path.write_text(build_trusted_eslint_config(base_js, lint_overrides), encoding="utf-8")
-        if src_file.suffix in (".ts", ".tsx"):
-            tsconfig_data = build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=(src_file.suffix == ".tsx"))
-            (work_dir / "tsconfig.json").write_text(json.dumps(tsconfig_data), encoding="utf-8")
-            if src_file.suffix == ".tsx" and shared_modules.is_dir():
-                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-        proc = run_isolated(
-            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", src_file.name],
-            cwd=work_dir,
-            sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
-            use_node_permission=False,
-        )
-    if proc.timed_out:
-        raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
-    if proc.returncode not in (0, 1):
-        raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
-    try:
-        results = json.loads(proc.stdout or "[]")
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"Failed to parse ESLint JSON output: {exc}\n{proc.stdout}") from exc
-
-    findings: list[dict[str, Any]] = []
-    for res in results:
-        for msg in res.get("messages", []):
-            findings.append(
-                {
-                    "file": src_file.name,
-                    "rule": msg.get("ruleId") or "syntax",
-                    "line": int(msg.get("line", 0) or 0),
-                    "message": msg.get("message", ""),
-                }
-            )
-    return findings
+    is_ts = src_file.suffix in (".ts", ".tsx")
+    return run_eslint_sandbox(
+        ws_dir,
+        target_arg=src_file.name,
+        stage_subdir=None,
+        tsconfig_include=("*.ts", "*.tsx") if is_ts else None,
+        jsx=(src_file.suffix == ".tsx"),
+        symlink_node_modules=(src_file.suffix == ".tsx"),
+        file_label_override=src_file.name,
+        lint_overrides=lint_overrides,
+        respect_env_root=True,
+        missing_ok=True,
+        sandbox_prefix="prg_eslint_",
+    )
 
 
 def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> list[dict[str, Any]]:
@@ -235,52 +183,17 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
     assert_safe_contained_path(src_file, ws_dir, expect_file=True, label="source file")
     if environment not in TS_PRESETS and src_file.suffix not in (".ts", ".tsx"):
         return []
-    tsc_bin = _resolve_tsc_bin()
-    if tsc_bin is None:
+    proc = run_tsc_sandbox(
+        ws_dir,
+        include=("*.ts", "*.tsx"),
+        jsx=(environment == "react-dom" or src_file.suffix == ".tsx"),
+        respect_env_root=True,
+        missing_ok=True,
+        sandbox_prefix="prg_tsc_",
+    )
+    if proc is None:
         return []
-
-    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
-    is_jsx = environment == "react-dom" or src_file.suffix == ".tsx"
-    with create_sandbox_dir(prefix="prg_tsc_") as sbx_str:
-        sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = stage_workspace_copy(ws_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
-        tsconfig_path = work_dir / "tsconfig.json"
-        tsconfig_path.write_text(
-            json.dumps(build_trusted_tsconfig(include=("*.ts", "*.tsx"), jsx=is_jsx), indent=2) + "\n",
-            encoding="utf-8",
-        )
-        if shared_modules.is_dir():
-            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-        proc = run_isolated(
-            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path)],
-            cwd=work_dir,
-            sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
-            use_node_permission=False,
-        )
-    if proc.timed_out:
-        return [{"line": 0, "message": f"Typecheck timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"}]
-    if proc.returncode == 0:
-        return []
-
-    diagnostics: list[dict[str, Any]] = []
-    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
-    for line in combined.splitlines():
-        m = _TSC_DIAG_RE.match(line.strip())
-        if not m:
-            continue
-        file_part, line_no, _col, msg = m.groups()
-        if Path(file_part).name == src_file.name:
-            diagnostics.append({"line": int(line_no), "message": msg.strip()})
-
-    if not diagnostics and proc.returncode != 0:
-        # Surface non-file-specific tsconfig/compiler errors if any occurred.
-        raw_errors = [
-            ln.strip() for ln in combined.splitlines() if "error TS" in ln and not _TSC_DIAG_RE.match(ln.strip())
-        ]
-        for err in raw_errors:
-            diagnostics.append({"line": 0, "message": err})
-    return diagnostics
+    return parse_tsc_diagnostics(proc, filter_filename=src_file.name, include_file=False)
 
 
 def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
@@ -384,68 +297,18 @@ def _run_lab_tests(
     force_hidden: bool,
     allowed_test_roots: Sequence[Path] | None = None,
 ) -> list[dict[str, Any]]:
-    if not test_files:
-        return []
-    with create_sandbox_dir(prefix="prg_lab_review_") as sbx_str:
-        sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir, staged_src, staged_tests = stage_lab_copy(
-            cwd,
-            src_dir,
-            test_files,
-            sbx_root / "work",
-            allowed_test_roots=allowed_test_roots,
-        )
-        env_extra = {"LAB_SRC_DIR": str(staged_src.resolve())}
-        if any(f.suffix == ".tsx" for f in staged_tests):
-            shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
-            if shared_modules.is_dir():
-                (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-            return _run_vitest_junit(
-                staged_tests,
-                work_dir,
-                force_hidden=force_hidden,
-                env=env_extra,
-                require_complete=True,
-                sandbox_root=sbx_root,
-            )
-        all_cases: list[dict[str, Any]] = []
-        for tf in staged_tests:
-            node_args: list[str] = []
-            if tf.suffix in (".ts", ".tsx"):
-                node_args.append("--experimental-strip-types")
-            node_args.extend(["--test", "--test-reporter=junit", str(tf.relative_to(work_dir))])
-            proc = run_node_isolated(
-                node_args,
-                cwd=work_dir,
-                sandbox_root=sbx_root,
-                timeout_sec=DEFAULT_TIMEOUT_SEC,
-                env_extra=env_extra,
-            )
-            if proc.timed_out:
-                return [
-                    {
-                        "name": "Lab test timeout",
-                        "passed": False,
-                        "is_hidden": force_hidden,
-                        "failure_msg": f"Execution exceeded {DEFAULT_TIMEOUT_SEC}s limit",
-                    }
-                ]
-            if proc.output_truncated:
-                return [
-                    {
-                        "name": "Lab test output limit exceeded",
-                        "passed": False,
-                        "is_hidden": force_hidden,
-                        "failure_msg": "Execution exceeded output size limit",
-                    }
-                ]
-            file_cases = _parse_completed_junit_run(
-                proc.stdout + "\n" + proc.stderr, proc.returncode, force_hidden=force_hidden
-            )
-            if not file_cases:
-                return []
-            all_cases.extend(file_cases)
-        return all_cases
+    return run_lab_tests(
+        test_files,
+        cwd,
+        src_dir,
+        force_hidden=force_hidden,
+        require_complete=True,
+        allowed_test_roots=allowed_test_roots,
+        sandbox_prefix="prg_lab_review_",
+        tools_lint_dir=_active_tools_lint_dir(),
+        run_node_fn=run_node_isolated,
+        run_vitest_fn=_submit.run_vitest_isolated,
+    )
 
 
 def _lint_lab_src(
@@ -455,101 +318,21 @@ def _lint_lab_src(
     lint_overrides: Sequence[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Run ESLint on a staged copy of `src_dir` with a freshly generated trusted config."""
-    tools = _resolve_eslint_tools()
-    if tools is None:
-        return []
-    base_js, eslint_bin = tools
-    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
-
-    with create_sandbox_dir(prefix="prg_lab_eslint_") as sbx_str:
-        sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = sbx_root / "work"
-        work_dir.mkdir(parents=True, exist_ok=True)
-        staged_src = stage_workspace_copy(src_dir, work_dir / "src", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
-        has_tsx = any(staged_src.rglob("*.tsx"))
-
-        cfg_path = work_dir / "eslint.config.mjs"
-        cfg_path.write_text(build_trusted_eslint_config(base_js, lint_overrides), encoding="utf-8")
-        (work_dir / "tsconfig.json").write_text(
-            json.dumps(build_trusted_tsconfig(include=("src/**/*.ts", "src/**/*.tsx"), jsx=has_tsx), indent=2) + "\n",
-            encoding="utf-8",
-        )
-        if shared_modules.is_dir():
-            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-
-        proc = run_isolated(
-            [str(eslint_bin), "--config", str(cfg_path), "--no-config-lookup", "--format", "json", "src"],
-            cwd=work_dir,
-            sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
-            use_node_permission=False,
-        )
-    if proc.timed_out:
-        raise RuntimeError(f"ESLint timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s")
-    if proc.returncode not in (0, 1):
-        raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
-    results = json.loads(proc.stdout or "[]")
-    findings: list[dict[str, Any]] = []
-    for res in results:
-        file_name = Path(res.get("filePath", "")).name
-        for msg in res.get("messages", []):
-            findings.append(
-                {
-                    "file": file_name,
-                    "rule": msg.get("ruleId") or "syntax",
-                    "line": int(msg.get("line", 0) or 0),
-                    "message": msg.get("message", ""),
-                }
-            )
-    return findings
+    del lab_dir
+    return run_eslint_sandbox(
+        src_dir,
+        lint_overrides=lint_overrides,
+        respect_env_root=True,
+        missing_ok=True,
+        sandbox_prefix="prg_lab_eslint_",
+    )
 
 
 def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]:
     if not (lab_dir / "tsconfig.json").exists() and not any(f.suffix in (".ts", ".tsx") for f in src_files):
         return []
-    tsc_bin = _resolve_tsc_bin()
-    if tsc_bin is None:
-        return []
-    shared_modules = (_active_tools_lint_dir() / "node_modules").resolve()
-    with create_sandbox_dir(prefix="prg_lab_tsc_") as sbx_str:
-        sbx_root = Path(os.path.realpath(sbx_str))
-        work_dir = stage_workspace_copy(lab_dir, sbx_root / "work", ignore_names=UNTRUSTED_TOOL_CONFIG_NAMES)
-        has_tsx = any((work_dir / "src").rglob("*.tsx")) if (work_dir / "src").is_dir() else False
-        tsconfig_path = work_dir / "tsconfig.json"
-        tsconfig_path.write_text(
-            json.dumps(
-                build_trusted_tsconfig(
-                    include=("src/**/*.ts", "src/**/*.tsx", "tests/**/*.test-d.ts"),
-                    jsx=has_tsx,
-                ),
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        if shared_modules.is_dir():
-            (work_dir / "node_modules").symlink_to(shared_modules, target_is_directory=True)
-        proc = run_isolated(
-            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path)],
-            cwd=work_dir,
-            sandbox_root=sbx_root,
-            timeout_sec=DEFAULT_TOOL_TIMEOUT_SEC,
-            use_node_permission=False,
-        )
-    if proc.timed_out:
-        return [{"line": 0, "message": f"Typecheck timed out after {DEFAULT_TOOL_TIMEOUT_SEC}s"}]
-    if proc.returncode == 0:
-        return []
-    diagnostics: list[dict[str, Any]] = []
-    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
-    for line in combined.splitlines():
-        m = _TSC_DIAG_RE.match(line.strip())
-        if m:
-            file_part, line_no, _col, msg = m.groups()
-            diagnostics.append({"file": Path(file_part).name, "line": int(line_no), "message": msg.strip()})
-        elif "error TS" in line:
-            diagnostics.append({"line": 0, "message": line.strip()})
-    return diagnostics
+    proc = run_tsc_sandbox(lab_dir, respect_env_root=True, missing_ok=True, sandbox_prefix="prg_lab_tsc_")
+    return parse_tsc_diagnostics(proc) if proc is not None else []
 
 
 def _run_lab_review_with_source(

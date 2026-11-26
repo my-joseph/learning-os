@@ -691,3 +691,215 @@ def test_review_record_sets_state_score_via_shared_rule(tmp_path, monkeypatch):
     updated, _ = review_record.dispute_finding(did3, "Q01", "U-names", reason="domain term")
     assert updated["verdict"] == "pass"
     assert load_progress(did3)["problems"]["Q01"]["score"] == 1.0
+
+
+def _snapshot_dir_tree(root: Path) -> dict[str, bytes | str]:
+    snap: dict[str, bytes | str] = {}
+    for p in sorted(root.rglob("*")):
+        rel = p.relative_to(root).as_posix()
+        if p.is_symlink():
+            snap[rel] = f"SYMLINK:{p.readlink()}"
+        elif p.is_file():
+            snap[rel] = p.read_bytes()
+        elif p.is_dir():
+            snap[rel] = "DIR"
+    return snap
+
+
+def test_review_run_runner_shapes_and_readonly_workspace_invariants(tmp_path):
+    """Characterization test locking lint/typecheck/test output shapes and zero workspace mutation."""
+    _require_node_and_lint()
+
+    # 1. TypeScript drill workspace: ESLint findings, tsc diagnostics (line/message only), and read-only tree
+    ts_drill = {
+        "drillId": "DRL-PRG-T01-C02-98",
+        "subject": "PRG",
+        "unitCode": "PRG-T01-C02-U01",
+        "chapterCode": "PRG-T01-C02",
+        "topicCode": "PRG-T01",
+        "unitTitle": "TS Characterization",
+        "environment": "typescript-strict",
+        "problems": [
+            {
+                "id": "Q01",
+                "level": 1,
+                "levelLabel": "L1",
+                "category": "Core Skill",
+                "archetype": "problem-solving",
+                "archetypeKey": "prg-c02-primitive-coercion-guard",
+                "entryPoint": "parseRetry",
+                "prompt": "Implement `parseRetry(raw)`.",
+                "starterCode": "export function parseRetry(_raw: string): number { return 0; }\n",
+                "solutionCode": (
+                    "export function parseRetry(raw: string): number {\n"
+                    "  const parsed = Number(raw);\n"
+                    "  return Number.isFinite(parsed) ? parsed : 0;\n"
+                    "}\n"
+                ),
+                "visibleTests": [
+                    {"name": "parses integer", "testCode": "assert.strictEqual(parseRetry('3'), 3);"},
+                ],
+                "hiddenTests": [
+                    {"name": "handles NaN", "testCode": "assert.strictEqual(parseRetry('abc'), 0);"},
+                ],
+                "steps": [{"explain": "Parse and guard finite."}],
+            }
+        ],
+    }
+    data_dir = tmp_path / "drills" / "data" / "PRG-T01-C02"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (data_dir / f"{ts_drill['drillId']}.json").write_text(json.dumps(ts_drill, indent=2), encoding="utf-8")
+    tools_link = tmp_path / "tools"
+    if not tools_link.exists():
+        os.symlink(REPO_ROOT / "tools", tools_link)
+
+    materialize_drill_workspace(ts_drill, root_dir=str(tmp_path))
+    ts_ws = tmp_path / "drills" / "workspace" / ts_drill["drillId"]
+    ts_src = ts_ws / "Q01_parseRetry.ts"
+    ts_src.write_text(
+        "export function parseRetry(raw: string): number {\n"
+        "  raw = raw.trim();\n"
+        "  const wrong: number = raw;\n"
+        "  return wrong;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    before_ts_ws = _snapshot_dir_tree(ts_ws)
+    ts_res = review_run.run_review(ts_drill["drillId"], "Q01")
+    assert _snapshot_dir_tree(ts_ws) == before_ts_ws
+
+    assert ts_res["lint"]
+    for finding in ts_res["lint"]:
+        assert set(finding.keys()) == {"file", "rule", "line", "message"}
+        assert finding["file"] == "Q01_parseRetry.ts"
+        assert isinstance(finding["line"], int)
+    assert any(f["rule"] == "no-param-reassign" for f in ts_res["lint"])
+
+    assert ts_res["typecheck"]
+    for diag in ts_res["typecheck"]:
+        assert set(diag.keys()) == {"line", "message"}
+        assert isinstance(diag["line"], int)
+        assert isinstance(diag["message"], str)
+    assert any("TS2322" in d["message"] for d in ts_res["typecheck"])
+
+    # 2. React DOM drill workspace: read-only tree (no vitest config written in ws_dir)
+    react_component = (
+        "import { useState } from 'react';\n"
+        "export function StepBadge() {\n"
+        "  const [count, setCount] = useState(0);\n"
+        "  return <button onClick={() => setCount((v) => v + 1)}>Step {count}</button>;\n"
+        "}\n"
+    )
+    react_drill = {
+        "drillId": "DRL-PRG-T02-C01-98",
+        "subject": "PRG",
+        "unitCode": "PRG-T02-C01-U01",
+        "chapterCode": "PRG-T02-C01",
+        "topicCode": "PRG-T02",
+        "unitTitle": "React Characterization",
+        "environment": "react-dom",
+        "problems": [
+            {
+                "id": "Q01",
+                "level": 1,
+                "levelLabel": "L1",
+                "category": "Core Skill",
+                "archetype": "problem-solving",
+                "archetypeKey": "prg-c02-primitive-coercion-guard",
+                "entryPoint": "StepBadge",
+                "prompt": "Implement `StepBadge`.",
+                "starterCode": react_component,
+                "solutionCode": react_component,
+                "visibleTests": [
+                    {
+                        "name": "renders initial step",
+                        "testCode": "render(<StepBadge />); assert.equal(screen.getByRole('button').textContent, 'Step 0');",
+                    }
+                ],
+                "hiddenTests": [
+                    {
+                        "name": "increments on click",
+                        "testCode": "const user = userEvent.setup(); render(<StepBadge />); await user.click(screen.getByRole('button')); assert.equal(screen.getByRole('button').textContent, 'Step 1');",
+                    }
+                ],
+                "steps": [{"explain": "Use useState."}],
+            }
+        ],
+    }
+    react_data_dir = tmp_path / "drills" / "data" / "PRG-T02-C01"
+    react_data_dir.mkdir(parents=True, exist_ok=True)
+    (react_data_dir / f"{react_drill['drillId']}.json").write_text(json.dumps(react_drill, indent=2), encoding="utf-8")
+    materialize_drill_workspace(react_drill, root_dir=str(tmp_path))
+    react_ws = tmp_path / "drills" / "workspace" / react_drill["drillId"]
+
+    before_react_ws = _snapshot_dir_tree(react_ws)
+    react_res = review_run.run_review(react_drill["drillId"], "Q01")
+    assert _snapshot_dir_tree(react_ws) == before_react_ws
+    assert react_res["tests"] == {"passed": 2, "total": 2, "failed": []}
+    assert react_res["lint"] == []
+    assert react_res["typecheck"] == []
+
+    # 3. Lab review (TS + lint + tsc errors + read-only lab tree)
+    from tests.test_new_project_lab import _make_fixture_lab
+
+    lab_root_tmp = tmp_path / "lab_char"
+    lab_root_tmp.mkdir(parents=True)
+    lab_dir, _ref_dir, _ = _make_fixture_lab(lab_root_tmp)
+    (lab_dir / "src" / "budget.ts").write_text(
+        "export function consumeRetry(remaining: number, spend: number): number | null {\n"
+        "  remaining = remaining - spend;\n"
+        "  const wrong: number = 'bad';\n"
+        "  return remaining < 0 ? null : wrong;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    before_lab = _snapshot_dir_tree(lab_dir)
+    lab_res = review_run.run_review(lab_dir.name, "M1", labs_root=lab_dir.parent)
+    assert _snapshot_dir_tree(lab_dir) == before_lab
+    assert lab_res["lint"]
+    for finding in lab_res["lint"]:
+        assert set(finding.keys()) == {"file", "rule", "line", "message"}
+    assert any(f["file"] == "budget.ts" and f["rule"] == "no-param-reassign" for f in lab_res["lint"])
+    assert lab_res["typecheck"]
+    for diag in lab_res["typecheck"]:
+        assert set(diag.keys()) == {"file", "line", "message"}
+        assert diag["file"] == "budget.ts"
+    assert any("TS2322" in d["message"] for d in lab_res["typecheck"])
+
+
+def test_review_run_and_submit_reexport_runner_api():
+    from code_engine import submit as submit_mod
+
+    for name in (
+        "lint_workspace_file",
+        "typecheck_workspace_file",
+        "_run_lab_tests",
+        "_lint_lab_src",
+        "_typecheck_lab",
+        "_active_tools_lint_dir",
+        "_resolve_eslint_tools",
+        "_resolve_eslint_bin",
+        "_resolve_tsc_bin",
+        "run_review",
+        "run_review_with_source",
+        "format_summary",
+        "run_node_isolated",
+    ):
+        assert callable(getattr(review_run, name)), f"review_run.{name} missing"
+
+    for name in (
+        "_parse_junit_xml",
+        "_parse_completed_junit_run",
+        "_run_node_junit_cmd",
+        "_run_vitest_junit",
+        "run_tests_junit",
+        "run_node_isolated",
+        "run_vitest_isolated",
+        "extract_qid",
+        "group_cases_by_qid",
+        "evaluate_and_record_submission",
+        "find_repo_root",
+        "resolve_workspace",
+    ):
+        assert callable(getattr(submit_mod, name)), f"submit.{name} missing"
