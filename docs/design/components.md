@@ -38,6 +38,7 @@ The dates record policy approval for these Studio choices.
 | `class-variance-authority` | Component variants | Defines shared variants, including Code Block surfaces and lines. | 2026-11-25 |
 | `clsx`, `tailwind-merge` | Class composition | Power Studio's `cn` helper, which supplies the Code Block registry's `cn` dependency. | 2026-11-25 |
 | [Isometric](https://isometric.buildlab.in) engine (vendored, MIT, Abhishek Mallick) | Interactive isometric line figures | Local copy in `src/lib/isometric/` ported to React 18; Studio-token theme in `src/components/isometric/isometric.css`. **Experimental — not used in drills, unit pages or the main UI until the learner polishes and approves it.** Demos only in `/playground` and its `/playground/[id]` details (Lever, Pulley, Disk method and Cube). | 2026-11-26 |
+| [`matter-js`](https://brm.io/matter-js) (`0.20.0`, MIT) | 2D rigid-body physics | Lazy-loaded via `next/dynamic` (`ssr: false`) on `/playground` and `/playground/collisions` only; custom SVG renderer using Studio/`--iso-*` tokens. **Experimental — Playground only until learner approval.** | 2026-11-26 |
 
 ## Shared UI exports
 
