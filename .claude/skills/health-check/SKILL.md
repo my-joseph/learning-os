@@ -22,7 +22,7 @@ Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local depende
 3. In `practice-studio/`: `npm run lint`, `npm run build`, and `npm run test:telemetry`.
 4. `.venv/bin/python -m code_engine.quality_checks --check-vaults` and `.venv/bin/python -m code_engine.lint_check --all`.
 5. For every `labs/LAB-*/`, run `npm run check:reference`; report each lab result.
-6. Run `.venv/bin/python -m math_engine.variant_bank --check <file> --no-originality` for every `drills/variants/*.json`; run `--coverage <active MTH unit>` for active math units. Summarize only failures and coverage gaps below three.
+6. Run `.venv/bin/python -m math_engine.variant_bank --check <file> --no-originality` for every `drills/variants/*.json`. Run `.venv/bin/python -m math_engine.variant_bank --coverage-gate` for CI readiness and `--coverage <active MTH unit>` for active math units. Summarize only failures and coverage gaps below three.
 7. Run `.venv/bin/python scripts/audit_solution_leaks.py` and `.venv/bin/python scripts/audit_solution_leaks.py --display` separately. The default is the gate; display findings are advisory. Do not quote flagged prompt or answer text.
 8. Query `UNITS_DB` read-only from `id_map.json` for `Status = In progress` (paginate), resolve each unit's parent chapter, and run `.venv/bin/python -m scripts.page_audit <CODE>` for every active unit and parent chapter. Aggregate output in one `logs/page-audit.log`; report counts and only FAIL/WARN pages. If Notion is unavailable, record the check as skipped.
 9. Run `.venv/bin/python -m scripts.issues list`; retain open-issue `id`, `kind`, `severity`, `where`, and one-line `what` in logs. Never include learner progress contents.

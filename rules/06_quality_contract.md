@@ -141,6 +141,7 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 - **Check a math drill draft:** `.venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file <draft.json> --check`
 - **Check a PRG drill draft:** `.venv/bin/python -m code_engine.ai_drill_ingest --check <draft.json>`
 - **Check a math variant bank / coverage:** `.venv/bin/python -m math_engine.variant_bank --check <UNIT>` and `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT>`
+- **Verify CI coverage for math drills** with `.venv/bin/python -m math_engine.variant_bank --coverage-gate`.
 - **Batch quality audit (G5):** `.venv/bin/python -m math_engine.audit`
 - **Skills taxonomy & drill coverage report:** `.venv/bin/python -m scripts.coverage_report`
 - **Run the Python test suite:** `.venv/bin/python -m pytest -n auto -q`
