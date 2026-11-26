@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Matter from "matter-js";
 import { frame } from "@/lib/isometric/entity";
 import { clamp, unproject, type Vec2 } from "@/lib/isometric/iso";
 import { box, cylinder, frustum, rotateX, rotateZ, translate, zToX } from "@/lib/isometric/mesh";
@@ -11,7 +10,6 @@ import { inject } from "@/lib/isometric/styles";
 import {
   cartHeightMeters,
   cartWidthMeters,
-  computeCollisionTheory,
   DEFAULT_COLLISION_INPUT,
   INITIAL_CART1_POS_M,
   INITIAL_CART2_POS_M,
@@ -20,7 +18,6 @@ import {
   MAX_VELOCITY_MPS,
   MIN_MASS_KG,
   MIN_VELOCITY_MPS,
-  TRACK_HALF_SPAN_M,
   VELOCITY_STEP_MPS,
   type CollisionInput,
 } from "@/lib/playground/collisions";
@@ -31,14 +28,13 @@ import {
   TRACK_END_X,
   TRACK_TICKS,
 } from "@/lib/playground/collisionsLayout";
+import {
+  precomputeCollisionRun,
+  type CollisionFrame,
+  type PrecomputedCollisionRun,
+} from "@/lib/playground/collisionsSim";
 import "../isometric/isometric.css";
 import "./collisions.css";
-
-const MATTER_SCALE = 100; // 1 m = 100 Matter units
-const DT_MS = 1000 / 60;
-const VELOCITY_TO_MATTER = MATTER_SCALE * (DT_MS / 1000);
-const POST_COLLISION_TRAVEL_FRAMES = 54; // ~0.9 s after collision so separation/sticking is clearly visible
-const MAX_SIM_FRAMES = 2000;
 
 // Isometric scene world constants (same camera feel as Lever: az = 8°, k = 0.5).
 const TRACK_PAD_X = 4.0;
@@ -58,6 +54,8 @@ export type SimPhase = "ready" | "running" | "paused" | "done";
 export type CollisionSimSnapshot = {
   phase: SimPhase;
   hasCollided: boolean;
+  t: number;
+  frameIndex: number;
   x1: number;
   x2: number;
   v1: number;
@@ -72,174 +70,20 @@ export type CollisionsProps = {
   onInputChange?: (next: CollisionInput) => void;
   selectedCart?: 1 | 2;
   onSelectCart?: (cart: 1 | 2) => void;
+  frameIndex?: number;
+  onFrameIndexChange?: (frameIndex: number) => void;
+  playing?: boolean;
+  onPlayingChange?: (playing: boolean) => void;
+  onRunReady?: (run: PrecomputedCollisionRun) => void;
   onSnapshot?: (snapshot: CollisionSimSnapshot) => void;
-  /** Imperative command token from parent showcase controls. */
-  command?: { type: "play" | "pause" | "reset"; seq: number } | null;
-  /** `"card"` shows a calm click/Enter-to-play figure for the grid; `"detail"` enables cart selection/drag/sliders. */
+  /** `"card"` shows a calm click/Enter-to-play figure for the grid; `"detail"` enables cart selection/drag/scrubbing. */
   interactive?: "card" | "detail";
   className?: string;
 };
 
 type PartId = "cart1" | "cart2";
 
-type SimEngineState = {
-  engine: Matter.Engine;
-  body1: Matter.Body;
-  body2: Matter.Body;
-  hasCollided: boolean;
-  impactX: number | null;
-  postFrames: number;
-  totalFrames: number;
-  measuredV1After: number | null;
-  measuredV2After: number | null;
-  willCollide: boolean;
-  phase: SimPhase;
-};
-
 const roundToStep = (v: number, step: number) => Math.round(v / step) * step;
-
-function createWorld(input: CollisionInput, willCollide: boolean): SimEngineState {
-  // Disable resting-contact suppression so slow closing speeds preserve exact restitution e.
-  (Matter.Resolver as unknown as { _restingThresh: number })._restingThresh = 0;
-
-  const engine = Matter.Engine.create({
-    gravity: { x: 0, y: 0, scale: 0 },
-    positionIterations: 10,
-    velocityIterations: 6,
-  });
-
-  const w1 = cartWidthMeters(input.m1) * MATTER_SCALE;
-  const h1 = cartHeightMeters(input.m1) * MATTER_SCALE;
-  const w2 = cartWidthMeters(input.m2) * MATTER_SCALE;
-  const h2 = cartHeightMeters(input.m2) * MATTER_SCALE;
-
-  const commonBodyOptions: Matter.IChamferableBodyDefinition = {
-    friction: 0,
-    frictionStatic: 0,
-    frictionAir: 0,
-    restitution: input.e,
-    slop: 0,
-    inertia: Infinity,
-  };
-
-  const body1 = Matter.Bodies.rectangle(INITIAL_CART1_POS_M * MATTER_SCALE, 0, w1, h1, {
-    ...commonBodyOptions,
-    label: "cart1",
-  });
-  const body2 = Matter.Bodies.rectangle(INITIAL_CART2_POS_M * MATTER_SCALE, 0, w2, h2, {
-    ...commonBodyOptions,
-    label: "cart2",
-  });
-
-  Matter.Body.setMass(body1, input.m1);
-  Matter.Body.setInertia(body1, Infinity);
-  Matter.Body.setMass(body2, input.m2);
-  Matter.Body.setInertia(body2, Infinity);
-
-  Matter.Body.setVelocity(body1, { x: input.v1 * VELOCITY_TO_MATTER, y: 0 });
-  Matter.Body.setVelocity(body2, { x: input.v2 * VELOCITY_TO_MATTER, y: 0 });
-
-  Matter.Composite.add(engine.world, [body1, body2]);
-
-  const sim: SimEngineState = {
-    engine,
-    body1,
-    body2,
-    hasCollided: false,
-    impactX: null,
-    postFrames: 0,
-    totalFrames: 0,
-    measuredV1After: null,
-    measuredV2After: null,
-    willCollide,
-    phase: "ready",
-  };
-
-  Matter.Events.on(engine, "collisionStart", () => {
-    if (!sim.hasCollided) {
-      sim.hasCollided = true;
-      const rightEdge1 = body1.position.x / MATTER_SCALE + cartWidthMeters(input.m1) / 2;
-      const leftEdge2 = body2.position.x / MATTER_SCALE - cartWidthMeters(input.m2) / 2;
-      sim.impactX = (rightEdge1 + leftEdge2) / 2;
-    }
-  });
-
-  return sim;
-}
-
-function stepSimulationOnce(sim: SimEngineState, input: CollisionInput): boolean {
-  const halfW1 = cartWidthMeters(input.m1) / 2;
-  const halfW2 = cartWidthMeters(input.m2) / 2;
-
-  Matter.Engine.update(sim.engine, DT_MS);
-  sim.totalFrames += 1;
-
-  // Enforce 1D track constraint strictly (no vertical drift or rotation).
-  if (sim.body1.position.y !== 0 || sim.body1.angle !== 0) {
-    Matter.Body.setPosition(sim.body1, { x: sim.body1.position.x, y: 0 });
-    Matter.Body.setAngle(sim.body1, 0);
-  }
-  if (sim.body2.position.y !== 0 || sim.body2.angle !== 0) {
-    Matter.Body.setPosition(sim.body2, { x: sim.body2.position.x, y: 0 });
-    Matter.Body.setAngle(sim.body2, 0);
-  }
-
-  let x1 = sim.body1.position.x / MATTER_SCALE;
-  let x2 = sim.body2.position.x / MATTER_SCALE;
-  const v1 = sim.body1.velocity.x / VELOCITY_TO_MATTER;
-  const v2 = sim.body2.velocity.x / VELOCITY_TO_MATTER;
-
-  if (sim.hasCollided) {
-    sim.postFrames += 1;
-    // Capture post-collision velocity right after collision resolution stabilizes.
-    if (sim.postFrames === 1 || sim.postFrames === 2) {
-      sim.measuredV1After = v1;
-      sim.measuredV2After = v2;
-    }
-  }
-
-  // Stop cleanly at track bumpers without bouncing off boundaries.
-  const hitLeftBumper = x1 - halfW1 <= -TRACK_HALF_SPAN_M;
-  const hitRightBumper = x2 + halfW2 >= TRACK_HALF_SPAN_M;
-  if (hitLeftBumper) {
-    x1 = -TRACK_HALF_SPAN_M + halfW1;
-    Matter.Body.setPosition(sim.body1, { x: x1 * MATTER_SCALE, y: 0 });
-  }
-  if (hitRightBumper) {
-    x2 = TRACK_HALF_SPAN_M - halfW2;
-    Matter.Body.setPosition(sim.body2, { x: x2 * MATTER_SCALE, y: 0 });
-  }
-
-  if (hitLeftBumper || hitRightBumper) {
-    if (sim.hasCollided && sim.measuredV1After === null) {
-      sim.measuredV1After = v1;
-      sim.measuredV2After = v2;
-    }
-    sim.phase = "done";
-    return false;
-  }
-
-  if (sim.hasCollided) {
-    const bothStopped = Math.abs(v1) < 1e-4 && Math.abs(v2) < 1e-4;
-    if ((bothStopped && sim.postFrames >= 24) || sim.postFrames >= POST_COLLISION_TRAVEL_FRAMES) {
-      sim.phase = "done";
-      return false;
-    }
-  } else if (!sim.willCollide) {
-    const bothStopped = Math.abs(v1) < 1e-4 && Math.abs(v2) < 1e-4;
-    if (bothStopped || sim.totalFrames >= 75) {
-      sim.phase = "done";
-      return false;
-    }
-  }
-
-  if (sim.totalFrames >= MAX_SIM_FRAMES) {
-    sim.phase = "done";
-    return false;
-  }
-
-  return true;
-}
 
 const COLLISION_CAMERA = frame({
   az: 8,
@@ -263,13 +107,14 @@ const REST_DOT_PROTO = rotateX(cylinder(0, 0, -0.5, 1.05, 1.0, 12), -Math.PI / 2
 
 function buildCollisionsScene(params: {
   input: CollisionInput;
-  snapshot: CollisionSimSnapshot;
+  frameData: CollisionFrame;
+  hasCollided: boolean;
   impactX: number | null;
   postFrames: number;
   accentCart: 1 | 2 | null;
   interactive: "card" | "detail";
 }): Item[] {
-  const { input, snapshot, impactX, postFrames, accentCart, interactive } = params;
+  const { input, frameData, hasCollided, impactX, postFrames, accentCart, interactive } = params;
   const out: Item[] = [];
   const halfTrackX = TRACK_END_X + TRACK_PAD_X;
 
@@ -340,8 +185,8 @@ function buildCollisionsScene(params: {
 
   // 4. Two carts with cylinder wheels, mass labels, and velocity arrows
   const carts: Array<{ id: 1 | 2; xM: number; mass: number; vel: number }> = [
-    { id: 1, xM: snapshot.x1, mass: input.m1, vel: snapshot.v1 },
-    { id: 2, xM: snapshot.x2, mass: input.m2, vel: snapshot.v2 },
+    { id: 1, xM: frameData.x1, mass: input.m1, vel: frameData.v1 },
+    { id: 2, xM: frameData.x2, mass: input.m2, vel: frameData.v2 },
   ];
 
   let highestCartTopZ = CART_BASE_Z + 15;
@@ -454,8 +299,8 @@ function buildCollisionsScene(params: {
     );
   }
 
-  // 5. Brief impact spark at contact
-  if (snapshot.hasCollided && impactX !== null && postFrames <= 14) {
+  // 5. Brief impact spark at contact (visible at impact frame and for ~0.23 s after)
+  if (hasCollided && impactX !== null && postFrames >= 0 && postFrames <= 14) {
     const ix = impactX * ISO_UNIT;
     const iz = highestCartTopZ + 1.4;
     out.push({
@@ -492,8 +337,12 @@ export function Collisions({
   onInputChange,
   selectedCart: controlledSelected,
   onSelectCart,
+  frameIndex: controlledFrameIndex,
+  onFrameIndexChange,
+  playing: controlledPlaying,
+  onPlayingChange,
+  onRunReady,
   onSnapshot,
-  command,
   interactive = "detail",
   className,
 }: CollisionsProps) {
@@ -517,7 +366,25 @@ export function Collisions({
     [onSelectCart],
   );
 
-  const theory = useMemo(() => computeCollisionTheory(input), [input]);
+  const [internalFrameIndex, setInternalFrameIndex] = useState(0);
+  const rawFrameIndex = controlledFrameIndex ?? internalFrameIndex;
+  const setFrameIndex = useCallback(
+    (next: number) => {
+      if (onFrameIndexChange) onFrameIndexChange(next);
+      else setInternalFrameIndex(next);
+    },
+    [onFrameIndexChange],
+  );
+
+  const [internalPlaying, setInternalPlaying] = useState(false);
+  const playing = controlledPlaying ?? internalPlaying;
+  const setPlaying = useCallback(
+    (next: boolean) => {
+      if (onPlayingChange) onPlayingChange(next);
+      else setInternalPlaying(next);
+    },
+    [onPlayingChange],
+  );
 
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
@@ -529,168 +396,143 @@ export function Collisions({
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Pre-compute all frames synchronously whenever input changes (no rendering during precompute).
+  const run = useMemo(() => precomputeCollisionRun(input), [input]);
+  const lastFrameIndex = Math.max(0, run.frames.length - 1);
+  const frameIndex = clamp(rawFrameIndex, 0, lastFrameIndex);
+  const currentFrame: CollisionFrame = useMemo(
+    () =>
+      run.frames[frameIndex] ?? {
+        t: 0,
+        x1: INITIAL_CART1_POS_M,
+        x2: INITIAL_CART2_POS_M,
+        v1: input.v1,
+        v2: input.v2,
+        p1: input.m1 * input.v1,
+        p2: input.m2 * input.v2,
+        P: input.m1 * input.v1 + input.m2 * input.v2,
+        KE1: 0.5 * input.m1 * input.v1 * input.v1,
+        KE2: 0.5 * input.m2 * input.v2 * input.v2,
+        KE: 0.5 * input.m1 * input.v1 * input.v1 + 0.5 * input.m2 * input.v2 * input.v2,
+      },
+    [frameIndex, input.m1, input.m2, input.v1, input.v2, run.frames],
+  );
+
+  const hasCollided = run.impactFrameIndex !== null && frameIndex >= run.impactFrameIndex;
+  const postFrames = hasCollided && run.impactFrameIndex !== null ? frameIndex - run.impactFrameIndex : 0;
+  const phase: SimPhase = playing
+    ? "running"
+    : frameIndex === 0
+      ? "ready"
+      : frameIndex >= lastFrameIndex
+        ? "done"
+        : "paused";
+
+  const snapshot: CollisionSimSnapshot = useMemo(
+    () => ({
+      phase,
+      hasCollided,
+      t: currentFrame.t,
+      frameIndex,
+      x1: currentFrame.x1,
+      x2: currentFrame.x2,
+      v1: currentFrame.v1,
+      v2: currentFrame.v2,
+      measuredV1After: run.measuredV1After,
+      measuredV2After: run.measuredV2After,
+      reducedMotion,
+    }),
+    [currentFrame.t, currentFrame.v1, currentFrame.v2, currentFrame.x1, currentFrame.x2, frameIndex, hasCollided, phase, reducedMotion, run.measuredV1After, run.measuredV2After],
+  );
+
+  // Notify parent when precomputed run changes and reset uncontrolled playback.
+  useEffect(() => {
+    onRunReady?.(run);
+    if (controlledFrameIndex === undefined) setInternalFrameIndex(0);
+    if (controlledPlaying === undefined) setInternalPlaying(false);
+  }, [controlledFrameIndex, controlledPlaying, onRunReady, run]);
+
+  useEffect(() => {
+    onSnapshot?.(snapshot);
+  }, [onSnapshot, snapshot]);
+
   const stageRef = useRef<HTMLDivElement | null>(null);
   const painterRef = useRef<Painter | null>(null);
-  const simRef = useRef<SimEngineState | null>(null);
   const rafRef = useRef<number>(0);
+  const frameIndexRef = useRef<number>(frameIndex);
+  frameIndexRef.current = frameIndex;
 
   const [hoverCart, setHoverCart] = useState<1 | 2 | null>(null);
   const [focusedCart, setFocusedCart] = useState<1 | 2 | null>(null);
 
-  const [snapshot, setSnapshot] = useState<CollisionSimSnapshot>({
-    phase: "ready",
-    hasCollided: false,
-    x1: INITIAL_CART1_POS_M,
-    x2: INITIAL_CART2_POS_M,
-    v1: input.v1,
-    v2: input.v2,
-    measuredV1After: null,
-    measuredV2After: null,
-    reducedMotion: false,
+  const latestRef = useRef({
+    input,
+    selectedCart,
+    hoverCart,
+    focusedCart,
+    interactive,
+    setInput,
+    selectCart,
+    setFrameIndex,
+    setPlaying,
   });
+  latestRef.current = {
+    input,
+    selectedCart,
+    hoverCart,
+    focusedCart,
+    interactive,
+    setInput,
+    selectCart,
+    setFrameIndex,
+    setPlaying,
+  };
 
-  // Keep latest input/callbacks in refs for Isometric pointer listeners.
-  const latestRef = useRef({ input, selectedCart, hoverCart, focusedCart, interactive, setInput, selectCart });
-  latestRef.current = { input, selectedCart, hoverCart, focusedCart, interactive, setInput, selectCart };
-
-  const emitSnapshot = useCallback(
-    (next: CollisionSimSnapshot) => {
-      setSnapshot(next);
-      onSnapshot?.(next);
-    },
-    [onSnapshot],
-  );
-
-  const stopLoop = useCallback(() => {
+  // Real-time playback across precomputed frames; reduced motion jumps straight to the end.
+  useEffect(() => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
     }
-  }, []);
-
-  const paintScene = useCallback(
-    (
-      snap: CollisionSimSnapshot,
-      sim: SimEngineState | null,
-      curInput: CollisionInput,
-      accentCart: 1 | 2 | null,
-    ) => {
-      const painter = painterRef.current;
-      if (!painter) return;
-      const items = buildCollisionsScene({
-        input: curInput,
-        snapshot: snap,
-        impactX: sim?.impactX ?? null,
-        postFrames: sim?.postFrames ?? 0,
-        accentCart,
-        interactive,
-      });
-      painter.render(COLLISION_CAMERA, items);
-    },
-    [interactive],
-  );
-
-  const syncSnapshotFromSim = useCallback(
-    (sim: SimEngineState, isReduced: boolean): CollisionSimSnapshot => {
-      const next: CollisionSimSnapshot = {
-        phase: sim.phase,
-        hasCollided: sim.hasCollided,
-        x1: sim.body1.position.x / MATTER_SCALE,
-        x2: sim.body2.position.x / MATTER_SCALE,
-        v1: sim.body1.velocity.x / VELOCITY_TO_MATTER,
-        v2: sim.body2.velocity.x / VELOCITY_TO_MATTER,
-        measuredV1After: sim.measuredV1After,
-        measuredV2After: sim.measuredV2After,
-        reducedMotion: isReduced,
-      };
-      emitSnapshot(next);
-      return next;
-    },
-    [emitSnapshot],
-  );
-
-  const resetWorld = useCallback(
-    (nextInput: CollisionInput = input) => {
-      stopLoop();
-      const nextTheory = computeCollisionTheory(nextInput);
-      const nextSim = createWorld(nextInput, nextTheory.willCollide);
-      simRef.current = nextSim;
-      syncSnapshotFromSim(nextSim, reducedMotion);
-    },
-    [input, reducedMotion, stopLoop, syncSnapshotFromSim],
-  );
-
-  // Reinitialize world whenever initial input parameters change.
-  useEffect(() => {
-    resetWorld(input);
-    return () => stopLoop();
-  }, [input, resetWorld, stopLoop]);
-
-  const startPlay = useCallback(() => {
-    let sim = simRef.current;
-    if (!sim || sim.phase === "done") {
-      sim = createWorld(input, theory.willCollide);
-      simRef.current = sim;
-    }
+    if (!playing) return;
 
     if (reducedMotion) {
-      stopLoop();
-      sim.phase = "running";
-      while (stepSimulationOnce(sim, input)) {
-        // Step synchronously to end state under reduced motion.
-      }
-      syncSnapshotFromSim(sim, true);
+      latestRef.current.setFrameIndex(lastFrameIndex);
+      latestRef.current.setPlaying(false);
       return;
     }
 
-    if (sim.phase === "running") return;
-    sim.phase = "running";
-    syncSnapshotFromSim(sim, false);
+    const startIdx = frameIndexRef.current >= lastFrameIndex ? 0 : frameIndexRef.current;
+    if (frameIndexRef.current >= lastFrameIndex) {
+      latestRef.current.setFrameIndex(0);
+    }
 
-    let lastTime = performance.now();
-    let acc = 0;
+    let lastEmitted = startIdx;
+    const startTime = performance.now();
 
     const tick = (now: number) => {
-      const activeSim = simRef.current;
-      if (!activeSim || activeSim.phase !== "running") return;
-      const frameDelta = Math.min(50, Math.max(0, now - lastTime));
-      lastTime = now;
-      acc += frameDelta;
-
-      let keepGoing = true;
-      while (acc >= DT_MS && keepGoing) {
-        keepGoing = stepSimulationOnce(activeSim, input);
-        acc -= DT_MS;
+      const elapsedSec = Math.max(0, (now - startTime) / 1000);
+      const nextIdx = Math.min(lastFrameIndex, startIdx + Math.floor(elapsedSec / run.dtSeconds));
+      if (nextIdx !== lastEmitted) {
+        lastEmitted = nextIdx;
+        latestRef.current.setFrameIndex(nextIdx);
       }
-
-      const nextSnap = syncSnapshotFromSim(activeSim, false);
-      const { hoverCart: h, focusedCart: f, selectedCart: s, interactive: mode } = latestRef.current;
-      const accent = mode === "detail" ? (h ?? f ?? s) : null;
-      paintScene(nextSnap, activeSim, input, accent);
-
-      if (keepGoing && activeSim.phase === "running") {
+      if (nextIdx < lastFrameIndex) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
         rafRef.current = 0;
+        latestRef.current.setPlaying(false);
       }
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [input, paintScene, reducedMotion, stopLoop, syncSnapshotFromSim, theory.willCollide]);
-
-  const pausePlay = useCallback(() => {
-    stopLoop();
-    const sim = simRef.current;
-    if (sim && sim.phase === "running") {
-      sim.phase = "paused";
-      syncSnapshotFromSim(sim, reducedMotion);
-    }
-  }, [reducedMotion, stopLoop, syncSnapshotFromSim]);
-
-  const togglePlayPause = useCallback(() => {
-    if (snapshot.phase === "running") pausePlay();
-    else startPlay();
-  }, [pausePlay, snapshot.phase, startPlay]);
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+    };
+  }, [lastFrameIndex, playing, reducedMotion, run.dtSeconds]);
 
   // Mount Isometric SVG & pointer handler once on the host div.
   useEffect(() => {
@@ -786,21 +628,43 @@ export function Collisions({
     return () => b.dispose();
   }, []);
 
-  // Re-render Isometric SVG whenever state or selection changes.
+  // Re-render Isometric SVG whenever the active frame, input, or selection changes.
   useEffect(() => {
+    const painter = painterRef.current;
+    if (!painter) return;
     const accent = interactive === "detail" ? (hoverCart ?? focusedCart ?? selectedCart) : null;
-    paintScene(snapshot, simRef.current, input, accent);
-  }, [focusedCart, hoverCart, input, interactive, paintScene, selectedCart, snapshot]);
+    const items = buildCollisionsScene({
+      input,
+      frameData: currentFrame,
+      hasCollided,
+      impactX: run.impactX,
+      postFrames,
+      accentCart: accent,
+      interactive,
+    });
+    painter.render(COLLISION_CAMERA, items);
+  }, [currentFrame, focusedCart, hasCollided, hoverCart, input, interactive, postFrames, run.impactX, selectedCart]);
 
-  // Respond to imperative commands from parent showcase controls.
-  const lastSeqRef = useRef<number>(-1);
-  useEffect(() => {
-    if (!command || command.seq === lastSeqRef.current) return;
-    lastSeqRef.current = command.seq;
-    if (command.type === "play") startPlay();
-    else if (command.type === "pause") pausePlay();
-    else if (command.type === "reset") resetWorld(input);
-  }, [command, input, pausePlay, resetWorld, startPlay]);
+  const togglePlayPause = useCallback(() => {
+    if (playing) {
+      setPlaying(false);
+    } else {
+      if (reducedMotion) {
+        setFrameIndex(lastFrameIndex);
+        setPlaying(false);
+        return;
+      }
+      if (frameIndex >= lastFrameIndex) {
+        setFrameIndex(0);
+      }
+      setPlaying(true);
+    }
+  }, [frameIndex, lastFrameIndex, playing, reducedMotion, setFrameIndex, setPlaying]);
+
+  const resetPlayback = useCallback(() => {
+    setPlaying(false);
+    setFrameIndex(0);
+  }, [setFrameIndex, setPlaying]);
 
   const adjustCartVelocity = useCallback(
     (cart: 1 | 2, delta: number) => {
@@ -844,7 +708,7 @@ export function Collisions({
       togglePlayPause();
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
-      resetWorld(input);
+      resetPlayback();
     }
   };
 
@@ -855,7 +719,7 @@ export function Collisions({
       togglePlayPause();
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
-      resetWorld(input);
+      resetPlayback();
     }
   };
 
@@ -866,8 +730,8 @@ export function Collisions({
 
   const ariaLabel =
     interactive === "card"
-      ? `1D elastic collision simulation: Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(snapshot.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(snapshot.v2)} m/s). Click or press Enter to play or replay.`
-      : `1D collision track with Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(snapshot.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(snapshot.v2)} m/s), coefficient of restitution ${input.e.toFixed(2)}.`;
+      ? `1D elastic collision simulation: Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(currentFrame.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(currentFrame.v2)} m/s). Click or press Enter to play or replay.`
+      : `1D collision track at t = ${currentFrame.t.toFixed(2)} s with Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(currentFrame.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(currentFrame.v2)} m/s), coefficient of restitution ${input.e.toFixed(2)}.`;
 
   return (
     <div
@@ -883,15 +747,15 @@ export function Collisions({
       className={`iso-studio-surface iso-figure-box w-full ${className ?? ""}`.trim()}
     >
       <span data-iso-live="" aria-live="polite">
-        {snapshot.hasCollided
-          ? `After collision: Cart 1 ${formatSigned(snapshot.v1)} m/s, Cart 2 ${formatSigned(snapshot.v2)} m/s`
-          : `Ready: Cart 1 ${formatSigned(snapshot.v1)} m/s, Cart 2 ${formatSigned(snapshot.v2)} m/s`}
+        {hasCollided
+          ? `After collision (t = ${currentFrame.t.toFixed(2)} s): Cart 1 ${formatSigned(currentFrame.v1)} m/s, Cart 2 ${formatSigned(currentFrame.v2)} m/s`
+          : `t = ${currentFrame.t.toFixed(2)} s: Cart 1 ${formatSigned(currentFrame.v1)} m/s, Cart 2 ${formatSigned(currentFrame.v2)} m/s`}
       </span>
 
       {interactive === "detail" &&
         ([
-          { id: 1 as const, mass: input.m1, vel: snapshot.v1, inputVel: input.v1 },
-          { id: 2 as const, mass: input.m2, vel: snapshot.v2, inputVel: input.v2 },
+          { id: 1 as const, mass: input.m1, vel: currentFrame.v1, inputVel: input.v1 },
+          { id: 2 as const, mass: input.m2, vel: currentFrame.v2, inputVel: input.v2 },
         ] as const).map(({ id, mass, vel, inputVel }) => (
           <div
             key={id}
