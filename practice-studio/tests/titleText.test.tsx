@@ -198,9 +198,10 @@ const sideHtml = renderToStaticMarkup(
         nextReview: "2026-11-19",
         drillId: backtickDrill.drillId,
         href: `/code/${backtickDrill.drillId}`,
+        masteryCap: { capped: false, reason: "" },
       },
     ]}
-    weakSpotUnits={[]}
+    showMistakes
   />
 );
 assert.match(sideHtml, />this and Binding</);
