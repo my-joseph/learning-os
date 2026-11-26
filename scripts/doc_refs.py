@@ -79,7 +79,6 @@ MEMORY_FREE_DOCS = (
     ".github/pull_request_template.md",
     "tools/agents/README.md",
     "practice-studio/README.md",
-    "math_engine/templates/README.md",
 )
 
 BUILTIN_PYTHON_MODULES = {

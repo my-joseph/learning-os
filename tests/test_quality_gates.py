@@ -11,11 +11,9 @@ import tempfile
 import unittest
 
 from code_engine.answer_check import check_answer as code_check_answer
-from code_engine.generate import generate_drill_set as generate_code_drill_set
 from code_engine.verify import verify_problem as verify_code_problem
 from math_engine.answer_check import check_answer as math_check_answer
 from math_engine.audit import run_audit
-from math_engine.generate import generate_drill_set as generate_math_drill_set
 from math_engine.verify import verify_problem as verify_math_problem
 from quality_rules import (
     QualityError,
@@ -182,62 +180,101 @@ class TestQualityGates(unittest.TestCase):
             check_gate_g4(bad_mcq)
         self.assertEqual(ctx_mcq.exception.gate, "G4")
 
-    def test_5_valid_problems_and_generators_pass_all_gates(self) -> None:
-        """Test 5: Valid problems in Math & Code generators pass G1-G4 and check_answer round-trip."""
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            # 1. Generate Math MTH-T01-C12 drill set
-            mth_geo = generate_math_drill_set(
-                unit_code="MTH-T01-C12",
-                count=5,
-                difficulty="ALL",
-                seed=42,
-                data_root=tmp_dir,
-            )
-            self.assertEqual(len(mth_geo["problems"]), 5)
-            for p in mth_geo["problems"]:
-                self.assertIn("form", p)
-                self.assertIn("fingerprint", p)
-                self.assertIn("qualityGates", p)
-                self.assertTrue(p["qualityGates"]["G1"]["passed"])
-                self.assertTrue(p["qualityGates"]["G2"]["passed"])
-                self.assertTrue(p["qualityGates"]["G3"]["passed"])
-                self.assertTrue(p["qualityGates"]["G4"]["passed"])
-                chk = math_check_answer(p["answerSpec"], p["answerPlain"])
-                self.assertEqual(chk["verdict"], "correct")
+    def test_5_valid_problems_pass_all_gates(self) -> None:
+        """Test 5: Valid inline math and code problems pass G1-G4 verification and check_answer round-trip."""
+        math_problems = [
+            {
+                "id": "Q01",
+                "templateKey": "pythagoras-hypotenuse",
+                "form": "direct",
+                "level": 1,
+                "skill": "GEO-RIGHT-TRIANGLE-HYP",
+                "category": "Core Skill",
+                "prompt": "Find the hypotenuse of a right triangle with legs $3$ and $4$.",
+                "display": r"c = \sqrt{3^2 + 4^2}",
+                "plainText": "sqrt(3^2 + 4^2)",
+                "givens": {"a": 3, "b": 4},
+                "answerSpec": {"type": "number", "value": "5", "forms": ["exact"]},
+                "answerDisplay": "5",
+                "answerPlain": "5",
+                "inputHint": "Enter an exact integer",
+                "checkpointHint": "Square each leg, add them, and take the square root.",
+                "commonTrapTag": "pythagoras-hypotenuse",
+                "trapDerivation": "3 + 4",
+                "verify": {"source": "sqrt(3**2 + 4**2)", "trapValue": "7"},
+                "steps": [
+                    {
+                        "latex": r"c^2 = 3^2 + 4^2 = 25",
+                        "explain": "Sum the squares of the legs.",
+                        "eq": ["3**2 + 4**2", "25"],
+                    },
+                    {"latex": r"c = \sqrt{25} = 5", "explain": "Take the principal square root.", "val": "5"},
+                ],
+            },
+            {
+                "id": "Q02",
+                "templateKey": "complex-add",
+                "form": "direct",
+                "level": 1,
+                "skill": "MTH-COMPLEX-ADDITION",
+                "category": "Core Skill",
+                "prompt": "Compute $(3 + 4i) + (2 - 5i)$ and write the result in standard form $a + bi$.",
+                "display": "(3 + 4i) + (2 - 5i)",
+                "plainText": "(3 + 4i) + (2 - 5i)",
+                "givens": {"a": 3, "b": 4, "c": 2, "d": -5},
+                "answerSpec": {"type": "complex", "value": "5 - I", "forms": ["a+bi"]},
+                "answerDisplay": "5 - i",
+                "answerPlain": "5 - i",
+                "inputHint": "Enter in a + bi form",
+                "checkpointHint": "Combine real parts separately from imaginary parts.",
+                "commonTrapTag": "sign-slip",
+                "trapDerivation": "(3 + 2) + (4 + 5)*I",
+                "verify": {"source": "(3 + 4*I) + (2 - 5*I)", "trapValue": "5 + 9*I"},
+                "steps": [
+                    {"latex": "(3 + 2) + (4 - 5)i", "explain": "Group real and imaginary parts."},
+                    {"latex": "5 - i", "explain": "Simplify each part.", "val": "5 - I"},
+                ],
+            },
+        ]
+        for p in math_problems:
+            verify_math_problem(p)
+            self.assertIn("qualityGates", p)
+            self.assertTrue(p["qualityGates"]["G1"]["passed"])
+            self.assertTrue(p["qualityGates"]["G2"]["passed"])
+            self.assertTrue(p["qualityGates"]["G4"]["passed"])
+            chk = math_check_answer(p["answerSpec"], p["answerPlain"])
+            self.assertEqual(chk["verdict"], "correct")
 
-            # 2. Generate Math MTH-T02-C01-U01 drill set
-            mth_cx = generate_math_drill_set(
-                unit_code="MTH-T02-C01-U01",
-                count=8,
-                difficulty="ALL",
-                seed=101,
-                data_root=tmp_dir,
-            )
-            self.assertEqual(len(mth_cx["problems"]), 8)
-            for p in mth_cx["problems"]:
-                self.assertTrue(p["qualityGates"]["G1"]["passed"])
-                self.assertTrue(p["qualityGates"]["G2"]["passed"])
-                self.assertTrue(p["qualityGates"]["G3"]["passed"])
-                self.assertTrue(p["qualityGates"]["G4"]["passed"])
-                chk = math_check_answer(p["answerSpec"], p["answerPlain"])
-                self.assertEqual(chk["verdict"], "correct")
-
-            # 3. Generate Code PRG-T01-C01 drill set (code-tracing & debugging)
-            prg_js = generate_code_drill_set(
-                unit_code="PRG-T01-C01",
-                count=5,
-                difficulty="ALL",
-                seed=77,
-                data_root=tmp_dir,
-            )
-            self.assertEqual(len(prg_js["problems"]), 5)
-            for p in prg_js["problems"]:
-                self.assertTrue(p["qualityGates"]["G1"]["passed"])
-                self.assertTrue(p["qualityGates"]["G2"]["passed"])
-                self.assertTrue(p["qualityGates"]["G3"]["passed"])
-                self.assertTrue(p["qualityGates"]["G4"]["passed"])
-                chk = code_check_answer(p["answerSpec"], p["answerPlain"])
-                self.assertEqual(chk["verdict"], "correct")
+        code_prob = {
+            "id": "Q01",
+            "templateKey": "scope-trace",
+            "form": "direct",
+            "level": 1,
+            "skill": "PRG-JS-SCOPE-HOISTING-LET",
+            "archetype": "code-tracing",
+            "codeType": "predict-output",
+            "category": "Core Skill",
+            "prompt": "What does the following JavaScript snippet print?",
+            "codeSnippet": "let total = 2;\nfor (let i = 1; i <= 2; i++) {\n  total += i;\n}\nconsole.log(total);",
+            "language": "javascript",
+            "answerSpec": {"type": "predict_output", "tokens": ["5"]},
+            "answerDisplay": "5",
+            "answerPlain": "5",
+            "inputHint": "Enter the logged integer",
+            "checkpointHint": "Trace total after each loop iteration.",
+            "commonTrapTag": "off-by-one",
+            "verify": {"source": "5", "trapValue": "4"},
+            "steps": [
+                {"explain": "Start with total = 2."},
+                {"explain": "Add 1 and 2 across the loop iterations to get 5."},
+            ],
+        }
+        verify_code_problem(code_prob)
+        self.assertTrue(code_prob["qualityGates"]["G1"]["passed"])
+        self.assertTrue(code_prob["qualityGates"]["G2"]["passed"])
+        self.assertTrue(code_prob["qualityGates"]["G4"]["passed"])
+        chk_code = code_check_answer(code_prob["answerSpec"], code_prob["answerPlain"])
+        self.assertEqual(chk_code["verdict"], "correct")
 
     def test_6_retry_exhaustion_reports_most_frequent_gate(self) -> None:
         """Test that 12 failed retries raise QualityError reporting the most frequent failing gate."""
@@ -297,19 +334,6 @@ class TestQualityGates(unittest.TestCase):
 
         self.assertTrue(required_domains.issubset(domains_found))
 
-    def test_9_per_form_level_and_skill(self) -> None:
-        """Test 9: Template declares level and skill per form; scheduler sets active form level/skill."""
-        from math_engine.templates.mth_t01_c12 import TEMPLATES
-
-        pyth_tpl = next(t for t in TEMPLATES if t["key"] == "pythagoras-hypotenuse")
-        self.assertIsInstance(pyth_tpl["forms"], dict)
-        self.assertEqual(pyth_tpl["forms"]["direct"]["level"], 1)
-        self.assertEqual(pyth_tpl["forms"]["direct"]["skill"], "GEO-RIGHT-TRIANGLE-HYP")
-        self.assertEqual(pyth_tpl["forms"]["reverse"]["level"], 2)
-        self.assertEqual(pyth_tpl["forms"]["reverse"]["skill"], "GEO-RIGHT-TRIANGLE-LEG")
-        self.assertEqual(pyth_tpl["forms"]["contextual"]["level"], 2)
-        self.assertEqual(pyth_tpl["forms"]["contextual"]["skill"], "GEO-RIGHT-TRIANGLE-APPLIED")
-
     def test_10_g2_profile_step_ranges_and_l3_trap_retention(self) -> None:
         """Test 10: G2 reads step range from skill profile and strictly enforces L3 trap requirement."""
         # Problem using PRG-ARCH-PROJECT-RATE-LIMITER (profile allows up to 8 steps at L4)
@@ -342,50 +366,6 @@ class TestQualityGates(unittest.TestCase):
             check_gate_g2(prob_l3_no_trap)
         self.assertEqual(ctx.exception.gate, "G2")
         self.assertIn("trap/flaw/debug", str(ctx.exception))
-
-    def test_11_scheduler_round_robin_and_skill_cells(self) -> None:
-        """Test 11: Scheduler round-robins across (template, form), covering all 9 skill cells in MTH-T01-C12."""
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            drill = generate_math_drill_set(
-                unit_code="MTH-T01-C12",
-                count=20,
-                difficulty="ALL",
-                seed=42,
-                data_root=tmp_dir,
-            )
-            problems = drill["problems"]
-            self.assertEqual(len(problems), 20)
-
-            from math_engine.templates.mth_t01_c12 import TEMPLATES as C12_TEMPLATES
-
-            expected_cells = min(20, sum(len(t["forms"]) for t in C12_TEMPLATES))
-            skill_cells = set((p["templateKey"], p["form"], p.get("commonTrapTag")) for p in problems)
-            # All available (template, form, trapTag) combinations in MTH-T01-C12 must be present
-            self.assertGreaterEqual(expected_cells, 9)
-            self.assertEqual(len(skill_cells), expected_cells)
-
-            for p in problems:
-                self.assertIn("skill", p)
-                self.assertIn("form", p)
-                self.assertEqual(p["verificationLevel"], "machine-verified")
-                self.assertEqual(p["qualityGates"]["verificationLevel"], "machine-verified")
-
-    def test_12_accept_template_standard_and_kata_exemption(self) -> None:
-        """Test 12: accept_template evaluates standard templates and respects kata exemptions."""
-        from code_engine.templates.prg_t01_c04 import TEMPLATES as PRG_TPLS
-        from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_TPLS
-        from scripts.accept_template import evaluate_template
-
-        pyth_tpl = next(t for t in MTH_TPLS if t["key"] == "pythagoras-hypotenuse")
-        res_pyth = evaluate_template("MTH-T01-C12", pyth_tpl, is_code=False, n_seeds=50)
-        self.assertTrue(res_pyth["passed"])
-        self.assertFalse(res_pyth["is_exempt"])
-        self.assertGreaterEqual(res_pyth["distinct_skill_cells"], 3)
-
-        kata_tpl = next(t for t in PRG_TPLS if t["key"] == "kata_debounce")
-        res_kata = evaluate_template("PRG-T01-C04", kata_tpl, is_code=True, n_seeds=30)
-        self.assertTrue(res_kata["passed"])
-        self.assertTrue(res_kata["is_exempt"])
 
     def test_13_safe_parse_security_payloads_blocked(self) -> None:
         """Test 13: All malicious / dangerous payloads are blocked with verdict 'invalid input'."""
@@ -521,14 +501,12 @@ class TestQualityGates(unittest.TestCase):
         res_neg_i = check_answer({"type": "complex", "value": "-I"}, "i^23")
         self.assertEqual(res_neg_i["verdict"], "correct")
 
-    def test_16_coverage_report_and_sample_sheet(self) -> None:
-        """Test 16: scripts.coverage_report and scripts.sample_sheet produce valid Markdown."""
+    def test_16_coverage_report(self) -> None:
+        """Test 16: scripts.coverage_report produces valid Markdown without template dependencies."""
         import tempfile
 
         from scripts.coverage_report import generate_coverage_report
-        from scripts.sample_sheet import build_sample_sheet
 
-        # 1. Coverage report written to isolated tempdir
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_cov = os.path.join(tmp_dir, "coverage.md")
             cov_content = generate_coverage_report(output_path=tmp_cov)
@@ -539,21 +517,6 @@ class TestQualityGates(unittest.TestCase):
             self.assertIn("PRG-JS-THIS-BINDING-DEBUG", cov_content)
             self.assertIn("PRG-ARCH-PROJECT-RATE-LIMITER", cov_content)
             self.assertIn("Missing Levels per Domain", cov_content)
-
-        # 2. Sample sheet for math template (cylinder-volume)
-        sheet_cyl = build_sample_sheet("cylinder-volume", seed=42)
-        self.assertIn("Sample Sheet: `cylinder-volume`", sheet_cyl)
-        self.assertIn("Form 1/2: `direct`", sheet_cyl)
-        self.assertIn("Form 2/2: `from-diameter`", sheet_cyl)
-        self.assertIn("GEO-CYLINDER-VOLUME-RADIUS", sheet_cyl)
-        self.assertIn("32 pi", sheet_cyl)
-
-        # 3. Sample sheet for code template (find_bug_this_binding)
-        sheet_code = build_sample_sheet("find_bug_this_binding", seed=42)
-        self.assertIn("Sample Sheet: `find_bug_this_binding`", sheet_code)
-        self.assertIn("PRG-JS-THIS-BINDING-DEBUG", sheet_code)
-        self.assertIn("```javascript", sheet_code)
-        self.assertIn("Canonical Answer", sheet_code)
 
     def test_17_symbolic_expression_large_exponent(self) -> None:
         """Test 17: Symbolic expressions with exponent > 20 like (x+1)**30 evaluate correctly and do not hang."""
@@ -723,74 +686,6 @@ class TestQualityGates(unittest.TestCase):
         r5 = check_answer({"type": "number", "value": "2/3", "tolerance": 0.0001}, "0.667")
         self.assertEqual(r5["verdict"], "incorrect")
 
-    def test_21_calculus_pilot_templates_and_dual_verification(self) -> None:
-        """Test 21: Calculus templates (power rule and chain rule) pass G1-G4, dual verification, and trap check."""
-        import random
-
-        from math_engine.answer_check import check_answer
-        from math_engine.templates.mth_calc_diff import t_diff_chain, t_diff_power
-        from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4
-
-        for seed in range(50):
-            rng = random.Random(seed)
-            # Power rule
-            p_pow = t_diff_power(rng)
-            check_gate_g1(p_pow)
-            check_gate_g2(p_pow)
-            check_gate_g4(p_pow)
-            r_pow_trap = check_answer(p_pow["answerSpec"], p_pow["verify"]["trapValue"])
-            self.assertEqual(r_pow_trap["verdict"], "incorrect", f"Power trap on seed {seed} must be incorrect")
-
-            # Chain rule
-            p_chn = t_diff_chain(rng)
-            check_gate_g1(p_chn)
-            check_gate_g2(p_chn)
-            check_gate_g4(p_chn)
-            r_chn_trap = check_answer(p_chn["answerSpec"], p_chn["verify"]["trapValue"])
-            self.assertEqual(r_chn_trap["verdict"], "incorrect", f"Chain trap on seed {seed} must be incorrect")
-
-    def test_22_auto_discovery_of_new_templates(self) -> None:
-        """Test 22: Auto-discovery dynamically finds newly added template modules without code modifications."""
-        import os
-
-        from math_engine.templates import discover_units, load_unit
-        from scripts.accept_template import get_all_registered_templates
-        from scripts.sample_sheet import load_all_templates
-
-        mock_file = os.path.join("math_engine", "templates", "tmp_mock_unit.py")
-        mock_content = """UNIT = "MTH-MOCK-AUTODISCOVER"
-TEMPLATES = [
-    {
-        "key": "mock-autodiscover-tpl",
-        "level": 1,
-        "skill": "MOCK-SKILL",
-        "forms": {"direct": {"level": 1, "skill": "MOCK-SKILL"}},
-        "build": lambda rng, form=None: {"answerSpec": {"type": "number", "value": "42"}},
-    }
-]
-"""
-        try:
-            with open(mock_file, "w", encoding="utf-8") as f:
-                f.write(mock_content)
-
-            # 1. load_unit finds mock unit via auto-discovery
-            mod = load_unit("MTH-MOCK-AUTODISCOVER")
-            self.assertEqual(getattr(mod, "UNIT", None), "MTH-MOCK-AUTODISCOVER")
-
-            # 2. scripts.accept_template discovers mock template
-            all_accepted = get_all_registered_templates()
-            mock_found_accept = any(tpl["key"] == "mock-autodiscover-tpl" for _, tpl, _ in all_accepted)
-            self.assertTrue(mock_found_accept, "mock-autodiscover-tpl must be discovered by accept_template")
-
-            # 3. scripts.sample_sheet discovers mock template
-            all_sample = load_all_templates()
-            self.assertIn("mock-autodiscover-tpl", all_sample)
-
-        finally:
-            if os.path.exists(mock_file):
-                os.remove(mock_file)
-            discover_units(force_refresh=True)
-
     def test_23_diff_whitelist_and_notion_dry_run(self) -> None:
         """Test 23: User input diff(...) blocked as invalid input; Notion dry-run works without network."""
         from unittest import mock
@@ -836,10 +731,6 @@ TEMPLATES = [
 
     def test_24_gate_g6_formatting_rejects_sloppy_math(self) -> None:
         """Test 24: G6 rejects '+ -', '- -', '+-', '--', '^1', 'x^0', '*1', '1x' and passes clean forms."""
-        import random
-
-        from code_engine.templates import get_all_unit_templates as get_code_units
-        from math_engine.templates import get_all_unit_templates as get_math_units
         from quality_rules import QualityError, check_gate_g6
 
         # 1. Verify that feeding text with sloppy patterns is rejected with QualityError (gate 'G6')
@@ -892,33 +783,8 @@ TEMPLATES = [
             res = check_gate_g6(c, is_code=is_code)
             self.assertTrue(res["passed"])
 
-        # 3. Verify all registered templates x all forms x 50 seeds pass G6
-        for engine, get_units, is_code in [("math", get_math_units, False), ("code", get_code_units, True)]:
-            for ucode, tpls in get_units():
-                for t in tpls:
-                    key = t["key"]
-                    forms = list(t["forms"].keys()) if isinstance(t.get("forms"), dict) else t.get("forms", ["direct"])
-                    for f in forms:
-                        for s in range(1, 51):
-                            rng = random.Random(s * 1000 + 7)
-                            try:
-                                cand = (
-                                    t["build"](rng, form=f)
-                                    if "form" in t["build"].__code__.co_varnames
-                                    else t["build"](rng)
-                                )
-                            except Exception:
-                                continue
-                            cand["id"] = "Q01"
-                            try:
-                                g6_res = check_gate_g6(cand, is_code=is_code)
-                                self.assertTrue(g6_res["passed"])
-                            except QualityError as exc:
-                                self.fail(f"Template {key} [{f}] seed={s} failed G6: {exc.reason}")
-
     def test_25_vector_comparator_and_security(self):
         """Test vector comparator, notation flags, diagnostics, and security parser constraints."""
-        import random
         import time
 
         from math_engine.answer_check import check_answer
@@ -1044,48 +910,38 @@ TEMPLATES = [
         with self.assertRaises(EqualTimeoutError):
             is_equal(heavy_pow, sym_k, timeout=0.5, raise_on_timeout=True)
 
-        # 7. Quality gate evaluation of vector templates across seeds
-        from math_engine.templates.mth_vectors import TEMPLATES as VEC_TEMPLATES
-
-        for tpl in VEC_TEMPLATES:
-            for form_name, finfo in tpl["forms"].items():
-                for seed in range(1, 51):
-                    rng = random.Random(seed * 1000 + 42)
-                    prob = tpl["build"](rng, form=form_name)
-                    prob["id"] = "VEC_Q01"
-                    prob["templateKey"] = tpl["key"]
-                    prob["level"] = finfo.get("level", tpl.get("level", 1))
-                    prob["skill"] = finfo.get("skill", tpl.get("skill", "VEC-ADD-SCALE"))
-                    prob["verificationLevel"] = tpl.get("verificationLevel", "machine-verified")
-
-                    # Verify G1, G2, G4, G6
-                    g1 = check_gate_g1(prob, is_code=False)
-                    self.assertTrue(g1["passed"])
-                    g2 = check_gate_g2(prob)
-                    self.assertTrue(g2["passed"])
-                    g4 = check_gate_g4(prob, is_code=False)
-                    self.assertTrue(g4["passed"])
-                    g6 = check_gate_g6(prob, is_code=False)
-                    self.assertTrue(g6["passed"])
-
-    def test_20_numpy_fallback_vector_generation(self) -> None:
-        """Test 20: Vector template generation succeeds 100% when HAS_NUMPY is False."""
-        import random
-
-        import math_engine.templates.mth_vectors as mv
-
-        orig_has_np = mv.HAS_NUMPY
-        try:
-            mv.HAS_NUMPY = False
-            for tpl in mv.TEMPLATES:
-                for form_name in tpl["forms"].keys():
-                    for seed in range(1, 21):
-                        rng = random.Random(seed * 777)
-                        prob = tpl["build"](rng, form=form_name)
-                        self.assertIn("answerPlain", prob)
-                        self.assertIn("verify", prob)
-        finally:
-            mv.HAS_NUMPY = orig_has_np
+        # 7. Quality gate evaluation of an inline vector problem (G1, G2, G4, G6)
+        vec_prob = {
+            "id": "VEC_Q01",
+            "templateKey": "vector-add-scale",
+            "level": 1,
+            "skill": "VEC-ADD-SCALE",
+            "verificationLevel": "partial",
+            "prompt": r"Compute $2\langle 1, -3 \rangle + \langle 4, 5 \rangle$.",
+            "display": r"2\langle 1, -3 \rangle + \langle 4, 5 \rangle",
+            "plainText": "2*<1, -3> + <4, 5>",
+            "answerSpec": {"type": "vector", "components": [6, -1]},
+            "answerDisplay": r"\langle 6, -1 \rangle",
+            "answerPlain": "<6, -1>",
+            "inputHint": "Enter vector components as <x, y>",
+            "checkpointHint": "Scale each component before adding matching coordinates.",
+            "commonTrapTag": "vector-partial-scale",
+            "verify": {"source": "<6, -1>", "trapValue": "<6, 2>"},
+            "steps": [
+                {
+                    "latex": r"2\langle 1, -3 \rangle = \langle 2, -6 \rangle",
+                    "explain": "Multiply both components by 2.",
+                },
+                {
+                    "latex": r"\langle 2 + 4, -6 + 5 \rangle = \langle 6, -1 \rangle",
+                    "explain": "Add corresponding components.",
+                },
+            ],
+        }
+        self.assertTrue(check_gate_g1(vec_prob, is_code=False)["passed"])
+        self.assertTrue(check_gate_g2(vec_prob)["passed"])
+        self.assertTrue(check_gate_g4(vec_prob, is_code=False)["passed"])
+        self.assertTrue(check_gate_g6(vec_prob, is_code=False)["passed"])
 
     def test_21_vector_variable_and_unicode_brackets(self) -> None:
         """Test 21: Vector checker normalizes Unicode brackets, supports variables, and detects vector for scalar."""
@@ -1213,100 +1069,12 @@ TEMPLATES = [
         res_sq = check_gate_anti_leak(p_sq_pass)
         self.assertTrue(res_sq["passed"])
 
-    def test_26_all_templates_and_forms_ci_pass(self) -> None:
-        """Test 26: All registered templates across math and code units pass G1, G2, G4, G6 with 0 exhausted retries."""
-        import random
-
-        from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4, check_gate_g6
-        from scripts.accept_template import get_all_registered_templates
-
-        all_tpls = get_all_registered_templates()
-        self.assertGreaterEqual(len(all_tpls), 33)
-
-        for unit, tpl, is_code in all_tpls:
-            key = tpl.get("key", "")
-            forms = list(tpl["forms"].keys()) if isinstance(tpl.get("forms"), dict) else tpl.get("forms", ["direct"])
-            for form_name in forms:
-                for seed in range(1, 11):
-                    prob = None
-                    last_err = None
-                    for attempt in range(12):
-                        rng = random.Random(seed * 1000 + attempt * 73 + 42)
-                        try:
-                            if "form" in tpl["build"].__code__.co_varnames:
-                                cand = tpl["build"](rng, form=form_name)
-                            else:
-                                cand = tpl["build"](rng)
-                            cand["id"] = f"{key}_{form_name}_s{seed}"
-                            cand["templateKey"] = key
-                            finfo = (
-                                tpl.get("forms", {}).get(form_name, {}) if isinstance(tpl.get("forms"), dict) else {}
-                            )
-                            cand["level"] = finfo.get("level", tpl.get("level", 1))
-                            cand["skill"] = finfo.get("skill", tpl.get("skill", ""))
-                            cand["verificationLevel"] = tpl.get("verificationLevel", "machine-verified")
-
-                            # Gates check
-                            g1 = check_gate_g1(cand, is_code=is_code)
-                            self.assertTrue(g1["passed"])
-                            g2 = check_gate_g2(cand)
-                            self.assertTrue(g2["passed"])
-                            g4 = check_gate_g4(cand, is_code=is_code)
-                            self.assertTrue(g4["passed"])
-                            g6 = check_gate_g6(cand, is_code=is_code)
-                            self.assertTrue(g6["passed"])
-                            prob = cand
-                            break
-                        except Exception as exc:
-                            last_err = exc
-
-                    self.assertIsNotNone(
-                        prob,
-                        f"Template '{key}' [{form_name}] exhausted 12 retries on seed {seed}: {last_err}",
-                    )
-
-    def test_27_sample_sheet_flaw_forms_and_hints(self) -> None:
-        """Test 27: Sample sheet for find-the-flaw forms displays all student lines, options, and both hint fields."""
-        from scripts.sample_sheet import build_sample_sheet
-
-        # 1. vector-magnitude
-        sheet_vec = build_sample_sheet("vector-magnitude", seed=42)
-        self.assertIn("## Form 3/3: `flaw-distribute-sqrt`", sheet_vec)
-        self.assertIn("### Display & Student Work", sheet_vec)
-        self.assertIn("Line 1:", sheet_vec)
-        self.assertIn("Line 2:", sheet_vec)
-        self.assertIn("Line 3:", sheet_vec)
-        self.assertIn("### Options", sheet_vec)
-        self.assertIn("- `[1]` Line 1", sheet_vec)
-        self.assertIn("- `[2]` Line 2", sheet_vec)
-        self.assertIn("- `[3]` Line 3", sheet_vec)
-        self.assertIn("**Input Hint (`inputHint`)**: `Choose a line`", sheet_vec)
-        self.assertIn("**Checkpoint Hint (`checkpointHint`)**:", sheet_vec)
-        self.assertNotIn("**Checkpoint Hint (`checkpointHint`)**: `(None)`", sheet_vec)
-        self.assertIn("**Anti-Leak Verification**: `PASS", sheet_vec)
-
-        # 2. diff-chain-rule
-        sheet_diff = build_sample_sheet("diff-chain-rule", seed=42)
-        self.assertIn("## Form 3/5: `flaw-line-1`", sheet_diff)
-        self.assertIn("### Display & Student Work", sheet_diff)
-        self.assertIn("Line 1:", sheet_diff)
-        self.assertIn("Line 2:", sheet_diff)
-        self.assertIn("Line 3:", sheet_diff)
-        self.assertIn("### Options", sheet_diff)
-        self.assertIn("- `[1]` Line 1", sheet_diff)
-        self.assertIn("- `[2]` Line 2", sheet_diff)
-        self.assertIn("- `[3]` Line 3", sheet_diff)
-        self.assertIn("**Input Hint (`inputHint`)**: `Choose a line`", sheet_diff)
-        self.assertIn("**Checkpoint Hint (`checkpointHint`)**:", sheet_diff)
-        self.assertNotIn("**Checkpoint Hint (`checkpointHint`)**: `(None)`", sheet_diff)
-        self.assertIn("**Anti-Leak Verification**: `PASS", sheet_diff)
-
     def test_28_contract_references_and_touchpoints_exist(self) -> None:
-        """Test 28: All files, env vars, and CLI modules referenced in 06_template_contract.md exist."""
+        """Test 28: All files and CLI modules referenced in 06_quality_contract.md exist."""
         import importlib
 
         touchpoints = [
-            "rules/06_template_contract.md",
+            "rules/06_quality_contract.md",
             "rules/02_pedagogy.md",
             "rules/00_core.md",
             "skills_taxonomy.json",
@@ -1321,12 +1089,13 @@ TEMPLATES = [
             self.assertTrue(os.path.exists(path), f"Touchpoint file {path} referenced in contract does not exist")
 
         cli_modules = [
-            "scripts.accept_template",
-            "scripts.sample_sheet",
             "scripts.coverage_report",
-            "math_engine.generate",
-            "code_engine.generate",
+            "math_engine.ai_drill_ingest",
+            "math_engine.variant_bank",
+            "math_engine.drill_ids",
             "math_engine.audit",
+            "code_engine.ai_drill_ingest",
+            "code_engine.drill_ids",
         ]
         for mod_name in cli_modules:
             mod = importlib.import_module(mod_name)
@@ -1335,19 +1104,39 @@ TEMPLATES = [
     def test_29_flaw_hint_rejects_spoilers(self) -> None:
         """Test 29: Level 3 Find-the-Flaw hints reject spoiler keywords and line positions."""
         import copy
-        import random
 
-        from math_engine.templates.mth_calc_diff import t_diff_chain
-        from math_engine.templates.mth_vectors import t_vector_magnitude
         from quality_rules import QualityError, check_gate_anti_leak
 
-        rng = random.Random(42)
-        p_vec = t_vector_magnitude(rng, form="flaw-distribute-sqrt")
-        p_diff = t_diff_chain(rng, form="flaw-line-2")
+        p_flaw = {
+            "id": "FLAW_Q01",
+            "level": 3,
+            "form": "diagnose",
+            "prompt": (
+                "A student computed $\\|\\langle 3, 4 \\rangle\\|$ as shown below. Which line is first wrong?\n"
+                "Line 1: $\\|\\langle 3, 4 \\rangle\\| = \\sqrt{3^2 + 4^2}$\n"
+                "Line 2: $= \\sqrt{3^2} + \\sqrt{4^2}$\n"
+                "Line 3: $= 3 + 4 = 7$"
+            ),
+            "answerSpec": {
+                "type": "choice",
+                "options": [
+                    {"id": "1", "label": "Line 1", "provenance": "Correct setup"},
+                    {"id": "2", "label": "Line 2"},
+                    {"id": "3", "label": "Line 3", "trapTag": "magnitude-distribute-sqrt"},
+                ],
+                "correct": "2",
+            },
+            "answerPlain": "2",
+            "inputHint": "Choose a line",
+            "checkpointHint": (
+                "Work through the derivation on scratch paper and compare each line against the line above it."
+            ),
+            "commonTrapTag": "magnitude-distribute-sqrt",
+            "verify": {"flaw": {"values": ["5", "7", "7"], "firstWrong": 2}, "trapValue": "7"},
+        }
 
-        # Clean hints must pass
-        self.assertTrue(check_gate_anti_leak(p_vec)["passed"])
-        self.assertTrue(check_gate_anti_leak(p_diff)["passed"])
+        # Clean process hint must pass
+        self.assertTrue(check_gate_anti_leak(p_flaw)["passed"])
 
         # Spoilers that must be rejected with QualityError G1:
         bad_hints = [
@@ -1358,220 +1147,11 @@ TEMPLATES = [
             "Watch out for a sign slip in the second row.",
         ]
         for bad_h in bad_hints:
-            mut_vec = copy.deepcopy(p_vec)
-            mut_vec["checkpointHint"] = bad_h
+            mut = copy.deepcopy(p_flaw)
+            mut["checkpointHint"] = bad_h
             with self.assertRaises(QualityError, msg=f"Should reject spoiler hint: {bad_h}") as ctx:
-                check_gate_anti_leak(mut_vec)
+                check_gate_anti_leak(mut)
             self.assertEqual(ctx.exception.gate, "G1")
-
-    def test_30_flaw_step_explains_student_error_with_latex(self) -> None:
-        """Test 30: Step at flaw_line in Find-the-Flaw displays the student's flawed LaTeX line."""
-        import random
-
-        from math_engine.templates.mth_calc_diff import t_diff_chain
-        from math_engine.templates.mth_t02_c01_u01 import t_find_flaw
-        from math_engine.templates.mth_vectors import t_vector_magnitude
-
-        # 1. vector-magnitude flaw-distribute-sqrt
-        p_vec = t_vector_magnitude(random.Random(42), form="flaw-distribute-sqrt")
-        explain_vec = p_vec["steps"][1]["explain"]  # flaw_line = 2
-        self.assertIn("\\sqrt{(", explain_vec)
-        self.assertIn("The student wrote", explain_vec)
-
-        # 2. diff-chain-rule flaw-line-1..3
-        for fl in (1, 2, 3):
-            p_diff = t_diff_chain(random.Random(42), form=f"flaw-line-{fl}")
-            explain_diff = p_diff["steps"][fl - 1]["explain"]
-            self.assertIn("The student wrote", explain_diff)
-            self.assertIn("$", explain_diff)
-
-        # 3. complex find-the-flaw flaw-line-1..3
-        for fl in (1, 2, 3):
-            p_cplx = t_find_flaw(random.Random(42), form=f"flaw-line-{fl}")
-            explain_cplx = p_cplx["steps"][fl - 1]["explain"]
-            self.assertIn("The student wrote", explain_cplx)
-            self.assertIn("$", explain_cplx)
-
-    def test_31_cli_templates_and_focus_tag_filtering(self) -> None:
-        """Test 31: generate_drill_set correctly filters by --templates and --focus-tag."""
-        import tempfile
-
-        from math_engine.generate import generate_drill_set
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            old_dry = os.environ.get("NOTION_DRY_RUN")
-            os.environ["NOTION_DRY_RUN"] = "1"
-            try:
-                doc = generate_drill_set(
-                    unit_code="MTH-T02-C01-U01",
-                    count=4,
-                    difficulty="ALL",
-                    seed=42,
-                    templates="multiply,divide-conjugate",
-                    focus_tags="conjugate-denominator",
-                    data_root=tmp_dir,
-                )
-                self.assertEqual(len(doc["problems"]), 4)
-                allowed_keys = {"multiply", "divide-conjugate"}
-                for p in doc["problems"]:
-                    self.assertIn(p["templateKey"], allowed_keys)
-                has_focus = any(p.get("commonTrapTag") == "conjugate-denominator" for p in doc["problems"])
-                self.assertTrue(has_focus, "At least one problem must match focus tag conjugate-denominator")
-            finally:
-                if old_dry is not None:
-                    os.environ["NOTION_DRY_RUN"] = old_dry
-                else:
-                    os.environ.pop("NOTION_DRY_RUN", None)
-
-    def test_32_no_silent_fallback_on_unsupported_difficulty(self) -> None:
-        """Test 32: Generator strictly rejects unsupported difficulty levels rather than silently falling back."""
-        import tempfile
-
-        from math_engine.generate import generate_drill_set
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            old_dry = os.environ.get("NOTION_DRY_RUN")
-            old_pilot = os.environ.get("ENABLE_PILOT_DRILLS")
-            os.environ["NOTION_DRY_RUN"] = "1"
-            os.environ["ENABLE_PILOT_DRILLS"] = "1"
-            try:
-                # MTH-VECTORS currently supports L1, L2, L3 but NOT L4
-                with self.assertRaises(ValueError) as ctx:
-                    generate_drill_set(
-                        unit_code="MTH-VECTORS",
-                        count=3,
-                        difficulty="4",
-                        data_root=tmp_dir,
-                    )
-                self.assertIn("has no templates supporting difficulty level L4", str(ctx.exception))
-                self.assertIn("Cannot silently fallback", str(ctx.exception))
-            finally:
-                if old_dry is not None:
-                    os.environ["NOTION_DRY_RUN"] = old_dry
-                else:
-                    os.environ.pop("NOTION_DRY_RUN", None)
-                if old_pilot is not None:
-                    os.environ["ENABLE_PILOT_DRILLS"] = old_pilot
-                else:
-                    os.environ.pop("ENABLE_PILOT_DRILLS", None)
-
-    def test_33_mth_t01_c12_l3_and_l4_generation(self) -> None:
-        """Test 33: MTH-T01-C12 reliably generates genuine L3 and L4 problems meeting quality gates."""
-        import tempfile
-
-        from math_engine.generate import generate_drill_set
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            old_dry = os.environ.get("NOTION_DRY_RUN")
-            os.environ["NOTION_DRY_RUN"] = "1"
-            try:
-                # Generate Level 4
-                doc_l4 = generate_drill_set(
-                    unit_code="MTH-T01-C12",
-                    count=4,
-                    difficulty="4",
-                    seed=101,
-                    data_root=tmp_dir,
-                )
-                self.assertEqual(len(doc_l4["problems"]), 4)
-                for p in doc_l4["problems"]:
-                    self.assertEqual(p["level"], 4, f"Problem {p['id']} must be Level 4")
-
-                # Generate Level 3
-                doc_l3 = generate_drill_set(
-                    unit_code="MTH-T01-C12",
-                    count=4,
-                    difficulty="3",
-                    seed=202,
-                    data_root=tmp_dir,
-                )
-                self.assertEqual(len(doc_l3["problems"]), 4)
-                for p in doc_l3["problems"]:
-                    self.assertEqual(p["level"], 3, f"Problem {p['id']} must be Level 3")
-            finally:
-                if old_dry is not None:
-                    os.environ["NOTION_DRY_RUN"] = old_dry
-                else:
-                    os.environ.pop("NOTION_DRY_RUN", None)
-
-    def test_34_unknown_difficulty_values_raise_value_error(self) -> None:
-        """Test 34: Unknown difficulty values raise ValueError; valid ALL and 3 work; unsupported level raises ValueError."""
-        import tempfile
-
-        from code_engine.generate import generate_drill_set as generate_code_drill_set
-        from math_engine.generate import generate_drill_set as generate_math_drill_set
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            old_dry = os.environ.get("NOTION_DRY_RUN")
-            old_pilot = os.environ.get("ENABLE_PILOT_DRILLS")
-            os.environ["NOTION_DRY_RUN"] = "1"
-            os.environ["ENABLE_PILOT_DRILLS"] = "1"
-            try:
-                # 1. Unknown difficulty values "1,2" and "foo" raise ValueError in math_engine
-                for bad_diff in ["1,2", "foo"]:
-                    with self.assertRaises(ValueError) as ctx:
-                        generate_math_drill_set(
-                            unit_code="MTH-T02-C01-U01",
-                            count=3,
-                            difficulty=bad_diff,
-                            data_root=tmp_dir,
-                        )
-                    self.assertIn(f"Unknown difficulty '{bad_diff.upper()}'", str(ctx.exception))
-                    self.assertIn("Valid values: ALL, 1, 2, 3, 4", str(ctx.exception))
-
-                # 2. Unknown difficulty values "1,2" and "foo" raise ValueError in code_engine
-                for bad_diff in ["1,2", "foo"]:
-                    with self.assertRaises(ValueError) as ctx:
-                        generate_code_drill_set(
-                            unit_code="PRG-T01-C01",
-                            count=3,
-                            difficulty=bad_diff,
-                            data_root=tmp_dir,
-                        )
-                    self.assertIn(f"Unknown difficulty '{bad_diff.upper()}'", str(ctx.exception))
-                    self.assertIn("Valid values: ALL, 1, 2, 3, 4", str(ctx.exception))
-
-                # 3. Valid "ALL" and "3" still work on units that have them
-                doc_all = generate_math_drill_set(
-                    unit_code="MTH-T01-C12",
-                    count=3,
-                    difficulty="ALL",
-                    seed=42,
-                    data_root=tmp_dir,
-                )
-                self.assertEqual(len(doc_all["problems"]), 3)
-                self.assertEqual(doc_all["config"]["difficulty"], "ALL")
-
-                doc_l3 = generate_math_drill_set(
-                    unit_code="MTH-T01-C12",
-                    count=3,
-                    difficulty="3",
-                    seed=43,
-                    data_root=tmp_dir,
-                )
-                self.assertEqual(len(doc_l3["problems"]), 3)
-                self.assertEqual(doc_l3["config"]["difficulty"], "3")
-                for p in doc_l3["problems"]:
-                    self.assertEqual(p["level"], 3)
-
-                # 4. Unit lacking requested level still raises ValueError as before
-                with self.assertRaises(ValueError) as ctx:
-                    generate_math_drill_set(
-                        unit_code="MTH-VECTORS",
-                        count=3,
-                        difficulty="4",
-                        data_root=tmp_dir,
-                    )
-                self.assertIn("has no templates supporting difficulty level L4", str(ctx.exception))
-            finally:
-                if old_dry is not None:
-                    os.environ["NOTION_DRY_RUN"] = old_dry
-                else:
-                    os.environ.pop("NOTION_DRY_RUN", None)
-                if old_pilot is not None:
-                    os.environ["ENABLE_PILOT_DRILLS"] = old_pilot
-                else:
-                    os.environ.pop("ENABLE_PILOT_DRILLS", None)
 
     def test_17_active_drills_system_certification(self) -> None:
         """Test 17: Certify 100% of active production drills in drills/data meet modern reasoning vault invariants."""

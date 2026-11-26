@@ -182,7 +182,7 @@ def test_ci_detect_triggers_prg_for_migration_and_shared_originality(tmp_path: P
 @pytest.mark.parametrize(
     "changed_path",
     [
-        "math_engine/generate.py",
+        "math_engine/drill_ids.py",
         "drills/data/MTH-T01-C01-U01/DRL-MTH-T01-C01-U01-01.json",
         "math_engine/source_cores/schema.json",
     ],

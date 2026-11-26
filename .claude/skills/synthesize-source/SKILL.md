@@ -93,7 +93,7 @@ Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward c
 
 ## 6. Generate drills (or PRG labs)
 
-- **MTH/PHY:** Hand off to `new-math-drill` (`.claude/skills/new-math-drill/SKILL.md`) targeting the new/extended archetypes, traps, and missing moves (and optional TCAS-style choice sets). After ingest, run `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT>` and fill pairs with `< 3` variants via AI-made variants (`variant_bank --add`; never `--from-templates`).
+- **MTH/PHY:** Hand off to `new-math-drill` (`.claude/skills/new-math-drill/SKILL.md`) targeting the new/extended archetypes, traps, and missing moves (and optional TCAS-style choice sets). After ingest, run `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT>` and fill pairs with `< 3` variants via AI-made variants (`variant_bank --add`).
 - **PRG:** Hand off to `new-code-drill` (`.claude/skills/new-code-drill/SKILL.md`) for unit/chapter drills — or `new-project` (`.claude/skills/new-project/SKILL.md`) for chapter labs / extra projects — targeting the new bug patterns, traps, `QC-*` checks, and missing archetype kinds/levels from step 4. *(Similar/variants for PRG are out of scope and not built yet.)*
 
 ## 7. Originality gate (mandatory)

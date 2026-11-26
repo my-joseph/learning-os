@@ -2,7 +2,7 @@
 
 Source: `pilot/research-2026-11-19/report_th.md` (learner decision 2026-11-19).
 
-**Status:** Phases 1 and 2 are shipped. The Similar strip opens tabs on demand. Template removal is on hold. PR B/C are on hold. Phase 3–5 ideas remain future work and are not active implementation instructions.
+**Status:** Phases 1 and 2 are shipped. The Similar strip opens tabs on demand. Math/PRG template engines were removed in Phase 3 (2026-11-26); drills and Similar variants are AI-only. PR B/C remain on hold. Phase 3–5 ideas remain future work and are not active implementation instructions.
 Rules that still hold: original answers and steps require a substantive check or explicit Skip. Drill files are content only,
 learner state lives in `progress/`, single learner, clean minimal Studio (zinc + indigo, no uppercase).
 
@@ -31,7 +31,7 @@ math steps include an `explain` line; do not rebuild this capability.
 1. **Variant bank** `drills/variants/<UNIT>.json` (content, not learner state): per archetype ≥ 3 verified
    math variants (same archetype + trap, different numbers/context), each with answerSpec, steps, and verify —
    passing the same math ingest gates as drills (`math_engine.ai_drill_ingest --check`).
-   Variants are generated through the current gated workflow (blind-solve, reviewer, and originality). Template removal remains on hold.
+   Variants are generated through the AI gated workflow (blind-solve, reviewer, and originality); template engines have been removed.
 2. **"Try a similar question" (+)** unlocks after a substantive check or Skip in the current cycle. It
    opens the next variant for the current cycle in bank order (preferring variants never served in earlier
    cycles, then wrapping from the first) and is accented after a wrong, assisted, or skipped answer.
