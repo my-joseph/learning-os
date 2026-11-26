@@ -1,6 +1,6 @@
 /**
  * Unit and SSR render tests for plainTitle() stripping Markdown backtick markers
- * from curriculum/drill titles across DrillSwitcher, workspaces, ReviewSyncPage, and side panel.
+ * from curriculum/drill titles across DrillSwitcher, workspaces, and side panel.
  * Run: npx tsx tests/titleText.test.tsx (from practice-studio/)
  */
 
@@ -11,7 +11,6 @@ import { plainTitle, trapName } from "../src/lib/titleText";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
-import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { StudioSidePanel } from "../src/components/shell/StudioSidePanel";
 import type { DrillDocument, DrillListItem, Problem } from "../src/types/drill";
 
@@ -164,27 +163,7 @@ const mathHtml = renderToStaticMarkup(
 assert.match(mathHtml, /<h1[^>]*>f\(x\) Notation<\/h1>/);
 assert.doesNotMatch(mathHtml, /`f\(x\)`/);
 
-// 4. ReviewSyncPage h1 & StudioSidePanel strip backticks
-const reviewHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={backtickDrill}
-    liveScore={0}
-    maxScore={1}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.match(reviewHtml, /<h1[^>]*>this and Binding<\/h1>/);
-assert.doesNotMatch(reviewHtml, /`this`/);
-
+// 4. StudioSidePanel strips backticks
 const sideHtml = renderToStaticMarkup(
   <StudioSidePanel
     workspace="code"

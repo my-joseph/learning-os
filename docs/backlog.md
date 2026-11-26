@@ -29,7 +29,6 @@ Learner decision 2026-11-26: Isometric figures appear only in the Playground at 
 Not installed. When a topic below starts, pilot ONE interactive in the Studio only as an extra beside the static figure: problem figures stay on the shared `MathFigure` spec so the Studio and Notion (`math_engine/figure_svg.py`) match. Each library needs learner approval, a Studio wrapper, token colours, lazy loading and a size check (docs/design/components.md, External libraries).
 
 - **Mafs** (https://mafs.dev, MIT, React >=18, uses KaTeX): coordinate plane, function plots, draggable points, vectors, circles, polygons. First choice for 2D: draggable unit circle (trigonometry), parabola/transform sliders (functions), tangent line and area under a curve (calculus). Could later replace the hand-written `InteractiveCircle2D`, `InteractivePythagoras2D`, `InteractiveTrapezoid2D`. Last release 2025-03.
-- **D3** (https://d3js.org, ISC): low-level data/SVG toolkit (scales, axes, shapes, transitions). Use only for a custom chart or visual nothing else covers (e.g. a Skills Status or progress chart); for math plots prefer Mafs, for dashboards see the chart registries in `pilot/research/shadcn-registry-shortlist.md`.
 - **Matter.js** (https://brm.io/matter-js, MIT): 2D rigid-body physics (gravity, collisions, springs, friction). Candidate for `PHY` units (motion, forces, momentum, energy) as a play-and-observe sandbox; not for MTH.
 - **awesome-interactive-math** (https://github.com/ubavic/awesome-interactive-math): reference list. Worth a look when designing a topic: JSXGraph (interactive geometry and plotting), Mathigon (open-source interactive-course libraries), CindyJS, Desmos API (embed; licence/terms check needed), and examples for inspiration such as *Seeing circles, sines and signals* (trigonometry), *Immersive linear algebra*, *Complex analysis* by Ponce Campuzano (complex numbers, MTH-T02-C01), setosa.io and Bartosz Ciechanowski's articles.
 
@@ -39,6 +38,8 @@ Not installed. When a topic below starts, pilot ONE interactive in the Studio on
 
 ## Resolved
 
+- **Review & Sync Back to drill** (2026-11-26): **Back** returns to the last viewed question or problem in the same drill.
+- **Studio chart library** (2026-11-26): Recharts through shadcn Chart supersedes Chartory and D3 for charts.
 - **Answer diagnostics:** `whole_sign_flip` reserves the `$i^2 = -1$` reminder for complex expressions; `solution_set` sign and missing-root diagnostics use domain-neutral guidance, mentioning both signs only for symmetric roots.
 
 - **T02-C05 (`is_equal` logarithm domain sampling):** `math_engine/answer_check.py`'s `is_equal` skips non-real samples so equivalent log forms (`ln(x^2)` vs `2*ln(x)`, `ln(x)` vs `ln(abs(x))`) compare equal on their shared real domain; `MTH-T02-C05-U01` is active.

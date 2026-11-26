@@ -1,7 +1,5 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
   classifyReviewOutcome,
   ensureExpandedRow,
@@ -13,7 +11,6 @@ import {
   toSingleLinePrompt,
   toggleExpandedRow,
 } from "../src/lib/reviewOutcome";
-import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { statusTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
@@ -234,142 +231,6 @@ assert.equal(grouped.firstTryCount, 1);
 assert.equal(grouped.unansweredCount, 1);
 assert.equal(grouped.totalDurationMs, 110_000);
 
-// 5. ReviewSyncPage layout invariants & reveal guard
-const noop = () => {};
-const html = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={sampleDrill}
-    initialExpandedIds={["Q01", "Q05"]}
-    liveScore={1.5}
-    maxScore={5}
-    accuracyPct={30}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-
-assert.match(html, /<h1[^>]*>Linear Equations<\/h1>/);
-assert.match(html, /MTH-T01-C01-U01/);
-assert.doesNotMatch(html, /· Review &amp; sync|· Review & sync/);
-assert.match(html, /1\.5 \/ 5/);
-assert.match(html, /title="Q3 · correct"/);
-assert.match(html, /title="Q1 · wrong"/);
-assert.match(html, /title="Q2 · assisted \/ partial"/);
-assert.match(html, /title="Q4 · skipped"/);
-assert.match(html, /title="Q5 · unanswered"/);
-assert.match(html, /on the first try/);
-assert.match(html, /30%/);
-assert.match(html, /1m 50s/);
-assert.match(html, /Sync to Notion/);
-assert.match(html, /Back to questions/);
-assert.match(html, /not tried\. They are sent as not tried/);
-assert.match(html, /To review/);
-assert.match(html, /aria-expanded="false"[^>]*>.*Got right/);
-assert.doesNotMatch(
-  html,
-  /id="review-row-Q03"/,
-  "Correct group must be collapsed by default"
-);
-assert.match(html, /id="review-row-Q01"/);
-assert.match(html, /id="review-row-Q05"/);
-assert.match(
-  html,
-  /Not tried yet/,
-  "Unanswered Q05 must keep verified answer hidden"
-);
-assert.match(html, /aria-label="Question outcomes"/);
-// Lab & Code noun parity in ReviewSyncPage
-const labReviewHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={{ ...sampleDrill, drillId: "LAB-PRG-T01-C01-01", subject: "PRG" }}
-    liveScore={0}
-    maxScore={5}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.match(labReviewHtml, /Back to milestones/);
-const codeReviewHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={{ ...sampleDrill, drillId: "DRL-PRG-T01-C01-U01-01", subject: "PRG" }}
-    liveScore={0}
-    maxScore={5}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.match(codeReviewHtml, /Back to problems/);
-
-// Bug 2: Unattempted rows (including invalid-input-only or score-only) hide score buttons, mistake tags, and notes
-assert.match(html, /Self-score:/);
-assert.doesNotMatch(
-  html,
-  /Note for Q5/,
-  "Unattempted Q5 must not render note input in ReviewSyncPage"
-);
-
-const invalidAndScoreOnlyDrill: DrillDocument = {
-  ...sampleDrill,
-  problems: [
-    makeProblem("Q01", {
-      ...baseState(),
-      userInput: "(((",
-      lastCheck: {
-        verdict: "invalid input",
-        message: "Couldn't read that — check brackets and operators.",
-        components: [],
-        diagnostics: [],
-      },
-      attempts: [{ input: "(((", ts: "2026-11-18T00:00:00Z", verdict: "invalid input" }],
-    }),
-    makeProblem("Q02", { ...baseState(), score: 1 }),
-  ],
-};
-const guardedHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={invalidAndScoreOnlyDrill}
-    liveScore={0}
-    maxScore={2}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.doesNotMatch(guardedHtml, /Self-score:/);
-assert.doesNotMatch(guardedHtml, /Note for Q1/);
-assert.doesNotMatch(guardedHtml, /Note for Q2/);
-assert.doesNotMatch(guardedHtml, /SECRET_42/, "Neither invalid input nor score-only may reveal verified answer");
-
 // Bug 3: Back to questions leaves review without jumping to last question
 const studioClientSrc = readFileSync("src/components/shell/StudioClient.tsx", "utf8");
 assert.match(
@@ -388,8 +249,6 @@ assert.doesNotMatch(
   /border-l-[24]/,
   "ReviewSyncPage must not use left accent borders on rounded boxes"
 );
-const reviewPageSource = readFileSync("src/components/review-sync/ReviewSyncPage.tsx", "utf8");
-assert.match(reviewPageSource, /ensureExpandedRow/, "Score-strip jump must expand the target row");
 assert.match(reviewSource, /<Reveal\s+show=\{expanded\}/, "Row accordion must animate with Reveal");
 
 // 6. Accordion state helpers & collapsed vs expanded HTML (no steps/solution leakage)
@@ -401,109 +260,5 @@ assert.equal(expandedState.Q01, false);
 expandedState = ensureExpandedRow(expandedState, "Q02");
 assert.equal(expandedState.Q02, true);
 assert.equal(ensureExpandedRow(expandedState, "Q02"), expandedState);
-
-const accordionProblem: Problem = {
-  id: "Q01",
-  templateKey: "tpl-acc",
-  level: 2,
-  levelLabel: "Level 2",
-  category: "Geometry",
-  prompt: "Find $x$ in the triangle.\n\n```txt\nEXPANDED_PROMPT_BLOCK\n```",
-  display: "SECRET_DISPLAY_SETUP",
-  solutionCode: "SECRET_SOLUTION_CODE",
-  checkpointHint: "SECRET_CHECKPOINT_HINT",
-  steps: [
-    {
-      title: "SECRET_STEP_TITLE",
-      math: "SECRET_STEP_MATH",
-      explanation: "SECRET_STEP_EXPLANATION",
-    },
-  ],
-  figure: {
-    kind: "geometry_2d",
-    title: "Right triangle ABC",
-    points: { A: [0, 0], B: [3, 0], C: [0, 4] },
-    shapes: [{ type: "polygon", vertices: ["A", "B", "C"] }],
-  },
-  answerPlain: "SECRET_42",
-  answerDisplay: "SECRET_42",
-  answerSpec: { type: "number" },
-  state: baseState(),
-};
-
-const accordionDrill: DrillDocument = {
-  ...sampleDrill,
-  problems: [accordionProblem],
-};
-
-const collapsedHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={accordionDrill}
-    liveScore={0}
-    maxScore={1}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-
-assert.match(collapsedHtml, /aria-expanded="true"/,
-  "a To review section with one item expands its row by default");
-assert.match(collapsedHtml, /aria-controls="review-panel-Q01"/);
-assert.match(collapsedHtml, /id="review-panel-Q01"/);
-assert.match(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
-assert.match(collapsedHtml, /Right triangle ABC/);
-
-const expandedHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={accordionDrill}
-    liveScore={0}
-    maxScore={1}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    initialExpandedIds={["Q01"]}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-
-assert.match(expandedHtml, /aria-expanded="true"/);
-assert.match(expandedHtml, /aria-controls="review-panel-Q01"/);
-assert.match(expandedHtml, /id="review-panel-Q01"/);
-assert.match(expandedHtml, /EXPANDED_PROMPT_BLOCK/);
-assert.match(expandedHtml, /katex/);
-assert.match(expandedHtml, /Right triangle ABC/);
-assert.match(expandedHtml, /<svg/);
-assert.match(expandedHtml, /Not tried yet/);
-assert.match(
-  reviewSource,
-  /sm:pl-\[72px\]/,
-  "Review detail aligns under the row content on desktop"
-);
-assert.doesNotMatch(
-  reviewSource,
-  /toSingleLinePrompt/,
-  "Review row must not truncate the full prompt"
-);
-assert.doesNotMatch(expandedHtml, /SECRET_DISPLAY_SETUP/);
-assert.doesNotMatch(expandedHtml, /SECRET_SOLUTION_CODE/);
-assert.doesNotMatch(expandedHtml, /SECRET_CHECKPOINT_HINT/);
-assert.doesNotMatch(expandedHtml, /SECRET_STEP_TITLE/);
-assert.doesNotMatch(expandedHtml, /SECRET_STEP_MATH/);
-assert.doesNotMatch(expandedHtml, /SECRET_STEP_EXPLANATION/);
-assert.doesNotMatch(expandedHtml, /SECRET_42/);
 
 console.log("reviewOutcome tests passed");

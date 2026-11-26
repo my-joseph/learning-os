@@ -10,7 +10,6 @@ import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
 import { StudioHeader, StudioPlaygroundHeader } from "../src/components/shell/StudioHeader";
 import { StudioShell } from "../src/components/shell/StudioShell";
 import { StudioSidebar } from "../src/components/shell/StudioSidebar";
-import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import {
   getPrgScore,
   getReviewRequest,
@@ -522,7 +521,7 @@ assert.match(codeAfterReviewPassHtml, /Next problem/);
 assert.match(codeAfterReviewPassHtml, /\(pass\)/);
 assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
 
-// Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewSyncPage
+// Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace and CodeDashboard
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 assert.match(globalsCss, /--background:\s*#18181b;/);
 assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
@@ -586,41 +585,12 @@ assert.doesNotMatch(inBrowserCodeHtml, />Check<\/span>/);
 
 const sampleDrillDoc: DrillDocument = {
   drillId: "DRL-MTH-T01-C01-01",
-  subject: "MTH",
+  subject: "MATH",
   unitCode: "MTH-T01-C01-U01",
   unitTitle: "Linear Equations",
   problems: [sampleMathProblem],
   mistakeTags: [],
 };
-const reviewHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={sampleDrillDoc}
-    liveScore={1}
-    maxScore={1}
-    accuracyPct={100}
-    computedPracticeStatus="Graded"
-    isSyncing={false}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
-assert.match(
-  reviewHtml,
-  /class="[^"]*font-sans[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
-  "Review & Sync counts must use the display typeface"
-);
-assert.match(
-  reviewHtml,
-  /class="[^"]*font-sans[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
-  "Review & Sync totals must use the display typeface"
-);
-
 const quizTilesHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PenLine } from "lucide-react";
+import { PenLine, RotateCcw } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { Button } from "@/components/ui/shadcn/Button";
 import { Input } from "@/components/ui/shadcn/Input";
@@ -24,6 +24,8 @@ export interface ProblemSelfEvalProps {
   onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
+  revisitNote?: string;
+  onRevisitNoteChange?: (note: string) => void;
 }
 
 const SELF_SCORE_BUTTONS = [
@@ -59,6 +61,8 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
   onSetScore,
   onToggleMistakeTag,
   onMistakeNoteChange,
+  revisitNote,
+  onRevisitNoteChange,
 }) => {
   if (!hasAttempt) {
     return null;
@@ -117,19 +121,56 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
         )}
       </div>
 
-      <div className="flex items-center gap-space-2 bg-surface-panel dark:bg-surface-raised border border-border rounded-xl px-space-3 py-space-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 dark:focus-within:ring-accent/25">
-        <PenLine className="size-space-3_5 text-muted shrink-0" />
-        <Input
-          type="text"
-          variant="embedded"
+      <NoteField
+        icon={PenLine}
+        label={noteAriaLabel}
+        placeholder="Note what went wrong (optional)…"
+        value={mistakeNote}
+        disabled={disabled}
+        onChange={onMistakeNoteChange}
+      />
+      {onRevisitNoteChange && (
+        <NoteField
+          icon={RotateCcw}
+          label="Revisit note"
+          placeholder="Next time I will…"
+          value={revisitNote}
           disabled={disabled}
-          value={mistakeNote || ""}
-          onChange={(e) => onMistakeNoteChange(e.target.value)}
-          aria-label={noteAriaLabel}
-          placeholder="Note what went wrong (optional)…"
-          className="text-xs"
+          onChange={onRevisitNoteChange}
         />
-      </div>
+      )}
     </div>
   );
 };
+
+function NoteField({
+  icon: Icon,
+  label,
+  placeholder,
+  value,
+  disabled,
+  onChange,
+}: {
+  icon: typeof PenLine;
+  label: string;
+  placeholder: string;
+  value?: string;
+  disabled: boolean;
+  onChange: (note: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-space-2 bg-surface-panel dark:bg-surface-raised border border-border rounded-xl px-space-3 py-space-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 dark:focus-within:ring-accent/25">
+      <Icon aria-hidden="true" className="size-space-3_5 text-muted shrink-0" />
+      <Input
+        type="text"
+        variant="embedded"
+        disabled={disabled}
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
+        placeholder={placeholder}
+        className="text-xs"
+      />
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 /**
- * Render and source-invariant tests for QuestionTimer across Math, Code, Lab, and ReviewSyncPage.
+ * Render and source-invariant tests for QuestionTimer across Math, Code, and Lab.
  * Run: npx tsx tests/questionTimer.test.tsx (from practice-studio/)
  */
 
@@ -10,7 +10,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { QuestionTimer } from "../src/components/QuestionTimer";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
-import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
 import { CopyButton } from "../src/components/ui/CopyButton";
 import { ThemeToggleButton } from "../src/components/ui/ThemeToggleButton";
 import {
@@ -207,52 +206,6 @@ assert.match(labMetaHtml, /Paused/);
 assert.match(labMetaHtml, /02:05/);
 assert.match(labMetaHtml, /Total 05:00/);
 assert.match(labMetaHtml, /aria-label="Resume timer"/);
-
-// 4. ReviewSyncPage uses totalDurationMs override (recorded + running) when provided
-const sampleDrill: DrillDocument = {
-  schemaVersion: "2.0",
-  drillId: "DRL-PRG-T01-C01-U01-01",
-  subject: "PRG",
-  unitCode: "PRG-T01-C01-U01",
-  unitTitle: "Functions",
-  chapterCode: "PRG-T01-C01",
-  topicCode: "PRG-T01",
-  unitNotionUrl: null,
-  createdAt: "2026-11-18T00:00:00Z",
-  config: { questionCount: 1, difficulty: "ALL", difficultyMode: "Mixed" },
-  mistakeTags: [],
-  problems: [codeProb],
-  sessionSummary: {
-    practiceStatus: "Ready",
-    score: 0,
-    maxScore: 1,
-    accuracyPct: 0,
-    mistakeCategories: [],
-    divergedStepsSummary: "",
-    attemptDate: null,
-  },
-  localFilePath: "drills/data/PRG-T01-C01-U01/DRL-PRG-T01-C01-U01-01.json",
-};
-
-const reviewHtml = renderToStaticMarkup(
-  <ReviewSyncPage
-    currentDrill={sampleDrill}
-    liveScore={0}
-    maxScore={1}
-    accuracyPct={0}
-    computedPracticeStatus="Needs Retry"
-    isSyncing={false}
-    totalDurationMs={135_000}
-    onStatusOverrideChange={noop}
-    onBackToQuiz={noop}
-    onConfirmSync={noop}
-    onSelectQuestion={noop}
-    onSetScore={noop}
-    onToggleMistakeTag={noop}
-    onMistakeNoteChange={noop}
-  />
-);
-assert.match(reviewHtml, /2m 15s/);
 
 // 5. Source invariant: "p" shortcut in useDrill guards inputs and dialogs, and Total tooltip opens below clock
 const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");

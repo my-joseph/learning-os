@@ -14,6 +14,10 @@ const ReviewSyncPage = dynamic(
   () => import("@/components/review-sync/ReviewSyncPage").then((mod) => mod.ReviewSyncPage),
   { ssr: false }
 );
+const LabReviewPage = dynamic(
+  () => import("@/components/review-sync/LabReviewPage").then((mod) => mod.LabReviewPage),
+  { ssr: false }
+);
 import { StudioShell } from "@/components/shell/StudioShell";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -466,6 +470,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onSetScore={(score) => handleSetScore(prob.id, score)}
                   onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                   onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
+                  onRevisitNoteChange={(note) => handleRevisitNoteChange(prob.id, note)}
                   onResetProblem={() => handleResetProblem(prob.id)}
                   onHintRevealed={() => handleHintRevealed(prob.id)}
                   onSetupRevealed={() => handleSetupRevealed(prob.id)}
@@ -511,6 +516,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 onTestReportChange={(rep, score) => handleTestReportChange(prob.id, rep, score)}
                 onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
+                onRevisitNoteChange={(note) => handleRevisitNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}
                 onHintRevealed={() => handleHintRevealed(prob.id)}
                 onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
@@ -533,7 +539,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           initial="hidden"
           animate="shown"
         >
-          <ReviewSyncPage
+          {isLabId(currentDrill.drillId) ? <LabReviewPage
             currentDrill={currentDrill}
             statusOverride={statusOverride}
             isSyncing={isSyncing}
@@ -550,7 +556,14 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             onMistakeNoteChange={handleMistakeNoteChange}
             onRevisitNoteChange={handleRevisitNoteChange}
             onSelectDrill={handleSelectDrill}
-          />
+          /> : <ReviewSyncPage
+            currentDrill={currentDrill}
+            statusOverride={statusOverride}
+            isSyncing={isSyncing}
+            syncState={syncState}
+            onBackToQuiz={() => setViewMode("quiz")}
+            onConfirmSync={handleConfirmSyncToNotion}
+          />}
         </m.div>
       )}
       {(() => {

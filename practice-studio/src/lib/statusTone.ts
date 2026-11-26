@@ -11,6 +11,8 @@
 export type StatusTone = "correct" | "assisted" | "wrong" | "skipped" | "notTried";
 
 export interface StatusToneRecipe {
+  /** CSS colour for chart fills or outlines. */
+  chartColor: string;
   /** Filled/outlined circle for Stepper steps (includes group-hover). */
   solidCircle: string;
   /** Compact 16px status mark for SimilarTabStrip (no hover). */
@@ -60,6 +62,7 @@ type StatusToneRecipes = {
 
 export const statusTone: StatusToneRecipes = {
   correct: {
+    chartColor: "rgb(var(--status-correct))",
     solidCircle:
       "bg-status-correct border-status-correct text-status-on-correct group-hover:brightness-95 dark:group-hover:brightness-110",
     tabMark: "bg-status-correct text-status-on-correct",
@@ -75,6 +78,7 @@ export const statusTone: StatusToneRecipes = {
     border: "border-status-correct-text",
   },
   assisted: {
+    chartColor: "rgb(var(--status-assisted))",
     // Correct with help / after a wrong try / partial: same green as correct, but an
     // OUTLINE with no fill (learner 2026-11-19). Tune via --status-assisted in globals.css.
     solidCircle:
@@ -92,6 +96,7 @@ export const statusTone: StatusToneRecipes = {
   },
 
   wrong: {
+    chartColor: "rgb(var(--status-wrong))",
     solidCircle:
       "bg-status-wrong border-status-wrong text-status-on-wrong group-hover:brightness-95 dark:group-hover:brightness-110",
     tabMark: "bg-status-wrong text-status-on-wrong",
@@ -110,6 +115,7 @@ export const statusTone: StatusToneRecipes = {
     hoverBorderSoft: "hover:border-status-wrong/40",
   },
   skipped: {
+    chartColor: "rgb(var(--status-skipped))",
     solidCircle:
       "border-dashed border-status-skipped bg-surface-raised text-muted group-hover:border-muted",
     tabMark: "border-status border-dashed border-status-skipped",
@@ -120,6 +126,7 @@ export const statusTone: StatusToneRecipes = {
     tile: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-dashed border-status-skipped",
   },
   notTried: {
+    chartColor: "rgb(var(--status-neutral))",
     solidCircle:
       "border-status-neutral bg-surface-raised text-muted group-hover:border-muted",
     tabMark: "border-status border-status-skipped",

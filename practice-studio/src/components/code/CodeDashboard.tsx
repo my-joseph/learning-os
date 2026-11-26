@@ -90,6 +90,7 @@ export interface CodeDashboardProps {
   onTestReportChange?: (report: TestRunReport, score?: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
+  onRevisitNoteChange?: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
   onSolutionRevealed?: () => void;
@@ -152,6 +153,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   onTestReportChange,
   onToggleMistakeTag,
   onMistakeNoteChange,
+  onRevisitNoteChange,
   onResetProblem,
   onHintRevealed,
   onSolutionRevealed,
@@ -1302,6 +1304,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           onSetScore={onSetScore}
           onToggleMistakeTag={onToggleMistakeTag}
           onMistakeNoteChange={onMistakeNoteChange}
+          revisitNote={problem.state.revisitNote}
+          onRevisitNoteChange={onRevisitNoteChange}
         />
       </article>
 
