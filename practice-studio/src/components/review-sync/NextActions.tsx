@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type {
   NextDrillSuggestion,
   ProblemJumpTarget,
@@ -24,7 +24,6 @@ export interface NextActionsProps {
   primary: boolean;
   onOpenItem?: (index: number) => void;
   onSelectDrill?: (drillId: string) => void;
-  onGenerate?: () => void;
 }
 
 interface ActionDescriptor {
@@ -32,7 +31,7 @@ interface ActionDescriptor {
   label: React.ReactNode;
   href?: string;
   onClick?: () => void;
-  icon?: "plus" | "arrow";
+  icon?: "arrow";
 }
 
 const PRIMARY_CLS =
@@ -54,7 +53,6 @@ export const NextActions: React.FC<NextActionsProps> = ({
   primary,
   onOpenItem,
   onSelectDrill,
-  onGenerate,
 }) => {
   const dailyReviewAction: ActionDescriptor | null =
     dueReviewCount > 0
@@ -101,7 +99,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
         }
       : null;
 
-  const nextOrGenerateAction: ActionDescriptor | null = nextDrill
+  const nextDrillAction: ActionDescriptor | null = nextDrill
     ? {
         key: `next-${nextDrill.drillId}`,
         label: <span className="truncate max-w-[240px]">Next drill: {nextDrill.title}</span>,
@@ -109,28 +107,21 @@ export const NextActions: React.FC<NextActionsProps> = ({
         onClick: onSelectDrill ? () => onSelectDrill(nextDrill.drillId) : undefined,
         icon: "arrow",
       }
-    : onGenerate
-    ? {
-        key: "generate-drill",
-        label: <span>Generate a drill</span>,
-        onClick: onGenerate,
-        icon: "plus",
-      }
     : null;
 
   const actions: ActionDescriptor[] = [];
   if (allCorrect && !isCapped) {
     if (l4Action) actions.push(l4Action);
     if (dailyReviewAction) actions.push(dailyReviewAction);
-    if (nextOrGenerateAction) actions.push(nextOrGenerateAction);
+    if (nextDrillAction) actions.push(nextDrillAction);
   } else if (manyWrong) {
     if (weakSpotAction) actions.push(weakSpotAction);
     if (dailyReviewAction) actions.push(dailyReviewAction);
-    if (nextOrGenerateAction) actions.push(nextOrGenerateAction);
+    if (nextDrillAction) actions.push(nextDrillAction);
   } else {
     if (dailyReviewAction) actions.push(dailyReviewAction);
     if (weakSpotAction) actions.push(weakSpotAction);
-    if (nextOrGenerateAction) actions.push(nextOrGenerateAction);
+    if (nextDrillAction) actions.push(nextDrillAction);
   }
 
   if (actions.length === 0) return null;
@@ -150,9 +141,7 @@ export const NextActions: React.FC<NextActionsProps> = ({
           const isPrimary = primary && idx === 0;
           const cls = isPrimary ? PRIMARY_CLS : GHOST_CLS;
           const iconEl =
-            action.icon === "plus" ? (
-              <Plus className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            ) : action.icon === "arrow" ? (
+            action.icon === "arrow" ? (
               <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             ) : null;
 
@@ -166,7 +155,6 @@ export const NextActions: React.FC<NextActionsProps> = ({
                 className={cls}
               >
                 <Link href={action.href}>
-                  {action.icon === "plus" && iconEl}
                   {action.label}
                   {action.icon === "arrow" && iconEl}
                 </Link>
@@ -183,7 +171,6 @@ export const NextActions: React.FC<NextActionsProps> = ({
               onClick={action.onClick}
               className={cls}
             >
-              {action.icon === "plus" && iconEl}
               {action.label}
               {action.icon === "arrow" && iconEl}
             </Button>
