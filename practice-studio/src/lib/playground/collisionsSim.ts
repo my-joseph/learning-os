@@ -95,6 +95,11 @@ function makeFrame(
 export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollisionRun {
   const theory = computeCollisionTheory(input);
   const theoreticalImpactTime = computeTheoreticalImpactTime(input);
+  const x1Start = input.x1 ?? INITIAL_CART1_POS_M;
+  const x2Start = input.x2 ?? INITIAL_CART2_POS_M;
+  if (!Number.isFinite(x1Start) || !Number.isFinite(x2Start)) {
+    throw new RangeError("x1 and x2 must be finite numbers");
+  }
 
   // Disable resting-contact suppression so slow closing speeds preserve exact restitution e.
   (Matter.Resolver as unknown as { _restingThresh: number })._restingThresh = 0;
@@ -120,14 +125,14 @@ export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollis
   };
 
   const body1 = Matter.Bodies.rectangle(
-    INITIAL_CART1_POS_M * MATTER_SCALE,
+    x1Start * MATTER_SCALE,
     0,
     w1M * MATTER_SCALE,
     cartHeightMeters(theory.m1) * MATTER_SCALE,
     { ...commonBodyOptions, label: "cart1" },
   );
   const body2 = Matter.Bodies.rectangle(
-    INITIAL_CART2_POS_M * MATTER_SCALE,
+    x2Start * MATTER_SCALE,
     0,
     w2M * MATTER_SCALE,
     cartHeightMeters(theory.m2) * MATTER_SCALE,
@@ -163,7 +168,7 @@ export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollis
   });
 
   const frames: CollisionFrame[] = [
-    makeFrame(0, INITIAL_CART1_POS_M, INITIAL_CART2_POS_M, theory.v1, theory.v2, theory.m1, theory.m2),
+    makeFrame(0, x1Start, x2Start, theory.v1, theory.v2, theory.m1, theory.m2),
   ];
 
   for (currentStep = 1; currentStep <= MAX_SIM_FRAMES; currentStep += 1) {
@@ -192,13 +197,15 @@ export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollis
       }
     }
 
-    const hitLeftBumper = x1 - halfW1 <= -TRACK_HALF_SPAN_M;
-    const hitRightBumper = x2 + halfW2 >= TRACK_HALF_SPAN_M;
-    if (hitLeftBumper) {
+    const atLeftStop = x1 - halfW1 <= -TRACK_HALF_SPAN_M + 1e-6;
+    const atRightStop = x2 + halfW2 >= TRACK_HALF_SPAN_M - 1e-6;
+    const hitLeftBumper = atLeftStop && v1 < -STOP_SPEED_EPS;
+    const hitRightBumper = atRightStop && v2 > STOP_SPEED_EPS;
+    if (atLeftStop && x1 - halfW1 < -TRACK_HALF_SPAN_M) {
       x1 = -TRACK_HALF_SPAN_M + halfW1;
       Matter.Body.setPosition(body1, { x: x1 * MATTER_SCALE, y: 0 });
     }
-    if (hitRightBumper) {
+    if (atRightStop && x2 + halfW2 > TRACK_HALF_SPAN_M) {
       x2 = TRACK_HALF_SPAN_M - halfW2;
       Matter.Body.setPosition(body2, { x: x2 * MATTER_SCALE, y: 0 });
     }
@@ -228,6 +235,8 @@ export function precomputeCollisionRun(input: CollisionInput): PrecomputedCollis
       v1: theory.v1,
       v2: theory.v2,
       e: theory.e,
+      x1: x1Start,
+      x2: x2Start,
     },
     frames,
     dtSeconds: SIM_DT_SEC,

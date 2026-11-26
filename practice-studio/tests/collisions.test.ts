@@ -1,12 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  cartWidthMeters,
+  clampCartPosition,
   computeCollisionTheory,
   computeInstantaneousMetrics,
   computeTheoreticalImpactTime,
+  normalizeCollisionPositions,
+  TRACK_HALF_SPAN_M,
   velocityErrorPercent,
   type CollisionInput,
 } from "../src/lib/playground/collisions";
+import {
+  computeReleaseVelocityMps,
+  computeVelocityAnnotationLayout,
+} from "../src/lib/playground/collisionsLayout";
 import { precomputeCollisionRun } from "../src/lib/playground/collisionsSim";
 
 const approx = (actual: number, expected: number, eps = 1e-9) => {
@@ -187,4 +195,151 @@ test("Precomputed impact time matches analytical theory (distance gap / closing 
   assert.equal(noCollisionRun.impactFrameIndex, null);
   assert.equal(noCollisionRun.impactTime, null);
   assert.equal(noCollisionRun.theoreticalImpactTime, null);
+});
+
+test("Custom start positions x1, x2 update theoretical impact time, Matter simulation, and momentum conservation", () => {
+  const customCases: CollisionInput[] = [
+    { m1: 2.0, m2: 2.0, v1: 1.8, v2: 0.0, e: 1.0, x1: -2.2, x2: 0.4 },
+    { m1: 1.5, m2: 3.0, v1: 1.5, v2: -1.2, e: 0.5, x1: -2.5, x2: 2.0 },
+    // Cart 1 resting against left stop while Cart 2 is flung leftward into it
+    { m1: 2.0, m2: 2.0, v1: 0.0, v2: -2.0, e: 1.0, x1: -TRACK_HALF_SPAN_M + cartWidthMeters(2.0) / 2, x2: 1.0 },
+  ];
+
+  for (const input of customCases) {
+    const run = precomputeCollisionRun(input);
+    const theory = computeCollisionTheory(input);
+    const tTheory = computeTheoreticalImpactTime(input);
+
+    assert.ok(tTheory !== null);
+    assert.ok(run.impactFrameIndex !== null && run.impactTime !== null);
+    approx(run.frames[0].x1, input.x1!);
+    approx(run.frames[0].x2, input.x2!);
+    assert.ok(Math.abs(run.impactTime - tTheory) <= run.dtSeconds + 1e-9);
+    approx(run.measuredV1After!, theory.v1After, 1e-4);
+    approx(run.measuredV2After!, theory.v2After, 1e-4);
+
+    for (const f of run.frames) {
+      approx(f.P, theory.pBefore, 1e-6);
+    }
+  }
+});
+
+test("Release-velocity conversion computes fling speed from the last ~80 ms, clamps, rounds, and deadzones", () => {
+  // Steady rightward fling: +0.144 m over 80 ms = +1.8 m/s
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: -1.5, tMs: 100 },
+        { xM: -1.428, tMs: 140 },
+        { xM: -1.356, tMs: 180 },
+      ],
+      180,
+    ),
+    1.8,
+  );
+
+  // Uses only the last ~80 ms (ignores earlier opposite motion)
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: 0.0, tMs: 0 },
+        { xM: -0.5, tMs: 90 },
+        { xM: -0.35, tMs: 130 },
+        { xM: -0.2, tMs: 170 },
+      ],
+      170,
+    ),
+    3.0, // (-0.2 - (-0.5)) / 0.08 = 3.75 -> clamped to +3.0
+  );
+
+  // Leftward fling rounded to 0.1 m/s: -0.10 m over 60 ms = -1.6667 -> -1.7 m/s
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: 1.2, tMs: 200 },
+        { xM: 1.15, tMs: 230 },
+        { xM: 1.1, tMs: 260 },
+      ],
+      260,
+    ),
+    -1.7,
+  );
+
+  // Very fast leftward fling clamps to -3.0 m/s
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: 1.0, tMs: 100 },
+        { xM: 0.2, tMs: 150 },
+      ],
+      150,
+    ),
+    -3.0,
+  );
+
+  // Slow release (< 0.05 m/s) returns 0
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: -1.0, tMs: 100 },
+        { xM: -0.997, tMs: 180 },
+      ],
+      180,
+    ),
+    0,
+  );
+
+  // Pausing > 80 ms before release returns 0
+  approx(
+    computeReleaseVelocityMps(
+      [
+        { xM: -1.0, tMs: 100 },
+        { xM: -0.7, tMs: 150 },
+      ],
+      260,
+    ),
+    0,
+  );
+});
+
+test("Cart start position clamping keeps carts inside track stops and non-overlapping", () => {
+  const halfW1 = cartWidthMeters(2.0) / 2;
+  const halfW2 = cartWidthMeters(2.0) / 2;
+  approx(clampCartPosition(1, -10, 2.0, 2.0, 1.2), -TRACK_HALF_SPAN_M + halfW1);
+  assert.ok(clampCartPosition(1, 2.0, 2.0, 2.0, 1.2) <= 1.2 - halfW1 - halfW2);
+  approx(clampCartPosition(2, 10, 2.0, 2.0, -1.2), TRACK_HALF_SPAN_M - halfW2);
+  assert.ok(clampCartPosition(2, -2.0, 2.0, 2.0, -1.2) >= -1.2 + halfW1 + halfW2);
+
+  const normalized = normalizeCollisionPositions({ m1: 5.0, m2: 5.0, v1: 0, v2: 0, e: 1, x1: 0.0, x2: 0.1 });
+  assert.ok(normalized.x2 - normalized.x1 >= cartWidthMeters(5.0) - 1e-9);
+});
+
+test("Velocity annotation layout stacks labels vertically when carts touch so labels never overlap", () => {
+  const [ann1, ann2] = computeVelocityAnnotationLayout({
+    cx1: -7,
+    topZ1: 22,
+    v1: 1.8,
+    label1: "+1.8 m/s",
+    cx2: 7,
+    topZ2: 22,
+    v2: -1.2,
+    label2: "-1.2 m/s",
+  });
+  assert.equal(ann2.stacked, true);
+  assert.ok(ann2.arrowZ > ann1.labelZ + 3);
+  assert.ok(ann2.labelZ > ann2.arrowZ);
+
+  // Far-apart carts stay on the same baseline
+  const [far1, far2] = computeVelocityAnnotationLayout({
+    cx1: -40,
+    topZ1: 22,
+    v1: 2.0,
+    label1: "+2.0 m/s",
+    cx2: 40,
+    topZ2: 22,
+    v2: 0.0,
+    label2: "0.0 m/s",
+  });
+  assert.equal(far2.stacked, false);
+  approx(far1.labelZ, far2.labelZ);
 });

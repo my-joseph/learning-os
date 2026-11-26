@@ -12,7 +12,7 @@ export const MASS_STEP_KG = 0.5;
 
 export const MIN_VELOCITY_MPS = -3.0;
 export const MAX_VELOCITY_MPS = 3.0;
-export const VELOCITY_STEP_MPS = 0.5;
+export const VELOCITY_STEP_MPS = 0.1;
 
 export const MIN_RESTITUTION = 0;
 export const MAX_RESTITUTION = 1;
@@ -21,6 +21,8 @@ export const RESTITUTION_STEP = 0.05;
 export const TRACK_HALF_SPAN_M = 3.0;
 export const INITIAL_CART1_POS_M = -1.2;
 export const INITIAL_CART2_POS_M = 1.2;
+export const CART_MIN_GAP_M = 0.02;
+export const POSITION_STEP_M = 0.01;
 
 export type CollisionKind = "elastic" | "inelastic" | "perfectly-inelastic" | "no-collision";
 
@@ -35,6 +37,10 @@ export type CollisionInput = {
   v2: number;
   /** Coefficient of restitution e in [0, 1] (1 = elastic, 0 = stick together). */
   e: number;
+  /** Initial center position of cart 1 in meters along the track (default -1.2). */
+  x1?: number;
+  /** Initial center position of cart 2 in meters along the track (default 1.2). */
+  x2?: number;
 };
 
 export type CollisionTheory = {
@@ -81,6 +87,8 @@ export const DEFAULT_COLLISION_INPUT: CollisionInput = {
   v1: 2.0,
   v2: 0.0,
   e: 1.0,
+  x1: INITIAL_CART1_POS_M,
+  x2: INITIAL_CART2_POS_M,
 };
 
 function assertFinite(value: number, name: string): number {
@@ -213,6 +221,63 @@ export function cartHeightMeters(massKg: number): number {
 }
 
 /**
+ * Returns the valid [min, max] center position bounds (meters) for one cart
+ * so it stays inside the endpoint stops and never overlaps the other cart.
+ */
+export function cartStartBounds(
+  cart: 1 | 2,
+  m1: number,
+  m2: number,
+  otherPosM: number,
+): { min: number; max: number } {
+  const halfW1 = cartWidthMeters(m1) / 2;
+  const halfW2 = cartWidthMeters(m2) / 2;
+  const minSep = halfW1 + halfW2 + CART_MIN_GAP_M;
+
+  if (cart === 1) {
+    const min = -TRACK_HALF_SPAN_M + halfW1;
+    const max = Math.max(min, Math.min(TRACK_HALF_SPAN_M - halfW1, otherPosM - minSep));
+    return { min, max };
+  }
+
+  const max = TRACK_HALF_SPAN_M - halfW2;
+  const min = Math.min(max, Math.max(-TRACK_HALF_SPAN_M + halfW2, otherPosM + minSep));
+  return { min, max };
+}
+
+/**
+ * Clamps a cart's start position (meters) inside the stops and clear of the other cart.
+ */
+export function clampCartPosition(
+  cart: 1 | 2,
+  xM: number,
+  m1: number,
+  m2: number,
+  otherPosM: number,
+): number {
+  const { min, max } = cartStartBounds(cart, m1, m2, otherPosM);
+  return Math.max(min, Math.min(max, xM));
+}
+
+/**
+ * Ensures start positions x1, x2 are populated, inside the track stops, and non-overlapping.
+ */
+export function normalizeCollisionPositions(
+  input: CollisionInput,
+): CollisionInput & { x1: number; x2: number } {
+  const halfW1 = cartWidthMeters(input.m1) / 2;
+  const halfW2 = cartWidthMeters(input.m2) / 2;
+  const minSep = halfW1 + halfW2 + CART_MIN_GAP_M;
+
+  let x1 = input.x1 ?? INITIAL_CART1_POS_M;
+  let x2 = input.x2 ?? INITIAL_CART2_POS_M;
+  x1 = Math.max(-TRACK_HALF_SPAN_M + halfW1, Math.min(TRACK_HALF_SPAN_M - halfW1 - minSep, x1));
+  x2 = Math.max(x1 + minSep, Math.min(TRACK_HALF_SPAN_M - halfW2, x2));
+  x1 = Math.min(x1, x2 - minSep);
+  return { ...input, x1, x2 };
+}
+
+/**
  * Computes the analytical impact time (seconds) on an unobstructed 1D track
  * from initial edge separation divided by closing speed, or null when carts
  * do not approach each other (v1 <= v2).
@@ -220,10 +285,9 @@ export function cartHeightMeters(massKg: number): number {
 export function computeTheoreticalImpactTime(input: CollisionInput): number | null {
   const theory = computeCollisionTheory(input);
   if (!theory.willCollide) return null;
-  const gap =
-    INITIAL_CART2_POS_M -
-    cartWidthMeters(theory.m2) / 2 -
-    (INITIAL_CART1_POS_M + cartWidthMeters(theory.m1) / 2);
+  const x1 = assertFinite(input.x1 ?? INITIAL_CART1_POS_M, "x1");
+  const x2 = assertFinite(input.x2 ?? INITIAL_CART2_POS_M, "x2");
+  const gap = x2 - cartWidthMeters(theory.m2) / 2 - (x1 + cartWidthMeters(theory.m1) / 2);
   if (gap <= 0) return 0;
   return gap / (theory.v1 - theory.v2);
 }
