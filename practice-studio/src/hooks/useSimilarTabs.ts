@@ -734,7 +734,6 @@ export function useSimilarTabs({
   /** Flush accumulated unsent elapsed time on the currently active similar tab to the server. */
   const flushActiveSimilarDuration = useCallback(
     (tokenOverride?: string | null) => {
-      flushPendingSimilarNote(tokenOverride);
       const tok = tokenOverride !== undefined ? tokenOverride : activeTokenRef.current;
       const tickDelta =
         similarTickStartRef.current !== null
@@ -743,6 +742,16 @@ export function useSimilarTabs({
       similarTickStartRef.current = null;
       const unsent = Math.min(600_000, similarElapsedRef.current + tickDelta);
       setSimilarElapsedMs(0);
+
+      if (!isUnlockedRef.current) {
+        for (const key of Object.keys(noteTimersRef.current)) {
+          if (typeof window !== "undefined") window.clearTimeout(noteTimersRef.current[key]);
+          delete noteTimersRef.current[key];
+        }
+        pendingNotePayloadRef.current = {};
+        return;
+      }
+      flushPendingSimilarNote(tokenOverride);
 
       if (!tok || !drillId || unsent <= 0) return;
 
