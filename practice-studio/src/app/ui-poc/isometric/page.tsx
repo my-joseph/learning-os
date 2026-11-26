@@ -1,5 +1,7 @@
-import { IsometricShowcase } from "@/components/ui-poc/IsometricShowcase";
+import { permanentRedirect } from "next/navigation";
 
-export default function IsometricPocPage() {
-  return <IsometricShowcase />;
+export const dynamic = "force-dynamic";
+
+export default function LegacyShowcasePage() {
+  permanentRedirect("/lab/lever");
 }

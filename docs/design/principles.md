@@ -17,3 +17,4 @@ Each surface has a different job. Use these principles to carry the learner's ta
 - Give overlays enough room for their task: the search palette is about 671 px wide, with 28 px type chips and close control, tight chip gaps, roomier 36 px result rows, and comfortable card padding. See: [search palette](references/search-palette.png), [approved search palette](references/studio-search-palette-approved.png).
 - Use the surface’s scrim token to keep the modal legible. The Search preset uses a translucent scrim without blur. See the [approved search palette](references/studio-search-palette-approved.png).
 - Keep motion subtle and respect reduced-motion preferences. See: [sidebar chevron](references/prg-sidebar-chevron.png), [sidebar sections](references/prg-sidebar-sections.png).
+- Lab: one card language for all visual experiments.

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Check, CircleHelp, LoaderCircle, Sparkles, TriangleAlert } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
-import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import { tabPanel } from "@/lib/motion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/shadcn/AlertDialog";
 import { Badge } from "@/components/ui/shadcn/Badge";
@@ -18,28 +17,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/shadcn/
 import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadcn/Tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/shadcn/Tooltip";
-import { useTheme } from "@/hooks/useTheme";
 import { statusTone, warningTone } from "@/lib/statusTone";
 
 export function ShadcnPocShowcase() {
-  const { theme, handleToggleTheme } = useTheme();
   const [state, setState] = useState<"empty" | "loading" | "error" | "success">("empty");
   const [dialogConfirmed, setDialogConfirmed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
-    <main className="mx-auto min-h-screen w-screen max-w-5xl overflow-x-hidden bg-background px-4 py-8 text-foreground sm:px-6">
-      <header className="mb-8 flex min-w-0 flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Component proof of concept</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">shadcn/ui + Radix</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">A focused interaction and token review on the current Practice Studio stack.</p>
-        </div>
-        <ThemeToggleButton theme={theme} onToggle={handleToggleTheme} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border border-zinc-300 text-foreground hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:border-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:ring-indigo-400" />
-      </header>
-
-      <div className="grid w-full max-w-full min-w-0 grid-cols-1 gap-5 lg:grid-cols-2 [&>*]:max-w-full [&>*]:min-w-0">
-        <Card aria-labelledby="badges-heading">
+    <div className="space-y-space-4">
+      <p className="text-sm text-foreground-secondary">Explore the shared shadcn/ui and Radix controls used in Practice Studio.</p>
+      <div className="grid min-w-0 grid-cols-1 gap-space-4 lg:grid-cols-2">
+        <Card variant="lab" aria-labelledby="badges-heading">
           <CardHeader><CardTitle id="badges-heading">Badge variants</CardTitle><CardDescription>Compact labels use shared status tokens and the neutral palette.</CardDescription></CardHeader>
           <CardContent className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge>Default</Badge><Badge variant="secondary">Secondary</Badge><Badge variant="outline">Outline</Badge>
@@ -50,15 +39,15 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="buttons-heading">
+        <Card variant="lab" aria-labelledby="buttons-heading">
           <CardHeader><CardTitle id="buttons-heading">Button variants</CardTitle><CardDescription>Each control keeps a minimum 44 pixel touch target.</CardDescription></CardHeader>
           <CardContent>
             <div className="flex min-w-0 flex-wrap gap-2"><Button>Primary action</Button><Button variant="secondary">Secondary</Button><Button variant="outline">Outline</Button><Button variant="ghost">Ghost</Button><Button variant="destructive">Destructive</Button></div>
-            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">Focus rings use the existing indigo accent.</p>
+            <p className="mt-3 text-xs text-foreground-secondary">Focus rings use the existing indigo accent.</p>
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="tabs-heading">
+        <Card variant="lab" aria-labelledby="tabs-heading">
           <CardHeader><CardTitle id="tabs-heading">Tabs and status tokens</CardTitle><CardDescription>Use the arrow keys to move between tabs.</CardDescription></CardHeader>
           <CardContent>
             <Tabs defaultValue="overview">
@@ -70,7 +59,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="dialog-heading">
+        <Card variant="lab" aria-labelledby="dialog-heading">
           <CardHeader><CardTitle id="dialog-heading">Dialog confirmation</CardTitle><CardDescription>Radix manages focus containment, Escape dismissal, and focus restoration.</CardDescription></CardHeader>
           <CardContent>
             <Dialog><DialogTrigger asChild><Button variant="outline">Open confirmation</Button></DialogTrigger>
@@ -82,20 +71,20 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="popover-heading">
+        <Card variant="lab" aria-labelledby="popover-heading">
           <CardHeader><CardTitle id="popover-heading">Popover and tooltip</CardTitle><CardDescription>Both patterns support keyboard access and Escape dismissal.</CardDescription></CardHeader>
           <CardContent className="flex min-w-0 flex-wrap items-center gap-3">
-            <Popover><PopoverTrigger asChild><Button variant="outline">Open details</Button></PopoverTrigger><PopoverContent aria-label="Interface details"><p className="font-normal">Interface details</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Neutral surfaces use the existing zinc scale.</p></PopoverContent></Popover>
+            <Popover><PopoverTrigger asChild><Button variant="outline">Open details</Button></PopoverTrigger><PopoverContent aria-label="Interface details"><p className="font-normal">Interface details</p><p className="mt-1 text-sm text-foreground-secondary">The details panel anchors to its trigger.</p></PopoverContent></Popover>
             <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild><Button size="icon" variant="ghost" aria-label="Help about focus"><CircleHelp aria-hidden="true" className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Focus remains visible for keyboard users.</TooltipContent></Tooltip></TooltipProvider>
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="drawer-heading">
+        <Card variant="lab" aria-labelledby="drawer-heading">
           <CardHeader><CardTitle id="drawer-heading">Responsive drawer</CardTitle><CardDescription>Bottom sheet on narrow screens; right-side panel on desktop.</CardDescription></CardHeader>
-          <CardContent><Drawer><DrawerTrigger asChild><Button variant="outline">Open drawer</Button></DrawerTrigger><DrawerContent aria-describedby="poc-drawer-description"><DrawerTitle className="pr-10 text-lg font-semibold">Drawer panel</DrawerTitle><DrawerDescription id="poc-drawer-description" className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">This panel adapts its position to the viewport and locks background interaction while open.</DrawerDescription><div className="mt-5 rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-900">The close control has a 44 pixel target.</div></DrawerContent></Drawer></CardContent>
+          <CardContent><Drawer><DrawerTrigger asChild><Button variant="outline">Open drawer</Button></DrawerTrigger><DrawerContent aria-describedby="poc-drawer-description"><DrawerTitle className="pr-10 text-lg font-semibold">Drawer panel</DrawerTitle><DrawerDescription id="poc-drawer-description" className="mt-2 text-sm text-foreground-secondary">This panel adapts its position to the viewport and locks background interaction while open.</DrawerDescription><div className="mt-5 rounded-lg bg-surface-panel p-space-4 text-sm">The close control has a 44 pixel target.</div></DrawerContent></Drawer></CardContent>
         </Card>
 
-        <Card aria-labelledby="alert-dialog-heading">
+        <Card variant="lab" aria-labelledby="alert-dialog-heading">
           <CardHeader><CardTitle id="alert-dialog-heading">Alert dialog</CardTitle><CardDescription>Cancel is the safe default; outside clicks do not dismiss this confirmation.</CardDescription></CardHeader>
           <CardContent>
             <AlertDialog><AlertDialogTrigger asChild><Button variant="destructive">Reset sample</Button></AlertDialogTrigger>
@@ -106,42 +95,42 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="collapsible-heading">
+        <Card variant="lab" aria-labelledby="collapsible-heading">
           <CardHeader><CardTitle id="collapsible-heading">Collapsible details</CardTitle><CardDescription>Closed content stays unmounted until the learner opens it.</CardDescription></CardHeader>
           <CardContent>
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger asChild><Button variant="outline" aria-expanded={detailsOpen}>{detailsOpen ? "Hide details" : "Show details"}</Button></CollapsibleTrigger>
-              <CollapsibleContent className="mt-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">A collapsed section can hold optional supporting details.</CollapsibleContent>
+              <CollapsibleContent className="mt-3 rounded-lg border border-border p-space-3 text-sm">A collapsed section can hold optional supporting details.</CollapsibleContent>
             </Collapsible>
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="hover-card-heading">
+        <Card variant="lab" aria-labelledby="hover-card-heading">
           <CardHeader><CardTitle id="hover-card-heading">Hover card</CardTitle><CardDescription>Supplementary previews are available on hover and keyboard focus.</CardDescription></CardHeader>
           <CardContent>
-            <HoverCard openDelay={200}><HoverCardTrigger asChild><Button variant="outline">Preview a concept</Button></HoverCardTrigger><HoverCardContent><p className="font-normal">Concept preview</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">A short, optional summary can provide context without interrupting the page.</p></HoverCardContent></HoverCard>
+            <HoverCard openDelay={200}><HoverCardTrigger asChild><Button variant="outline">Preview a concept</Button></HoverCardTrigger><HoverCardContent><p className="font-normal">Concept preview</p><p className="mt-1 text-sm text-foreground-secondary">A short, optional summary can provide context without interrupting the page.</p></HoverCardContent></HoverCard>
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="input-heading">
+        <Card variant="lab" aria-labelledby="input-heading">
           <CardHeader><CardTitle id="input-heading">Input states</CardTitle><CardDescription>Text fields keep clear focus and disabled states.</CardDescription></CardHeader>
           <CardContent className="grid min-w-0 gap-3"><label htmlFor="poc-search" className="text-sm font-normal">Search sample content</label><Input id="poc-search" placeholder="Enter a search term" /><Input aria-label="Disabled sample input" disabled placeholder="Disabled field" /></CardContent>
         </Card>
 
-        <Card aria-labelledby="skeleton-heading">
+        <Card variant="lab" aria-labelledby="skeleton-heading">
           <CardHeader><CardTitle id="skeleton-heading">Skeleton loading</CardTitle><CardDescription>Reduced-motion settings disable the pulse animation.</CardDescription></CardHeader>
           <CardContent aria-label="Loading preview" role="status" className="grid gap-3"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-4 w-full" /><Skeleton className="h-20 w-full" /></CardContent>
         </Card>
 
-        <Card aria-labelledby="states-heading">
+        <Card variant="lab" aria-labelledby="states-heading">
           <CardHeader><CardTitle id="states-heading">Interface states</CardTitle><CardDescription>Switch among empty, loading, error, and success examples.</CardDescription></CardHeader>
           <CardContent>
             <div className="flex min-w-0 flex-wrap gap-2">{(["empty", "loading", "error", "success"] as const).map((value) => <Button key={value} size="sm" variant={state === value ? "primary" : "outline"} onClick={() => setState(value)}>{value[0].toUpperCase() + value.slice(1)}</Button>)}</div>
             <div className="mt-4 min-h-16" aria-live="polite">
               <AnimatePresence mode="wait" initial={false}>
                 <m.div key={state} variants={tabPanel} initial="hidden" animate="shown" exit="exit">
-                  {state === "empty" && <div className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">No items to show yet.</div>}
-                  {state === "loading" && <div role="status" className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />Loading sample data.</div>}
+                  {state === "empty" && <div className="rounded-lg border border-dashed border-border-control p-space-4 text-sm text-foreground-secondary">No items to show yet.</div>}
+                  {state === "loading" && <div role="status" className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-border p-space-4 text-sm"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />Loading sample data.</div>}
                   {state === "error" && <div role="alert" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.wrong.softCard} ${statusTone.wrong.text}`}><TriangleAlert aria-hidden="true" className="h-4 w-4" />The sample data could not be loaded.</div>}
                   {state === "success" && <div role="status" className={`flex min-w-0 flex-wrap items-center gap-2 rounded-lg p-4 text-sm ${statusTone.correct.softCard} ${statusTone.correct.text}`}><Check aria-hidden="true" className="h-4 w-4" />Sample data is ready.</div>}
                 </m.div>
@@ -151,7 +140,21 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
       </div>
-      <footer className="mt-8 min-w-0 text-xs text-zinc-500 dark:text-zinc-400">Source-owned primitives · React 18 · Tailwind 3.4 · Reduced-motion support</footer>
-    </main>
+    </div>
+  );
+}
+
+export function ShadcnPocPreview() {
+  return (
+    <div className="flex flex-col items-center gap-space-3">
+      <div className="flex items-center gap-space-2">
+        <Badge variant="outline">Badge</Badge>
+        <Badge variant="secondary">Label</Badge>
+      </div>
+      <div className="flex items-center gap-space-2">
+        <Button asChild variant="primary" size="compact"><span>Action</span></Button>
+        <Button asChild variant="outline" size="compact"><span>Cancel</span></Button>
+      </div>
+    </div>
   );
 }

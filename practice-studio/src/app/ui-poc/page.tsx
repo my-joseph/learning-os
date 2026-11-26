@@ -1,5 +1,7 @@
-import { ShadcnPocShowcase } from "@/components/ui-poc/ShadcnPocShowcase";
+import { permanentRedirect } from "next/navigation";
 
-export default function UiPocPage() {
-  return <ShadcnPocShowcase />;
+export const dynamic = "force-dynamic";
+
+export default function LegacyShowcasePage() {
+  permanentRedirect("/lab/ui-components");
 }

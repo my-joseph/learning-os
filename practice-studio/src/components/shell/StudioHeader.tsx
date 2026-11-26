@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { AnimatePresence, m } from "motion/react";
 import {
   ArrowUpRight,
+  FlaskConical,
   List,
   PanelLeft,
   Plus,
@@ -20,10 +22,72 @@ import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/shadcn/Tooltip";
 
+import { useTheme } from "@/hooks/useTheme";
 import { StudioSearchTrigger } from "./StudioSearchPalette";
+
+function StudioHeaderFrame({
+  leading,
+  beforeTheme,
+  afterLab,
+  theme,
+  onToggleTheme,
+  labCurrent = false,
+}: {
+  leading: React.ReactNode;
+  beforeTheme?: React.ReactNode;
+  afterLab?: React.ReactNode;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
+  labCurrent?: boolean;
+}) {
+  return (
+    <header className="sticky top-0 z-sticky flex h-space-12 w-full shrink-0 items-center justify-between gap-space-2 border-b border-border/80 bg-surface-raised px-space-2 sm:px-space-3 lg:h-touch">
+      <div className="flex min-w-0 flex-1 items-center gap-space-1 sm:gap-space-1_5">{leading}</div>
+      <div className="flex shrink-0 items-center gap-space-0_5">
+        {beforeTheme}
+        <ThemeToggleButton variant="header" theme={theme} onToggle={onToggleTheme} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button asChild variant="headerUtility" size="headerIcon">
+              <Link
+                href="/lab"
+                aria-label="Open Lab"
+                aria-current={labCurrent ? "location" : undefined}
+                data-selected={labCurrent}
+              >
+                <FlaskConical className="size-space-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Lab</TooltipContent>
+        </Tooltip>
+        {afterLab}
+      </div>
+    </header>
+  );
+}
+
+export function StudioLabHeader() {
+  const { theme, handleToggleTheme } = useTheme();
+  return (
+    <TooltipProvider>
+      <StudioHeaderFrame
+        labCurrent
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        leading={
+          <Button variant="exampleBack" size="exampleBack" asChild>
+            <Link href="/" prefetch={false} className="text-sm">Practice Studio</Link>
+          </Button>
+        }
+      />
+    </TooltipProvider>
+  );
+}
 
 interface StudioHeaderProps {
   workspace: Workspace;
@@ -88,126 +152,123 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 min-h-[44px] h-12 lg:h-11 w-full shrink-0 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 px-2 sm:px-3 flex items-center justify-between gap-2">
-      {/* Left: mobile drawer trigger OR desktop expand-sidebar button (only when sidebar closed) + drill title */}
-      <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton
-              tone="secondary"
-              hitArea="sidebarToggle"
-              onClick={onOpenSidebarDrawer}
-              aria-label="Open navigation sidebar"
-              className="lg:hidden dark:hover:bg-surface-hover"
-            >
-              <PanelLeft className="size-space-4" aria-hidden="true" />
-            </IconButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Open sidebar</TooltipContent>
-        </Tooltip>
+    <StudioHeaderFrame
+      theme={theme}
+      onToggleTheme={onToggleTheme}
+      leading={(
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                tone="secondary"
+                hitArea="sidebarToggle"
+                onClick={onOpenSidebarDrawer}
+                aria-label="Open navigation sidebar"
+                className="lg:hidden dark:hover:bg-surface-hover"
+              >
+                <PanelLeft className="size-space-4" aria-hidden="true" />
+              </IconButton>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Open sidebar</TooltipContent>
+          </Tooltip>
 
-        <AnimatePresence initial={false}>
-          {!isSidebarOpen && (
-            <m.div
-              key="desktop-expand-sidebar"
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: "auto", transition: quick }}
-              exit={{
-                opacity: 0,
-                width: 0,
-                transition: { duration: 0.14, ease: EASE_OUT },
-              }}
-              className="hidden lg:flex items-center overflow-hidden shrink-0"
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <IconButton
-                    tone="secondary"
-                    hitArea="sidebarToggle"
-                    onClick={onOpenDesktopSidebar}
-                    aria-label="Expand sidebar"
-                  >
-                    <PanelLeft className="size-space-4" aria-hidden="true" />
-                  </IconButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Open sidebar</TooltipContent>
-              </Tooltip>
-            </m.div>
+          <AnimatePresence initial={false}>
+            {!isSidebarOpen && (
+              <m.div
+                key="desktop-expand-sidebar"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto", transition: quick }}
+                exit={{
+                  opacity: 0,
+                  width: 0,
+                  transition: { duration: 0.14, ease: EASE_OUT },
+                }}
+                className="hidden lg:flex items-center overflow-hidden shrink-0"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <IconButton
+                      tone="secondary"
+                      hitArea="sidebarToggle"
+                      onClick={onOpenDesktopSidebar}
+                      aria-label="Expand sidebar"
+                    >
+                      <PanelLeft className="size-space-4" aria-hidden="true" />
+                    </IconButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Open sidebar</TooltipContent>
+                </Tooltip>
+              </m.div>
+            )}
+          </AnimatePresence>
+
+          {onOpenSearch && (
+            <StudioSearchTrigger
+              compact
+              shortcut={searchShortcut}
+              onClick={onOpenSearch}
+              className={isSidebarOpen ? "lg:hidden" : undefined}
+            />
           )}
-        </AnimatePresence>
 
-        {onOpenSearch && (
-          <StudioSearchTrigger
-            compact
-            shortcut={searchShortcut}
-            onClick={onOpenSearch}
-            className={isSidebarOpen ? "lg:hidden" : undefined}
-          />
-        )}
-
-        <span className={cn("text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 truncate pl-0.5", isCurriculumId(drillTitle) && "font-mono")}>
-          {drillTitle}
-        </span>
-      </div>
-
-      {/* Right: quiet flat utility icon cluster (+ Generate, Reset, Notion, Theme, divider, Right Panel toggle) */}
-      <div className="flex items-center gap-0.5 shrink-0">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="iconSm"
-              onClick={onOpenGenPopover}
-              aria-label="Generate drill set"
-              className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
-            >
-              <Plus className="w-4 h-4" aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Generate drill set</TooltipContent>
-        </Tooltip>
-
-        {currentDrill && (
+          <span className={cn("text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 truncate pl-0.5", isCurriculumId(drillTitle) && "font-mono")}>
+            {drillTitle}
+          </span>
+        </>
+      )}
+      beforeTheme={(
+        <>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="iconSm"
-                onClick={onResetAll}
-                aria-label={resetAllLabel}
-                className={`min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-200/60 dark:hover:bg-zinc-800`}
+                onClick={onOpenGenPopover}
+                aria-label="Generate drill set"
+                className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
               >
-                <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                <Plus className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{resetAllLabel}</TooltipContent>
+            <TooltipContent side="bottom">Generate drill set</TooltipContent>
           </Tooltip>
-        )}
 
-        {currentDrill?.unitNotionUrl && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <a
-                href={currentDrill.unitNotionUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open unit page in Notion"
-                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-              >
-                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Open unit page in Notion</TooltipContent>
-          </Tooltip>
-        )}
+          {currentDrill && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="iconSm"
+                  onClick={onResetAll}
+                  aria-label={resetAllLabel}
+                  className={`min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-200/60 dark:hover:bg-zinc-800`}
+                >
+                  <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{resetAllLabel}</TooltipContent>
+            </Tooltip>
+          )}
 
-        <ThemeToggleButton
-          theme={theme}
-          onToggle={onToggleTheme}
-          className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
-        />
-
-        {showRightPanelToggle && (
+          {currentDrill?.unitNotionUrl && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a
+                  href={currentDrill.unitNotionUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open unit page in Notion"
+                  className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                >
+                  <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Open unit page in Notion</TooltipContent>
+            </Tooltip>
+          )}
+        </>
+      )}
+      afterLab={showRightPanelToggle && (
           <>
             <span
               aria-hidden="true"
@@ -246,8 +307,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
               </TooltipContent>
             </Tooltip>
           </>
-        )}
-      </div>
-    </header>
+      )}
+    />
   );
 };

@@ -1,5 +1,7 @@
-import { DiskMethodShowcase } from "@/components/ui-poc/DiskMethodShowcase";
+import { permanentRedirect } from "next/navigation";
 
-export default function IsometricMathPocPage() {
-  return <DiskMethodShowcase />;
+export const dynamic = "force-dynamic";
+
+export default function LegacyShowcasePage() {
+  permanentRedirect("/lab/disk-method");
 }

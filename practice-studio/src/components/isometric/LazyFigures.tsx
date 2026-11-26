@@ -5,11 +5,9 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/shadcn/Skeleton";
 import "./isometric.css";
 
-function FigureSkeleton() {
+export function FigureSkeleton() {
   return (
-    <div className="iso-figure-box w-full p-space-4" aria-hidden="true">
-      <Skeleton className="h-full w-full rounded-xl" />
-    </div>
+    <Skeleton className="iso-figure-box w-full rounded-none bg-surface-hover dark:bg-surface-hover" aria-hidden="true" />
   );
 }
 
