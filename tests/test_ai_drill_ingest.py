@@ -19,9 +19,17 @@ from math_engine.ai_drill_ingest import (
     register_archetype,
     validate_ai_problem_contract,
 )
-from math_engine.templates._prealg_helpers import S
 from math_engine.verify import VerificationError
 from quality_rules import QualityError
+
+
+def S(latex, explain, val=None, eq=None):
+    step = {"latex": latex, "explain": explain}
+    if val is not None:
+        step["val"] = val
+    if eq is not None:
+        step["eq"] = list(eq)
+    return step
 
 
 class TestAiDrillIngest(unittest.TestCase):
