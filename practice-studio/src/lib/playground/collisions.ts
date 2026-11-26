@@ -213,6 +213,22 @@ export function cartHeightMeters(massKg: number): number {
 }
 
 /**
+ * Computes the analytical impact time (seconds) on an unobstructed 1D track
+ * from initial edge separation divided by closing speed, or null when carts
+ * do not approach each other (v1 <= v2).
+ */
+export function computeTheoreticalImpactTime(input: CollisionInput): number | null {
+  const theory = computeCollisionTheory(input);
+  if (!theory.willCollide) return null;
+  const gap =
+    INITIAL_CART2_POS_M -
+    cartWidthMeters(theory.m2) / 2 -
+    (INITIAL_CART1_POS_M + cartWidthMeters(theory.m1) / 2);
+  if (gap <= 0) return 0;
+  return gap / (theory.v1 - theory.v2);
+}
+
+/**
  * Computes percentage error between a measured velocity and analytical theory.
  * Returns 0 when both are near zero; uses |theory| as denominator when |theory| >= 0.05 m/s,
  * or max(0.05, |theory|) otherwise to avoid division by zero on stopped carts.

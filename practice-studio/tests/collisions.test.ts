@@ -3,8 +3,11 @@ import { test } from "node:test";
 import {
   computeCollisionTheory,
   computeInstantaneousMetrics,
+  computeTheoreticalImpactTime,
   velocityErrorPercent,
+  type CollisionInput,
 } from "../src/lib/playground/collisions";
+import { precomputeCollisionRun } from "../src/lib/playground/collisionsSim";
 
 const approx = (actual: number, expected: number, eps = 1e-9) => {
   assert.ok(
@@ -120,4 +123,68 @@ test("Input validation and instantaneous metrics", () => {
 
   approx(velocityErrorPercent(2.0, 2.0), 0);
   approx(velocityErrorPercent(2.01, 2.0), 0.5);
+});
+
+test("Precomputed Matter.js frames conserve momentum within 1e-6 across every frame", () => {
+  const cases: CollisionInput[] = [
+    { m1: 2.0, m2: 2.0, v1: 2.0, v2: 0.0, e: 1.0 },
+    { m1: 1.0, m2: 4.0, v1: 2.0, v2: -1.0, e: 0.0 },
+    { m1: 1.5, m2: 3.5, v1: 2.5, v2: -1.0, e: 0.5 },
+    { m1: 5.0, m2: 0.5, v1: 0.5, v2: 0.0, e: 1.0 },
+    { m1: 0.5, m2: 5.0, v1: 3.0, v2: -3.0, e: 0.75 },
+    { m1: 2.0, m2: 3.0, v1: 3.0, v2: 1.0, e: 0.25 },
+    { m1: 2.0, m2: 2.0, v1: 1.0, v2: -1.0, e: 0.0 },
+    { m1: 2.0, m2: 2.0, v1: -1.0, v2: 1.0, e: 1.0 },
+    { m1: 2.0, m2: 2.0, v1: 0.0, v2: 0.0, e: 1.0 },
+  ];
+
+  for (const input of cases) {
+    const run = precomputeCollisionRun(input);
+    const theory = computeCollisionTheory(input);
+    assert.ok(run.frames.length >= 2, `expected multi-frame run for ${JSON.stringify(input)}`);
+    assert.equal(run.frames[0].t, 0);
+
+    for (let i = 0; i < run.frames.length; i += 1) {
+      const f = run.frames[i];
+      approx(f.t, i * run.dtSeconds, 1e-12);
+      approx(f.P, f.p1 + f.p2, 1e-12);
+      approx(f.KE, f.KE1 + f.KE2, 1e-12);
+      approx(f.P, theory.pBefore, 1e-6);
+    }
+
+    if (run.impactFrameIndex !== null) {
+      assert.ok(run.measuredV1After !== null && run.measuredV2After !== null);
+      approx(run.measuredV1After, theory.v1After, 1e-4);
+      approx(run.measuredV2After, theory.v2After, 1e-4);
+    }
+  }
+});
+
+test("Precomputed impact time matches analytical theory (distance gap / closing speed) within one timestep", () => {
+  const collidingCases: CollisionInput[] = [
+    { m1: 2.0, m2: 2.0, v1: 2.0, v2: 0.0, e: 1.0 },
+    { m1: 1.0, m2: 4.0, v1: 2.0, v2: -1.0, e: 0.0 },
+    { m1: 1.5, m2: 3.5, v1: 2.5, v2: -1.0, e: 0.5 },
+    { m1: 5.0, m2: 0.5, v1: 0.5, v2: 0.0, e: 1.0 },
+    { m1: 0.5, m2: 5.0, v1: 3.0, v2: -3.0, e: 0.75 },
+    { m1: 2.0, m2: 2.0, v1: 0.5, v2: 0.0, e: 0.25 },
+  ];
+
+  for (const input of collidingCases) {
+    const run = precomputeCollisionRun(input);
+    const tTheory = computeTheoreticalImpactTime(input);
+    assert.ok(tTheory !== null, `expected theoretical impact time for ${JSON.stringify(input)}`);
+    assert.ok(run.impactFrameIndex !== null && run.impactTime !== null, `expected Matter impact for ${JSON.stringify(input)}`);
+    const diff = Math.abs(run.impactTime - tTheory);
+    assert.ok(
+      diff <= run.dtSeconds + 1e-9,
+      `impactTime ${run.impactTime} differed from theory ${tTheory} by ${diff} (> dt ${run.dtSeconds})`,
+    );
+    approx(run.frames[run.impactFrameIndex].t, run.impactTime, 1e-12);
+  }
+
+  const noCollisionRun = precomputeCollisionRun({ m1: 2.0, m2: 2.0, v1: -1.0, v2: 1.0, e: 1.0 });
+  assert.equal(noCollisionRun.impactFrameIndex, null);
+  assert.equal(noCollisionRun.impactTime, null);
+  assert.equal(noCollisionRun.theoreticalImpactTime, null);
 });
