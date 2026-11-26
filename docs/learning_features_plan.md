@@ -2,7 +2,7 @@
 
 Source: `pilot/research-2026-11-19/report_th.md` (learner decision 2026-11-19).
 
-**Status:** Phases 1 and 2 are shipped. The Similar strip opens tabs on demand. Math/PRG template engines were removed in Phase 3 (2026-11-26); drills and Similar variants are AI-only. PR B/C remain on hold. Phase 3–5 ideas remain future work and are not active implementation instructions.
+**Status:** Phases 1 and 2 are shipped. The Similar strip opens tabs on demand. Math/PRG template engines were removed in Phase 3 (2026-11-26); drills and Similar variants are AI-only. The **What I get wrong list** is implemented and awaiting visual review. Phase 3–5 ideas remain future work and are not active implementation instructions.
 Rules that still hold: original answers and steps require a substantive check or explicit Skip. Drill files are content only,
 learner state lives in `progress/`, single learner, clean minimal Studio (zinc + indigo, no uppercase).
 
@@ -42,6 +42,12 @@ math steps include an `explain` line; do not rebuild this capability.
 3. **Worked example of a similar question** after two wrong attempts: shows one bank variant fully solved
    (steps with explain) before the learner retries their own problem. Never the learner's own problem.
 
+## Deferred work
+
+- **Due-review tree and drill review mode** (on hold).
+- **Engine clean-up (unify PRG runners, split math answer checker, shared ingest core)** (on hold).
+- **Question-jump shortcut** (on hold).
+
 ## Phase 3 — Prerequisites + diagnostic (on hold)
 1. **Prerequisite edges** `curriculum/prerequisites.json` (unit → prerequisite units), drafted from
    curriculum order and unit content, reviewed by Claude; validated (no cycles, codes exist in id_map).
@@ -50,7 +56,7 @@ math steps include an `explain` line; do not rebuild this capability.
 3. **Chapter-start diagnostic**: 3-5 bank variants across the chapter's units; result pre-sets a starting
    mastery suggestion or says "can skip U0x" (learner confirms; never auto-writes Notion mastery).
 
-## Phase 4 — PRG features (on hold; PR B/C on hold)
+## Phase 4 — PRG features (on hold)
 1. **Run with my own input**: input box next to the tests; runs the learner's function in the workspace on
    that input and shows only the output / thrown error (never expected values, never hidden tests).
 2. **Second approach after pass**: `altSolutions` per problem (code + complexity + one-line trade-off),

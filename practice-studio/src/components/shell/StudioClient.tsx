@@ -40,6 +40,7 @@ import {
 } from "@/lib/routes";
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
+import { mistakeAttemptKey } from "@/lib/mistakePractice";
 import { plainTitle } from "@/lib/titleText";
 import { sendPracticeAction } from "@/lib/practiceActions";
 import { getPersistedStatusOverride } from "@/lib/sessionSummary";
@@ -345,7 +346,26 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       ? lastCodeId
       : resolveWorkspaceDrill(drills, "code", lastCodeId) ?? labs[0]?.id;
 
-  const activeProblemId = currentDrill?.problems[currentProblemIndex]?.id;
+  const activeProblem = currentDrill?.problems[currentProblemIndex];
+  const activeProblemId = activeProblem?.id;
+  const activeKey = `${workspace}:${currentDrill?.drillId}:${activeProblemId}:${resetAllVersion}`;
+  const [mathMistakeAttempt, setMathMistakeAttempt] = useState<{ problemKey: string; attempt: string } | null>(null);
+  const handleMathMistakeAttempt = useCallback((attempt: string | null) => {
+    setMathMistakeAttempt((previous) => {
+      if (attempt) return { problemKey: activeKey, attempt };
+      return previous?.problemKey === activeKey ? null : previous;
+    });
+  }, [activeKey]);
+  const activeMistakeAttempt = workspace === "math"
+    ? (mathMistakeAttempt?.problemKey === activeKey ? mathMistakeAttempt.attempt : null)
+    : mistakeAttemptKey(activeProblem?.state, "code");
+  const mistakesContext = isLoadingDrill || currentDrill?.drillId !== drillId
+    ? null
+    : viewMode === "review"
+    ? `${drillId}:review`
+    : activeMistakeAttempt
+    ? `${activeKey}:${activeMistakeAttempt}`
+    : null;
   const mathHref = mathTargetId
     ? drillHref(mathTargetId, workspace === "math" && currentDrill ? activeProblemId : undefined)
     : null;
@@ -364,6 +384,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       syncState={syncState}
       isSyncing={isSyncing}
       isLoadingDrill={isLoadingDrill}
+      mistakesContext={mistakesContext}
+      mistakesUnitCode={viewMode === "quiz" ? activeProblem?.unitCode : undefined}
       drillNotFound={drillNotFound}
       currentProblemIndex={currentProblemIndex}
       theme={theme}
@@ -418,7 +440,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         </Card>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
         <m.div
-          key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}:${resetAllVersion}`}
+          key={activeKey}
           variants={fadeUp}
           initial="hidden"
           animate="shown"
@@ -478,6 +500,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onBeforeFetchVariant={flushAutoSave}
                   onExampleViewed={(viewedAt) => handleExampleViewed(prob.id, viewedAt)}
                   onSimilarProgressSync={(patch) => handleSimilarProgressSync(prob.id, patch)}
+                  onMistakeAttemptChange={handleMathMistakeAttempt}
                   onVariantModeChange={handleVariantModeChange}
                   autoOpenSimilar={pendingSimilarProbId === prob.id}
                   onAutoOpenSimilarConsumed={() => setPendingSimilarProbId(null)}

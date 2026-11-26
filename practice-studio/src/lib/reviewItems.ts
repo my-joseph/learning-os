@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "fs";
 import path from "path";
 import { formatLocalDate } from "@/lib/dueToday";
@@ -15,12 +16,14 @@ import {
 import { writeJsonAtomic } from "@/lib/progress";
 import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
+import { mistakeName, type RecentMistake } from "@/lib/mistakePractice";
 import {
   compareIsoTimestamps,
   isSubstantiveVerdict,
+  isWrongAttemptVerdict,
   isTimestampInCycle,
 } from "@/lib/reviewGuard";
-import type { ProblemState } from "@/types/drill";
+import type { AttemptRecord, ProblemState, ReviewRecord } from "@/types/drill";
 
 /**
  * Per-item review schedule (mirrors `scripts/review_items.py`):
@@ -47,7 +50,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SAFE_TRAP_RE = /^[A-Za-z0-9@._/-]{1,128}$/;
 const NON_SUBSTANTIVE_VERDICTS = new Set(["invalid input", "parse_error"]);
 
-export type ReviewScopeKind = "subject" | "unit" | "chapter" | "trap" | "drill";
+export type ReviewScopeKind = "subject" | "unit" | "chapter" | "trap" | "drill" | "mistake";
 
 export interface ParsedReviewScope {
   kind: ReviewScopeKind;
@@ -104,7 +107,7 @@ export interface DueReviewItemsResult {
 
 /**
  * Parse and validate a review scope filter:
- * `subject:MTH|PRG`, `unit:<code>`, `chapter:<code>`, `trap:<tag>`, `drill:<id>`.
+ * `subject:MTH|PRG`, `unit:<code>`, `chapter:<code>`, `trap:<tag>`, `drill:<id>`, or `mistake:<key>`.
  */
 export function parseReviewScope(raw?: string | null): ParsedReviewScope | null {
   if (raw === undefined || raw === null) return null;
@@ -137,6 +140,9 @@ export function parseReviewScope(raw?: string | null): ParsedReviewScope | null 
       throw new Error(`Invalid trap scope value: '${value}'`);
     }
     return { kind: "trap", value };
+  }
+  if (kind === "mistake" && /^[a-f0-9]{32}$/.test(value)) {
+    return { kind, value };
   }
   throw new Error(`Unknown scope kind '${kind}'`);
 }
@@ -174,6 +180,8 @@ export function matchesReviewScope(
       return item.commonTrapTag === value;
     case "drill":
       return item.drillId === value;
+    case "mistake":
+      return false; // Matched against recorded misses by getDueReviewItems.
   }
 }
 
@@ -998,31 +1006,18 @@ function collectMatchedTraps(state: Record<string, unknown>): string[] {
   return matched;
 }
 
+function prgReviewSignals(review: Partial<ReviewRecord>): string[] {
+  const findings = Array.isArray(review.findings) ? review.findings : [];
+  const lint = Array.isArray(review.lint) ? review.lint : [];
+  return [
+    ...findings.flatMap((finding) => finding && !finding.disputed && typeof finding.check === "string" && finding.check ? [finding.check] : []),
+    ...lint.flatMap((issue) => issue && typeof issue.rule === "string" && issue.rule ? [issue.rule] : []),
+  ];
+}
+
 function extractPrgSignals(state: Record<string, unknown>): string[] {
-  const sigs: string[] = [];
-  const reviews = Array.isArray(state.reviews)
-    ? (state.reviews as Array<Record<string, unknown>>)
-    : [];
-  for (const r of reviews) {
-    if (!r || typeof r !== "object") continue;
-    const findings = Array.isArray(r.findings)
-      ? (r.findings as Array<Record<string, unknown>>)
-      : [];
-    for (const f of findings) {
-      if (f && !f.disputed && typeof f.check === "string" && f.check && !sigs.includes(f.check)) {
-        sigs.push(f.check);
-      }
-    }
-    const lint = Array.isArray(r.lint)
-      ? (r.lint as Array<Record<string, unknown>>)
-      : [];
-    for (const l of lint) {
-      if (l && typeof l.rule === "string" && l.rule && !sigs.includes(l.rule)) {
-        sigs.push(l.rule);
-      }
-    }
-  }
-  return sigs;
+  const reviews = Array.isArray(state.reviews) ? state.reviews as ReviewRecord[] : [];
+  return Array.from(new Set(reviews.flatMap((review) => review ? prgReviewSignals(review) : [])));
 }
 
 function isPrgSignalApplicable(sig: string, item: LoadedProgressItem): boolean {
@@ -1492,6 +1487,111 @@ export function getReviewItemsSchedule(
   return mergeSavedSchedule(backfilled, saved, drills, loaded, statesByKey);
 }
 
+const RECENT_MISTAKE_WINDOW = 5;
+const MISTAKE_FIXED_STREAK = 3;
+
+function mistakeKey(subject: ReviewItem["subject"], id: string): string {
+  return createHash("sha256").update(`${subject}:${id}`).digest("hex").slice(0, 32);
+}
+
+function observedMistakes(item: LoadedProgressItem): string[] {
+  return item.subject === "PRG" ? item.signals : item.matched;
+}
+
+interface MistakeTry {
+  ts: string;
+  missed: boolean;
+}
+
+function mistakeTries(item: LoadedProgressItem, id: string): MistakeTry[] {
+  const state = item.state as Partial<ProblemState>;
+  if (item.subject === "PRG") {
+    const applicable = isPrgSignalApplicable(id, item);
+    const reviews = Array.isArray(state.reviews) ? state.reviews : [];
+    return reviews.flatMap((review) => {
+      if (!review) return [];
+      const missed = prgReviewSignals(review).includes(id);
+      return missed || (applicable && review.verdict === "pass")
+        ? [{ ts: review.at || review.ts || item.ts, missed }]
+        : [];
+    });
+  }
+
+  const attempts = Array.isArray(state.attempts) ? state.attempts : [];
+  const variants = Object.values(state.variants || {}).flatMap((variant) =>
+    Array.isArray(variant?.attempts) ? variant.attempts : []
+  );
+  const tries: MistakeTry[] = [];
+  const record = (attempt: AttemptRecord, targeted: boolean) => {
+    if (!attempt) return;
+    if (attempt.matchedTrap === id && isWrongAttemptVerdict(attempt.verdict)) {
+      tries.push({ ts: attempt.ts || item.ts, missed: true });
+    } else if (targeted && attempt.verdict === "correct" &&
+      !attempt.hintsUsed && !attempt.setupRevealed && !attempt.solutionRevealed && !attempt.exampleViewed) {
+      tries.push({ ts: attempt.ts || item.ts, missed: false });
+    }
+  };
+  for (const attempt of attempts) record(attempt, item.trap === id && attempt?.kind !== "variant");
+  for (const attempt of variants) record(attempt, false);
+  if (!attempts.length && item.trap === id && item.score === 1) {
+    tries.push({ ts: item.ts, missed: false });
+  }
+  return tries;
+}
+
+export function getRecentMistakes(
+  subject: ReviewItem["subject"],
+  currentUnit?: string,
+  options?: ReviewStoreOptions
+): RecentMistake[] {
+  const { loaded } = loadProgressContext(options);
+  const items = loaded.filter((item) => item.subject === subject);
+  const ids = new Set(items.flatMap(observedMistakes));
+  const today = normalizeReviewDate(options?.today);
+  const rootDir = options?.rootDir ?? getWorkspaceRoot();
+  const namesFile = resolveContainedPath(rootDir, "code_engine/check_names.json", { extensions: JSON_EXTENSIONS });
+  const checkNames: Record<string, string> = subject === "PRG" && namesFile
+    ? JSON.parse(fs.readFileSync(namesFile, "utf-8"))
+    : {};
+  const ranked = Array.from(ids).flatMap((id) => {
+    let pinned = false;
+    const tries = items.flatMap((item) => {
+      const observations = mistakeTries(item, id);
+      if (currentUnit && observations.some((entry) => entry.missed) &&
+        itemUnitList(item).some((unit) => unit === currentUnit || unit.startsWith(`${currentUnit}-U`))) {
+        pinned = true;
+      }
+      return observations;
+    }).sort((a, b) => compareIsoTimestamps(a.ts, b.ts) ?? cmpStr(a.ts, b.ts));
+
+    const lastMiss = tries.findLastIndex((entry) => entry.missed);
+    if (tries.filter((entry) => entry.missed).length < WEAK_SPOT_MIN_MATCHES) return [];
+    const fixedOn = tries[lastMiss + MISTAKE_FIXED_STREAK];
+    if (fixedOn && normalizeReviewDate(fixedOn.ts) < today) return [];
+    const recent = tries.slice(-RECENT_MISTAKE_WINDOW);
+    return [{
+      key: mistakeKey(subject, id),
+      name: mistakeName(id, subject, checkNames),
+      recentMisses: recent.filter((entry) => entry.missed).length,
+      recentTries: recent.length,
+      fixed: Boolean(fixedOn),
+      pinned,
+      lastMiss: tries[lastMiss].ts,
+    }];
+  });
+
+  ranked.sort((a, b) =>
+    Number(b.pinned) - Number(a.pinned) ||
+    b.recentMisses / b.recentTries - a.recentMisses / a.recentTries ||
+    b.recentMisses - a.recentMisses ||
+    (compareIsoTimestamps(b.lastMiss, a.lastMiss) ?? cmpStr(b.lastMiss, a.lastMiss)) ||
+    cmpStr(a.name, b.name)
+  );
+  return ranked.map(({ key, name, recentMisses, recentTries, fixed }) =>
+    ({ key, name, recentMisses, recentTries, fixed })
+  );
+}
+
 export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsResult {
   const parsedScope = parseReviewScope(options?.scope);
   const today = normalizeReviewDate(options?.today);
@@ -1511,7 +1611,15 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
     PRG: allDue.filter((it) => it.subject === "PRG").length,
   };
 
-  const scopedAll = allItems.filter((it) => matchesReviewScope(it, parsedScope));
+  const isMistakePractice = parsedScope?.kind === "mistake";
+  const missedKeys = isMistakePractice
+    ? new Set(loaded.filter((item) => observedMistakes(item).some((id) =>
+        mistakeKey(item.subject, id) === parsedScope.value
+      )).map((item) => reviewItemKey(item.drillId, item.qid)))
+    : null;
+  const scopedAll = allItems.filter((it) => missedKeys
+    ? missedKeys.has(reviewItemKey(it.drillId, it.qid))
+    : matchesReviewScope(it, parsedScope));
   const scopedDue = scopedAll.filter((it) => it.dueDate <= today);
   const futureDates = scopedAll
     .filter((it) => it.dueDate > today)
@@ -1523,11 +1631,17 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
     : 0;
 
   const picked = interleaveDueItems(scopedDue, options?.limit, openWeakTraps);
+  // A focused session can practise an early item. Keep these items out of the daily due counts.
+  if (isMistakePractice) {
+    const remaining = options?.limit === undefined ? undefined : Math.max(0, options.limit - picked.length);
+    picked.push(...interleaveDueItems(scopedAll.filter((it) => it.dueDate > today), remaining, openWeakTraps));
+  }
+  const sessionCount = isMistakePractice ? picked.length : scopedDue.length;
 
   const scopeSubject =
     parsedScope?.kind === "subject" ? (parsedScope.value as "MTH" | "PRG") : null;
   const medianDurationMs = computeMedianDurationMsFromLoaded(loaded, scopeSubject);
-  const estimatedMinutes = estimateReviewMinutes(scopedDue.length, medianDurationMs);
+  const estimatedMinutes = estimateReviewMinutes(sessionCount, medianDurationMs);
 
   const idMapTitles = loadIdMapTitles(rootDir);
   const drillTitleByUnit = new Map<string, string>();
@@ -1550,7 +1664,7 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
   return {
     today,
     items: picked,
-    totalDue: scopedDue.length,
+    totalDue: sessionCount,
     bySubject,
     nextDueDate,
     nextDueCount,

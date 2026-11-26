@@ -148,7 +148,7 @@ export const DESTRUCTIVE_BUTTON_CLS =
 /**
  * Non-status warning recipes (amber).
  * Independent of `statusTone` — strictly for operational warnings, paused timers,
- * pending/warn toasts, and hint/trap left-borders. Never use for answer status.
+ * pending/warn toasts, and hint left-borders. Never use for answer status.
  */
 export const warningTone = {
   /** Warning text or icon colour (QuestionTimer paused, ToastStack pending/warn, SyncCard icon). */
@@ -161,6 +161,4 @@ export const warningTone = {
   borderSoft: "border-warning/25",
   /** Hint disclosure left-border (ProblemAssistSection). */
   leftBorder: "border-l-2 border-warning-border",
-  /** Softer trap note left-border (StudioSidePanel weak spots). */
-  leftBorderSoft: "border-l-2 border-warning-border/70",
 } as const;
