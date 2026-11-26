@@ -12,7 +12,8 @@ export type SimilarTabStatus =
   | "correct"
   | "assisted"
   | "wrong"
-  | "partial";
+  | "partial"
+  | "skipped";
 export type RealTabStatus =
   | "untried"
   | "usedHelp"
@@ -124,6 +125,7 @@ export function deriveVariantStatus(
   if (scored.outcome === "correct") return "correct";
   if (scored.outcome === "assisted") return "assisted";
   if (scored.outcome === "wrong") return "wrong";
+  if (scored.outcome === "skipped") return "skipped";
   return scored.usedHelp ? "usedHelp" : "untried";
 }
 
@@ -138,17 +140,27 @@ export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus 
 }
 
 /**
- * Opened tabs retain their saved order. Older progress may contain reserved tokens
- * for tabs never opened, or served sessions from before similarSlots existed.
+ * Opened tabs in the CURRENT cycle retain their saved order.
+ * When `cycleStartedAt` is set (after Reset or Daily Review retry), only variants opened
+ * or attempted in the current cycle appear as tabs; prior-cycle sessions remain in
+ * `state.variants` history without reappearing until "+" is pressed again.
+ * Older progress without `cycleStartedAt` or `similarSlots` remains backward-compatible.
  */
 export function openedSimilarTokens(state?: ProblemState | null): string[] {
   if (!state?.variants) return [];
   const slots = Array.isArray(state.similarSlots)
     ? state.similarSlots
     : Object.keys(state.variants);
+  const cycleStartedAt = state.cycleStartedAt;
   return Array.from(new Set(slots)).filter((token) => {
     const record = state.variants?.[token];
-    return record?.role === "try" && Boolean(record.servedAt || record.attempts?.length);
+    if (record?.role !== "try") return false;
+    if (cycleStartedAt) {
+      const servedInCycle = Boolean(record.servedAt) && isInCycle(record.servedAt, cycleStartedAt);
+      const attemptedInCycle = cycleAttempts(record.attempts, cycleStartedAt).length > 0;
+      return servedInCycle || attemptedInCycle;
+    }
+    return Boolean(record.servedAt || record.attempts?.length);
   });
 }
 
@@ -400,6 +412,16 @@ export function resultCardActions(params: {
       ...empty,
       showNextSimilar: nextUntried !== null || canOpenNext,
       nextSimilarSlot: nextUntried?.slot ?? null,
+    };
+  }
+
+  if (activeSimilarVerdict === "skipped") {
+    const nextUntried = pickNextUntriedTab(statuses, activeSimilarToken);
+    return {
+      ...empty,
+      showNextSimilar: nextUntried !== null || canOpenNext,
+      nextSimilarSlot: nextUntried?.slot ?? null,
+      showSimilarBackLink: true,
     };
   }
 

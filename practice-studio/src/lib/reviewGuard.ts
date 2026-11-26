@@ -118,13 +118,17 @@ export function sanitizeCheckMessage(
  * Draft input, parse/invalid-input checks, self-score alone, and prior-cycle records
  * behind `cycleStartedAt` do not count.
  */
-export function hasSubstantiveAttempt(state?: ProblemState | null): boolean {
+export function hasSubstantiveAttempt(
+  state?: ProblemState | null,
+  opts?: { isVariant?: boolean }
+): boolean {
   if (!state) return false;
   const cycleStartedAt = state.cycleStartedAt;
+  const isVariant = Boolean(opts?.isVariant);
   if (
     state.attempts?.some(
       (a) =>
-        a?.kind !== "variant" &&
+        (isVariant || a?.kind !== "variant") &&
         isSubstantiveVerdict(a.verdict) &&
         isTimestampInCycle(a.ts, cycleStartedAt)
     )

@@ -1034,6 +1034,7 @@ export function registerServedVariant(
   const state = mutateProblemState(drillId, unitCode, qid, (st) => {
     const slots = role === "try" ? openedSimilarTokens(st) : null;
     const variants = st.variants ? { ...st.variants } : {};
+    const effectiveServedAt = maxIsoTimestamp(nowIso, st.cycleStartedAt) || nowIso;
     assignedToken = generateVariantToken(variants);
     variants[assignedToken] = {
       variantId,
@@ -1043,7 +1044,7 @@ export function registerServedVariant(
       setupRevealed: false,
       stepsRevealed: false,
       durationMs: 0,
-      servedAt: nowIso,
+      servedAt: effectiveServedAt,
     };
     st.variants = variants;
     if (slots) {
@@ -1054,7 +1055,7 @@ export function registerServedVariant(
         !st.exampleViewedAt ||
         (st.cycleStartedAt && !isTimestampInCycle(st.exampleViewedAt, st.cycleStartedAt))
       ) {
-        st.exampleViewedAt = nowIso;
+        st.exampleViewedAt = effectiveServedAt;
       }
     }
   });
@@ -1085,7 +1086,8 @@ export function recordVariantAttempt(
   qid: string,
   token: string,
   attempt: AttemptRecord,
-  durationMs?: number
+  durationMs?: number,
+  options?: { hintIncrement?: number }
 ): { record: VariantSessionRecord; state: ProblemState } | null {
   let updatedRecord: VariantSessionRecord | null = null;
   const state = mutateProblemState(drillId, unitCode, qid, (st) => {
@@ -1095,11 +1097,19 @@ export function recordVariantAttempt(
       typeof durationMs === "number" && Number.isFinite(durationMs) && durationMs > 0
         ? Math.min(Math.round(durationMs), 600_000)
         : 0;
+    const hintDelta =
+      typeof options?.hintIncrement === "number" && options.hintIncrement > 0
+        ? Math.trunc(options.hintIncrement)
+        : 0;
+    const effectiveTs = maxIsoTimestamp(attempt.ts || new Date().toISOString(), st.cycleStartedAt) ||
+      attempt.ts ||
+      new Date().toISOString();
     const prevInCycle = Boolean(
       !st.cycleStartedAt || (prev.servedAt && isTimestampInCycle(prev.servedAt, st.cycleStartedAt))
     );
     const entry: AttemptRecord = {
       ...attempt,
+      ts: effectiveTs,
       kind: "variant",
       ...(prevInCycle && prev.setupRevealed ? { setupRevealed: true } : {}),
       ...(prevInCycle && prev.stepsRevealed ? { solutionRevealed: true } : {}),
@@ -1108,13 +1118,16 @@ export function recordVariantAttempt(
       ...prev,
       attempts: [...(Array.isArray(prev.attempts) ? prev.attempts : []), entry],
       ...(prevInCycle
-        ? { durationMs: (prev.durationMs || 0) + safeDuration }
+        ? {
+            durationMs: (prev.durationMs || 0) + safeDuration,
+            ...(hintDelta > 0 ? { hintsRevealed: (prev.hintsRevealed || 0) + hintDelta } : {}),
+          }
         : {
-            hintsRevealed: 0,
+            hintsRevealed: hintDelta,
             setupRevealed: false,
             stepsRevealed: false,
             durationMs: safeDuration,
-            servedAt: attempt.ts || new Date().toISOString(),
+            servedAt: effectiveTs,
           }),
     };
     st.variants = { ...st.variants, [token]: nextRec };
@@ -1123,7 +1136,7 @@ export function recordVariantAttempt(
   return updatedRecord ? { record: updatedRecord, state } : null;
 }
 
-/** Update variant session telemetry flags (`hint`, `setupRevealed`, `stepsRevealed`, `reset`). */
+/** Update variant session telemetry flags, reset, or learner annotations (`divergedStep`, `selfScore`, `mistakes`, notes). */
 export function updateVariantSession(
   drillId: string,
   unitCode: string | undefined,
@@ -1134,6 +1147,11 @@ export function updateVariantSession(
     setupRevealed?: boolean;
     stepsRevealed?: boolean;
     reset?: boolean;
+    divergedStep?: number | null;
+    selfScore?: 1 | 0.5 | 0 | null;
+    toggleMistake?: string;
+    mistakeNote?: string;
+    revisitNote?: string;
   }
 ): { record: VariantSessionRecord | null; state: ProblemState } {
   let updatedRecord: VariantSessionRecord | null = null;
@@ -1150,6 +1168,11 @@ export function updateVariantSession(
         stepsRevealed: false,
         durationMs: 0,
       };
+      delete nextRec.divergedStep;
+      delete nextRec.selfScore;
+      delete nextRec.mistakes;
+      delete nextRec.mistakeNote;
+      delete nextRec.revisitNote;
     } else {
       if (st.cycleStartedAt && (!prev.servedAt || !isTimestampInCycle(prev.servedAt, st.cycleStartedAt))) {
         nextRec = {
@@ -1158,8 +1181,13 @@ export function updateVariantSession(
           setupRevealed: false,
           stepsRevealed: false,
           durationMs: 0,
-          servedAt: new Date().toISOString(),
+          servedAt: maxIsoTimestamp(new Date().toISOString(), st.cycleStartedAt) || new Date().toISOString(),
         };
+        delete nextRec.divergedStep;
+        delete nextRec.selfScore;
+        delete nextRec.mistakes;
+        delete nextRec.mistakeNote;
+        delete nextRec.revisitNote;
       }
       if (typeof patch.hintIncrement === "number" && patch.hintIncrement > 0) {
         nextRec.hintsRevealed = (nextRec.hintsRevealed || 0) + patch.hintIncrement;
@@ -1169,6 +1197,40 @@ export function updateVariantSession(
       }
       if (patch.stepsRevealed) {
         nextRec.stepsRevealed = true;
+      }
+      if (patch.divergedStep !== undefined) {
+        if (patch.divergedStep === null) {
+          delete nextRec.divergedStep;
+        } else {
+          nextRec.divergedStep =
+            nextRec.divergedStep === patch.divergedStep ? undefined : patch.divergedStep;
+        }
+      }
+      if (patch.selfScore !== undefined) {
+        if (patch.selfScore === null) {
+          delete nextRec.selfScore;
+        } else {
+          nextRec.selfScore = patch.selfScore;
+        }
+      }
+      if (typeof patch.toggleMistake === "string" && patch.toggleMistake) {
+        const cur = Array.isArray(nextRec.mistakes) ? nextRec.mistakes : [];
+        const nextTags = cur.includes(patch.toggleMistake)
+          ? cur.filter((t) => t !== patch.toggleMistake)
+          : [...cur, patch.toggleMistake];
+        if (nextTags.length > 0) {
+          nextRec.mistakes = nextTags;
+        } else {
+          delete nextRec.mistakes;
+        }
+      }
+      if (typeof patch.mistakeNote === "string") {
+        if (patch.mistakeNote) nextRec.mistakeNote = patch.mistakeNote;
+        else delete nextRec.mistakeNote;
+      }
+      if (typeof patch.revisitNote === "string") {
+        if (patch.revisitNote) nextRec.revisitNote = patch.revisitNote;
+        else delete nextRec.revisitNote;
       }
     }
     st.variants = { ...st.variants, [token]: nextRec };

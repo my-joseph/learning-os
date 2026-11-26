@@ -258,6 +258,12 @@ export interface VariantSessionRecord {
   stepsRevealed?: boolean;
   durationMs?: number;
   servedAt: string;
+  /** Optional learner annotations on this similar session (isolated from the main problem). */
+  divergedStep?: number | null;
+  selfScore?: 1 | 0.5 | 0 | null;
+  mistakes?: string[];
+  mistakeNote?: string;
+  revisitNote?: string;
 }
 
 export interface ReviewDispute {

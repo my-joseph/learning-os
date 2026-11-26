@@ -4,6 +4,7 @@ import {
   addVariantDuration,
   markVariantServed,
   readProgress,
+  recordVariantAttempt,
   registerServedVariant,
   resolveVariantToken,
   updateVariantSession,
@@ -14,6 +15,8 @@ import {
   formatWorkedExampleVariant,
   redactVariantForTry,
 } from "@/lib/redact";
+import { isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { scoreVariant } from "@/lib/scoring";
 import {
   countCycleOriginalWrongAttempts,
   cycleAttempts,
@@ -22,10 +25,12 @@ import {
   isInCycle,
   similarUnlock,
 } from "@/lib/similarTabs";
+import { hasCheckpointHint } from "@/lib/studioRules";
 import {
   collectSeenVariantIds,
   findVariantsForProblem,
   pickExampleVariant,
+  pickNextVariantForCycle,
 } from "@/lib/variants";
 import { AttemptRecord, Problem, ProblemState, VariantSessionRecord } from "@/types/drill";
 
@@ -62,18 +67,6 @@ function findExistingExampleEntry(
   return null;
 }
 
-function nextUnservedVariant(
-  variants: Array<Record<string, unknown>>,
-  state?: ProblemState | null
-) {
-  const seen = new Set(collectSeenVariantIds(state));
-  return variants.find((variant) =>
-    typeof variant.variantId === "string" &&
-    isSafeId(variant.variantId) &&
-    !seen.has(variant.variantId)
-  );
-}
-
 function openedVariantPayload(
   drillId: string,
   qid: string,
@@ -92,8 +85,11 @@ function openedVariantPayload(
     isInCycle(record.servedAt, cycleStartedAt);
 
   const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
+  const lastCycleAttempt =
+    cycleRecAttempts.length > 0 ? cycleRecAttempts[cycleRecAttempts.length - 1] : null;
+  const isSkippedInCycle = !hasCorrectInCycle && lastCycleAttempt?.verdict === "skipped";
   const revealed: Record<string, unknown> = {};
-  if ((record.setupRevealed && inCurrentCycle) || hasCorrectInCycle) {
+  if ((record.setupRevealed && inCurrentCycle) || hasCorrectInCycle || isSkippedInCycle) {
     const disp = extractRevealedPart(variant as Partial<Problem>, "display");
     if ("display" in disp && (disp.display || disp.plainText)) {
       revealed.display = disp.display;
@@ -102,6 +98,7 @@ function openedVariantPayload(
   }
   if (
     hasCorrectInCycle ||
+    isSkippedInCycle ||
     (record.stepsRevealed &&
       canRevealVariantSteps(record, cycleStartedAt))
   ) {
@@ -131,6 +128,19 @@ function openedVariantPayload(
       ),
       durationMs: inCurrentCycle ? record.durationMs || 0 : 0,
       servedAt: record.servedAt,
+      skipped: isSkippedInCycle,
+      divergedStep:
+        inCurrentCycle && typeof record.divergedStep === "number" ? record.divergedStep : null,
+      selfScore:
+        inCurrentCycle && typeof record.selfScore === "number" ? record.selfScore : null,
+      mistakes:
+        inCurrentCycle && Array.isArray(record.mistakes)
+          ? record.mistakes.filter((m): m is string => typeof m === "string")
+          : [],
+      mistakeNote:
+        inCurrentCycle && typeof record.mistakeNote === "string" ? record.mistakeNote : "",
+      revisitNote:
+        inCurrentCycle && typeof record.revisitNote === "string" ? record.revisitNote : "",
     },
     ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
   };
@@ -172,7 +182,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       unlocked: true,
       tabs: deriveTabStatuses(state),
-      exhausted: !nextUnservedVariant(findVariantsForProblem(doc, problem), state),
+      exhausted: !pickNextVariantForCycle(findVariantsForProblem(doc, problem), state),
       exampleViewedAt:
         state?.exampleViewedAt && isInCycle(state.exampleViewedAt, state.cycleStartedAt)
           ? state.exampleViewedAt
@@ -305,9 +315,22 @@ export async function GET(req: NextRequest) {
 const ALLOWED_ACTIONS = new Set([
   "open-next",
   "reveal-steps",
+  "skip",
   "reset",
   "duration",
+  "self-score",
+  "toggle-mistake",
+  "diverged-step",
+  "note",
 ]);
+
+function clampVariantSelfScore(val: unknown): 1 | 0.5 | 0 | null {
+  if (val === null) return null;
+  if (typeof val !== "number" || !Number.isFinite(val)) return null;
+  if (val >= 1) return 1;
+  if (val > 0) return 0.5;
+  return 0;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -339,7 +362,7 @@ export async function POST(req: NextRequest) {
 
       const { doc, problem } = loaded;
       const variants = findVariantsForProblem(doc, problem);
-      const picked = nextUnservedVariant(variants, state);
+      const picked = pickNextVariantForCycle(variants, state);
       if (!picked) {
         return NextResponse.json({ exhausted: true, tabs: deriveTabStatuses(state) });
       }
@@ -353,7 +376,7 @@ export async function POST(req: NextRequest) {
           picked, served.state, served.state.variants![served.token]
         ),
         tabs,
-        exhausted: !nextUnservedVariant(variants, served.state),
+        exhausted: !pickNextVariantForCycle(variants, served.state),
       });
     }
 
@@ -389,11 +412,59 @@ export async function POST(req: NextRequest) {
       resolved.state.cycleStartedAt
     );
     const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
+    const hasSubstantiveInCycle = cycleRecAttempts.some((a) => isSubstantiveVerdict(a.verdict));
 
     if (action === "reveal-steps") {
       if (!hasCorrectInCycle) {
         updateVariantSession(drillId, unitCode, qid, variantToken, { stepsRevealed: true });
       }
+    } else if (action === "skip") {
+      if (hasCorrectInCycle) {
+        return NextResponse.json(
+          { ok: false, error: "This similar question is already complete" },
+          { status: 409 }
+        );
+      }
+      const rawInput = typeof body.input === "string" ? body.input.trim() : "";
+      const durationMs =
+        typeof body.durationMs === "number" && Number.isFinite(body.durationMs)
+          ? body.durationMs
+          : undefined;
+      const loadedVar = resolved.record.variantId
+        ? loadVariantFromDisk(resolved.record.variantId)
+        : null;
+      const countHint =
+        body.countHint === true &&
+        Boolean(
+          loadedVar &&
+            hasCheckpointHint(
+              typeof loadedVar.variant.checkpointHint === "string"
+                ? loadedVar.variant.checkpointHint
+                : undefined
+            )
+        );
+      const ts = new Date().toISOString();
+      const recorded = recordVariantAttempt(
+        drillId,
+        unitCode,
+        qid,
+        variantToken,
+        {
+          input: rawInput || "(Skipped)",
+          ts,
+          verdict: "skipped",
+          kind: "variant",
+        },
+        durationMs,
+        countHint ? { hintIncrement: 1 } : undefined
+      );
+      return NextResponse.json({
+        ok: true,
+        token: variantToken,
+        action: "skip",
+        ts: recorded?.record.attempts.at(-1)?.ts || ts,
+        verdict: "skipped",
+      });
     } else if (action === "reset") {
       updateVariantSession(drillId, unitCode, qid, variantToken, { reset: true });
     } else if (action === "duration") {
@@ -404,6 +475,56 @@ export async function POST(req: NextRequest) {
       if (durationMs > 0) {
         addVariantDuration(drillId, unitCode, qid, variantToken, durationMs);
       }
+    } else if (action === "self-score") {
+      if (!hasSubstantiveInCycle) {
+        return NextResponse.json(
+          { ok: false, error: "Self-score requires a substantive attempt" },
+          { status: 400 }
+        );
+      }
+      const auto = scoreVariant(
+        { ...resolved.record, selfScore: undefined },
+        resolved.state.cycleStartedAt
+      );
+      if (auto.outcome === "skipped") {
+        return NextResponse.json({ ok: true, token: variantToken, action, selfScore: 0 });
+      }
+      const requested = body.score === null ? null : clampVariantSelfScore(body.score);
+      if (body.score !== null && requested === null) {
+        return NextResponse.json({ ok: false, error: "Invalid score value" }, { status: 400 });
+      }
+      const maxAllowed = auto.score ?? 1;
+      const capped =
+        requested === null ? null : ((requested > maxAllowed ? maxAllowed : requested) as 1 | 0.5 | 0);
+      updateVariantSession(drillId, unitCode, qid, variantToken, { selfScore: capped });
+      return NextResponse.json({ ok: true, token: variantToken, action, selfScore: capped });
+    } else if (action === "toggle-mistake") {
+      const tag = typeof body.tag === "string" ? body.tag.trim() : "";
+      const drillTags = Array.isArray(loaded?.doc?.mistakeTags)
+        ? (loaded!.doc.mistakeTags as Array<{ id?: string }>)
+        : [];
+      if (!tag || tag === "concept-gap" || !drillTags.some((t) => t?.id === tag)) {
+        return NextResponse.json({ ok: false, error: "Invalid mistake tag" }, { status: 400 });
+      }
+      updateVariantSession(drillId, unitCode, qid, variantToken, { toggleMistake: tag });
+    } else if (action === "diverged-step") {
+      const stepIdx = body.stepIdx;
+      if (
+        stepIdx !== null &&
+        !(typeof stepIdx === "number" && Number.isSafeInteger(stepIdx) && stepIdx >= 0)
+      ) {
+        return NextResponse.json({ ok: false, error: "Invalid stepIdx" }, { status: 400 });
+      }
+      updateVariantSession(drillId, unitCode, qid, variantToken, { divergedStep: stepIdx });
+    } else if (action === "note") {
+      const patch: { mistakeNote?: string; revisitNote?: string } = {};
+      if (typeof body.mistakeNote === "string") {
+        patch.mistakeNote = body.mistakeNote.slice(0, 2000);
+      }
+      if (typeof body.revisitNote === "string") {
+        patch.revisitNote = body.revisitNote.slice(0, 2000);
+      }
+      updateVariantSession(drillId, unitCode, qid, variantToken, patch);
     }
 
     return NextResponse.json({ ok: true, token: variantToken, action });

@@ -976,7 +976,7 @@ def _apply_lower_only_self_score(
     is_variant: bool,
     has_current_cycle_self_score: bool,
 ) -> dict[str, Any]:
-    if ignore_state_score or is_variant or not has_current_cycle_self_score:
+    if ignore_state_score or not has_current_cycle_self_score:
         return {"score": auto_score, "outcome": auto_outcome, "firstTry": first_try, "usedHelp": used_help}
     self_score = _clamp_score_value(state.get("score"))
     if self_score is not None and self_score < auto_score:
@@ -1147,6 +1147,8 @@ def score_variant(record: dict[str, Any] | None, cycle_started_at: str | None = 
         return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": False}
     served_at = record.get("servedAt")
     in_current_cycle = _is_in_cycle(served_at, cycle_started_at)
+    raw_self_score = record.get("selfScore")
+    has_self_score = in_current_cycle and _clamp_score_value(raw_self_score) is not None
     adapted: dict[str, Any] = {
         "attempts": record.get("attempts") if isinstance(record.get("attempts"), list) else [],
         "hintsRevealed": record.get("hintsRevealed", 0) if in_current_cycle else 0,
@@ -1154,12 +1156,16 @@ def score_variant(record: dict[str, Any] | None, cycle_started_at: str | None = 
         "solutionRevealedBeforeAnswer": bool(record.get("stepsRevealed")) if in_current_cycle else False,
         "cycleStartedAt": cycle_started_at,
     }
+    if has_self_score:
+        adapted["score"] = raw_self_score
+        if cycle_started_at:
+            adapted["selfScoreAt"] = served_at or cycle_started_at
     return score_problem(
         adapted,
         cycle_started_at=cycle_started_at,
         has_cycle_override=True,
         is_variant=True,
-        ignore_state_score=True,
+        ignore_state_score=not has_self_score,
     )
 
 

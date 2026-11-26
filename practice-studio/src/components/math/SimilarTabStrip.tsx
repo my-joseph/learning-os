@@ -90,9 +90,20 @@ export function SimilarTabStrip({
     }
   }, [activeTab, lastSlot]);
 
+  const activeEntryStatus =
+    activeTab === "q"
+      ? realStatus
+      : openedTabs.find((tab) => slotToTabId(tab.slot) === activeTab)?.status ?? "untried";
+  const needsPractice = (status: SimilarTabStatus | RealTabStatus) =>
+    status === "wrong" ||
+    status === "partial" ||
+    status === "assisted" ||
+    status === "skipped";
   const disabled = locked || exhausted || loading;
-  const invite = !disabled && !error &&
-    (realStatus === "wrong" || realStatus === "partial" || realStatus === "assisted");
+  const invite =
+    !disabled &&
+    !error &&
+    (needsPractice(realStatus) || (activeTab !== "q" && needsPractice(activeEntryStatus)));
   const tooltip = locked
     ? "Answer the question first"
     : loading
