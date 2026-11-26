@@ -14,6 +14,10 @@ const ReviewSyncPage = dynamic(
   () => import("@/components/review-sync/ReviewSyncPage").then((mod) => mod.ReviewSyncPage),
   { ssr: false }
 );
+const LabReviewPage = dynamic(
+  () => import("@/components/review-sync/LabReviewPage").then((mod) => mod.LabReviewPage),
+  { ssr: false }
+);
 import { StudioShell } from "@/components/shell/StudioShell";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -229,32 +233,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         ),
       onSynced: () => loadDrillsList(),
     });
-
-  const handleStatusOverrideChange = (override: "Graded" | "Needs Retry") => {
-    setStatusOverride(override);
-    let updated: DrillDocument | null = null;
-    setCurrentDrill((prev) => {
-      if (!prev) return prev;
-      updated = {
-        ...prev,
-        sessionSummary: { ...prev.sessionSummary, statusOverride: override },
-      };
-      return updated;
-    });
-    if (updated) {
-      triggerAutoSave(updated);
-    }
-  };
-
-  const handleTrySimilarQuestion = (probId: string, idx: number) => {
-    setPendingSimilarProbId(probId);
-    handleSelectQuestion(idx);
-    if (currentDrill) {
-      const base = drillHref(currentDrill.drillId, probId);
-      const sep = base.includes("?") ? "&" : "?";
-      router.replace(`${base}${sep}similar=1`, { scroll: false });
-    }
-  };
 
   const handleSelectDrill = (nextDrillId: string) => {
     if (nextDrillId === drillId) return;
@@ -488,6 +466,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onSetScore={(score) => handleSetScore(prob.id, score)}
                   onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                   onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
+                  onRevisitNoteChange={(note) => handleRevisitNoteChange(prob.id, note)}
                   onResetProblem={() => handleResetProblem(prob.id)}
                   onHintRevealed={() => handleHintRevealed(prob.id)}
                   onSetupRevealed={() => handleSetupRevealed(prob.id)}
@@ -534,6 +513,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 onTestReportChange={(rep, score) => handleTestReportChange(prob.id, rep, score)}
                 onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
+                onRevisitNoteChange={(note) => handleRevisitNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}
                 onHintRevealed={() => handleHintRevealed(prob.id)}
                 onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
@@ -556,24 +536,25 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           initial="hidden"
           animate="shown"
         >
-          <ReviewSyncPage
+          {isLabId(currentDrill.drillId) ? <LabReviewPage
             currentDrill={currentDrill}
-            statusOverride={statusOverride}
-            isSyncing={isSyncing}
-            syncState={syncState}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
             workspaceDrills={workspaceDrills}
-            onStatusOverrideChange={handleStatusOverrideChange}
             onBackToQuiz={() => setViewMode("quiz")}
-            onConfirmSync={handleConfirmSyncToNotion}
             onSelectQuestion={handleSelectQuestion}
-            onTrySimilarQuestion={handleTrySimilarQuestion}
             onSetScore={handleSetScore}
             onToggleMistakeTag={handleToggleMistakeTag}
             onMistakeNoteChange={handleMistakeNoteChange}
             onRevisitNoteChange={handleRevisitNoteChange}
             onSelectDrill={handleSelectDrill}
-          />
+          /> : <ReviewSyncPage
+            currentDrill={currentDrill}
+            statusOverride={statusOverride}
+            isSyncing={isSyncing}
+            syncState={syncState}
+            onBackToQuiz={() => setViewMode("quiz")}
+            onConfirmSync={handleConfirmSyncToNotion}
+          />}
         </m.div>
       )}
       {(() => {

@@ -51,6 +51,7 @@ export interface MathWorkspaceProps {
   onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
+  onRevisitNoteChange?: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
@@ -95,6 +96,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onSetScore,
   onToggleMistakeTag,
   onMistakeNoteChange,
+  onRevisitNoteChange,
   onResetProblem,
   onHintRevealed,
   onSetupRevealed,
@@ -657,6 +659,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                           onSetScore={onSetScore}
                           onToggleMistakeTag={onToggleMistakeTag}
                           onMistakeNoteChange={onMistakeNoteChange}
+                          revisitNote={problem.state.revisitNote}
+                          onRevisitNoteChange={onRevisitNoteChange}
                         />
                       }
                     />

@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { renderToStaticMarkup } from "react-dom/server";
 import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
+import { LabReviewPage } from "../src/components/review-sync/LabReviewPage";
 import { NextActions } from "../src/components/review-sync/NextActions";
 import { executeNotionSync, mergeSyncStampIntoLatestDrill } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
@@ -19,6 +20,7 @@ import {
   shortRowTitle,
   verifiedAnswerLabel,
 } from "../src/lib/reviewRow";
+import type { ReviewSyncPageProps } from "../src/components/review-sync/ReviewSyncPage";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
@@ -73,20 +75,14 @@ const mathDrill: DrillDocument = {
   localFilePath: "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-04.json",
 };
 
-function render(drill: DrillDocument, overrides: Record<string, unknown> = {}): string {
+function render(drill: DrillDocument, overrides: Partial<ReviewSyncPageProps> = {}): string {
   return renderToStaticMarkup(
     <ReviewSyncPage
       currentDrill={drill}
       statusOverride={null}
       isSyncing={false}
-      onStatusOverrideChange={noop}
       onBackToQuiz={noop}
       onConfirmSync={noop}
-      onSelectQuestion={noop}
-      onSetScore={noop}
-      onToggleMistakeTag={noop}
-      onMistakeNoteChange={noop}
-      onRevisitNoteChange={noop}
       {...overrides}
     />
   );
@@ -279,7 +275,7 @@ async function verifyStamping() {
   assert.match(partialHtml, /Synced with problems/);
   assert.match(partialHtml, /Mistake Log/);
   assert.match(partialHtml, /Unit review \(MTH-T01-C01-U01\)/);
-  assert.match(partialHtml, /<span>Retry<\/span>/);
+  assert.match(partialHtml, />Retry<\/button>/);
   assert.doesNotMatch(partialHtml, /Synced to Notion/);
 
   // Hang path: a fetch that never settles aborts and enters error phase with Retry enabled
@@ -300,8 +296,8 @@ async function verifyStamping() {
   assert.match(hungResult.syncState.message || "", /timed out/i);
   assert.equal(hungResult.stampedDoc, null, "timed out sync must not stamp");
   const timeoutErrorHtml = render(mathDrill, { syncState: hungResult.syncState, isSyncing: false });
-  assert.match(timeoutErrorHtml, /Couldn&#x27;t sync/);
-  const retryLabelIndex = timeoutErrorHtml.indexOf("<span>Retry</span>");
+  assert.match(timeoutErrorHtml, /Couldn’t sync/);
+  const retryLabelIndex = timeoutErrorHtml.indexOf(">Retry</button>");
   const retryButtonStart = timeoutErrorHtml.lastIndexOf("<button", retryLabelIndex);
   const retryButtonEnd = timeoutErrorHtml.indexOf(">", retryButtonStart);
   assert.ok(
@@ -393,18 +389,48 @@ assert.equal(labResponse.status, 400);
 assert.equal(spawned, false, "lab submit must never call the drill sync runner");
 setNotionDrillSyncSpawnerForTests(null);
 
-// State render coverage, zero-leak assertions, and PRG/lab variants.
-const idleHtml = render(mathDrill, { initialExpandedIds: ["Q01", "Q02", "Q03"] });
-assert.match(idleHtml, /Not synced yet/);
-assert.doesNotMatch(idleHtml, /Level 1/, "Review & Sync row headers must hide Level N labels");
-assert.match(idleHtml, /Your answer:/);
-assert.match(idleHtml, /2\+16i/);
-assert.match(idleHtml, /Trap:.*Positive last term/);
-assert.match(idleHtml, /Correct after 2 hints/);
-assert.match(idleHtml, /Not tried yet/);
-assert.doesNotMatch(idleHtml, /Verified answer:.*14 \+ 8i/, "unanswered row must not reveal the verified answer");
-assert.doesNotMatch(idleHtml, /aria-label="Set Q3 score to/);
-assert.doesNotMatch(idleHtml, /Note for Q3/);
+// The card only includes score, outcome totals, and sync feedback.
+const idleHtml = render(mathDrill);
+assert.match(idleHtml, /<h2[^>]*>Keep practising<\/h2>/);
+assert.match(idleHtml, />16\.7%<\/span>/);
+assert.match(idleHtml, /0 of 3 correct · 1 with help · 1 wrong · 1 skipped \/ not tried/);
+assert.match(idleHtml, /Sync to update mastery and schedule/);
+assert.doesNotMatch(idleHtml, /To review|Got right|What next|Self-score|Positive last term|Check the final product/);
+assert.doesNotMatch(idleHtml, /Find the product|2\+16i|14\s*\+\s*8i|Expand each term|Distribute each term/);
+assert.deepEqual([...idleHtml.matchAll(/<button[^>]*>([^<]+)<\/button>/g)].map((match) => match[1]), ["Back", "Sync"]);
+
+const scoreDrill = (correct: number, assisted: number, wrong: number, skipped: number, total = 10) => ({
+  ...mathDrill,
+  problems: Array.from({ length: total }, (_, index) => {
+    const id = `Q${index + 1}`;
+    if (index >= correct + assisted + wrong) {
+      return makeProblem(id, index < correct + assisted + wrong + skipped
+        ? { ...baseState(), skipped: true } : undefined);
+    }
+    return makeProblem(id, {
+      ...baseState(),
+      hintsRevealed: index >= correct && index < correct + assisted ? 1 : 0,
+      attempts: [{ input: "fixture", ts: "2026-11-19T00:00:00Z", verdict: index < correct + assisted ? "correct" : "incorrect" }],
+    });
+  }),
+});
+
+for (const [correct, assisted, wrong, skipped, score, headline] of [
+  [9, 0, 1, 0, 90, "Great work!"],
+  [7, 2, 1, 0, 80, "Great work!"],
+  [7, 1, 1, 1, 75, "Good progress"],
+  [4, 2, 2, 1, 50, "Good progress"],
+  [4, 1, 3, 0, 45, "Keep practising"],
+] as const) {
+  const card = render(scoreDrill(correct, assisted, wrong, skipped));
+  assert.ok(card.includes(`Score ${score}%. Correct ${correct}, Correct with help ${assisted}, Wrong ${wrong}, Skipped / not tried ${10 - correct - assisted - wrong}.`));
+  assert.ok(card.includes(`>${score}%</span>`));
+  assert.ok(card.includes(`>${headline}</h2>`));
+  const counts = [...card.matchAll(/<td>(\d+)<\/td>/g)].map((match) => Number(match[1]));
+  assert.equal(counts.reduce((sum, count) => sum + count, 0), 10);
+}
+assert.match(render(scoreDrill(7, 2, 1, 0)), /7 of 10 correct · 2 with help · 1 wrong/);
+
 const revisitNoteDrill = {
   ...mathDrill,
   problems: mathDrill.problems.map((problem, index) =>
@@ -423,117 +449,62 @@ assert.equal(getPersistedStatusOverride(overriddenSummary), "Graded");
 assert.equal(getPersistedStatusOverride({ ...overriddenSummary, statusOverride: "Needs Retry" }), "Needs Retry");
 assert.equal(getPersistedStatusOverride({ ...overriddenSummary, statusOverride: null }), null);
 
-const untouched = { ...mathDrill, problems: [makeProblem("Q01"), makeProblem("Q02")] };
-const untouchedHtml = render(untouched);
-assert.match(untouchedHtml, /Nothing answered yet/);
-assert.match(untouchedHtml, /Nothing to sync yet — answer at least one question/);
-assert.match(untouchedHtml, /Start Q1/);
-assert.match(untouchedHtml, /disabled=""/);
-assert.doesNotMatch(untouchedHtml, /0 \/ 2 points/);
-assert.doesNotMatch(untouchedHtml, /No mistakes logged/);
-assert.doesNotMatch(untouchedHtml, /Mark as graded/);
-assert.doesNotMatch(untouchedHtml, /They are sent as not tried/);
+for (const total of [0, 2]) {
+  const untouchedHtml = render(scoreDrill(0, 0, 0, 0, total));
+  assert.match(untouchedHtml, />0%<\/span>/);
+  assert.match(untouchedHtml, /Complete or skip an item to sync/);
+  assert.match(untouchedHtml, /<button[^>]*disabled=""[^>]*>Sync<\/button>/);
+}
+assert.doesNotMatch(render(skippedDrill), /<button[^>]*disabled=""[^>]*>Sync<\/button>/);
 
 for (const [state, expected] of [
   [{ phase: "syncing" }, /Syncing…/],
-  [{ phase: "degraded", message: "missing token" }, /Saved locally/],
-  [{ phase: "error", message: "sync failed" }, /Couldn&#x27;t sync/],
-  [{ phase: "offline", message: "You're offline." }, /You&#x27;re offline/],
-  [{ phase: "dryRun", isPilot: true, message: "Pilot mode: nothing was written to Notion." }, /Pilot mode: nothing was written to Notion/],
+  [{ phase: "degraded" }, /Synced with problems/],
+  [{ phase: "error", message: "PRIVATE_RUNNER_OUTPUT" }, /Couldn’t sync/],
+  [{ phase: "offline" }, /You’re offline/],
+  [{ phase: "dryRun", isPilot: true }, /Pilot sync saved locally/],
 ] as const) {
-  assert.match(render(mathDrill, { syncState: state, isSyncing: state.phase === "syncing" }), expected);
+  const html = render(mathDrill, { syncState: state });
+  assert.match(html, expected);
+  assert.doesNotMatch(html, /PRIVATE_RUNNER_OUTPUT/);
 }
-
-// While syncing, notes, tags, self-score, and status toggle are all disabled (review_sync C2)
-const syncingEditHtml = render(mathDrill, {
-  isSyncing: true,
-  syncState: { phase: "syncing" },
-  initialExpandedIds: ["Q01"],
-});
-assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*>Mark as graded<\/button>/, "status toggle disabled while syncing");
-assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*aria-pressed="false"[^>]*>1\.0<\/button>/, "self-score disabled while syncing");
-assert.match(syncingEditHtml, /<button[^>]*disabled=""[^>]*aria-pressed="true"[^>]*>.*Positive last term/, "mistake tag disabled while syncing");
-assert.match(syncingEditHtml, /<input[^>]*disabled=""[^>]*aria-label="Note for Q1"/, "mistake note disabled while syncing");
-assert.match(syncingEditHtml, /<input[^>]*disabled=""[^>]*aria-label="Revisit note for Q1"/, "revisit note disabled while syncing");
+const syncingHtml = render(mathDrill, { isSyncing: true });
+assert.match(syncingHtml, /<button[^>]*disabled=""[^>]*>.*Syncing…<\/button>/);
+assert.match(syncingHtml, /animate-spin/);
 
 const syncedFingerprint = summaryFingerprint(buildSessionSummary(mathDrill));
 const syncedDrill = { ...mathDrill, sessionSummary: { ...mathDrill.sessionSummary,
   syncedToNotionAt: "2026-11-19T10:00:00.000Z", syncedFingerprint } };
-assert.match(render(syncedDrill, { syncState: { phase: "synced", at: "2026-11-19T10:00:00.000Z" } }), /Synced to Notion/);
+const schedule = { mastery: 2, lastReviewed: "2026-11-19", nextReview: "2026-11-24" };
+const syncedHtml = render(syncedDrill, {
+  syncState: { phase: "synced", unitReviews: { [mathDrill.unitCode]: schedule } },
+});
+assert.match(syncedHtml, /<button[^>]*bg-status-correct[^>]*disabled=""[^>]*>Synced<\/button>/);
+assert.match(syncedHtml, /Unit mastery 2 · next review Tue 24 Nov/);
+assert.match(render(syncedDrill, { scheduleCache: { [mathDrill.unitCode]: schedule } }), /next review Tue 24 Nov/);
 const pendingHtml = render({ ...syncedDrill, notionSyncProblems: ["blockCleanup"] });
 assert.match(pendingHtml, /Synced with problems/);
-assert.doesNotMatch(pendingHtml, /Synced to Notion/);
+assert.doesNotMatch(pendingHtml, />Synced<\/button>/);
 const changedSinceSync = { ...syncedDrill, problems: syncedDrill.problems.map((problem, i) =>
   i === 0 ? { ...problem, state: { ...problem.state, mistakeNote: "Updated after sync" } } : problem) };
-assert.match(render(changedSinceSync), /You changed/);
+assert.match(render(changedSinceSync), /Sync to update mastery and schedule/);
 
-const allCorrect = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(), score: 1,
-  attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }] })] };
-assert.match(render(allCorrect), /right on the first try/);
-assert.match(render(allCorrect), /Nothing to fix/);
-assert.match(render(allCorrect), /1 \/ 1<\/span><span> points/);
-assert.match(render(mathDrill), /0\.5 \/ 3<\/span><span> points/);
-assert.match(render(mathDrill), /0\.5 \/ 3<\/span><span> points/);
-const pointsHtml = render(mathDrill);
-assert.ok((pointsHtml.match(/0\.5 \/ 3/g) || []).length >= 2,
-  "summary and sync card use the same points figure");
-assert.match(pointsHtml, /1 of 3 right/, "right-answer count is secondary to the shared points figure");
-const manyWrong = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id) =>
-  makeProblem(id, { ...baseState(), score: 0, userInput: "wrong", attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect", matchedTrap: "positive-last-term" }] })) };
-const manyWrongHtml = render(manyWrong);
-assert.match(manyWrongHtml, /Same trap/);
-assert.match(manyWrongHtml, /aria-expanded="false"/);
-const weakSpotHtml = render(mathDrill, {
-  dueReviewCount: 0,
-  weakSpotUnits: [{ unitCode: mathDrill.unitCode, unitTitle: mathDrill.unitTitle, subject: "MTH", itemCount: 2, drillCount: 1, open: [{ id: "positive-last-term", name: "Positive last term", matches: 2, drills: 1, last: "2026-11-19", subject: "MTH" }], closed: [], levels: {}, assistedCount: 0, skipped: [] }],
-  workspaceDrills: [{ drillId: "DRL-MTH-T02-C01-U01-03", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-18", questionCount: 4, difficultyMode: "Mixed" }],
-  onTrySimilarQuestion: noop,
-});
-assert.match(weakSpotHtml, /href="\/review\?trap=positive-last-term"/);
-assert.match(weakSpotHtml, /Practise Positive last term/);
-assert.doesNotMatch(weakSpotHtml, /Practise positive-last-term/);
-assert.match(weakSpotHtml, /Next drill: Complex Numbers · Set 3/);
-assert.match(weakSpotHtml, /id="review-row-Q01" class="[^"]*"><button[^>]*aria-expanded="true"/,
-  "To review rows start expanded when there are three items");
-const prgWeakSpotHtml = render({ ...prgDrill, problems: [makeProblem("Q01", {
-  ...baseState(), score: 0, attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }],
-})] }, {
-  dueReviewCount: 0,
-  weakSpotUnits: [{ unitCode: "PRG-T01-C03-U05", unitTitle: "Naming", subject: "PRG", itemCount: 1,
-    drillCount: 1, open: [{ id: "QC-NAMING", name: "QC-NAMING", matches: 1, drills: 1,
-      last: "2026-11-19", subject: "PRG" }], closed: [], levels: {}, assistedCount: 0, skipped: [] }],
-});
-assert.match(prgWeakSpotHtml, /href="\/review\?trap=QC-NAMING"/);
-assert.match(prgWeakSpotHtml, /Practise QC naming/);
-assert.doesNotMatch(prgWeakSpotHtml, /Practise QC-NAMING/);
-const similarRowHtml = render({ ...mathDrill, problems: [{ ...mathDrill.problems[0], hasVariants: true }] }, { initialExpandedIds: ["Q01"], onTrySimilarQuestion: noop });
-assert.match(similarRowHtml, /Try a similar question/);
-assert.match(similarRowHtml, /min-h-\[44px\]/, "row text actions have mobile tap targets");
-assert.match(weakSpotHtml, /min-h-\[44px\]/, "What next links have mobile tap targets");
-
-const lineChoiceHtml = render({ ...mathDrill, problems: [{ ...lineChoiceProblem, state: {
-  ...baseState(), userInput: "step-c", score: 0,
-  attempts: [{ input: "step-c", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }],
-} }] }, { initialExpandedIds: ["Q01"] });
-assert.match(lineChoiceHtml, /Your answer: <\/span><span[^>]*><span[^>]*>Line 3/,
-  "choice answer display resolves an option ID to the learner-facing label");
-
-const prgHtml = render({ ...prgDrill, problems: [makeProblem("Q01", { ...baseState(), score: 0,
-  lastTestReport: { allPassed: false, score: 0.5, passedCount: 2, totalCount: 4, visibleResults: [], hiddenPassed: 0, hiddenTotal: 0, executionTimeMs: 2 },
-  reviews: [{ at: "2026-11-19T00:00:00Z", attempt: 1, codeHash: "sha256:test", code: "", tests: { passed: 2, total: 4, failed: [] }, lint: [], typecheck: [], findings: [{ check: "QC-ERRORS", severity: "must", line: 1, note: "Use a typed error." }], verdict: "revise", explain: null }] })] },
-  { initialExpandedIds: ["Q01"] });
-assert.doesNotMatch(prgHtml, /undefined/);
-assert.doesNotMatch(prgHtml, /Set Q1 score to/);
-assert.match(prgHtml, /Tests 2\/4/);
-assert.match(prgHtml, /QC-ERRORS/);
-assert.doesNotMatch(prgHtml, /SECRET_SOLUTION_CODE/);
-const labHtml = render({ ...labDrill, problems: [makeProblem("M1")] });
+const labHtml = renderToStaticMarkup(
+  <LabReviewPage
+    currentDrill={{ ...labDrill, problems: [makeProblem("M1")] }}
+    onBackToQuiz={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
 assert.match(labHtml, /Submit lab/);
 assert.match(labHtml, /Copy submit command/);
 assert.match(labHtml, /Start M1/);
 assert.doesNotMatch(labHtml, /Sync to Notion/);
 
-// Rule 5: PRG pass review without re-running tests scores 1 everywhere; awaiting review shows Awaiting review + Copy review request.
+// PRG totals use the canonical scoring rule, including work awaiting review.
 const prgPassNoReport = {
   ...prgDrill,
   problems: [
@@ -578,11 +549,9 @@ const prgAwaitingHtml = render(
         },
       }),
     ],
-  },
-  { initialExpandedIds: ["Q01"] }
+  }
 );
-assert.match(prgAwaitingHtml, /Awaiting review/);
-assert.match(prgAwaitingHtml, /Copy review request/);
+assert.match(prgAwaitingHtml, /Score 0%. Correct 0, Correct with help 0, Wrong 0, Skipped \/ not tried 1/);
 
 // Rule 3: Self-score may only lower auto score or set unverified; never raises wrong/skipped or clears skipped.
 {
