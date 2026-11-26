@@ -84,7 +84,7 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
 
 ## 6. First drill and Similar variants
 
-- **MTH:** Run the `new-math-drill` skill for the unit code (unit-only drill, default levels). After ingest, run `.venv/bin/python -m math_engine.variant_bank --coverage <UNIT>` (or the new drill file). For every uncovered `(archetypeKey, level)` pair (< 3 variants), create AI-made variants (~3 per pair: same form with new numbers, changed form e.g. reverse, and one level up when the vault allows) via `variant_bank --add` with its gates (blind solve for L3+, reviewer, `--check --originality`).
+- **MTH:** Run the `new-math-drill` skill for the unit code (unit-only drill, default levels). Complete its required Similar coverage and pass the gate in step 9 before opening the drill PR.
 - **PRG:** Say that the `new-code-drill` skill comes next and stop there for now (do not hand-write drills).
 
 ## 7. Ship and report

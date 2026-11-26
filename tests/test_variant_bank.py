@@ -328,6 +328,7 @@ def test_coverage_report_and_ingest_warning(
     ingest_out = capsys.readouterr().out.strip().splitlines()
     assert ingest_out[-1].startswith("WARNING: Similar variant bank has 1 uncovered pair(s)"), ingest_out
     assert f"{p1['archetypeKey']}@L{p1['level']} (0/3)" in ingest_out[-1]
+    assert "python -m math_engine.variant_bank --coverage-gate" in ingest_out[-1]
 
     # Now populate 3 variants for that exact (archetypeKey, level) -> ingest prints NO warning.
     covered_variants = tmp_path / "covered_variants"

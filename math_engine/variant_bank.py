@@ -547,6 +547,7 @@ def add_variants(
 
 
 DEFAULT_MIN_VARIANTS = 3
+COVERAGE_BASELINE_PATH = Path("tests/data/variant_coverage_baseline.json")
 
 
 def _candidate_bank_codes_for_scope(codes: Iterable[str], variants_dir: Optional[str] = None) -> List[str]:
@@ -693,6 +694,62 @@ def compute_drill_coverage(
     )
 
 
+def collect_uncovered_pairs(repo_root: Path) -> Dict[str, List[Dict[str, Any]]]:
+    """Return uncovered coverage entries keyed by drill ID for canonical math drills."""
+    data_root = repo_root / "drills" / "data"
+    variants_dir = str(repo_root / "drills" / "variants")
+    uncovered = {}
+    for scope in sorted(data_root.iterdir()):
+        # PRG-* drills have no Similar banks. Only MTH-* is in scope for this gate.
+        if not scope.name.startswith("MTH-"):
+            continue
+        for path in sorted(scope.glob("*.json")):
+            drill_file = assert_safe_contained_path(path, data_root, suffixes=JSON_SUFFIXES)
+            drill = json.loads(drill_file.read_text(encoding="utf-8"))
+            gaps = compute_drill_coverage(drill, variants_dir=variants_dir)["uncoveredPairs"]
+            if gaps:
+                uncovered[drill.get("drillId") or path.stem] = gaps
+    return uncovered
+
+
+def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
+    """Check canonical math drill coverage against the shrink-only baseline."""
+    root = repo_root or Path(find_repo_root())
+    baseline = json.loads((root / COVERAGE_BASELINE_PATH).read_text(encoding="utf-8"))
+    expected = {(drill, arch, level) for drill, pairs in baseline.items() for arch, level in pairs}
+    uncovered = collect_uncovered_pairs(root)
+    actual = {
+        (drill, entry["archetypeKey"], entry["level"]): entry
+        for drill, entries in uncovered.items()
+        for entry in entries
+    }
+    new = actual.keys() - expected
+    stale = expected - actual.keys()
+    passed = not (new or stale)
+    lines = [
+        f"{'PASS' if passed else 'FAIL'} Similar variant coverage gate "
+        f"(minimum {DEFAULT_MIN_VARIANTS} variants per pair)."
+    ]
+    for key, entry in sorted(actual.items()):
+        drill, arch, level = key
+        status = "FAIL New uncovered pair" if key in new else "Baseline uncovered pair"
+        lines.append(
+            f"{status}: {drill} {arch} @ L{level} (have {entry['variantCount']}, need {entry['needed']} more)."
+        )
+    if new:
+        lines.append("Add reviewed Similar variants to cover new pairs. Adding baseline entries is forbidden.")
+    for drill, arch, level in sorted(stale):
+        pair = json.dumps([arch, level])
+        lines.append(
+            f"FAIL Stale baseline entry: {drill} {arch} @ L{level} is covered or no longer used. "
+            f"Delete {pair} under {drill} in {COVERAGE_BASELINE_PATH}."
+        )
+    if stale:
+        lines.append("Remove any drill key left with an empty list.")
+    lines.append(f"Baseline: {len(baseline)} drill(s), {len(expected)} pair(s).")
+    return passed, "\n".join(lines)
+
+
 def compute_coverage(
     target: str,
     *,
@@ -800,7 +857,8 @@ def format_coverage_warning(
     target_hint = drill_path or drill_doc.get("unitCode") or ""
     return (
         f"WARNING: Similar variant bank has {len(uncovered)} uncovered pair(s) (< {min_variants} variants): "
-        f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}"
+        f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}. "
+        "Check CI readiness with: python -m math_engine.variant_bank --coverage-gate"
     )
 
 
@@ -813,6 +871,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--coverage",
         metavar="UNIT_OR_DRILL",
         help="Report variant counts per (archetypeKey, level) used by a unit's drills or a drill JSON file.",
+    )
+    group.add_argument(
+        "--coverage-gate",
+        action="store_true",
+        help="Check all math drills against the shrink-only Similar coverage baseline.",
     )
     parser.add_argument("--unit", help="Unit code override (optional with --add).")
     parser.add_argument(
@@ -839,6 +902,15 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.coverage_gate:
+        try:
+            passed, report = check_coverage_gate()
+        except (OSError, ValueError) as exc:
+            print(f"FAIL Could not check the Similar variant coverage gate: {exc}")
+            return 1
+        print(report)
+        return 0 if passed else 1
 
     if args.coverage:
         try:

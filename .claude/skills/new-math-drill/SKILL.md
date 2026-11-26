@@ -108,26 +108,33 @@ It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. 
 - Log every `fix` and every drop with `.venv/bin/python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped` (`rules/00_core.md` §11), using the drill's unit and problem id in `--where`. Log a tool gap the same way with `--action open`. Notes in the log must not contain answers.
 
 
-## 8. Ingest, then test everything
+## 8. Ingest
 
 ```bash
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file scratch/drafts/<file>.json
-.venv/bin/python -m pytest -q
 ```
-
-Run the **full** test suite after ingest and before anything leaves the machine. If a test fails, fix the cause (or delete the new drill file) before step 10; never sync or push a drill with a failing test.
 
 Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json`, records the used contexts in the vault, and prints a non-blocking warning if any `(archetypeKey, level)` pair in the drill has < 3 Similar variants.
 
-## 9. Variant coverage (Similar bank)
+## 9. Complete Similar coverage and test before the drill PR
 
 ```bash
 .venv/bin/python -m math_engine.variant_bank --coverage drills/data/<UNIT>/<DRILL_ID>.json
 ```
 
-For every `(archetypeKey, level)` pair flagged with `< 3` variants, create AI-made variants (~3 per pair: same form with new numbers, changed form e.g. reverse, and one level up when the vault allows) through the existing `variant_bank --add` path with its full gates:
+Bring every `(archetypeKey, level)` pair in the new drill to at least three AI-made Similar variants at that exact level. Vary the numbers or form while preserving the archetype and level.
+
 1. Run blind solve (required for L3+, plus context check when non-empty) and reviewer subagent on the variant draft.
 2. Append via `.venv/bin/python -m math_engine.variant_bank --add scratch/drafts/<UNIT>-variants.json` and check originality with `.venv/bin/python -m math_engine.variant_bank --check <UNIT> --originality`.
+
+Run the coverage gate and the **full** test suite before syncing or opening the PR. Fix every failure before step 10.
+
+```bash
+.venv/bin/python -m math_engine.variant_bank --coverage-gate
+.venv/bin/python -m pytest -q
+```
+
+CI blocks math drill PRs with any new uncovered pair. Delete any stale pair flagged in `tests/data/variant_coverage_baseline.json` when closing an existing gap. Adding baseline entries is forbidden.
 
 Before reporting, log every friction item from the run: anything you had to guess, a gate or tool that misbehaved (including a workaround you used), a rule that was unclear, a vault gap. Use `.venv/bin/python -m scripts.issues add` with the matching kind; listing it in the report is not enough.
 
@@ -135,9 +142,10 @@ Report to the learner in a few lines and **without answers or prompts**: drill I
 
 ## 10. Sync, then ship (in this order)
 
-Only after every test in step 8 (and any variant checks in step 9) passed: (1) sync to Notion, which adds the drill's entry to `id_map.json`; (2) commit the drill, its vault, `id_map.json` (and any updated variant bank); (3) push and open the PR.
+Once step 9 passes, sync to Notion to add the drill's entry to `id_map.json`. Commit the drill, its vault, `id_map.json`, and any variant bank or baseline changes. Push and open the PR.
 
 - Follow the canonical branch, PR, and merge policy in `rules/00_core.md` §10; task-specific instructions may narrow it.
+- For a drill-only PR eligible for self-merge under §10, wait for CI to pass the coverage gate before merging. A PR that changes a variant bank or the coverage baseline follows the standard review and merge policy.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
 - Register the new drill’s pristine overview and Practice Studio link in Notion once the tests pass. Question and solution blocks require saved attempt evidence. Run `.venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json` from the repo root. A worktree reads the main checkout's `.env` automatically. Report a result with `degraded: true` as pending Notion sync. Report a partial sync with the steps listed in `failedSteps`.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
