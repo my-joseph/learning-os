@@ -37,6 +37,7 @@ The dates record policy approval for these Studio choices.
 | `three`, `@react-three/fiber`, `@react-three/drei` | 3D figures | Renders interactive geometry in lazy-loaded views. | 2026-11-25 |
 | `class-variance-authority` | Component variants | Defines shared variants, including Code Block surfaces and lines. | 2026-11-25 |
 | `clsx`, `tailwind-merge` | Class composition | Power Studio's `cn` helper, which supplies the Code Block registry's `cn` dependency. | 2026-11-25 |
+| [Isometric](https://isometric.buildlab.in) engine (vendored, MIT, Abhishek Mallick) | Interactive isometric line figures | Local copy in `src/lib/isometric/` ported to React 18; Studio-token theme in `src/components/isometric/isometric.css`. **Experimental — not used in drills, unit pages or the main UI until the learner polishes and approves it.** Demos only at `/ui-poc/isometric` (Cube, Pulley, Lever) and `/ui-poc/isometric-math` (Disk method). | 2026-11-26 |
 
 ## Shared UI exports
 

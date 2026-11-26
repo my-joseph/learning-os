@@ -130,7 +130,9 @@ export async function auditDesignSystem() {
     return [[group, value]];
   }
 
+  const vendoredIsometric = `${path.sep}src${path.sep}lib${path.sep}isometric${path.sep}`;
   for (const file of sourceFiles(path.join(studioRoot, "src"))) {
+    if (file.includes(vendoredIsometric)) continue;
     const source = readFileSync(file, "utf8");
     if (file.endsWith(".css")) {
       const css = postcss.parse(source, { from: file });

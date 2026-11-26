@@ -16,6 +16,14 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 - Figures: no builder for area under a curve or a tangent line.
 - Trigonometry figures: no unit-circle builder and no right triangle labelled with an angle θ and opposite/adjacent/hypotenuse (`build_function_graph_figure` already draws `sin`/`cos` graphs).
 
+### Isometric interactive figures (merged, experimental — learner polishes before use)
+
+Learner decision 2026-11-26: the ported Isometric engine is in the repo, but nothing uses it outside `/ui-poc/isometric` and `/ui-poc/isometric-math` until the learner has polished it and says to start. Do not add these figures to drills, unit pages or Studio screens before that.
+
+- What exists: engine `practice-studio/src/lib/isometric/` (MIT, vendored; primitives box, cylinder, pyramid, frustum, lathe, extrude, torus, tube, wheel/teeth, mapMesh; picking, springs, keyboard parts); figures Cube, Pulley, Lever (`practice-studio/src/lib/isometric/physics/lever.ts`), DiskMethod (`practice-studio/src/lib/isometric/math/diskMethod.ts`), each with pure logic + unit tests; research notes in `pilot/isometric/` (local).
+- Cost measured 2026-11-26: about 20 min and 0.3–0.5M agy tokens per new figure, plus 10–15 min review; about 3 KB gzip per figure, engine about 10 KB once, lazy-loaded.
+- Review checklist for every figure (both experiment figures failed a check that tests missed): subject correctness against a cited source (formulas, units — force in N, never kg); the lesson is visible by default (e.g. the lever must look level vs tipped; the disk method must show error shrinking); stated assumptions (massless beam, g = 9.8); zero-leak mode when used in a problem; light/dark, keyboard, reduced motion.
+- Missing before real use: static SVG export so Notion shows the same figure; a figure spec (`{ kind, params }`) so problems reference builders instead of code; surface z = f(x, y) primitive if needed.
 ### Interactive math and physics visuals (candidates, learner 2026-11-26)
 
 Not installed. When a topic below starts, pilot ONE interactive in the Studio only as an extra beside the static figure: problem figures stay on the shared `MathFigure` spec so the Studio and Notion (`math_engine/figure_svg.py`) match. Each library needs learner approval, a Studio wrapper, token colours, lazy loading and a size check (docs/design/components.md, External libraries).

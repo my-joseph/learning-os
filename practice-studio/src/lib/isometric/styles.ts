@@ -1,0 +1,128 @@
+/*
+ * Copyright (c) 2026 Abhishek Mallick (MIT License)
+ * Portions Copyright (c) 2026 Lucas Marques
+ * Source: https://github.com/Abhishek-Mallick/Isometric
+ */
+
+/**
+ * Isometric — the figures' stylesheet, and the one function that installs it
+ * in a document or a shadow root.
+ *
+ * Every selector sits inside `:where()` and the sheet sits in the `base`
+ * cascade layer, so any rule of yours wins: Tailwind's utilities (which live
+ * in a later layer), and any style of yours outside a layer.
+ *
+ * Unset, the variables fall back to Practice Studio tokens (--surface-raised,
+ * --foreground, --muted, --border, --accent) so every figure matches its card
+ * surface in light and dark mode.
+ */
+
+type Palette = { plate: string; hi: string; edge: string; mid: string; lo: string }
+
+export const LIGHT: Palette = { plate: "#ffffff", hi: "#18181b", edge: "#71717a", mid: "#d4d4d8", lo: "#e4e4e7" }
+export const DARK: Palette = { plate: "#18181b", hi: "#f4f4f5", edge: "#a1a1aa", mid: "#3f3f46", lo: "#27272a" }
+
+/** Follows Studio tokens, with `p` as the fallback when they are absent. */
+const tokens = (p: Palette) =>
+  `--_plate:var(--iso-plate,rgb(var(--surface-raised)));` +
+  `--_hi:var(--iso-hi,var(--foreground,${p.hi}));` +
+  `--_edge:var(--iso-edge,rgb(var(--muted)));` +
+  `--_mid:var(--iso-mid,color-mix(in oklab,rgb(var(--muted)) 45%,rgb(var(--surface-raised))));` +
+  `--_lo:var(--iso-lo,rgb(var(--border)));`
+
+/** A fixed palette, for `theme="light"` and `theme="dark"`. */
+const fixed = (p: Palette) =>
+  `--_plate:var(--iso-plate,${p.plate});--_hi:var(--iso-hi,${p.hi});--_edge:var(--iso-edge,${p.edge});--_mid:var(--iso-mid,${p.mid});--_lo:var(--iso-lo,${p.lo});`
+
+const EASE = "cubic-bezier(0.2,0.7,0.1,1)"
+const SVG = ":where([data-iso]>svg)"
+
+const rules = [
+  `:where([data-iso]){display:block;position:relative;aspect-ratio:5/4;touch-action:pan-y;user-select:none;-webkit-user-select:none;--_sw:var(--iso-stroke,0.9);--_accent:var(--iso-accent,rgb(var(--accent)));${tokens(LIGHT)}}`,
+  `:where(.dark,[data-theme="dark"]) :where([data-iso]){${tokens(DARK)}}`,
+  `:where([data-iso][data-iso-theme="light"]){${fixed(LIGHT)}}`,
+  `:where([data-iso][data-iso-theme="dark"]){${fixed(DARK)}}`,
+  `:where([data-iso]:focus-visible){outline:2px solid rgb(var(--accent));outline-offset:2px;border-radius:var(--radius-md,6px)}`,
+  `${SVG}{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}`,
+  `:where([data-iso]>[data-iso-live]){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}`,
+  // faces are filled with the plate colour, painted back to front
+  `${SVG} :where(path,ellipse,circle,rect){fill:var(--_plate);stroke:var(--_mid);stroke-width:var(--_sw);vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round;transition:stroke 240ms ${EASE},fill 240ms ${EASE}}`,
+  `${SVG} :where(.edge){stroke:var(--_edge)}`,
+  `${SVG} :where(.inner,.line){fill:none}`,
+  `${SVG} :where(.inner){stroke:var(--_lo)}`,
+  `${SVG} :where(.lo){stroke:var(--_lo)}`,
+  `${SVG} :where(.hi .edge,.hi.edge,.hi.line){stroke:var(--_hi)}`,
+  `${SVG} :where(.hi .inner){stroke:var(--_mid)}`,
+  `${SVG} :where(.accent .edge,.accent.edge,.accent.line){stroke:var(--_accent)}`,
+  `${SVG} :where(.dash){stroke-dasharray:1.5 3}`,
+  `${SVG} :where(.flat){fill:none;stroke:none}`,
+  `${SVG} :where(.dot){stroke:none;fill:var(--_hi)}`,
+  `${SVG} :where(.dot.dim){fill:var(--_edge)}`,
+  `${SVG} :where(.dot.off){fill:var(--_lo)}`,
+  `${SVG} :where(.dot.accent){fill:var(--_accent)}`,
+  // mesh faces from the scene: outlined by default, brighter when lit or pointed at
+  `${SVG} :where(.face){stroke:var(--_edge)}`,
+  `${SVG} :where(.face.lo){stroke:var(--_lo)}`,
+  `${SVG} :where(.face.mid){stroke:var(--_mid)}`,
+  `${SVG} :where(.face.hi){stroke:var(--_hi)}`,
+  `${SVG} :where(.face.accent,.line.accent){stroke:var(--_accent)}`,
+  // shading by the way a face turns, and material tints mixed into the plate
+  `${SVG} :where(.tone-left){fill:color-mix(in oklab,var(--_edge) 9%,var(--_plate))}`,
+  `${SVG} :where(.tone-right){fill:color-mix(in oklab,var(--_edge) 18%,var(--_plate))}`,
+  `${SVG} :where(.tint){fill:color-mix(in oklab,var(--tint) 34%,var(--_plate))}`,
+  `${SVG} :where(.tint.tone-top){fill:color-mix(in oklab,var(--tint) 26%,var(--_plate))}`,
+  `${SVG} :where(.tint.tone-left){fill:color-mix(in oklab,var(--tint) 40%,var(--_plate))}`,
+  `${SVG} :where(.tint.tone-right){fill:color-mix(in oklab,var(--tint) 52%,var(--_plate))}`,
+  // what is lit: a screen, a lamp, a glowing core
+  `${SVG} :where(.glow){fill:color-mix(in oklab,var(--_accent) 30%,var(--_plate))}`,
+  `${SVG} :where(.glow.tone-left,.glow.tone-right){fill:color-mix(in oklab,var(--_accent) 42%,var(--_plate))}`,
+  `${SVG} :where(.solid){fill:var(--_accent);stroke:var(--_accent)}`,
+  `${SVG} :where(.ink){fill:var(--_hi)}`,
+  // glass: see-through, so what is behind it shows
+  `${SVG} :where(.glass){fill:color-mix(in oklab,var(--_plate) 35%,transparent);stroke:var(--_edge)}`,
+  // curved solids: their facets are one filled path with no lines; the outline is drawn on top
+  `${SVG} :where(.facet){stroke:none}`,
+  // the X-ray look: every edge you could see, and the hidden ones dashed and faint
+  `${SVG} :where(.wire){stroke:var(--_edge)}`,
+  `${SVG} :where(.wire.hidden){stroke:var(--_lo);stroke-dasharray:2 3}`,
+  `${SVG} :where(.wire.accent){stroke:var(--_accent)}`,
+  // text lying on a face
+  `${SVG} :where(text){stroke:none;fill:var(--_edge);font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-weight:500;letter-spacing:.04em}`,
+  `${SVG} :where(text.hi){fill:var(--_hi)}`,
+  `${SVG} :where(text.lo){fill:var(--_lo)}`,
+  `${SVG} :where(text.mid){fill:var(--_mid)}`,
+  `${SVG} :where(text.accent){fill:var(--_accent)}`,
+  // the debug overlay: normals, pick polygons and painting order
+  `${SVG} :where(.debug){fill:none;stroke:#e5484d;stroke-width:0.6;stroke-dasharray:none}`,
+  `${SVG} :where(.debug.pick){stroke:#3b82f6;stroke-dasharray:2 2}`,
+  `${SVG} :where(text.debug){fill:#e5484d;stroke:none}`,
+  // a scene panned and zoomed as a group keeps its lines at their drawn width
+  `${SVG} :where(g.zoom path){vector-effect:non-scaling-stroke}`,
+  `:where([data-iso]>canvas){position:absolute;inset:0;width:100%;height:100%;display:block}`,
+].join("")
+
+export const css = `@layer base{${rules}}`
+
+const done = new WeakSet<Document | ShadowRoot>()
+
+/** Installs the stylesheet once per document or shadow root. */
+export function inject(root: Document | ShadowRoot) {
+  if (done.has(root)) return
+  done.add(root)
+  const doc = root.nodeType === 9 ? (root as Document) : (root as ShadowRoot).ownerDocument
+  const win = doc.defaultView
+  if (win && "adoptedStyleSheets" in root) {
+    try {
+      const sheet = new win.CSSStyleSheet()
+      sheet.replaceSync(css)
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet]
+      return
+    } catch {
+      // no constructable stylesheets: fall through to a <style>
+    }
+  }
+  const style = doc.createElement("style")
+  style.setAttribute("data-iso-style", "")
+  style.textContent = css
+  ;(root.nodeType === 9 ? (doc.head ?? doc.documentElement) : root).appendChild(style)
+}
