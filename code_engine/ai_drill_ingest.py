@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
+from code_engine.drill_ids import next_drill_id
 from code_engine.examples_gate import (
     TOY_IDENTIFIER_PATTERN,
     check_examples_zero_leak,
@@ -28,7 +29,6 @@ from code_engine.examples_gate import (
     validate_examples_and_constraints_schema,
 )
 from code_engine.fmt import LEVEL_LABELS, unit_hierarchy
-from code_engine.generate import next_drill_id
 from code_engine.lint_check import (
     TS_PRESETS,
     LintToolsMissingError,

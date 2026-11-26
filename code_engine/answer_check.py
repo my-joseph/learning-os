@@ -208,7 +208,7 @@ CHECKERS = {
     "text": check_text,
 }
 
-# Deprecated legacy template aliases (mirrors math_engine.answer_spec_registry.DEPRECATED_ANSWER_SPEC_TYPES).
+# Deprecated retired-template aliases (mirrors math_engine.answer_spec_registry.DEPRECATED_ANSWER_SPEC_TYPES).
 DEPRECATED_CHECKERS = {
     "code_output": (check_code_output, "predict_output"),
     "line_number": (check_line_number, "choice"),
