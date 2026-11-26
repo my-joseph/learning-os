@@ -102,7 +102,8 @@ export function computeLeverState(input: LeverInput): LeverState {
  * Negative rotation around +y tilts the left (-x) side downward; positive tilts the right (+x) side downward.
  */
 export function targetTiltDegrees(state: LeverState, maxDeg = 10): number {
+  // A rigid lever that is not in equilibrium keeps rotating until an end rests on the
+  // ground, whatever the size of the net torque, so any imbalance shows the full tilt.
   if (state.balanced) return 0;
-  const mag = Math.min(maxDeg, Math.max(3, Math.abs(state.netTorque) / 25));
-  return state.tilt === "left" ? -mag : mag;
+  return state.tilt === "left" ? -maxDeg : maxDeg;
 }

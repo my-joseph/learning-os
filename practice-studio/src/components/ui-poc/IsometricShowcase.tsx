@@ -420,7 +420,7 @@ export function IsometricShowcase() {
                 </div>
 
                 <p className="text-xs text-foreground-subtle">
-                  Drag the fulcrum or either load along the beam, or Tab to a part, use Arrow keys to move by 0.5 m, and press Enter to cycle load mass.
+                  Ideal lever: the beam is treated as massless and g = 9.8 m/s². Drag the fulcrum or either load along the beam, or Tab to a part, use Arrow keys to move by 0.5 m, and press Enter to cycle load mass.
                 </p>
               </CardContent>
             </div>

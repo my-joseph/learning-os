@@ -45,7 +45,7 @@ const BEAM_THICK = 3
 const BEAM_TOP_Z = PIVOT_Z + BEAM_THICK
 const FULCRUM_LIMIT_M = 1.5
 const MIN_ARM_M = LEVER_TICK_STEP
-const MAX_TILT_DEG = 10
+const MAX_TILT_DEG = 12
 
 const PART_NAMES: Record<PartId, string> = {
   "left-load": "Left load",
@@ -126,7 +126,7 @@ function stepByTick(current: number, dir: -1 | 1, min: number, max: number): num
 const mount: Mount<LeverProps> = ({ stage, svg, read, activated, debug }, _value, props) => {
   const b = bag()
   const cam = frame({
-    az: 24,
+    az: 8,
     k: 0.5,
     zoom: 0.96,
     fit: [
