@@ -20,6 +20,7 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 ### Completed
 
 - Studio Generate button and **C08** `/api/generate-drill` route: approved and removed in Phase 2 (2026-11-26).
+- Math and PRG template engines, template generators, and template-only scripts/tests removed and `rules/06` renamed to `rules/06_quality_contract.md` in Phase 3 (2026-11-26); drills and Similar variants are AI-only.
 
 ### Working style
 
@@ -55,8 +56,8 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 ### ON HOLD — do not start without the learner
 
-- Math and PRG template removal remains on hold for Phase 3; the Similar “+” button refactor, rename of `rules/06`, and PRG Similar/variant bank remain on hold.
-- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” / template refactor.
+- The Similar “+” button refactor and PRG Similar/variant bank remain on hold.
+- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” refactor.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
 - PR B, PR C (including issue `0852fe`, Weak spots trap-name leak), Example redesign, and learning-feature Phases 3–5.
 - Engine roadmap Phase 2 (`pilot/improve-engine-2026-11-21/roadmap.md`, items 2.1–2.3): wait for quota reset and learner go-ahead.

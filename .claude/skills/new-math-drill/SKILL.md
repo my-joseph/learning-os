@@ -20,7 +20,7 @@ State the brief in one line and continue without waiting. Do not stop to ask dur
 
 ## 2. Load only the rules this task needs
 
-Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contract.md` and `rules/07_problem_generation.md` §4. Do not load the other modules.
+Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_quality_contract.md` and `rules/07_problem_generation.md` §4. Do not load the other modules.
 
 ## 3. Pick archetypes from the vault
 
@@ -128,7 +128,6 @@ Ingest refuses any problem without `review.verdict: pass`. It assigns the drill 
 For every `(archetypeKey, level)` pair flagged with `< 3` variants, create AI-made variants (~3 per pair: same form with new numbers, changed form e.g. reverse, and one level up when the vault allows) through the existing `variant_bank --add` path with its full gates:
 1. Run blind solve (required for L3+, plus context check when non-empty) and reviewer subagent on the variant draft.
 2. Append via `.venv/bin/python -m math_engine.variant_bank --add scratch/drafts/<UNIT>-variants.json` and check originality with `.venv/bin/python -m math_engine.variant_bank --check <UNIT> --originality`.
-3. **Templates are being retired: never seed variants from templates (`--from-templates`).**
 
 Before reporting, log every friction item from the run: anything you had to guess, a gate or tool that misbehaved (including a workaround you used), a rule that was unclear, a vault gap. Use `.venv/bin/python -m scripts.issues add` with the matching kind; listing it in the report is not enough.
 
