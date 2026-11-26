@@ -12,6 +12,7 @@ const rowVariants = cva(
     variants: {
       variant: {
         sidebar: "group/row inline-flex w-full shrink-0 gap-space-2 px-space-1_5 text-left text-sm transition-colors duration-color ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-muted motion-reduce:transition-none",
+        summary: "flex min-w-0 justify-between gap-space-2 px-space-1_5 py-space-1 text-xs",
         command: "flex cursor-pointer select-none gap-space-3 px-space-2 py-space-1 text-sm",
         tree: "flex h-control-sm min-w-0 gap-space-1_5 pr-space-1_5 text-left transition-colors focus:outline-none",
       },

@@ -140,7 +140,8 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
     dueReviewCountProp === undefined || weakSpotUnitsProp === undefined
       ? currentDrill.unitCode
       : null,
-    syncedRefreshKey
+    syncedRefreshKey,
+    weakSpotUnitsProp === undefined
   );
 
   const dueReviewCount = dueReviewCountProp ?? sidePanelData.dueReviewCount;

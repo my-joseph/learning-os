@@ -3,6 +3,13 @@
 Gaps found by test drills that do not block the units that have vaults today.
 Fix each one when the topic it belongs to is actually started, not before. Sources: calculus and trig-equation (T02-C08-U05) test drills, 2026-11-14.
 
+## Studio and engine work
+
+- **What I get wrong list** (implemented, awaiting visual review).
+- **Due-review tree and drill review mode** (on hold).
+- **Engine clean-up (unify PRG runners, split math answer checker, shared ingest core)** (on hold).
+- **Question-jump shortcut** (on hold).
+
 ## Open gaps
 
 ### Before T02-C06 to C09 (trigonometry)

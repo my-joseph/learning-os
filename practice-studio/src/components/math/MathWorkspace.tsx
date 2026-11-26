@@ -3,7 +3,7 @@
 import { Heading } from "@/components/ui/Heading";
 import { Input } from "@/components/ui/shadcn/Input";
 import { PenLine } from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { tabPanel } from "@/lib/motion";
 import { Problem, MistakeTag } from "@/types/drill";
@@ -22,6 +22,7 @@ import {
   TabActivatedInfo,
   useSimilarTabs,
 } from "@/hooks/useSimilarTabs";
+import { mistakeAttemptKey } from "@/lib/mistakePractice";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { maxAllowedSelfScore, scoreProblem } from "@/lib/scoring";
 import {
@@ -32,6 +33,8 @@ import {
 } from "@/lib/similarTabs";
 import { isCurriculumId, plainTitle } from "@/lib/titleText";
 import type { SkipOptions } from "@/hooks/types";
+
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export interface MathWorkspaceProps {
   problem: Problem;
@@ -55,6 +58,7 @@ export interface MathWorkspaceProps {
   onBeforeFetchVariant?: () => Promise<void>;
   onExampleViewed?: (viewedAt: string) => void;
   onSimilarProgressSync?: (patch: SimilarProgressPatch) => void;
+  onMistakeAttemptChange?: (key: string | null) => void;
   onVariantModeChange?: (inVariantMode: boolean) => void;
   autoOpenSimilar?: boolean;
   onAutoOpenSimilarConsumed?: () => void;
@@ -98,6 +102,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onBeforeFetchVariant,
   onExampleViewed,
   onSimilarProgressSync,
+  onMistakeAttemptChange,
   onVariantModeChange,
   autoOpenSimilar = false,
   onAutoOpenSimilarConsumed,
@@ -194,6 +199,17 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     onSimilarProgressSync,
     onTabActivated: handleTabActivated,
   });
+
+  const mistakeContext = showingExample
+    ? null
+    : selectedTab === "q"
+    ? mistakeAttemptKey(problem.state)
+    : mistakeAttemptKey(activeSimilarProblem?.state, "similar");
+  // Synchronize with the shell before painting a newly selected tab.
+  useBrowserLayoutEffect(() => {
+    onMistakeAttemptChange?.(mistakeContext ? `${selectedTab}:${mistakeContext}` : null);
+    return () => onMistakeAttemptChange?.(null);
+  }, [mistakeContext, onMistakeAttemptChange, selectedTab]);
 
   // Pause Q_N's timer while on a similar tab or viewing the worked example.
   useEffect(() => {

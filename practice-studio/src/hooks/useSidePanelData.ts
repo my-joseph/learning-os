@@ -7,6 +7,7 @@ import type {
   WeakSpotUnit,
   WeakSpotsResponse,
 } from "@/lib/dueToday";
+import type { RecentMistake } from "@/lib/mistakePractice";
 import type { Workspace } from "@/lib/routes";
 
 interface ReviewItemsApiPayload {
@@ -20,7 +21,8 @@ interface ReviewItemsApiPayload {
 export function useSidePanelData(
   workspace: Workspace,
   unitCode?: string | null,
-  refreshKey?: string | null
+  refreshKey?: string | null,
+  loadWeakSpots = false
 ) {
   const workspaceSubject = workspace === "code" ? "PRG" : "MTH";
   const otherSubject = workspace === "code" ? "MTH" : "PRG";
@@ -137,7 +139,7 @@ export function useSidePanelData(
   }, [workspaceSubject, otherSubject, refreshKey]);
 
   useEffect(() => {
-    if (!scope) {
+    if (!scope || !loadWeakSpots) {
       setWeakSpotUnits([]);
       setWeakLoading(false);
       setWeakError(null);
@@ -175,14 +177,14 @@ export function useSidePanelData(
     return () => {
       cancelled = true;
     };
-  }, [scope, refreshKey]);
+  }, [scope, refreshKey, loadWeakSpots]);
 
   const currentUnitMastery = useMemo(() => {
     if (!scope) return null;
     return unitMasteryByCode[scope] ?? null;
   }, [scope, unitMasteryByCode]);
 
-  const weakScopeMatches = scope !== null && weakLoadedScope === scope;
+  const weakScopeMatches = loadWeakSpots && scope !== null && weakLoadedScope === scope;
 
   return {
     dueReviewCount,
@@ -198,7 +200,59 @@ export function useSidePanelData(
     dueLoading,
     dueError,
     weakSpotUnits: weakScopeMatches ? weakSpotUnits : [],
-    weakLoading: scope !== null && (weakLoading || !weakScopeMatches),
+    weakLoading: loadWeakSpots && scope !== null && (weakLoading || !weakScopeMatches),
     weakError: weakScopeMatches ? weakError : null,
+  };
+}
+
+export function useRecentMistakes(
+  workspace: Workspace,
+  unitCode: string | null | undefined,
+  mistakesContext: string | null
+) {
+  const [mistakesResult, setMistakesResult] = useState<{
+    key: string;
+    mistakes: RecentMistake[];
+    error: boolean;
+  } | null>(null);
+  const scope = unitCode?.trim() || null;
+  const workspaceSubject = workspace === "code" ? "PRG" : "MTH";
+  const mistakesQuery = new URLSearchParams({ subject: workspaceSubject });
+  if (scope) mistakesQuery.set("unit", scope);
+  const mistakesSearch = mistakesQuery.toString();
+  const mistakesKey = mistakesContext ? `${mistakesSearch}:${mistakesContext}` : null;
+
+  useEffect(() => {
+    if (!mistakesKey) return;
+
+    const controller = new AbortController();
+    fetch(`/api/recent-mistakes?${mistakesSearch}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()) as { mistakes: RecentMistake[] };
+      })
+      .then(({ mistakes }) => {
+        if (!controller.signal.aborted) {
+          setMistakesResult({ key: mistakesKey, mistakes, error: false });
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setMistakesResult({ key: mistakesKey, mistakes: [], error: true });
+        }
+      });
+
+    return () => controller.abort();
+  }, [mistakesKey, mistakesSearch]);
+
+  const currentMistakes = mistakesResult?.key === mistakesKey ? mistakesResult : null;
+
+  return {
+    mistakes: currentMistakes?.mistakes ?? [],
+    mistakesLoading: mistakesKey !== null && !currentMistakes,
+    mistakesError: currentMistakes?.error ?? false,
   };
 }
