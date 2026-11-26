@@ -1,7 +1,6 @@
 import type { DrillFilter } from "@/hooks/types";
 import type { LabListItem } from "@/lib/labModel";
 import type { DrillListItem } from "@/types/drill";
-import { workspaceOfListItem, type Workspace } from "./routes";
 import { plainTitle } from "./titleText";
 
 export type PickerStatus = "Ready" | "In Progress" | "Graded" | "Needs Retry";
