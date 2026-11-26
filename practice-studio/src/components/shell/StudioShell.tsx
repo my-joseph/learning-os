@@ -23,7 +23,6 @@ import { StudioHeader } from "./StudioHeader";
 import { StudioSidebar } from "./StudioSidebar";
 import { StudioSearchPalette, useStudioSearchShortcut } from "./StudioSearchPalette";
 import { StudioSidePanel } from "./StudioSidePanel";
-import { GeneratePopover } from "./GeneratePopover";
 
 const SIDEBAR_OPEN_KEY = "practice-studio:sidebar-open";
 const RIGHT_PANEL_OPEN_KEY = "practice-studio:right-panel-open";
@@ -55,10 +54,6 @@ interface StudioShellProps {
   onSelectDrill: (drillId: string) => void;
   onResetDrill?: (drillId: string) => void;
   onDeleteDrill?: (drillId: string) => void;
-  // GeneratePopover
-  showGenPopover: boolean;
-  onShowGenPopoverChange: (open: boolean) => void;
-  onGenerated: (drillId: string) => Promise<void>;
   // Pagination / tiles
   showPaginationBar?: boolean;
   onSelectQuestion: (idx: number) => void;
@@ -96,9 +91,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onSelectDrill,
   onResetDrill,
   onDeleteDrill,
-  showGenPopover,
-  onShowGenPopoverChange,
-  onGenerated,
   showPaginationBar = false,
   onSelectQuestion,
   onToggleViewMode,
@@ -254,7 +246,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           theme={theme}
           onToggleTheme={onToggleTheme}
           onResetAll={onResetAll}
-          onOpenGenPopover={() => onShowGenPopoverChange(true)}
           isSidebarOpen={isSidebarOpen}
           onOpenDesktopSidebar={() => setSidebarOpen(true)}
           onOpenSidebarDrawer={() => setIsSidebarDrawerOpen(true)}
@@ -338,16 +329,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       </div>
 
       <ToastStack status={status} onClearStatus={handleClearStatus} />
-
-      <GeneratePopover
-        isOpen={showGenPopover}
-        onClose={() => onShowGenPopoverChange(false)}
-        workspace={workspace}
-        drills={drills}
-        currentDrill={currentDrill}
-        onGenerated={onGenerated}
-        onStatusChange={onStatusChange}
-      />
 
       {/* Mobile / Tablet (<1024px): Left navigation sidebar Drawer */}
       <Drawer

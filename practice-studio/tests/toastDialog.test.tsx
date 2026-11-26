@@ -4,7 +4,6 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ConfirmDialog } from "../src/components/ui/ConfirmDialog";
-import { GeneratePopover } from "../src/components/shell/GeneratePopover";
 import {
   Drawer,
   DrawerContent,
@@ -117,41 +116,7 @@ assert.match(nonDestructiveHtml, /bg-indigo-600/);
 assert.doesNotMatch(nonDestructiveHtml, new RegExp(DESTRUCTIVE_BUTTON_CLS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 assert.match(nonDestructiveHtml, />Continue<\/button>/);
 
-// 3b. GeneratePopover SSR markup & Dialog parity
-const closedGenerateHtml = renderToStaticMarkup(
-  <GeneratePopover
-    isOpen={false}
-    onClose={() => {}}
-    workspace="math"
-    drills={[]}
-    currentDrill={null}
-    onGenerated={async () => {}}
-    onStatusChange={() => {}}
-  />
-);
-assert.equal(closedGenerateHtml, "");
-
-const openGenerateHtml = renderToStaticMarkup(
-  <GeneratePopover
-    isOpen={true}
-    onClose={() => {}}
-    workspace="math"
-    drills={[]}
-    currentDrill={null}
-    onGenerated={async () => {}}
-    onStatusChange={() => {}}
-  />
-);
-assert.match(openGenerateHtml, /role="dialog"/);
-assert.match(openGenerateHtml, /aria-modal="true"/);
-assert.match(openGenerateHtml, /aria-labelledby="/);
-assert.match(openGenerateHtml, /aria-describedby="/);
-assert.match(openGenerateHtml, /aria-label="Close dialog"/);
-assert.match(openGenerateHtml, />Generate drill set<\/h2>/);
-assert.match(openGenerateHtml, />Generate set<\/span>/);
-assert.match(openGenerateHtml, /min-h-\[44px\]/);
-
-// 3c. Drawer SSR markup & accessibility attributes
+// 3b. Drawer SSR markup & accessibility attributes
 const closedDrawerHtml = renderToStaticMarkup(
   <Drawer open={false}>
     <DrawerContent>
@@ -176,10 +141,9 @@ assert.match(openDrawerHtml, /aria-label="Close drawer"/);
 assert.match(openDrawerHtml, />Due today &amp; weak spots<\/h2>/);
 assert.match(openDrawerHtml, /min-h-\[44px\]/);
 
-// 3d. ConfirmDialog, GeneratePopover, and StudioShell delegate focus-trap/Escape to Radix primitives
+// 3c. ConfirmDialog and StudioShell delegate focus-trap/Escape to Radix primitives
 for (const [label, filePath, expectedImport] of [
   ["ConfirmDialog", "src/components/ui/ConfirmDialog.tsx", /@\/components\/ui\/shadcn\/AlertDialog/],
-  ["GeneratePopover", "src/components/shell/GeneratePopover.tsx", /@\/components\/ui\/shadcn\/Dialog/],
   ["StudioShell", "src/components/shell/StudioShell.tsx", /@\/components\/ui\/shadcn\/Drawer/],
 ] as const) {
   const src = readFileSync(filePath, "utf8");

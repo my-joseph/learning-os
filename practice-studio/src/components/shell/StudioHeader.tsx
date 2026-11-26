@@ -8,7 +8,6 @@ import {
   FlaskConical,
   List,
   PanelLeft,
-  Plus,
   RotateCcw,
 } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
@@ -96,7 +95,6 @@ interface StudioHeaderProps {
   theme: "light" | "dark";
   onToggleTheme: () => void;
   onResetAll: () => void;
-  onOpenGenPopover: () => void;
   isSidebarOpen: boolean;
   onOpenDesktopSidebar: () => void;
   onOpenSidebarDrawer: () => void;
@@ -116,7 +114,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   theme,
   onToggleTheme,
   onResetAll,
-  onOpenGenPopover,
   isSidebarOpen,
   onOpenDesktopSidebar,
   onOpenSidebarDrawer,
@@ -218,21 +215,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
       )}
       beforeTheme={(
         <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="iconSm"
-                onClick={onOpenGenPopover}
-                aria-label="Generate drill set"
-                className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0 lg:h-8 lg:w-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Generate drill set</TooltipContent>
-          </Tooltip>
-
           {currentDrill && (
             <Tooltip>
               <TooltipTrigger asChild>

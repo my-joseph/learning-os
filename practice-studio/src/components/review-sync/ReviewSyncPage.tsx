@@ -60,7 +60,6 @@ export interface ReviewSyncPageProps {
   onMistakeNoteChange: (probId: string, note: string) => void;
   onRevisitNoteChange?: (probId: string, note: string) => void;
   onSelectDrill?: (drillId: string) => void;
-  onOpenGenerate?: () => void;
 }
 
 /** Redesigned Review & Sync page: Session summary -> To review -> Got right -> Sync to Notion (or Submit lab) -> What next. */
@@ -85,7 +84,6 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
   onMistakeNoteChange,
   onRevisitNoteChange,
   onSelectDrill,
-  onOpenGenerate,
 }) => {
   const isLab = isLabId(currentDrill.drillId);
   const isCode = currentDrill.subject === "PRG" && !isLab;
@@ -512,7 +510,6 @@ export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
         primary={!isLab && effectiveSyncPhase === "synced"}
         onOpenItem={onSelectQuestion}
         onSelectDrill={onSelectDrill}
-        onGenerate={onOpenGenerate}
       />
     </div>
   );

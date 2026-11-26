@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { m } from "motion/react";
 import { fadeUp } from "@/lib/motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
 
 import type { MathWorkspaceProps } from "@/components/math/MathWorkspace";
@@ -63,7 +62,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const searchParams = useSearchParams();
 
   const [status, setStatus] = useState<StatusMessage | null>(null);
-  const [showGenPopover, setShowGenPopover] = useState(false);
   const [resetTargetId, setResetTargetId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -332,11 +330,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     });
   };
 
-  const handleGenerated = async (newDrillId: string) => {
-    await loadDrillsList();
-    router.push(drillHref(newDrillId));
-  };
-
   const mathTargetId =
     workspace === "math" && currentDrill
       ? currentDrill.drillId
@@ -395,9 +388,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         setDeleteError(null);
         setDeleteTargetId(targetId);
       }}
-      showGenPopover={showGenPopover}
-      onShowGenPopoverChange={setShowGenPopover}
-      onGenerated={handleGenerated}
       onSelectQuestion={handleSelectQuestion}
       onToggleViewMode={(mode) => setViewMode(mode)}
       status={status}
@@ -421,14 +411,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           <p className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
             No practice drill selected
           </p>
-          <button
-            type="button"
-            onClick={() => setShowGenPopover(true)}
-            className="inline-flex min-h-[44px] sm:min-h-0 items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Generate drill set</span>
-          </button>
         </Card>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
         <m.div
@@ -568,7 +550,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             onMistakeNoteChange={handleMistakeNoteChange}
             onRevisitNoteChange={handleRevisitNoteChange}
             onSelectDrill={handleSelectDrill}
-            onOpenGenerate={() => setShowGenPopover(true)}
           />
         </m.div>
       )}
