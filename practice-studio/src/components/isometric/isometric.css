@@ -1,0 +1,17 @@
+/* Maps Isometric custom properties to existing Practice Studio tokens. */
+.iso-studio-surface {
+  --iso-plate: rgb(var(--surface-raised));
+  --iso-hi: var(--foreground);
+  --iso-edge: rgb(var(--muted));
+  --iso-mid: color-mix(in oklab, rgb(var(--muted)) 45%, rgb(var(--surface-raised)));
+  --iso-lo: rgb(var(--border));
+  --iso-accent: rgb(var(--accent));
+  --iso-line: color-mix(in oklab, var(--foreground) 62%, var(--background));
+  --iso-side: rgb(var(--surface-panel));
+  --iso-grid: rgb(var(--border));
+  --iso-stroke: 0.9;
+}
+
+.iso-figure-box {
+  aspect-ratio: 5 / 4;
+}
