@@ -120,7 +120,7 @@ export function CollisionsShowcase() {
           onSelectCart={setSelectedCart}
           onSnapshot={setSnapshot}
           command={command}
-          showInlineControls={false}
+          interactive="detail"
         />
       }
       readout={

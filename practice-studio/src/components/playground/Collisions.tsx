@@ -2,8 +2,12 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Matter from "matter-js";
-import { Pause, Play, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/shadcn/Button";
+import { frame } from "@/lib/isometric/entity";
+import { clamp, unproject, type Vec2 } from "@/lib/isometric/iso";
+import { box, cylinder, frustum, rotateX, rotateZ, translate, zToX } from "@/lib/isometric/mesh";
+import { label, scene, type Item, type Painter } from "@/lib/isometric/scene";
+import { bag, el, pointer } from "@/lib/isometric/stage";
+import { inject } from "@/lib/isometric/styles";
 import {
   cartHeightMeters,
   cartWidthMeters,
@@ -21,14 +25,10 @@ import {
   type CollisionInput,
 } from "@/lib/playground/collisions";
 import {
-  computeCartSvgBox,
-  computeTrackBumpers,
-  computeVelocityArrow,
+  computeVelocityArrowWorld,
   formatSigned,
-  meterToSvgX,
-  SVG_VIEWBOX,
-  TRACK_LEFT_X,
-  TRACK_RIGHT_X,
+  ISO_UNIT,
+  TRACK_END_X,
   TRACK_TICKS,
 } from "@/lib/playground/collisionsLayout";
 import "../isometric/isometric.css";
@@ -39,6 +39,19 @@ const DT_MS = 1000 / 60;
 const VELOCITY_TO_MATTER = MATTER_SCALE * (DT_MS / 1000);
 const POST_COLLISION_TRAVEL_FRAMES = 54; // ~0.9 s after collision so separation/sticking is clearly visible
 const MAX_SIM_FRAMES = 2000;
+
+// Isometric scene world constants (same camera feel as Lever: az = 8°, k = 0.5).
+const TRACK_PAD_X = 4.0;
+const TRACK_HALF_D = 10.0;
+const TRACK_TOP_Z = 3.4;
+const BUMPER_W = 3.0;
+const BUMPER_TOP_Z = 14.0;
+const CART_HALF_D = 5.2;
+const WHEEL_R = 2.1;
+const WHEEL_THICK = 1.3;
+const WHEEL_CZ = TRACK_TOP_Z + WHEEL_R;
+const CART_BASE_Z = TRACK_TOP_Z + WHEEL_R * 1.25;
+const CART_MID_Z = CART_BASE_Z + 6.5;
 
 export type SimPhase = "ready" | "running" | "paused" | "done";
 
@@ -62,10 +75,12 @@ export type CollisionsProps = {
   onSnapshot?: (snapshot: CollisionSimSnapshot) => void;
   /** Imperative command token from parent showcase controls. */
   command?: { type: "play" | "pause" | "reset"; seq: number } | null;
-  /** Compact mode shows inline Play/Pause/Reset/Elastic-Stick controls inside the figure box (for the grid card). */
-  showInlineControls?: boolean;
+  /** `"card"` shows a calm click/Enter-to-play figure for the grid; `"detail"` enables cart selection/drag/sliders. */
+  interactive?: "card" | "detail";
   className?: string;
 };
+
+type PartId = "cart1" | "cart2";
 
 type SimEngineState = {
   engine: Matter.Engine;
@@ -81,7 +96,6 @@ type SimEngineState = {
   phase: SimPhase;
 };
 
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const roundToStep = (v: number, step: number) => Math.round(v / step) * step;
 
 function createWorld(input: CollisionInput, willCollide: boolean): SimEngineState {
@@ -227,6 +241,252 @@ function stepSimulationOnce(sim: SimEngineState, input: CollisionInput): boolean
   return true;
 }
 
+const COLLISION_CAMERA = frame({
+  az: 8,
+  k: 0.5,
+  zoom: 1.04,
+  fit: [
+    [-TRACK_END_X - TRACK_PAD_X, -TRACK_HALF_D, 0],
+    [TRACK_END_X + TRACK_PAD_X, TRACK_HALF_D, 0],
+    [-TRACK_END_X - TRACK_PAD_X, -TRACK_HALF_D, 34],
+    [TRACK_END_X + TRACK_PAD_X, TRACK_HALF_D, 34],
+  ],
+});
+
+// Unit wheel along +y from 0 to WHEEL_THICK, centered at x=0, z=0.
+const WHEEL_PROTO = rotateX(cylinder(0, 0, 0, WHEEL_R, WHEEL_THICK, 16), -Math.PI / 2);
+// Unit arrowhead cone pointing +x from x=0 to x=3.0.
+const ARROW_HEAD_POS = zToX(frustum(0, 0, 0, 1.35, 0, 3.0, 12));
+const ARROW_HEAD_NEG = rotateZ(ARROW_HEAD_POS, Math.PI);
+// Zero-velocity dot facing +y.
+const REST_DOT_PROTO = rotateX(cylinder(0, 0, -0.5, 1.05, 1.0, 12), -Math.PI / 2);
+
+function buildCollisionsScene(params: {
+  input: CollisionInput;
+  snapshot: CollisionSimSnapshot;
+  impactX: number | null;
+  postFrames: number;
+  accentCart: 1 | 2 | null;
+  interactive: "card" | "detail";
+}): Item[] {
+  const { input, snapshot, impactX, postFrames, accentCart, interactive } = params;
+  const out: Item[] = [];
+  const halfTrackX = TRACK_END_X + TRACK_PAD_X;
+
+  // 1. Track bed (long thin isometric box) and subtle wheel-groove lines
+  out.push({
+    mesh: box(-halfTrackX, -TRACK_HALF_D, 0, halfTrackX, TRACK_HALF_D, TRACK_TOP_Z),
+    shade: true,
+    inert: true,
+  });
+  for (const ry of [-4.4, 4.4]) {
+    out.push({
+      pts: [
+        [-TRACK_END_X, ry, TRACK_TOP_Z + 0.04],
+        [TRACK_END_X, ry, TRACK_TOP_Z + 0.04],
+      ],
+      cls: "lo",
+      bias: 0.02,
+    });
+  }
+
+  // 2. 1 m tick marks and meter labels along the front apron
+  for (const m of TRACK_TICKS) {
+    const mx = m * ISO_UNIT;
+    const isOrigin = m === 0;
+    out.push({
+      pts: [
+        [mx, 6.7, TRACK_TOP_Z + 0.05],
+        [mx, TRACK_HALF_D + 0.04, TRACK_TOP_Z + 0.05],
+        [mx, TRACK_HALF_D + 0.04, TRACK_TOP_Z - 1.4],
+      ],
+      cls: isOrigin ? "hi" : "edge",
+      bias: 0.05,
+    });
+    out.push(
+      label(isOrigin ? "0m" : `${m > 0 ? "+" : ""}${m}`, [mx, 9.25, TRACK_TOP_Z + 0.08], [1, 0, 0], [0, -1, 0], 1.85, {
+        anchor: "middle",
+        cls: isOrigin ? "hi" : "edge",
+        bias: 0.06,
+      }),
+    );
+  }
+
+  // 3. Endpoint stops (bumpers) aligned with ±TRACK_HALF_SPAN_M
+  out.push({
+    mesh: box(-TRACK_END_X - BUMPER_W, -6.5, TRACK_TOP_Z, -TRACK_END_X - 0.8, 6.5, BUMPER_TOP_Z),
+    shade: true,
+    inert: true,
+    bias: 0.04,
+  });
+  out.push({
+    mesh: box(-TRACK_END_X - 0.8, -4.8, TRACK_TOP_Z + 1.8, -TRACK_END_X, 4.8, BUMPER_TOP_Z - 1.8),
+    shade: true,
+    inert: true,
+    bias: 0.05,
+  });
+  out.push({
+    mesh: box(TRACK_END_X + 0.8, -6.5, TRACK_TOP_Z, TRACK_END_X + BUMPER_W, 6.5, BUMPER_TOP_Z),
+    shade: true,
+    inert: true,
+    bias: 0.04,
+  });
+  out.push({
+    mesh: box(TRACK_END_X, -4.8, TRACK_TOP_Z + 1.8, TRACK_END_X + 0.8, 4.8, BUMPER_TOP_Z - 1.8),
+    shade: true,
+    inert: true,
+    bias: 0.05,
+  });
+
+  // 4. Two carts with cylinder wheels, mass labels, and velocity arrows
+  const carts: Array<{ id: 1 | 2; xM: number; mass: number; vel: number }> = [
+    { id: 1, xM: snapshot.x1, mass: input.m1, vel: snapshot.v1 },
+    { id: 2, xM: snapshot.x2, mass: input.m2, vel: snapshot.v2 },
+  ];
+
+  let highestCartTopZ = CART_BASE_Z + 15;
+
+  for (const cart of carts) {
+    const part: PartId = cart.id === 1 ? "cart1" : "cart2";
+    const isAccent = accentCart === cart.id;
+    const cls = isAccent ? "accent" : "";
+    const pickable = interactive === "detail";
+
+    const cx = cart.xM * ISO_UNIT;
+    const w = cartWidthMeters(cart.mass) * ISO_UNIT;
+    const h = cartHeightMeters(cart.mass) * ISO_UNIT * 1.35;
+    const topZ = CART_BASE_Z + h;
+    if (topZ > highestCartTopZ) highestCartTopZ = topZ;
+
+    // Rear & front cylinder wheels separated cleanly along y from the cart chassis
+    const wheelXs = [cx - w * 0.28, cx + w * 0.28];
+    for (const wx of wheelXs) {
+      out.push({
+        mesh: translate(WHEEL_PROTO, [wx, -CART_HALF_D - WHEEL_THICK, WHEEL_CZ]),
+        smooth: true,
+        part: pickable ? part : undefined,
+        inert: !pickable,
+        cls,
+        bias: 0.08,
+      });
+      out.push({
+        mesh: translate(WHEEL_PROTO, [wx, CART_HALF_D, WHEEL_CZ]),
+        smooth: true,
+        part: pickable ? part : undefined,
+        inert: !pickable,
+        cls,
+        bias: 0.14,
+      });
+    }
+
+    // Cart body box
+    out.push({
+      mesh: box(cx - w / 2, -CART_HALF_D, CART_BASE_Z, cx + w / 2, CART_HALF_D, topZ),
+      shade: true,
+      part: pickable ? part : undefined,
+      inert: !pickable,
+      cls,
+      bias: 0.12,
+    });
+
+    // Subtle chassis trim line on front face
+    out.push({
+      pts: [
+        [cx - w / 2 + 1.0, CART_HALF_D + 0.06, CART_BASE_Z + 2.2],
+        [cx + w / 2 - 1.0, CART_HALF_D + 0.06, CART_BASE_Z + 2.2],
+      ],
+      cls: isAccent ? "accent" : "lo",
+      bias: 0.15,
+    });
+
+    // Cart ID on top face and mass on front face
+    out.push(
+      label(`C${cart.id}`, [cx, 0.7, topZ + 0.12], [1, 0, 0], [0, -1, 0], 1.65, {
+        anchor: "middle",
+        cls: isAccent ? "accent" : "edge",
+        bias: 0.16,
+      }),
+    );
+    out.push(
+      label(`${cart.mass.toFixed(1)}kg`, [cx, CART_HALF_D + 0.12, (CART_BASE_Z + topZ) / 2 - 0.5], [1, 0, 0], [0, 0, 1], 2.25, {
+        anchor: "middle",
+        cls: isAccent ? "accent" : "hi",
+        bias: 0.16,
+      }),
+    );
+
+    // Velocity arrow above each cart
+    const arrowZ = topZ + 5.4;
+    const arrow = computeVelocityArrowWorld(cx, cart.vel);
+    if (arrow.hasArrow) {
+      out.push({
+        pts: [
+          [arrow.startX, 0, arrowZ],
+          [arrow.endX, 0, arrowZ],
+        ],
+        cls: isAccent ? "accent vel-shaft" : "hi vel-shaft",
+        bias: 0.24,
+      });
+      const headMesh = translate(arrow.dir > 0 ? ARROW_HEAD_POS : ARROW_HEAD_NEG, [arrow.endX, 0, arrowZ]);
+      out.push({
+        mesh: headMesh,
+        smooth: true,
+        inert: true,
+        cls: isAccent ? "solid" : "ink hi",
+        bias: 0.25,
+      });
+    } else {
+      out.push({
+        mesh: translate(REST_DOT_PROTO, [cx, 0, arrowZ]),
+        smooth: true,
+        inert: true,
+        cls: isAccent ? "solid" : "ink hi",
+        bias: 0.24,
+      });
+    }
+
+    out.push(
+      label(`${formatSigned(cart.vel)} m/s`, [arrow.labelX, 0, arrowZ + 2.6], [1, 0, 0], [0, 0, 1], 2.2, {
+        anchor: "middle",
+        cls: isAccent ? "accent" : "hi",
+        bias: 0.26,
+      }),
+    );
+  }
+
+  // 5. Brief impact spark at contact
+  if (snapshot.hasCollided && impactX !== null && postFrames <= 14) {
+    const ix = impactX * ISO_UNIT;
+    const iz = highestCartTopZ + 1.4;
+    out.push({
+      pts: [
+        [ix, 0, iz],
+        [ix, 0, iz + 2.8],
+      ],
+      cls: "accent",
+      bias: 0.3,
+    });
+    out.push({
+      pts: [
+        [ix - 1.6, 0, iz + 0.5],
+        [ix - 3.4, 0, iz + 2.2],
+      ],
+      cls: "accent",
+      bias: 0.3,
+    });
+    out.push({
+      pts: [
+        [ix + 1.6, 0, iz + 0.5],
+        [ix + 3.4, 0, iz + 2.2],
+      ],
+      cls: "accent",
+      bias: 0.3,
+    });
+  }
+
+  return out;
+}
+
 export function Collisions({
   input: controlledInput,
   onInputChange,
@@ -234,7 +494,7 @@ export function Collisions({
   onSelectCart,
   onSnapshot,
   command,
-  showInlineControls = true,
+  interactive = "detail",
   className,
 }: CollisionsProps) {
   const [internalInput, setInternalInput] = useState<CollisionInput>(DEFAULT_COLLISION_INPUT);
@@ -269,10 +529,13 @@ export function Collisions({
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const painterRef = useRef<Painter | null>(null);
   const simRef = useRef<SimEngineState | null>(null);
   const rafRef = useRef<number>(0);
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const dragRef = useRef<{ cart: 1 | 2; startClientX: number; startVel: number; moved: boolean } | null>(null);
+
+  const [hoverCart, setHoverCart] = useState<1 | 2 | null>(null);
+  const [focusedCart, setFocusedCart] = useState<1 | 2 | null>(null);
 
   const [snapshot, setSnapshot] = useState<CollisionSimSnapshot>({
     phase: "ready",
@@ -285,6 +548,10 @@ export function Collisions({
     measuredV2After: null,
     reducedMotion: false,
   });
+
+  // Keep latest input/callbacks in refs for Isometric pointer listeners.
+  const latestRef = useRef({ input, selectedCart, hoverCart, focusedCart, interactive, setInput, selectCart });
+  latestRef.current = { input, selectedCart, hoverCart, focusedCart, interactive, setInput, selectCart };
 
   const emitSnapshot = useCallback(
     (next: CollisionSimSnapshot) => {
@@ -301,9 +568,31 @@ export function Collisions({
     }
   }, []);
 
+  const paintScene = useCallback(
+    (
+      snap: CollisionSimSnapshot,
+      sim: SimEngineState | null,
+      curInput: CollisionInput,
+      accentCart: 1 | 2 | null,
+    ) => {
+      const painter = painterRef.current;
+      if (!painter) return;
+      const items = buildCollisionsScene({
+        input: curInput,
+        snapshot: snap,
+        impactX: sim?.impactX ?? null,
+        postFrames: sim?.postFrames ?? 0,
+        accentCart,
+        interactive,
+      });
+      painter.render(COLLISION_CAMERA, items);
+    },
+    [interactive],
+  );
+
   const syncSnapshotFromSim = useCallback(
-    (sim: SimEngineState, isReduced: boolean) => {
-      emitSnapshot({
+    (sim: SimEngineState, isReduced: boolean): CollisionSimSnapshot => {
+      const next: CollisionSimSnapshot = {
         phase: sim.phase,
         hasCollided: sim.hasCollided,
         x1: sim.body1.position.x / MATTER_SCALE,
@@ -313,7 +602,9 @@ export function Collisions({
         measuredV1After: sim.measuredV1After,
         measuredV2After: sim.measuredV2After,
         reducedMotion: isReduced,
-      });
+      };
+      emitSnapshot(next);
+      return next;
     },
     [emitSnapshot],
   );
@@ -372,7 +663,11 @@ export function Collisions({
         acc -= DT_MS;
       }
 
-      syncSnapshotFromSim(activeSim, false);
+      const nextSnap = syncSnapshotFromSim(activeSim, false);
+      const { hoverCart: h, focusedCart: f, selectedCart: s, interactive: mode } = latestRef.current;
+      const accent = mode === "detail" ? (h ?? f ?? s) : null;
+      paintScene(nextSnap, activeSim, input, accent);
+
       if (keepGoing && activeSim.phase === "running") {
         rafRef.current = requestAnimationFrame(tick);
       } else {
@@ -381,7 +676,7 @@ export function Collisions({
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [input, reducedMotion, stopLoop, syncSnapshotFromSim, theory.willCollide]);
+  }, [input, paintScene, reducedMotion, stopLoop, syncSnapshotFromSim, theory.willCollide]);
 
   const pausePlay = useCallback(() => {
     stopLoop();
@@ -396,6 +691,106 @@ export function Collisions({
     if (snapshot.phase === "running") pausePlay();
     else startPlay();
   }, [pausePlay, snapshot.phase, startPlay]);
+
+  // Mount Isometric SVG & pointer handler once on the host div.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const b = bag();
+    const root = stage.getRootNode();
+    inject(root.nodeType === 9 || "host" in root ? (root as Document | ShadowRoot) : document);
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 400 320");
+    svg.setAttribute("aria-hidden", "true");
+    stage.prepend(svg);
+
+    const sc = scene(el("g", null, svg));
+    painterRef.current = sc;
+
+    let dragCart: 1 | 2 | null = null;
+    let dragStartP: Vec2 | null = null;
+    let dragStartVel = 0;
+    let dragMoved = false;
+
+    b.add(
+      pointer(stage, {
+        down: (p) => {
+          if (latestRef.current.interactive !== "detail") return;
+          const picked = sc.pick(p);
+          if (picked === "cart1" || picked === "cart2") {
+            const cart = picked === "cart1" ? 1 : 2;
+            latestRef.current.selectCart(cart);
+            dragCart = cart;
+            dragStartP = p;
+            dragMoved = false;
+            dragStartVel = cart === 1 ? latestRef.current.input.v1 : latestRef.current.input.v2;
+            setHoverCart(cart);
+          }
+        },
+        move: (p) => {
+          if (latestRef.current.interactive !== "detail") return;
+          if (dragCart && dragStartP) {
+            if (Math.hypot(p[0] - dragStartP[0], p[1] - dragStartP[1]) > 4) dragMoved = true;
+            if (!dragMoved) return;
+            const wxNow = unproject(COLLISION_CAMERA, p[0], p[1], CART_MID_Z)[0];
+            const wxStart = unproject(COLLISION_CAMERA, dragStartP[0], dragStartP[1], CART_MID_Z)[0];
+            const deltaVel = (wxNow - wxStart) / 14;
+            const nextVel = clamp(
+              roundToStep(dragStartVel + deltaVel, VELOCITY_STEP_MPS),
+              MIN_VELOCITY_MPS,
+              MAX_VELOCITY_MPS,
+            );
+            const cur = latestRef.current.input;
+            const currentVel = dragCart === 1 ? cur.v1 : cur.v2;
+            if (nextVel !== currentVel) {
+              latestRef.current.setInput(dragCart === 1 ? { ...cur, v1: nextVel } : { ...cur, v2: nextVel });
+            }
+            return;
+          }
+          const picked = sc.pick(p);
+          const nextHover: 1 | 2 | null = picked === "cart1" ? 1 : picked === "cart2" ? 2 : null;
+          setHoverCart((prev) => {
+            if (prev !== nextHover) {
+              stage.style.cursor = nextHover ? "grab" : "";
+            }
+            return nextHover;
+          });
+        },
+        up: () => {
+          dragCart = null;
+          dragStartP = null;
+          dragMoved = false;
+          if (latestRef.current.interactive === "detail") {
+            stage.style.cursor = latestRef.current.hoverCart ? "grab" : "";
+          }
+        },
+        leave: () => {
+          dragCart = null;
+          dragStartP = null;
+          dragMoved = false;
+          setHoverCart(null);
+          if (latestRef.current.interactive === "detail") {
+            stage.style.cursor = "";
+          }
+        },
+      }),
+    );
+
+    b.add(() => {
+      painterRef.current = null;
+      svg.remove();
+    });
+
+    return () => b.dispose();
+  }, []);
+
+  // Re-render Isometric SVG whenever state or selection changes.
+  useEffect(() => {
+    const accent = interactive === "detail" ? (hoverCart ?? focusedCart ?? selectedCart) : null;
+    paintScene(snapshot, simRef.current, input, accent);
+  }, [focusedCart, hoverCart, input, interactive, paintScene, selectedCart, snapshot]);
 
   // Respond to imperative commands from parent showcase controls.
   const lastSeqRef = useRef<number>(-1);
@@ -431,44 +826,7 @@ export function Collisions({
     [input, setInput],
   );
 
-  const handleCartPointerDown = (cart: 1 | 2, e: React.PointerEvent<SVGGElement>) => {
-    e.stopPropagation();
-    selectCart(cart);
-    dragRef.current = {
-      cart,
-      startClientX: e.clientX,
-      startVel: cart === 1 ? input.v1 : input.v2,
-      moved: false,
-    };
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-  };
-
-  const handleCartPointerMove = (e: React.PointerEvent<SVGGElement>) => {
-    const drag = dragRef.current;
-    if (!drag || !svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const dxPx = e.clientX - drag.startClientX;
-    if (Math.abs(dxPx) > 4) drag.moved = true;
-    if (!drag.moved || rect.width <= 0) return;
-
-    // 45 px of horizontal drag changes velocity by 1.0 m/s (snapped to 0.5 m/s).
-    const deltaVel = (dxPx / Math.max(180, rect.width)) * 6.0;
-    const nextVel = clamp(
-      roundToStep(drag.startVel + deltaVel, VELOCITY_STEP_MPS),
-      MIN_VELOCITY_MPS,
-      MAX_VELOCITY_MPS,
-    );
-    const currentVel = drag.cart === 1 ? input.v1 : input.v2;
-    if (nextVel !== currentVel) {
-      setInput(drag.cart === 1 ? { ...input, v1: nextVel } : { ...input, v2: nextVel });
-    }
-  };
-
-  const handleCartPointerUp = () => {
-    dragRef.current = null;
-  };
-
-  const handleCartKeyDown = (cart: 1 | 2, e: React.KeyboardEvent<SVGGElement>) => {
+  const handleCartKeyDown = (cart: 1 | 2, e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
       adjustCartVelocity(cart, -VELOCITY_STEP_MPS);
@@ -490,238 +848,71 @@ export function Collisions({
     }
   };
 
-  const box1 = computeCartSvgBox(snapshot.x1, input.m1);
-  const box2 = computeCartSvgBox(snapshot.x2, input.m2);
-  const arrow1 = computeVelocityArrow(box1.centerX, box1.arrowY, snapshot.v1);
-  const arrow2 = computeVelocityArrow(box2.centerX, box2.arrowY, snapshot.v2);
-  const bumpers = computeTrackBumpers();
-  const impactXSvg = simRef.current?.impactX !== null && simRef.current?.impactX !== undefined
-    ? meterToSvgX(simRef.current.impactX)
-    : null;
-  const showImpactSpark =
-    snapshot.hasCollided &&
-    impactXSvg !== null &&
-    simRef.current !== null &&
-    simRef.current.postFrames <= 14;
+  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (interactive !== "card") return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      togglePlayPause();
+    } else if (e.key === "r" || e.key === "R") {
+      e.preventDefault();
+      resetWorld(input);
+    }
+  };
 
-  const isElastic = Math.abs(input.e - 1) < 0.01;
-  const isStick = input.e < 0.01;
-  const modeSummary = isElastic ? "Elastic" : isStick ? "Stick (e=0)" : `e = ${input.e.toFixed(2)}`;
+  const handleCardClick = () => {
+    if (interactive !== "card") return;
+    togglePlayPause();
+  };
+
+  const ariaLabel =
+    interactive === "card"
+      ? `1D elastic collision simulation: Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(snapshot.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(snapshot.v2)} m/s). Click or press Enter to play or replay.`
+      : `1D collision track with Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(snapshot.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(snapshot.v2)} m/s), coefficient of restitution ${input.e.toFixed(2)}.`;
 
   return (
     <div
+      ref={stageRef}
       data-testid="collisions-figure"
-      className={`iso-studio-surface flex h-full w-full flex-col justify-between select-none ${className ?? ""}`.trim()}
+      data-iso="collisions"
+      data-interactive={interactive}
+      role={interactive === "card" ? "button" : "group"}
+      tabIndex={interactive === "card" ? 0 : -1}
+      aria-label={ariaLabel}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className={`iso-studio-surface iso-figure-box w-full ${className ?? ""}`.trim()}
     >
-      <div className="flex items-center justify-between gap-space-2 px-space-3 pt-space-2_5 text-xs text-foreground-secondary">
-        <span className="font-mono tabular-nums" data-testid="collisions-live-summary">
-          {snapshot.hasCollided ? "After" : "Before"}: v₁ {formatSigned(snapshot.v1)} · v₂ {formatSigned(snapshot.v2)} m/s
-        </span>
-        <span className="font-mono">{modeSummary}</span>
-      </div>
+      <span data-iso-live="" aria-live="polite">
+        {snapshot.hasCollided
+          ? `After collision: Cart 1 ${formatSigned(snapshot.v1)} m/s, Cart 2 ${formatSigned(snapshot.v2)} m/s`
+          : `Ready: Cart 1 ${formatSigned(snapshot.v1)} m/s, Cart 2 ${formatSigned(snapshot.v2)} m/s`}
+      </span>
 
-      <svg
-        ref={svgRef}
-        viewBox={SVG_VIEWBOX}
-        role="img"
-        aria-label={`1D collision track with Cart 1 (${input.m1.toFixed(1)} kg at ${formatSigned(snapshot.v1)} m/s) and Cart 2 (${input.m2.toFixed(1)} kg at ${formatSigned(snapshot.v2)} m/s), coefficient of restitution ${input.e.toFixed(2)}.`}
-        className="w-full flex-1"
-      >
-        {/* Track rail, end bumpers, and 1 m ticks */}
-        <line
-          x1={TRACK_LEFT_X}
-          y1={bumpers.trackTopY}
-          x2={TRACK_RIGHT_X}
-          y2={bumpers.trackTopY}
-          className="collision-track-rail"
-        />
-        <rect
-          x={bumpers.left.x}
-          y={bumpers.left.y}
-          width={bumpers.left.width}
-          height={bumpers.left.height}
-          rx={bumpers.left.rx}
-          className="collision-bumper"
-        />
-        <rect
-          x={bumpers.right.x}
-          y={bumpers.right.y}
-          width={bumpers.right.width}
-          height={bumpers.right.height}
-          rx={bumpers.right.rx}
-          className="collision-bumper"
-        />
-
-        {TRACK_TICKS.map((m) => {
-          const tx = meterToSvgX(m);
-          return (
-            <g key={m}>
-              <line x1={tx} y1={bumpers.tickY1} x2={tx} y2={bumpers.tickY2} className="collision-tick-major" />
-              <text x={tx} y={bumpers.tickLabelY} textAnchor="middle" className="collision-tick-label">
-                {m === 0 ? "0m" : `${m > 0 ? "+" : ""}${m}`}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Subtle impact mark briefly shown at contact */}
-        {showImpactSpark && impactXSvg !== null && (
-          <g className="collision-impact-mark" aria-hidden="true">
-            <line x1={impactXSvg} y1={box1.y - 6} x2={impactXSvg} y2={box1.y - 14} />
-            <line x1={impactXSvg - 5} y1={box1.y - 4} x2={impactXSvg - 10} y2={box1.y - 10} />
-            <line x1={impactXSvg + 5} y1={box1.y - 4} x2={impactXSvg + 10} y2={box1.y - 10} />
-          </g>
-        )}
-
-        {/* Velocity arrows above each cart */}
-        {[
-          { id: 1 as const, arrow: arrow1, vel: snapshot.v1 },
-          { id: 2 as const, arrow: arrow2, vel: snapshot.v2 },
-        ].map(({ id, arrow, vel }) => {
-          const isSelected = selectedCart === id;
-          return (
-            <g key={`arrow-${id}`} aria-hidden="true">
-              {arrow.hasArrow ? (
-                <>
-                  <line
-                    x1={arrow.startX}
-                    y1={arrow.y}
-                    x2={arrow.endX}
-                    y2={arrow.y}
-                    className={isSelected ? "collision-arrow-selected" : "collision-arrow"}
-                  />
-                  <polygon
-                    points={arrow.headPoints}
-                    className={isSelected ? "collision-arrow-head-selected" : "collision-arrow-head"}
-                  />
-                </>
-              ) : (
-                <circle
-                  cx={arrow.startX}
-                  cy={arrow.y}
-                  r={3}
-                  className={isSelected ? "collision-arrow-head-selected" : "collision-arrow-head"}
-                />
-              )}
-              <text
-                x={arrow.labelX}
-                y={arrow.labelY}
-                textAnchor="middle"
-                className={isSelected ? "collision-vel-label-selected" : "collision-vel-label"}
-              >
-                {formatSigned(vel)} m/s
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Cart 1 & Cart 2 */}
-        {[
-          { id: 1 as const, box: box1, mass: input.m1, vel: snapshot.v1 },
-          { id: 2 as const, box: box2, mass: input.m2, vel: snapshot.v2 },
-        ].map(({ id, box, mass, vel }) => {
-          const isSelected = selectedCart === id;
-          return (
-            <g
-              key={`cart-${id}`}
-              data-testid={`collision-cart-${id}`}
-              data-selected={isSelected ? "true" : "false"}
-              role="slider"
-              tabIndex={0}
-              aria-label={`Cart ${id}. Drag horizontally or press Left and Right arrows to adjust velocity, Up and Down arrows to adjust mass, Space to play or pause.`}
-              aria-valuemin={MIN_VELOCITY_MPS}
-              aria-valuemax={MAX_VELOCITY_MPS}
-              aria-valuenow={id === 1 ? input.v1 : input.v2}
-              aria-valuetext={`Cart ${id}, mass ${mass.toFixed(1)} kg, velocity ${formatSigned(vel)} meters per second`}
-              onFocus={() => selectCart(id)}
-              onPointerDown={(e) => handleCartPointerDown(id, e)}
-              onPointerMove={handleCartPointerMove}
-              onPointerUp={handleCartPointerUp}
-              onPointerCancel={handleCartPointerUp}
-              onKeyDown={(e) => handleCartKeyDown(id, e)}
-              className="collision-cart-focus cursor-grab active:cursor-grabbing"
-            >
-              <circle
-                cx={box.wheelLeftX}
-                cy={box.wheelY}
-                r={box.wheelR}
-                className={isSelected ? "collision-cart-wheel-selected" : "collision-cart-wheel"}
-              />
-              <circle
-                cx={box.wheelRightX}
-                cy={box.wheelY}
-                r={box.wheelR}
-                className={isSelected ? "collision-cart-wheel-selected" : "collision-cart-wheel"}
-              />
-              <rect
-                x={box.x}
-                y={box.y}
-                width={box.width}
-                height={box.height}
-                rx={box.rx}
-                className={isSelected ? "collision-cart-selected" : "collision-cart"}
-              />
-              <rect
-                x={box.innerX}
-                y={box.innerY}
-                width={box.innerWidth}
-                height={box.innerHeight}
-                rx={box.innerRx}
-                className={isSelected ? "collision-cart-inner-selected" : "collision-cart-inner"}
-              />
-              <text x={box.centerX} y={box.idTextY} textAnchor="middle" dominantBaseline="central" className="collision-cart-id">
-                C{id}
-              </text>
-              <text x={box.centerX} y={box.massTextY} textAnchor="middle" dominantBaseline="central" className="collision-cart-mass">
-                {mass.toFixed(1)}kg
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      {showInlineControls && (
-        <div className="flex flex-wrap items-center justify-between gap-space-2 px-space-3 pb-space-2_5">
-          <div className="flex items-center gap-space-1_5">
-            <Button
-              type="button"
-              variant="primary"
-              size="compact"
-              onClick={togglePlayPause}
-              aria-label={snapshot.phase === "running" ? "Pause simulation" : "Play simulation"}
-              data-testid="collisions-inline-play"
-            >
-              {snapshot.phase === "running" ? (
-                <Pause aria-hidden="true" className="size-space-3_5" />
-              ) : (
-                <Play aria-hidden="true" className="size-space-3_5" />
-              )}
-              {snapshot.phase === "running" ? "Pause" : snapshot.phase === "done" ? "Replay" : "Play"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="compact"
-              onClick={() => resetWorld(input)}
-              aria-label="Reset carts"
-              data-testid="collisions-inline-reset"
-            >
-              <RotateCcw aria-hidden="true" className="size-space-3_5" />
-              Reset
-            </Button>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="compact"
-            onClick={() => setInput({ ...input, e: isStick ? 1 : 0 })}
-            aria-label="Toggle elastic or stick together"
-            data-testid="collisions-inline-mode"
-          >
-            {isStick ? "Stick (e = 0)" : "Elastic (e = 1)"}
-          </Button>
-        </div>
-      )}
+      {interactive === "detail" &&
+        ([
+          { id: 1 as const, mass: input.m1, vel: snapshot.v1, inputVel: input.v1 },
+          { id: 2 as const, mass: input.m2, vel: snapshot.v2, inputVel: input.v2 },
+        ] as const).map(({ id, mass, vel, inputVel }) => (
+          <div
+            key={id}
+            className="sr-only"
+            data-testid={`collision-cart-${id}`}
+            data-selected={selectedCart === id ? "true" : "false"}
+            role="slider"
+            tabIndex={0}
+            aria-label={`Cart ${id}. Press Left or Right arrows to adjust initial velocity, Up or Down arrows to adjust mass, Space or Enter to play or pause.`}
+            aria-valuemin={MIN_VELOCITY_MPS}
+            aria-valuemax={MAX_VELOCITY_MPS}
+            aria-valuenow={inputVel}
+            aria-valuetext={`Cart ${id}, mass ${mass.toFixed(1)} kg, velocity ${formatSigned(vel)} meters per second`}
+            onFocus={() => {
+              setFocusedCart(id);
+              selectCart(id);
+            }}
+            onBlur={() => setFocusedCart((prev) => (prev === id ? null : prev))}
+            onKeyDown={(e) => handleCartKeyDown(id, e)}
+          />
+        ))}
     </div>
   );
 }
