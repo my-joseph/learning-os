@@ -28,3 +28,11 @@ export const LazyPulley = dynamic(
     loading: () => <FigureSkeleton />,
   }
 );
+
+export const LazyLever = dynamic(
+  () => import("@/components/isometric/lever").then((mod) => mod.Lever),
+  {
+    ssr: false,
+    loading: () => <FigureSkeleton />,
+  }
+);

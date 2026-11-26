@@ -15,3 +15,9 @@
 .iso-figure-box {
   aspect-ratio: 5 / 4;
 }
+
+.iso-studio-surface [data-iso]:has(:focus-visible) {
+  outline: var(--border-width-2) solid rgb(var(--accent));
+  outline-offset: var(--space-0-5);
+  border-radius: var(--radius-md);
+}

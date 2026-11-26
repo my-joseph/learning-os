@@ -108,7 +108,9 @@ const entity: Entity<State, PulleyProps> = {
       const lift = pulled / s.ratio
       const pulledText = pulled < 0.5 ? "0" : pulled.toFixed(0)
       const liftText = lift < 0.05 ? "0.0" : lift.toFixed(1)
-      ctx.read(`pull ${pulledText} · lift ${liftText} · ${s.ratio}:1 · ${(s.kg / s.ratio).toFixed(0)} kg of force`)
+      const effortN = (s.kg * 9.8) / s.ratio
+      const effortText = Math.abs(effortN - Math.round(effortN)) < 0.05 ? effortN.toFixed(0) : effortN.toFixed(1)
+      ctx.read(`pull ${pulledText} · lift ${liftText} · ${s.ratio}:1 · ${effortText} N effort`)
     }
     return moving
   },
