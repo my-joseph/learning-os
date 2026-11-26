@@ -33,9 +33,12 @@ math steps include an `explain` line; do not rebuild this capability.
    passing the same math ingest gates as drills (`math_engine.ai_drill_ingest --check`).
    Variants are generated through the current gated workflow (blind-solve, reviewer, and originality). Template removal remains on hold.
 2. **"Try a similar question" (+)** unlocks after a substantive check or Skip in the current cycle. It
-   opens the next unseen variant in bank order and is accented after a wrong or assisted answer.
-   Tabs restore in the order they were opened. The bank determines when the add button is exhausted.
-   Similar attempts remain isolated from the original problem score and per-item review schedule.
+   opens the next variant for the current cycle in bank order (preferring variants never served in earlier
+   cycles, then wrapping from the first) and is accented after a wrong, assisted, or skipped answer.
+   Opened tabs are scoped to the current cycle (Reset preserves history while clearing the strip until
+   **+** is pressed again), and exhaustion resets per cycle. Similar tabs offer full action parity
+   (including Skip, self-score, mistake tags, diverged-step flag, and notes) while remaining isolated
+   from the original problem score and per-item review schedule.
 3. **Worked example of a similar question** after two wrong attempts: shows one bank variant fully solved
    (steps with explain) before the learner retries their own problem. Never the learner's own problem.
 
