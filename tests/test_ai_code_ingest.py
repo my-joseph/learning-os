@@ -7,6 +7,9 @@ import os
 import tempfile
 import unittest
 
+import pytest
+
+from code_engine import ai_drill_ingest as ingest
 from code_engine.ai_drill_ingest import (
     AiContractError,
     ingest_ai_code_drill,
@@ -369,6 +372,17 @@ class TestAiCodeIngest(unittest.TestCase):
             saved = ingest_ai_code_drill(
                 drill_doc, data_root=tmp_data_dir, workspace_root=tmp_ws_dir, vault_dir=tmp_data_dir
             )
+            self.assertEqual(saved["unitTitle"], "Recursion, Complexity & Core Data Structures")
+            self.assertEqual(saved["topicCode"], "PRG-T01")
+            self.assertEqual(saved["chapterCode"], "PRG-T01-C03")
+            self.assertEqual(saved["schemaVersion"], "2.0-code")
+            self.assertEqual(saved["subject"], "PRG")
+            self.assertEqual(saved["problems"][0]["levelLabel"], "Trap & Diagnostic")
+            self.assertNotIn("title", saved)
+            self.assertEqual(
+                saved["config"],
+                {"questionCount": 1, "difficulty": "ALL", "difficultyMode": "AI Synthesized Engineering Mode"},
+            )
 
             # 1. Check Drill JSON persistence
             expected_json = os.path.join(tmp_data_dir, "PRG-T01-C03", "DRL-PRG-T01-C03-TEST01.json")
@@ -433,6 +447,55 @@ class TestAiCodeIngest(unittest.TestCase):
         # 4. Valid registered 'predict_output' spec passes
         prob_ok = dict(base, answerSpec={"type": "predict_output", "tokens": ["ready"]})
         self.assertTrue(validate_ai_code_contract(prob_ok))
+
+
+def test_characterize_code_vault_scope_and_rotation(tmp_path, monkeypatch):
+    chapter = "PRG-T01-C01"
+    unit = f"{chapter}-U01"
+    child = {"archetypeKey": "child", "unitCode": unit, "usedContexts": ["first"]}
+    legacy = {"archetypeKey": "legacy", "usedContexts": []}
+    vault = tmp_path / "vault"
+    monkeypatch.setenv("CODE_REASONING_VAULT_DIR", str(vault))
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(tmp_path / "math-vault"))
+
+    assert ingest.get_code_vault_path(chapter) == str(vault / f"{chapter}.json")
+    assert ingest.load_code_reasoning_vault(chapter) == {"unitCode": chapter, "archetypes": []}
+    for archetype in (child, legacy):
+        assert ingest.register_code_archetype(chapter, archetype) is archetype
+    assert ingest.save_code_reasoning_vault(chapter, ingest.load_code_reasoning_vault(chapter)) == str(
+        vault / f"{chapter}.json"
+    )
+    assert ingest.load_scope_archetypes(chapter) == [
+        {**child, "_vaultFile": chapter},
+        {**legacy, "_vaultFile": chapter},
+    ]
+    assert ingest.load_scope_archetypes(unit) == [{**child, "_vaultFile": chapter}]
+    assert ingest.archetype_owner(ingest.load_scope_archetypes(unit)[0]) == unit
+    for _ in range(2):
+        assert ingest.mark_code_context_used(unit, "child", "second") is None
+    assert ingest.load_code_reasoning_vault(chapter) == {
+        "unitCode": chapter,
+        "archetypes": [{**child, "usedContexts": ["first", "second"]}, legacy],
+    }
+    assert not (vault / f"{unit}.json").exists()
+    with pytest.raises(ValueError) as exc:
+        ingest.register_code_archetype(chapter, {})
+    assert str(exc.value) == "Archetype must have an 'archetypeKey'."
+
+
+def test_characterize_code_review_precedence_and_errors():
+    passing = {"verdict": "pass", "note": "Checked."}
+    fix = {"verdict": "fix", "note": "Adjust the draft."}
+    assert ingest.validate_drill_review({"review": passing}, [{}]) == []
+    assert ingest.validate_drill_review({"review": fix}, [{"review": passing}]) == [
+        f"Drill 'review' must have verdict='pass' and a non-empty 'note' (got {fix!r})."
+    ]
+    assert ingest.validate_drill_review({"review": "invalid"}, [{"review": passing}, {"id": "Q02", "review": fix}]) == [
+        "[Q02] Problem 'review' must have verdict='pass' and a non-empty 'note'."
+    ]
+    assert ingest.validate_drill_review({}, [{"review": fix}, {}]) == [
+        "Missing 'review' {verdict: 'pass', note} from the reviewer subagent."
+    ]
 
 
 if __name__ == "__main__":

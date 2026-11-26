@@ -31,7 +31,7 @@ jobs:
           removed=$(git diff --name-only --diff-filter=DR "$base"..."$head")
           echo "Changed files:"; echo "$changed"
           # PRG tests (ESLint/tsc heavy) run only when PRG code/content, migration, or shared infra/originality changes.
-          if [ -n "$removed" ] || echo "$changed" | grep -qE '^(code_engine/|labs/|tools/lint/|drills/data/PRG|rules/04|tests/test_(new_code_drill|prg_|new_project|ai_code_ingest|lab_ingest)|tests/test_unit_scope\.py|tests/conftest\.py|pytest\.ini|requirements|quality_rules\.py|progress_store\.py|notion_sync/|scripts/(review_record|prg_migrate)\.py|docs/prg_(migration_map|v1_codes)\.json|math_engine/source_cores/(__init__|originality|code_originality)\.py|\.github/)'; then
+          if [ -n "$removed" ] || echo "$changed" | grep -qE '^(code_engine/|labs/|tools/lint/|drills/data/PRG|rules/04|tests/test_(new_code_drill|prg_|new_project|ai_code_ingest|lab_ingest)|tests/test_unit_scope\.py|tests/conftest\.py|pytest\.ini|requirements|quality_rules\.py|ingest_core\.py|progress_store\.py|notion_sync/|scripts/(review_record|prg_migrate)\.py|docs/prg_(migration_map|v1_codes)\.json|math_engine/source_cores/(__init__|originality|code_originality)\.py|\.github/)'; then
             echo "prg=true" >> "$GITHUB_OUTPUT"
           else
             echo "prg=false" >> "$GITHUB_OUTPUT"
