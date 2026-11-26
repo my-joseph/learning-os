@@ -605,6 +605,8 @@ export const DailyReviewPage: React.FC = () => {
     (rawUnit?.trim() ? `unit:${rawUnit.trim()}` : null) ||
     (rawTrap?.trim() ? `trap:${rawTrap.trim()}` : null);
 
+  const isMistakePractice = activeScope?.startsWith("mistake:");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [today, setToday] = useState<string>("");
@@ -650,7 +652,7 @@ export const DailyReviewPage: React.FC = () => {
   // Load due items from GET /api/review-items?limit=8 (preserving optional scope)
   useEffect(() => {
     let cancelled = false;
-    if (batchCounter === 0) {
+    if (batchCounter === 0 && !isMistakePractice) {
       try {
         const saved = window.sessionStorage.getItem(reviewStorageKey(activeScope));
         if (saved) {
@@ -737,7 +739,7 @@ export const DailyReviewPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [activeScope, batchCounter]);
+  }, [activeScope, batchCounter, isMistakePractice]);
 
   const reviewCycles = useRef(new Map<string, Promise<string | null>>());
 
@@ -1271,7 +1273,7 @@ export const DailyReviewPage: React.FC = () => {
     : undefined;
 
   useEffect(() => {
-    if (!completed || items.length === 0) return;
+    if (isMistakePractice || !completed || items.length === 0) return;
     try {
       window.sessionStorage.setItem(reviewStorageKey(activeScope), JSON.stringify({
         completed: true, items, outcomes, totalDue, unitTitles, today,
@@ -1280,7 +1282,7 @@ export const DailyReviewPage: React.FC = () => {
     } catch {
       // A full sessionStorage quota must not block the end screen.
     }
-  }, [completed, items, outcomes, totalDue, unitTitles, today, initialNextDueDate, lastDrillHref, activeScope]);
+  }, [completed, items, outcomes, totalDue, unitTitles, today, initialNextDueDate, lastDrillHref, activeScope, isMistakePractice]);
 
   return (
     <DailyReviewView

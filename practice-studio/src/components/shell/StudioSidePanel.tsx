@@ -1,13 +1,15 @@
 "use client";
 
 import { Numeral } from "@/components/ui/Numeral";
-import React from "react";
+import React, { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Workspace } from "@/lib/routes";
 import { plainTitle } from "@/lib/titleText";
-import { warningTone } from "@/lib/statusTone";
-import type { DueTodayUnit, UnitMasteryContext, WeakSpotUnit } from "@/lib/dueToday";
+import { mistakePracticeHref, type RecentMistake } from "@/lib/mistakePractice";
+import type { DueTodayUnit, UnitMasteryContext } from "@/lib/dueToday";
+import { ListRow } from "@/components/ui/ListRow";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { FormattedText } from "@/components/FormattedText";
 import { Button } from "@/components/ui/shadcn/Button";
 import { Card } from "@/components/ui/shadcn/Card";
@@ -29,9 +31,10 @@ export interface StudioSidePanelProps {
   dueUnits?: DueTodayUnit[];
   dueLoading?: boolean;
   dueError?: string | null;
-  weakSpotUnits: WeakSpotUnit[];
-  weakLoading?: boolean;
-  weakError?: string | null;
+  mistakes?: RecentMistake[];
+  showMistakes?: boolean;
+  mistakesLoading?: boolean;
+  mistakesError?: boolean;
   embedded?: boolean;
   onNavigate?: () => void;
 }
@@ -45,7 +48,7 @@ function MasteryDots({ mastery }: { mastery: number }) {
   const level = Math.max(0, Math.min(4, Math.round(mastery)));
   return (
     <span
-      className="inline-flex items-center gap-1 shrink-0"
+      className="inline-flex items-center gap-space-1 shrink-0"
       aria-label={`Mastery ${level} of 4`}
       title={`Mastery ${level} of 4`}
     >
@@ -53,10 +56,10 @@ function MasteryDots({ mastery }: { mastery: number }) {
         <span
           key={dot}
           aria-hidden="true"
-          className={`w-1.5 h-1.5 rounded-full ${
+          className={`size-space-1_5 rounded-full ${
             dot < level
-              ? "bg-zinc-700 dark:bg-zinc-300"
-              : "bg-zinc-200 dark:bg-zinc-700"
+              ? "bg-foreground-control"
+              : "bg-border-control"
           }`}
         />
       ))}
@@ -64,7 +67,7 @@ function MasteryDots({ mastery }: { mastery: number }) {
   );
 }
 
-/** Quiet side panel showing the workspace's item-level review queue and open weak spots for the current unit. */
+/** Quiet side panel showing the workspace's item-level review queue and recent mistakes for the current workspace. */
 export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
   workspace,
   currentUnitCode,
@@ -78,12 +81,16 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
   dueUnits = [],
   dueLoading = false,
   dueError = null,
-  weakSpotUnits,
-  weakLoading = false,
-  weakError = null,
+  mistakes = [],
+  showMistakes = false,
+  mistakesLoading = false,
+  mistakesError = false,
   embedded = false,
   onNavigate,
 }) => {
+  const [mistakesExpanded, setMistakesExpanded] = useState(true);
+  const mistakesId = useId();
+  const mistakesOpen = showMistakes && !drillLoading && mistakesExpanded;
   const isPrg = workspace === "code";
   const workspaceSubject = isPrg ? "PRG" : "MTH";
   const otherSubject = isPrg ? "MTH" : "PRG";
@@ -113,23 +120,6 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           };
         })()
       : null);
-
-  const openSpots = weakSpotUnits.flatMap((u) =>
-    u.open.map((spot) => ({
-      ...spot,
-      unitCode: u.unitCode,
-      unitTitle: u.unitTitle,
-    }))
-  );
-  const showUnitHeading = weakSpotUnits.length > 1;
-
-  const weakSubtitle = isPrg ? "Checks and lint rules" : "Repeated traps";
-  const isWeakSkeleton = drillLoading || (weakLoading && openSpots.length === 0);
-  const weakEmptyText = !currentUnitCode
-    ? "Open a drill to see unit weak spots."
-    : isPrg
-    ? "No open check or lint issues in this unit."
-    : "No open traps for this unit yet.";
 
   const content = (
     <>
@@ -214,103 +204,95 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
         )}
       </section>
 
-      {/* Section 2: Current unit context & weak spots */}
-      <section aria-labelledby="side-panel-weak-heading" className="pt-4 space-y-2.5 min-w-0">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 min-w-0">
-          <h2
-            id="side-panel-weak-heading"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+      <section aria-labelledby={`${mistakesId}-heading`} className="min-w-0 pt-space-4">
+        <h2 id={`${mistakesId}-heading`}>
+          <SectionHeader
+            expanded={mistakesOpen}
+            controls={mistakesId}
+            disabled={!showMistakes || drillLoading}
+            onClick={() => setMistakesExpanded((expanded) => !expanded)}
+            className="min-h-touch text-sm font-semibold text-foreground disabled:text-foreground-secondary lg:min-h-control-sm"
           >
-            Weak spots
-          </h2>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 min-w-0">
-            {weakSubtitle}
-          </span>
-        </div>
+            What I get wrong
+          </SectionHeader>
+        </h2>
 
-        {!drillLoading && unitContext && (
-          <div className="space-y-1 min-w-0 pb-1">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="text-xs font-normal text-zinc-700 dark:text-zinc-300 leading-snug truncate min-w-0">
-                {plainTitle(unitContext.title)}
-              </span>
-              <MasteryDots mastery={unitContext.mastery} />
-            </div>
-            {unitContext.masteryCap?.capped && unitContext.masteryCap.reason && (
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug break-words">
-                Capped at <Numeral variant="sm" className="leading-none">{unitContext.mastery}</Numeral>
-                {" "}· {unitContext.masteryCap.reason}
-              </p>
-            )}
-          </div>
-        )}
-
-        {isWeakSkeleton ? (
-          <div
-            role="status"
-            aria-label="Loading unit weak spots"
-            className="space-y-2"
-          >
-            <Skeleton className="h-3.5 w-3/4 rounded" />
-            <Skeleton className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800/70" />
-            <Skeleton className="h-3.5 w-2/3 rounded" />
-          </div>
-        ) : weakError ? (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Could not load weak spots.
-          </p>
-        ) : openSpots.length === 0 ? (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-            {weakEmptyText}
-          </p>
-        ) : (
-          <ul className="space-y-2.5 min-w-0">
-            {openSpots.map((spot) => (
-              <li
-                key={`${spot.unitCode}:${spot.id}`}
-                className={`min-w-0 max-w-full ${warningTone.leftBorderSoft} pl-2.5 py-0.5 space-y-0.5`}
-              >
-                <div className="flex items-baseline justify-between gap-2 min-w-0">
-                  <span
-                    className={`text-xs font-normal text-zinc-800 dark:text-zinc-200 break-words [overflow-wrap:anywhere] min-w-0 ${
-                      spot.name ? "" : "font-mono"
-                    }`}
-                    title={spot.name ? spot.id : undefined}
-                  >
-                    {spot.name ?? spot.id}
-                  </span>
-                  <span className="text-[11px] font-sans tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
-                    {spot.matches}x
-                  </span>
+        <div id={mistakesId} hidden={!mistakesOpen}>
+          {mistakesOpen && (
+            <div className="min-w-0 space-y-space-2">
+              {unitContext && (
+                <div className="min-w-0 space-y-space-1 px-space-1_5">
+                  <div className="flex min-w-0 items-center justify-between gap-space-2">
+                    <span className="min-w-0 truncate text-xs text-foreground-secondary">
+                      <FormattedText text={plainTitle(unitContext.title)} />
+                    </span>
+                    <MasteryDots mastery={unitContext.mastery} />
+                  </div>
+                  {unitContext.masteryCap?.capped && unitContext.masteryCap.reason && (
+                    <p className="break-words text-xs text-foreground-secondary">
+                      Capped at <Numeral variant="sm" className="leading-none">{unitContext.mastery}</Numeral>
+                      {" "}· <FormattedText text={unitContext.masteryCap.reason} />
+                    </p>
+                  )}
                 </div>
-                {spot.detail && (
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-snug break-words [overflow-wrap:anywhere]">
-                    <FormattedText text={spot.detail} />
-                  </p>
-                )}
-                {showUnitHeading && spot.unitTitle && (
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
-                    {plainTitle(spot.unitTitle)}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+              )}
+
+              {mistakesLoading ? (
+                <div role="status" aria-label="Loading recent mistakes" className="flex h-control-md items-center px-space-1_5">
+                  <Skeleton className="h-space-3 w-full rounded-md" />
+                </div>
+              ) : mistakesError ? (
+                <p role="status" className="px-space-1_5 text-xs text-foreground-secondary">
+                  Could not load recent mistakes.
+                </p>
+              ) : mistakes.length === 0 ? (
+                <p className="px-space-1_5 text-xs text-foreground-secondary">
+                  Nothing you keep getting wrong in this unit yet.
+                </p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {mistakes.map((mistake) => (
+                    <ListRow key={mistake.key} asChild variant="summary" size="md">
+                      <li>
+                        <div className="min-w-0 space-y-space-0_5 [overflow-wrap:anywhere]">
+                          <p className="text-foreground">
+                            <FormattedText text={mistake.name} />
+                          </p>
+                          {mistake.fixed ? (
+                            <p className="text-status-correct-text">Fixed</p>
+                          ) : (
+                            <p className="tabular-nums text-foreground-secondary">
+                              Missed {mistake.recentMisses} of last {mistake.recentTries}
+                            </p>
+                          )}
+                        </div>
+                        <Button asChild variant="resultLink" size="resultLink" className="shrink-0 lg:min-h-control-xs">
+                          <Link href={mistakePracticeHref(mistake.key)} prefetch={false} onClick={onNavigate}>
+                            Practise<span className="sr-only"> <FormattedText text={mistake.name} /></span>
+                          </Link>
+                        </Button>
+                      </li>
+                    </ListRow>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
       </section>
     </>
   );
 
   if (embedded) {
     return (
-      <div className="min-w-0 max-w-full overflow-x-hidden divide-y divide-zinc-200 dark:divide-zinc-800">
+      <div className="min-w-0 max-w-full overflow-x-hidden divide-y divide-border">
         {content}
       </div>
     );
   }
 
   return (
-    <Card className="max-w-full overflow-x-hidden shadow-none p-4 divide-y divide-zinc-200 dark:divide-zinc-800">
+    <Card className="max-w-full overflow-x-hidden shadow-none p-4 divide-y divide-border">
       {content}
     </Card>
   );
