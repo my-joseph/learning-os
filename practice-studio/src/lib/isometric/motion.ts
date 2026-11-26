@@ -27,6 +27,9 @@ export type Spring = { x: number; v: number; to: number; k: number; c: number; e
 /** A spring at rest on x: stiffness k, damping c, settled within eps. */
 export const spring = (x: number, k = 120, c = 20, eps = 0.01): Spring => ({ x, v: 0, to: x, k, c, eps })
 
+/** A critically damped input spring for the showcase and its return to rest. */
+export const showcaseSpring = (x: number, eps = 0.01): Spring => spring(x, 320, 36, eps)
+
 /** Advances a spring by dt seconds, substepped at 240 Hz so a long frame cannot overshoot. Returns whether it still moves. */
 export function step(s: Spring, dt: number): boolean {
   if (reduced) {

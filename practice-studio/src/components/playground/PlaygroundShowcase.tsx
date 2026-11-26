@@ -1,22 +1,38 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { Heading } from "@/components/ui/Heading";
 import { Numeral } from "@/components/ui/Numeral";
+import { Button } from "@/components/ui/shadcn/Button";
 import { Card } from "@/components/ui/shadcn/Card";
+import { resetShowcase } from "@/lib/isometric/showcaseStage";
 import { cn } from "@/lib/cn";
 import { PlaygroundCardFooter } from "./PlaygroundCard";
 
-export function PlaygroundShowcase({ title, caption, figure, readout }: {
+export function PlaygroundShowcase({ title, caption, figure, readout, reset, onReset }: {
   title: ReactNode;
   caption: ReactNode;
   figure: ReactNode;
   readout?: ReactNode;
+  reset?: boolean;
+  onReset?: () => void;
 }) {
   return (
     <Card asChild variant="playground" className="iso-studio-surface">
-      <section>
+      <section data-showcase="detail">
         <div className={cn("grid", readout && "lg:grid-cols-5")}>
           <div className={cn("flex min-w-0 flex-col justify-center p-space-4 sm:p-space-5", readout && "lg:col-span-3")}>
             <div className="mx-auto w-full max-w-2xl">{figure}</div>
+            {reset && (
+              <Button
+                variant="outline"
+                size="compact"
+                className="self-end"
+                onClick={(event) => { resetShowcase(event.currentTarget); onReset?.(); }}
+              >
+                Reset
+              </Button>
+            )}
           </div>
           {readout}
         </div>

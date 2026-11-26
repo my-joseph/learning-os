@@ -22,6 +22,7 @@ Learner decision 2026-11-26: Isometric figures appear only in the Playground at 
 
 - What exists: engine `practice-studio/src/lib/isometric/` (MIT, vendored; primitives box, cylinder, pyramid, frustum, lathe, extrude, torus, tube, wheel/teeth, mapMesh; picking, springs, keyboard parts); figures Cube, Pulley, Lever (`practice-studio/src/lib/isometric/physics/lever.ts`), DiskMethod (`practice-studio/src/lib/isometric/math/diskMethod.ts`), each with pure logic + unit tests; research notes in `pilot/isometric/` (local).
 - Cost measured 2026-11-26: about 20 min and 0.3–0.5M agy tokens per new figure, plus 10–15 min review; about 3 KB gzip per figure, engine about 10 KB once, lazy-loaded.
+- New Playground figures must define a calm loop script using the shared [showcase loop contract](design/components.md#showcase-loops).
 - Review checklist for every figure (both experiment figures failed a check that tests missed): subject correctness against a cited source (formulas, units — force in N, never kg); the lesson is visible by default (e.g. the lever must look level vs tipped; the disk method must show error shrinking); stated assumptions (massless beam, g = 9.8); zero-leak mode when used in a problem; light/dark, keyboard, reduced motion.
 - Missing before real use: static SVG export so Notion shows the same figure; a figure spec (`{ kind, params }`) so problems reference builders instead of code; surface z = f(x, y) primitive if needed.
 ### Interactive math and physics visuals (candidates, learner 2026-11-26)

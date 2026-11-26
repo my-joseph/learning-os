@@ -6,7 +6,9 @@
 
 import { camera, fit, project, unproject, type Camera, type Vec2, type Vec3 } from "./iso"
 import { scene, type Item } from "./scene"
-import { bag, el, loop, pointer, type Mount } from "./stage"
+import type { ShowcaseScript } from "./showcase"
+import { showcaseLoop } from "./showcaseStage"
+import { bag, el, pointer, type Mount } from "./stage"
 
 /**
  * Isometric — entities: interactive objects built from meshes, with named
@@ -27,6 +29,8 @@ export type Ctx = {
   camera: Camera
   /** Writes the caption. */
   read(text: string): void
+  /** Marks a learner edit for an entity playing a showcase. */
+  change?(): void
 }
 
 export type PointerInfo = {
@@ -46,7 +50,8 @@ export type Entity<S, P> = {
   /** Part id → its name, in the order the arrow keys walk them. */
   parts: Record<string, string>
   init(props: P): S
-  update?(s: S, props: P): void
+  update?(s: S, props: P, ctx: Ctx): void
+  showcase?(s: S, props: P): ShowcaseScript
   draw(s: S, out: Item[], ctx: Ctx): void
   /** Advances by dt seconds. True while anything still moves. */
   step?(s: S, dt: number, ctx: Ctx, now: number): boolean
@@ -100,6 +105,7 @@ export function entityMount<S, P>(entity: Entity<S, P>): Mount<P> {
       value,
       hover: null,
       camera: cam,
+      change: () => L.change(),
       read: (t) => {
         read.textContent = t
       },
@@ -113,11 +119,11 @@ export function entityMount<S, P>(entity: Entity<S, P>): Mount<P> {
       sc.render(cam, out)
     }
 
-    const L = loop(stage, (dt, now) => {
+    const L = showcaseLoop(stage, (dt, now) => {
       const moving = entity.step?.(s, dt, ctx, now) ?? false
       render()
       return moving
-    })
+    }, entity.showcase?.(s, props))
     b.add(L.stop)
     read.textContent = entity.rest(s)
 
@@ -208,7 +214,7 @@ export function entityMount<S, P>(entity: Entity<S, P>): Mount<P> {
         L.wake()
       },
       props: (next) => {
-        entity.update?.(s, next)
+        entity.update?.(s, next, ctx)
         L.wake()
       },
       debug: (on) => {
