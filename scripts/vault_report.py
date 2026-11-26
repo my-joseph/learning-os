@@ -27,16 +27,20 @@ import os
 import re
 from collections import Counter, defaultdict
 
-from code_engine.ai_drill_ingest import archetype_owner as prg_archetype_owner
-from code_engine.ai_drill_ingest import load_scope_archetypes as prg_load_scope_archetypes
-from math_engine.ai_drill_ingest import archetype_owner as mth_archetype_owner
-from math_engine.ai_drill_ingest import load_scope_archetypes as mth_load_scope_archetypes
+from code_engine import ai_drill_ingest as code_ingest
+from ingest_core import archetype_owner, load_scope_archetypes
+from math_engine import ai_drill_ingest as math_ingest
 from quality_rules import BLIND_SOLVE_TAGS, demand_level
 from scripts import issues
 
 MATH_VAULT_DIR = os.path.join("math_engine", "reasoning_vault")
 CODE_VAULT_DIR = os.path.join("code_engine", "reasoning_vault")
 VAULT_DIR = MATH_VAULT_DIR
+
+# Keep the existing report imports available to callers.
+mth_archetype_owner = prg_archetype_owner = archetype_owner
+mth_load_scope_archetypes = math_ingest.load_scope_archetypes
+prg_load_scope_archetypes = code_ingest.load_scope_archetypes
 
 
 def _earned_level(prob: dict, is_prg: bool = False) -> int | None:
@@ -75,9 +79,8 @@ def unit_report(
 ) -> dict:
     is_prg = scope.startswith("PRG-")
     resolved_vault = vault_dir if vault_dir is not None else (CODE_VAULT_DIR if is_prg else MATH_VAULT_DIR)
-    loader = prg_load_scope_archetypes if is_prg else mth_load_scope_archetypes
-    owner_fn = prg_archetype_owner if is_prg else mth_archetype_owner
-    archetypes = loader(scope, resolved_vault)
+    resolve_dir = code_ingest._code_vault_dir if is_prg else math_ingest._vault_dir
+    archetypes = load_scope_archetypes(scope, resolve_dir(resolved_vault), math_scope=not is_prg)
     if earned is None:
         earned = _evidence(data_root)
     failed: dict[str, Counter] = defaultdict(Counter)
@@ -100,7 +103,7 @@ def unit_report(
         rows.append(
             {
                 "key": key,
-                "unit": owner_fn(a),
+                "unit": archetype_owner(a),
                 "level": base,
                 "earned": dict(sorted(earned[key].items())),
                 "failed": dict(sorted(failed[key].items())),

@@ -8,14 +8,15 @@ Bridges dynamic AI-generated problems in chat into:
 
 import argparse
 import copy
-import datetime
-import glob
 import json
 import os
 import re
+from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+import ingest_core
+from ingest_core import archetype_owner as archetype_owner
 from math_engine.answer_check import (
     CHECKERS,
     _intervals_equal,
@@ -27,7 +28,8 @@ from math_engine.answer_check import (
     to_expr,
 )
 from math_engine.answer_spec_registry import validate_answer_spec
-from math_engine.bridge import BRIDGE_SCOPE, BRIDGE_TITLE, MIN_BRIDGE_UNITS, validate_bridge_problem
+from math_engine.bridge import BRIDGE_SCOPE, BRIDGE_TITLE, validate_bridge_problem
+from math_engine.bridge import MIN_BRIDGE_UNITS as MIN_BRIDGE_UNITS
 from math_engine.drill_ids import next_drill_id
 from math_engine.figure_autofill import (
     archetype_requires_figure,
@@ -40,7 +42,7 @@ from math_engine.latex_guard import find_bare_words
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
 from math_engine.verify import verify_problem
-from progress_store import strip_progress
+from progress_store import strip_progress as strip_progress
 from quality_rules import (
     BLIND_SOLVE_TAGS,
     QUALITY_RULES,
@@ -1375,8 +1377,7 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
         raise AiContractError(f"[{pid}] archetypeKey '{key}' is not in the {unit_code} reasoning vault{hint}.")
 
     tag = prob.get("commonTrapTag")
-    # Vaults list traps either as tag strings or as {"trapTag": ..., "description": ...}.
-    traps = [t.get("trapTag") if isinstance(t, dict) else t for t in arch.get("cognitiveTraps") or []]
+    traps = ingest_core.archetype_trap_tags(arch)
     if tag not in traps:
         raise AiContractError(
             f"[{pid}] commonTrapTag '{tag}' is not one of archetype '{key}' cognitiveTraps {traps}. "
@@ -1435,7 +1436,7 @@ def validate_review(prob: Dict[str, Any]) -> None:
     so it only checks a review that is already present; ingest requires one."""
     pid = prob.get("id", "?")
     rv = prob.get("review")
-    if not isinstance(rv, dict) or rv.get("verdict") not in REVIEW_VERDICTS or not str(rv.get("note") or "").strip():
+    if not ingest_core.has_review_record(rv, REVIEW_VERDICTS):
         raise AiContractError(
             f"[{pid}] Needs 'review' {{verdict: pass|fix, note}} from the reviewer subagent (07 §4 V3) before ingest."
         )
@@ -1444,18 +1445,11 @@ def validate_review(prob: Dict[str, Any]) -> None:
 
 
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
-    dir_path = vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
-    os.makedirs(dir_path, exist_ok=True)
-    return os.path.join(dir_path, f"{unit_code}.json")
+    return ingest_core.get_vault_path(unit_code, _vault_dir(vault_dir))
 
 
 def _vault_dir(vault_dir: Optional[str] = None) -> str:
-    return vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
-
-
-def archetype_owner(archetype: Dict[str, Any]) -> str:
-    """The unit (or chapter) an archetype belongs to: its `unitCode`, else the vault file it lives in."""
-    return archetype.get("unitCode") or archetype.get("_vaultFile", "")
+    return ingest_core.resolve_vault_dir(vault_dir, "REASONING_VAULT_DIR", VAULT_DIR)
 
 
 def load_scope_archetypes(
@@ -1463,97 +1457,22 @@ def load_scope_archetypes(
     vault_dir: Optional[str] = None,
     eligible_units: Optional[Iterable[str]] = None,
 ) -> List[Dict[str, Any]]:
-    """Archetypes in scope for a drill on `code`, read across every vault file.
-
-    - A unit code (`MTH-T01-C04-U03`) gets only that unit's archetypes, so a unit drill never mixes in another unit.
-    - A chapter code (`MTH-T01-C04`) gets the archetypes of every unit in the chapter (chapter mixed drill).
-    - `MTH-BRIDGE` returns only bridge archetypes from `MTH-BRIDGE.json` whose `unitCodes` (>= 2) are all in
-      `eligible_units` (defaults to `scripts.bridge_scope.eligible_units()`, dormant when < 2 units qualify).
-    An archetype belongs to its `unitCode`, or, without one, to the vault file it is stored in. Each returned
-    dict carries `_vaultFile` (not saved anywhere) so callers can tell where it lives.
-    """
-    if code == BRIDGE_SCOPE:
-        if eligible_units is not None:
-            eligible_set = {u.strip() for u in eligible_units if isinstance(u, str) and u.strip()}
-        else:
-            from scripts.bridge_scope import eligible_units as _load_eligible_units
-
-            eligible_set = _load_eligible_units()
-        if len(eligible_set) < MIN_BRIDGE_UNITS:
-            return []
-        bridge_path = os.path.join(_vault_dir(vault_dir), f"{BRIDGE_SCOPE}.json")
-        if not os.path.exists(bridge_path):
-            return []
-        try:
-            with open(bridge_path, "r", encoding="utf-8") as f:
-                archetypes = json.load(f).get("archetypes", [])
-        except (OSError, ValueError):
-            return []
-        eligible_archs: List[Dict[str, Any]] = []
-        for a in archetypes:
-            if not isinstance(a, dict):
-                continue
-            units = [u.strip() for u in (a.get("unitCodes") or []) if isinstance(u, str) and u.strip()]
-            if len(set(units)) >= MIN_BRIDGE_UNITS and all(u in eligible_set for u in units):
-                eligible_archs.append({**a, "_vaultFile": BRIDGE_SCOPE})
-        return eligible_archs
-
-    found: List[Dict[str, Any]] = []
-    for path in sorted(glob.glob(os.path.join(_vault_dir(vault_dir), "*.json"))):
-        stem = os.path.basename(path)[:-5]
-        if stem == BRIDGE_SCOPE:
-            continue
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                archetypes = json.load(f).get("archetypes", [])
-        except (OSError, ValueError):
-            continue
-        for a in archetypes:
-            a = {**a, "_vaultFile": stem}
-            owner = archetype_owner(a)
-            if owner == code or owner.startswith(code + "-U"):
-                found.append(a)
-    return found
+    """Load unit, chapter, or eligible bridge archetypes with their vault file annotations."""
+    return ingest_core.load_scope_archetypes(
+        code, _vault_dir(vault_dir), math_scope=True, eligible_units=eligible_units
+    )
 
 
 def load_reasoning_vault(unit_code: str, vault_dir: Optional[str] = None) -> Dict[str, Any]:
-    path = get_vault_path(unit_code, vault_dir=vault_dir)
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"unitCode": unit_code, "archetypes": []}
+    return ingest_core.load_reasoning_vault(unit_code, _vault_dir(vault_dir))
 
 
 def save_reasoning_vault(unit_code: str, vault_data: Dict[str, Any], vault_dir: Optional[str] = None) -> str:
-    path = get_vault_path(unit_code, vault_dir=vault_dir)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(vault_data, f, indent=2, ensure_ascii=False)
-    return path
+    return ingest_core.save_reasoning_vault(unit_code, vault_data, _vault_dir(vault_dir))
 
 
 def register_archetype(unit_code: str, archetype: Dict[str, Any], vault_dir: Optional[str] = None) -> Dict[str, Any]:
-    """Adds or updates a reasoning archetype in the unit's Reasoning Vault."""
-    vault = load_reasoning_vault(unit_code, vault_dir=vault_dir)
-    archetypes = vault.get("archetypes", [])
-    key = archetype.get("archetypeKey")
-    if not key:
-        raise ValueError("Archetype must have an 'archetypeKey'.")
-
-    idx = next((i for i, a in enumerate(archetypes) if a.get("archetypeKey") == key), -1)
-    if idx >= 0:
-        # Merge existing, preserving usedContexts
-        existing = archetypes[idx]
-        used = existing.get("usedContexts", [])
-        archetype["usedContexts"] = list(dict.fromkeys(used + archetype.get("usedContexts", [])))
-        archetypes[idx] = archetype
-    else:
-        if "usedContexts" not in archetype:
-            archetype["usedContexts"] = []
-        archetypes.append(archetype)
-
-    vault["archetypes"] = archetypes
-    save_reasoning_vault(unit_code, vault, vault_dir=vault_dir)
-    return archetype
+    return ingest_core.register_archetype(unit_code, archetype, _vault_dir(vault_dir))
 
 
 def mark_context_used(
@@ -1563,26 +1482,8 @@ def mark_context_used(
     vault_dir: Optional[str] = None,
     eligible_units: Optional[Iterable[str]] = None,
 ) -> None:
-    """Marks a context domain as used so future AI generations rotate to fresh domains.
-    Writes to the vault file that holds the archetype (a unit drill may use a chapter vault's archetype)."""
-    holder = next(
-        (
-            a["_vaultFile"]
-            for a in load_scope_archetypes(unit_code, vault_dir, eligible_units=eligible_units)
-            if a.get("archetypeKey") == archetype_key
-        ),
-        unit_code,
-    )
-    unit_code = holder
-    vault = load_reasoning_vault(unit_code, vault_dir=vault_dir)
-    for a in vault.get("archetypes", []):
-        if a.get("archetypeKey") == archetype_key:
-            used = a.get("usedContexts", [])
-            if context_tag not in used:
-                used.append(context_tag)
-                a["usedContexts"] = used
-            break
-    save_reasoning_vault(unit_code, vault, vault_dir=vault_dir)
+    scope_archetypes = load_scope_archetypes(unit_code, vault_dir, eligible_units=eligible_units)
+    ingest_core.mark_context_used(unit_code, archetype_key, context_tag, _vault_dir(vault_dir), scope_archetypes)
 
 
 def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
@@ -1595,6 +1496,44 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
             if match:
                 yield f"[{prob['id']}] Step {index} explanation contains {match[0]!r} outside $...$. Use inline math."
                 break
+
+
+def _run_problem_gates(
+    prob: Dict[str, Any],
+    archetypes: List[Dict[str, Any]],
+    unit_code: str,
+    rules: Dict[str, Any],
+    *,
+    errors: Optional[List[str]] = None,
+    prepare_for_ingest: Optional[Callable[[Dict[str, Any]], None]] = None,
+) -> None:
+    """Run vault/review and figure/verification gates in order.
+
+    Checks collect one failure from each group and allow an absent review. Ingest
+    stops at the first failure and fills references after the vault gate passes.
+    """
+    try:
+        validate_against_vault(prob, archetypes, unit_code)
+        if prepare_for_ingest is not None:
+            prepare_for_ingest(prob)
+        if errors is None or "review" in prob:
+            validate_review(prob)
+    except AiContractError as exc:
+        if errors is None:
+            raise
+        errors.append(str(exc))
+
+    try:
+        require_figure_decision(prob, archetypes)
+        autofill_problem_figure(prob, archetypes)
+        require_figure_if_declared(prob, archetypes)
+        validate_ai_problem_contract(prob)
+        verify_problem(prob, rules=rules)
+    except Exception as exc:  # noqa: BLE001 - checks report each gate failure
+        if errors is None:
+            raise
+        pid, msg = prob["id"], str(exc)
+        errors.append(msg if pid in msg else f"[{pid}] {msg}")
 
 
 def check_ai_drill(
@@ -1626,28 +1565,10 @@ def check_ai_drill(
     for idx, original in enumerate(problems, 1):
         prob = copy.deepcopy(original)
         checked.append(prob)
-        prob.setdefault("id", f"Q{idx:02d}")
-        prob.setdefault("verificationLevel", "partial")
-        pid = prob["id"]
+        ingest_core.set_problem_defaults(prob, idx)
         if check_step_math:
             errors.extend(_step_math_errors(prob))
-        try:
-            validate_against_vault(prob, vault_archs, unit_code)
-            if "review" in prob:
-                validate_review(prob)
-        except AiContractError as exc:
-            errors.append(str(exc))
-        try:
-            require_figure_decision(prob, vault_archs)
-            autofill_problem_figure(prob, vault_archs)
-            require_figure_if_declared(prob, vault_archs)
-            validate_ai_problem_contract(prob)
-            verify_problem(prob, rules=rules or QUALITY_RULES)
-        except Exception as exc:  # noqa: BLE001 - every gate failure is reported, not raised
-            msg = str(exc)
-            formatted = msg if pid in msg else f"[{pid}] {msg}"
-            if formatted not in errors:
-                errors.append(formatted)
+        _run_problem_gates(prob, vault_archs, unit_code, rules or QUALITY_RULES, errors=errors)
     try:
         check_gate_g3_set(checked, rules=rules or QUALITY_RULES)
     except QualityError as exc:
@@ -1681,6 +1602,32 @@ def check_ai_drill_warnings(
     return list(dict.fromkeys([*collect_figure_title_warnings(checked), *prov_warnings]))
 
 
+def _populate_problem_references(
+    prob: Dict[str, Any], *, unit_code: str, archetypes: List[Dict[str, Any]], id_map: Dict[str, Any]
+) -> None:
+    arch = next((a for a in archetypes if a.get("archetypeKey") == prob.get("archetypeKey")), None)
+    if unit_code == BRIDGE_SCOPE and arch:
+        arch_units = list(
+            dict.fromkeys(u.strip() for u in (arch.get("unitCodes") or []) if isinstance(u, str) and u.strip())
+        )
+        prob["unitCodes"] = arch_units
+        existing_refs = [r.strip() for r in (prob.get("references") or []) if isinstance(r, str) and r.strip()]
+        prob["references"] = list(dict.fromkeys([*arch_units, *existing_refs]))
+    else:
+        ingest_core.populate_archetype_unit(prob, arch)
+
+    refs = prob.get("references")
+    if refs and not prob.get("referenceBadges") and id_map:
+        badges = []
+        for ref in refs:
+            entry = id_map.get(ref, {})
+            title = entry.get("title", ref) if isinstance(entry, dict) else ref
+            raw_id = (entry.get("id", "") if isinstance(entry, dict) else str(entry)).replace("-", "")
+            notion_url = f"https://www.notion.so/{raw_id}" if raw_id else None
+            badges.append({"code": ref, "title": title, "notionUrl": notion_url})
+        prob["referenceBadges"] = badges
+
+
 def ingest_ai_drill(
     drill_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -1707,83 +1654,32 @@ def ingest_ai_drill(
 
     active_rules = rules or QUALITY_RULES
 
-    # Machine Verification of all problems
     id_map = {}
     id_map_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "id_map.json")
-    if os.path.exists(id_map_path):
-        try:
-            with open(id_map_path, "r", encoding="utf-8") as f:
-                id_map = json.load(f)
-        except Exception:
-            pass
+    try:
+        id_map = ingest_core.load_id_map(id_map_path)
+    except Exception:
+        pass
 
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
+    prepare = partial(_populate_problem_references, unit_code=unit_code, archetypes=vault_archs, id_map=id_map)
 
     for idx, prob in enumerate(problems, 1):
-        if "id" not in prob:
-            prob["id"] = f"Q{idx:02d}"
-        if "verificationLevel" not in prob:
-            prob["verificationLevel"] = "partial"
-
+        ingest_core.set_problem_defaults(prob, idx)
         if step_errors := list(_step_math_errors(prob)):
             raise AiContractError("\n".join(step_errors))
-        validate_against_vault(prob, vault_archs, unit_code)
-        arch = next((a for a in vault_archs if a.get("archetypeKey") == prob.get("archetypeKey")), None)
-        if unit_code == BRIDGE_SCOPE and arch:
-            arch_units = list(
-                dict.fromkeys(u.strip() for u in (arch.get("unitCodes") or []) if isinstance(u, str) and u.strip())
-            )
-            prob["unitCodes"] = arch_units
-            existing_refs = [r.strip() for r in (prob.get("references") or []) if isinstance(r, str) and r.strip()]
-            prob["references"] = list(dict.fromkeys([*arch_units, *existing_refs]))
-        elif arch and "-U" in archetype_owner(arch):
-            prob.setdefault("unitCode", archetype_owner(arch))  # lets a chapter drill link the units it covers
-
-        # Auto-resolve referenceBadges if references are provided
-        refs = prob.get("references")
-        if refs and not prob.get("referenceBadges") and id_map:
-            badges = []
-            for ref in refs:
-                entry = id_map.get(ref, {})
-                title = entry.get("title", ref) if isinstance(entry, dict) else ref
-                raw_id = (entry.get("id", "") if isinstance(entry, dict) else str(entry)).replace("-", "")
-                notion_url = f"https://www.notion.so/{raw_id}" if raw_id else None
-                badges.append(
-                    {
-                        "code": ref,
-                        "title": title,
-                        "notionUrl": notion_url,
-                    }
-                )
-            prob["referenceBadges"] = badges
-
-        validate_review(prob)
-        require_figure_decision(prob, vault_archs)
-        autofill_problem_figure(prob, vault_archs)
-        require_figure_if_declared(prob, vault_archs)
-        validate_ai_problem_contract(prob)
-        # Run gate checks (G1-G6)
-        verify_problem(prob, rules=active_rules)
+        _run_problem_gates(prob, vault_archs, unit_code, active_rules, prepare_for_ingest=prepare)
 
     # G3: no two problems in the drill share a structural fingerprint.
     check_gate_g3_set(problems, rules=active_rules)
 
-    drill_id = drill_doc.get("drillId")
-    if not drill_id:
-        drill_id = next_drill_id(unit_code, data_root=data_root)
-        drill_doc["drillId"] = drill_id
+    drill_id = ingest_core.ensure_drill_id(drill_doc, unit_code, data_root, next_drill_id)
 
-    # Auto-resolve unitTitle from id_map.json if missing
     if not drill_doc.get("unitTitle"):
-        id_map_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "id_map.json")
-        if os.path.exists(id_map_path):
-            try:
-                with open(id_map_path, "r", encoding="utf-8") as f:
-                    id_map = json.load(f)
-                if unit_code in id_map and isinstance(id_map[unit_code], dict):
-                    drill_doc["unitTitle"] = id_map[unit_code].get("title")
-            except Exception:
-                pass
+        try:
+            drill_doc["unitTitle"] = ingest_core.load_unit_title(unit_code, id_map_path)
+        except Exception:
+            pass
 
     if not drill_doc.get("unitTitle"):
         drill_doc["unitTitle"] = (
@@ -1793,32 +1689,16 @@ def ingest_ai_drill(
     if not drill_doc.get("title"):
         drill_doc["title"] = f"{drill_doc['unitTitle']} — Verified Math Drill ({len(problems)} Qs)"
 
-    # Hierarchy + level labels that notion_sync.drill_sync needs (the template path sets them too).
-    topic_code, chapter_code = unit_hierarchy(unit_code)
-    if not drill_doc.get("topicCode"):
-        drill_doc["topicCode"] = topic_code
-    if not drill_doc.get("chapterCode"):
-        drill_doc["chapterCode"] = chapter_code
+    ingest_core.populate_hierarchy(drill_doc, unit_hierarchy(unit_code))
     for prob in problems:
-        if not prob.get("levelLabel") and prob.get("level") in LEVEL_LABELS:
-            prob["levelLabel"] = LEVEL_LABELS[prob["level"]]
+        ingest_core.populate_level_label(prob, LEVEL_LABELS)
 
-    drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-math")
-    drill_doc["subject"] = drill_doc.get("subject", "MATH")
-    drill_doc["createdAt"] = drill_doc.get("createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    if "sourceAttribution" in drill_doc:
-        drill_doc["sourceAttribution"] = drill_doc["sourceAttribution"]
-    drill_doc["config"] = drill_doc.get(
-        "config",
-        {
-            "questionCount": len(problems),
-            "difficulty": "ALL",
-            "difficultyMode": "AI Synthesized Reasoning Mode",
-        },
+    ingest_core.finalize_drill_metadata(
+        drill_doc,
+        len(problems),
+        "AI Synthesized Reasoning Mode",
+        defaults={"schemaVersion": "2.0-math", "subject": "MATH"},
     )
-
-    # Learner progress (state / sessionSummary) lives in progress/, not in the drill file.
-    strip_progress(drill_doc)
 
     unit_dir = os.path.join(data_root, unit_code)
     os.makedirs(unit_dir, exist_ok=True)
@@ -1828,12 +1708,9 @@ def ingest_ai_drill(
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
 
-    # Rotate and update usedContexts in Reasoning Vault
-    for prob in problems:
-        arch_key = prob.get("archetypeKey")
-        ctx = prob.get("context")
-        if arch_key and ctx:
-            mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir, eligible_units=eligible_units)
+    ingest_core.rotate_problem_contexts(
+        problems, partial(mark_context_used, unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
+    )
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
     for fig_warn in collect_figure_title_warnings(problems):

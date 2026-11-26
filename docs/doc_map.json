@@ -121,6 +121,10 @@
     "rules/01_arch.md",
     "docs/studio_design.md"
   ],
+  "ingest_core.py": [
+    "rules/04_code.md",
+    "rules/07_problem_generation.md"
+  ],
   "quality_rules.py": [
     "rules/06_quality_contract.md",
     "rules/07_problem_generation.md"
