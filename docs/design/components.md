@@ -77,7 +77,7 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 
 The Studio header opens `/playground`. The index links to the six `/lab/[id]` details. The three old `/ui-poc` routes redirect into Lab. The Programming workspace keeps its own Labs section at `/code/lab/[labId]`.
 
-- `playground/PlaygroundCard.tsx` exports `PlaygroundCard` and `PlaygroundCardFooter`. Pass an experiment and a preview as children. The whole card links to its detail. The 5:4 figure area and title/caption footer keep their size while loading.
+- `playground/PlaygroundCard.tsx` exports `PlaygroundCard` and `PlaygroundCardFooter`. Pass an experiment and a preview as children. The figure is live and interactive in the grid; the footer title (with an arrow) links to the detail page, which adds the full readout. The 5:4 figure area and title/caption footer keep their size while loading.
 - `playground/PlaygroundShowcase.tsx` exports `PlaygroundShowcase`, `PlaygroundReadout`, `PlaygroundStats` and `PlaygroundStat`. Pass a figure, title, caption and optional readout to the shared Playground frame. Use the readout with an optional control and a grid of stat tiles. A stat takes a label, value and optional detail.
 
 ## Rendered prose

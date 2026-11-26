@@ -31,7 +31,6 @@ export function PlaygroundPreview({ id }: { id: PlaygroundExperimentId }) {
   useEffect(() => {
     const preview = ref.current;
     if (!preview) return;
-    preview.inert = true;
     if (typeof IntersectionObserver === "undefined") {
       setVisible(true);
       return;
@@ -46,9 +45,9 @@ export function PlaygroundPreview({ id }: { id: PlaygroundExperimentId }) {
     return () => observer.disconnect();
   }, []);
 
-  // The same live figures are interactive on their detail pages. The card has one link and tab stop.
+  // Live and interactive in the grid; the detail page adds the full readout.
   return (
-    <div ref={ref} aria-hidden="true" className="iso-studio-surface pointer-events-none flex h-full w-full items-center justify-center">
+    <div ref={ref} className="iso-studio-surface flex h-full w-full items-center justify-center">
       {visible ? previews[id] : <FigureSkeleton />}
     </div>
   );

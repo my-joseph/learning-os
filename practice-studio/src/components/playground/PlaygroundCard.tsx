@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardFooter } from "@/components/ui/shadcn/Card";
 import { cn } from "@/lib/cn";
@@ -17,13 +18,27 @@ export function PlaygroundCardFooter({ title, caption, className }: {
   );
 }
 
+/**
+ * Playground card: the figure is live and interactive right in the grid (drag, hover,
+ * keyboard). The footer title links to the detail page with the full readout.
+ */
 export function PlaygroundCard({ experiment, children }: { experiment: PlaygroundExperiment; children: ReactNode }) {
   return (
-    <Card asChild variant="playground" className="flex h-full flex-col overflow-hidden transition-colors hover:border-accent focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none">
-      <Link href={`/playground/${experiment.id}`}>
-        <div className="iso-figure-box bg-surface-raised">{children}</div>
-        <PlaygroundCardFooter title={experiment.title} caption={experiment.caption} className="flex-1" />
-      </Link>
+    <Card variant="playground" className="flex h-full flex-col overflow-hidden transition-colors hover:border-accent focus-within:border-accent motion-reduce:transition-none">
+      <div className="iso-figure-box bg-surface-raised">{children}</div>
+      <PlaygroundCardFooter
+        className="flex-1"
+        title={
+          <Link
+            href={`/playground/${experiment.id}`}
+            className="inline-flex items-center gap-space-1 rounded-sm hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            {experiment.title}
+            <ArrowUpRight aria-hidden="true" className="size-space-3_5 text-foreground-secondary" />
+          </Link>
+        }
+        caption={experiment.caption}
+      />
     </Card>
   );
 }
