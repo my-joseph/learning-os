@@ -105,9 +105,21 @@ export function resetPractice(
   let nextCycle = now;
   for (const problem of problems) {
     const state = saved?.problems?.[problem.id] as ProblemState | undefined;
+    const variantStamps: Array<string | null | undefined> = [];
+    if (state?.variants && typeof state.variants === "object") {
+      for (const rec of Object.values(state.variants)) {
+        if (!rec || typeof rec !== "object") continue;
+        variantStamps.push(rec.servedAt, rec.attempts?.at(-1)?.ts);
+      }
+    }
     const latest = Math.max(
-      ...[state?.cycleStartedAt, state?.attempts?.at(-1)?.ts, state?.lastTestReport?.ts,
-        state?.reviews?.at(-1)?.at].map((ts) => Date.parse(ts ?? "") || 0)
+      ...[
+        state?.cycleStartedAt,
+        state?.attempts?.at(-1)?.ts,
+        state?.lastTestReport?.ts,
+        state?.reviews?.at(-1)?.at,
+        ...variantStamps,
+      ].map((ts) => Date.parse(ts ?? "") || 0)
     );
     // The new cycle must come after a server event written in the same millisecond.
     if (latest >= now && latest <= now + 2) nextCycle = Math.max(nextCycle, latest + 1);

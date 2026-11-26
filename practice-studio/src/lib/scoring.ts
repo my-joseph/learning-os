@@ -234,7 +234,7 @@ function applyLowerOnlySelfScore(
   opts: ScoreProblemOptions,
   hasCurrentCycleSelfScore: boolean
 ): ScoreResult {
-  if (opts.ignoreStateScore || opts.isVariant || !hasCurrentCycleSelfScore) {
+  if (opts.ignoreStateScore || !hasCurrentCycleSelfScore) {
     return { score: autoScore, outcome: autoOutcome, firstTry, usedHelp };
   }
   const selfScore = clampScoreValue(state.score);
@@ -430,19 +430,27 @@ export function scoreVariant(
     return { score: null, outcome: "notTried", firstTry: false, usedHelp: false };
   }
   const inCurrentCycle = isTimestampInCycle(record.servedAt, cycleStartedAt);
+  const hasSelfScore =
+    inCurrentCycle && typeof record.selfScore === "number" && Number.isFinite(record.selfScore);
 
   const adaptedState: Partial<ProblemState> = {
     attempts: Array.isArray(record.attempts) ? record.attempts : [],
     hintsRevealed: inCurrentCycle ? record.hintsRevealed ?? 0 : 0,
     setupRevealedBeforeAnswer: inCurrentCycle ? Boolean(record.setupRevealed) : false,
     solutionRevealedBeforeAnswer: inCurrentCycle ? Boolean(record.stepsRevealed) : false,
+    ...(hasSelfScore
+      ? {
+          score: record.selfScore,
+          ...(cycleStartedAt ? { selfScoreAt: record.servedAt || cycleStartedAt } : {}),
+        }
+      : {}),
     cycleStartedAt: cycleStartedAt ?? null,
   };
 
   return scoreProblem(adaptedState, {
     cycleStartedAt: cycleStartedAt ?? null,
     isVariant: true,
-    ignoreStateScore: true,
+    ignoreStateScore: !hasSelfScore,
   });
 }
 

@@ -26,6 +26,7 @@ import {
   SIMILAR_LIST_RETRY_DELAYS_MS,
   applySimilarCheckToLatestProblem,
   applySimilarHintToLatestProblem,
+  applySimilarSkipToLatestProblem,
   executeSimilarStepsReveal,
   getSimilarListRetryDelayMs,
   shouldPersistVariantStepsReveal,
@@ -57,6 +58,15 @@ import {
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
+
+function assertMark(markup: string, status: string, tone: string) {
+  const tag = markup.match(new RegExp(`<span(?=[^>]*data-status="${status}")[^>]*>`))?.[0];
+  assert.ok(tag, `Expected a ${status} status marker`);
+  const classes = tag.match(/class="([^"]+)"/)?.[1].split(" ") ?? [];
+  for (const cls of ["size-space-4", "rounded-full", ...tone.split(" ")]) {
+    assert.ok(classes.includes(cls), `${status} status marker uses ${cls}`);
+  }
+}
 
 function baseState(overrides: Partial<ProblemState> = {}): ProblemState {
   return {
@@ -145,13 +155,18 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   });
   const afterRetry = resetAnswerForReviewRetry(beforeRetry, "2026-11-20T09:00:00Z");
   assert.equal(afterRetry.cycleStartedAt, "2026-11-20T09:00:00Z");
-  assert.equal(similarUnlock(afterRetry), false, "strip must be hidden again after review retry");
+  assert.equal(similarUnlock(afterRetry), false, "Similar questions must be locked after review retry");
   assert.equal(countCycleOriginalWrongAttempts(afterRetry), 0, "prior cycle wrongs must not count");
   assert.equal(countPractisedSimilar(afterRetry), 0, "prior cycle similar attempts must not count");
   assert.deepEqual(
-    deriveTabStatuses(afterRetry).map((t) => t.status),
-    ["untried", "untried", "untried"],
-    "prior cycle similar statuses must reset to untried in the new cycle"
+    deriveTabStatuses(afterRetry),
+    [],
+    "prior cycle similar tabs must not reappear in a new cycle until '+' is pressed"
+  );
+  assert.equal(
+    afterRetry.variants?.va11111?.attempts?.length,
+    1,
+    "prior cycle variant attempt history must be preserved across reset"
   );
 
   // Scoring in the new review cycle: first-try correct scores 1.0 even though prior cycle had wrong + example!
@@ -217,7 +232,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
       },
       vc33333: {
         role: "try",
-        servedAt: "",
+        servedAt: "2026-11-19T10:05:00Z",
         attempts: [],
       },
       vex9999: {
@@ -310,11 +325,6 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     useSimilarSrc,
     /const scheduleFailureRetry = \(\) => \{[\s\S]*?fetchedListKeyRef\.current = null;[\s\S]*?setListError\(SIMILAR_LIST_ERROR_MESSAGE\);/,
     "B4: failed variant list fetch must clear fetchedListKeyRef, surface quiet error, and schedule backoff retry"
-  );
-  assert.match(
-    useSimilarSrc,
-    /pendingTabRef\.current = nextTabId;[\s\S]*?retrySimilarList\(\)/,
-    "B4: clicking Practise a similar question while list is unloaded must queue tab and retry list"
   );
   assert.equal(
     deriveVariantStatus(
@@ -451,7 +461,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
 }
 
 // ---------------------------------------------------------------------------
-// 3. SimilarTabStrip ARIA, roving tabIndex, unified status icons, locked ghost tabs, NO Example tab
+// 3. SimilarTabStrip ARIA, roving tabIndex, unified status icons, the add button, and status markers
 // ---------------------------------------------------------------------------
 {
   const tabs: SimilarTabSummary[] = [
@@ -466,29 +476,22 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
       realStatus="wrong"
       tabs={tabs}
       selectedTab="s1"
+      onAdd={noop}
       onSelectTab={noop}
     />
   );
   assert.match(html, /role="tablist"/);
   assert.match(html, /aria-label="Question 2 and similar questions"/);
   assert.match(html, /<button(?=[^>]*id="tab-Q02-q")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")[^>]*>/);
-  function assertMark(markup: string, status: string, tone: string) {
-    const tag = markup.match(new RegExp(`<span(?=[^>]*data-status="${status}")[^>]*>`))?.[0];
-    assert.ok(tag, `Expected a ${status} status marker`);
-    const classes = tag.match(/class="([^"]+)"/)?.[1].split(" ") ?? [];
-    for (const cls of ["size-space-4", "rounded-full", ...tone.split(" ")]) {
-      assert.ok(classes.includes(cls), `${status} status marker uses ${cls}`);
-    }
-  }
   assert.match(html, /aria-label="Question 2, not correct yet"/);
   assertMark(html, "wrong", statusTone.wrong.tabMark);
-  assert.match(html, /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="true")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 1, correct")(?=[^>]*tabindex="0")[^>]*>/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="true")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar 1, correct")(?=[^>]*tabindex="0")[^>]*>/);
   assertMark(html, "correct", statusTone.correct.tabMark);
-  assert.match(html, /<button(?=[^>]*id="tab-Q02-s2")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 2, not tried")(?=[^>]*tabindex="-1")[^>]*>/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s2")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar 2, not tried")(?=[^>]*tabindex="-1")[^>]*>/);
   assertMark(html, "untried", statusTone.notTried.tabMark);
-  assert.match(html, /<button(?=[^>]*id="tab-Q02-s3")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar question 3, correct with help")(?=[^>]*tabindex="-1")[^>]*>/);
+  assert.match(html, /<button(?=[^>]*id="tab-Q02-s3")(?=[^>]*aria-selected="false")(?=[^>]*aria-controls="panel-Q02")(?=[^>]*aria-label="Similar 3, correct with help")(?=[^>]*tabindex="-1")[^>]*>/);
   assertMark(html, "assisted", statusTone.assisted.tabMark);
-  assert.match(html, /Q2/, "mobile compact label Q2");
+  assert.match(html, /data-invite="true"[^>]*aria-label="Try a similar question"/);
   assert.doesNotMatch(html, /tab-Q02-example/, "Example tab must NOT be rendered (binding scope change)");
   assert.doesNotMatch(html, /Shown in example/i, "Shown in example must NOT exist (binding scope change)");
 
@@ -503,36 +506,32 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
         { token: "vb22222", slot: 2, status: "partial" },
       ]}
       selectedTab="q"
+      onAdd={noop}
       onSelectTab={noop}
     />
   );
   assert.match(skippedAndHelpHtml, /aria-label="Question 3, skipped"/);
   assertMark(skippedAndHelpHtml, "skipped", statusTone.skipped.tabMark);
-  assert.match(skippedAndHelpHtml, /aria-label="Similar question 1, used help"/);
+  assert.match(skippedAndHelpHtml, /aria-label="Similar 1, used help"/);
   assertMark(skippedAndHelpHtml, "usedHelp", statusTone.notTried.tabMark);
-  assert.match(skippedAndHelpHtml, /aria-label="Similar question 2, almost"/);
+  assert.match(skippedAndHelpHtml, /aria-label="Similar 2, almost"/);
   assertMark(skippedAndHelpHtml, "partial", statusTone.assisted.tabMark);
 
-  // Locked ghost tabs before first attempt (zero-leak: no tokens, aria-disabled="true", Answer Question N first)
+  // Locked state shows one tab and a separate, focusable add button.
   const lockedStripHtml = renderToStaticMarkup(
     <SimilarTabStrip
       problemId="Q02"
       questionNumber={2}
       realStatus="untried"
-      tabs={[]}
+      tabs={tabs}
       selectedTab="q"
       locked
+      onAdd={noop}
       onSelectTab={noop}
     />
   );
-  assert.match(lockedStripHtml, /id="similar-lock-desc-Q02"[^>]*>Answer Question 2 first<\/span>/);
-  assert.match(
-    lockedStripHtml,
-    /<button(?=[^>]*id="tab-Q02-s1")(?=[^>]*aria-selected="false")(?=[^>]*aria-disabled="true")(?=[^>]*aria-label="Similar question 1")(?=[^>]*aria-describedby="similar-lock-desc-Q02")(?=[^>]*title="Answer Question 2 first")(?=[^>]*tabindex="-1")[^>]*>/
-  );
-  assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
-  assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
-  assert.match(lockedStripHtml, /cursor-not-allowed/);
+  assert.doesNotMatch(lockedStripHtml, /id="tab-Q02-s/);
+  assert.match(lockedStripHtml, /<button(?=[^>]*aria-label="Try a similar question")(?=[^>]*aria-disabled="true")(?=[^>]*title="Answer the question first")[^>]*>/);
 
   // Square corners on SimilarTabStrip (underline variant) vs rounded corners on default segmented Tabs
   for (const stripMarkup of [html, lockedStripHtml]) {
@@ -544,7 +543,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
       "SimilarTabStrip TabsList must not include rounded-md, rounded-lg, or rounded-t-md"
     );
     const stripTabs = stripMarkup.match(/<button\b[^>]*\brole="tab"[^>]*>/g) ?? [];
-    assert.equal(stripTabs.length, 4);
+    assert.equal(stripTabs.length, stripMarkup === html ? 4 : 1);
     for (const tabTag of stripTabs) {
       assert.match(tabTag, /min-h-touch/, "each selected, unselected and locked tab keeps a 44px minimum");
       assert.match(tabTag, /sm:h-space-9 sm:min-h-0/, "each tab is 36px high on desktop");
@@ -593,56 +592,34 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     assert.doesNotMatch(triggerTag, /\brounded-(?:md|lg|t-md)\b/);
   }
 
-  // B4: Unlocked strip with failed list load shows quiet error + Retry action instead of permanent "Answer Question N first" lock
-  const listErrorStripHtml = renderToStaticMarkup(
-    <SimilarTabStrip
-      problemId="Q02"
-      questionNumber={2}
-      realStatus="wrong"
-      tabs={[]}
-      selectedTab="q"
-      locked={false}
-      listError={SIMILAR_LIST_ERROR_MESSAGE}
-      onRetryList={noop}
-      onSelectTab={noop}
-    />
+  const props = {
+    problemId: "Q02",
+    questionNumber: 2,
+    realStatus: "correct" as const,
+    tabs,
+    selectedTab: "q" as const,
+    onAdd: noop,
+    onSelectTab: noop,
+  };
+  const errorMarkup = renderToStaticMarkup(<SimilarTabStrip {...props} error={SIMILAR_LIST_ERROR_MESSAGE} />);
+  assert.match(errorMarkup, /role="status">Couldn&#x27;t load similar questions\./);
+  assert.doesNotMatch(errorMarkup, /aria-disabled="true"/);
+  const loadingMarkup = renderToStaticMarkup(<SimilarTabStrip {...props} loading />);
+  assert.match(loadingMarkup, /aria-busy="true"[^>]*title="Loading similar questions"/);
+  const exhaustedMarkup = renderToStaticMarkup(
+    <SimilarTabStrip {...props} exhausted selectedTab="s4" tabs={[
+      ...tabs, { token: "vd44444", slot: 4, status: "wrong" },
+    ]} />
   );
-  assert.match(listErrorStripHtml, /data-similar-list-error="true"/);
-  assert.match(listErrorStripHtml, /Couldn&#x27;t load similar questions\./);
-  assert.match(listErrorStripHtml, />Retry</);
-  assert.doesNotMatch(
-    listErrorStripHtml,
-    /Answer Question 2 first/,
-    "failed list load must NOT show locked 'Answer Question N first' tooltip"
-  );
-  assert.doesNotMatch(
-    listErrorStripHtml,
-    /aria-disabled="true"/,
-    "failed list load must NOT render locked ghost tabs"
-  );
-
-  // Loading state while list is fetching after unlock must also not render fake lock tooltip
-  const listLoadingStripHtml = renderToStaticMarkup(
-    <SimilarTabStrip
-      problemId="Q02"
-      questionNumber={2}
-      realStatus="wrong"
-      tabs={[]}
-      selectedTab="q"
-      locked={false}
-      loadingList={true}
-      onSelectTab={noop}
-    />
-  );
-  assert.match(listLoadingStripHtml, /Loading similar\.\.\./);
-  assert.doesNotMatch(listLoadingStripHtml, /Answer Question 2 first/);
+  assert.match(exhaustedMarkup, /<button(?=[^>]*id="tab-Q02-s4")(?=[^>]*aria-selected="true")[^>]*>/);
+  assert.match(exhaustedMarkup, /aria-disabled="true"[^>]*title="No more similar questions"/);
 }
 
 // ---------------------------------------------------------------------------
 // 4. MathWorkspace SSR states (untouched locked strip, usedHelp before attempt, R wrong #1/#2, R correct, bank empty)
 // ---------------------------------------------------------------------------
 {
-  // Unlocked question whose similarSlots have not loaded yet must NOT show locked ghost tabs
+  // An unlocked question can be loading its saved sessions.
   const unlockedBeforeListHtml = renderToStaticMarkup(
     <MathWorkspace
       problem={makeProblem({
@@ -668,12 +645,12 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   );
   assert.doesNotMatch(
     unlockedBeforeListHtml,
-    /Answer Question 2 first/,
+    /Answer the question first/,
     "answered question must not show locked 'Answer Question N first' even while tabs array is empty"
   );
   const untouchedHtml = renderToStaticMarkup(
     <MathWorkspace
-      problem={makeProblem({ similarCount: 3 })}
+      problem={makeProblem()}
       drillId="DRL-MTH-T01-C04-01"
       index={1}
       totalQuestions={6}
@@ -688,8 +665,8 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     />
   );
   assert.match(untouchedHtml, /role="tablist"/, "strip must be visible before first attempt");
-  assert.match(untouchedHtml, /aria-disabled="true"/, "similar tabs must be locked ghost tabs before attempt");
-  assert.match(untouchedHtml, /Answer Question 2 first/);
+  assert.match(untouchedHtml, /aria-disabled="true"/, "the add button stays disabled before an attempt");
+  assert.match(untouchedHtml, /Answer the question first/);
   assert.match(untouchedHtml, /pt-2 sm:px-6 sm:pb-6 sm:pt-3/, "reduced top padding above strip");
   assert.doesNotMatch(untouchedHtml, /Level 1/, "Level N tag must not appear in card meta line");
   assert.doesNotMatch(untouchedHtml, /Practice only/i, "Practice only text must not appear");
@@ -840,23 +817,19 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
 // 5. Review & Sync ("Practised N similar") + Pagination tooltip (", practised N similar")
 // ---------------------------------------------------------------------------
 {
+  const tokens = ["va11111", "vb22222", "vc33333", "vd44444", "ve55555"];
   const practisedProblem = makeProblem({
     state: baseState({
       score: 1,
       lastCheck: { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
       attempts: [{ input: "7/30", ts: "2026-11-19T10:00:00Z", verdict: "correct" }],
-      similarSlots: ["va11111", "vb22222", "vc33333"],
+      similarSlots: tokens,
       variants: {
-        va11111: {
-          role: "try",
+        ...Object.fromEntries(tokens.map((token) => [token, {
+          role: "try" as const,
           servedAt: "2026-11-19T10:01:00Z",
-          attempts: [{ input: "1/8", ts: "2026-11-19T10:02:00Z", verdict: "correct", kind: "variant" }],
-        },
-        vb22222: {
-          role: "try",
-          servedAt: "2026-11-19T10:03:00Z",
-          attempts: [{ input: "1/9", ts: "2026-11-19T10:04:00Z", verdict: "incorrect", kind: "variant" }],
-        },
+          attempts: [{ input: "1/8", ts: "2026-11-19T10:02:00Z", verdict: "correct", kind: "variant" as const }],
+        }])),
         vex9999: {
           role: "example",
           servedAt: "2026-11-19T10:05:00Z",
@@ -865,9 +838,14 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
       },
     }),
   });
+  const tabs = deriveTabStatuses(practisedProblem.state);
+  assert.equal(resolveInitialTab({ unlocked: true, tabs, tabParam: "s5" }), "s5");
+  for (const tabParam of ["s0", "s05", "s5e0", "s9007199254740993"]) {
+    assert.equal(resolveInitialTab({ unlocked: true, tabs, tabParam }), "q");
+  }
   assert.equal(
     rowReason(practisedProblem, "correct_first", false, false),
-    "First try · Practised 2 similar"
+    "First try · Practised 5 similar"
   );
   assert.equal(
     rowReason(practisedProblem, "correct_first", true, false),
@@ -887,11 +865,11 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   );
   assert.match(
     pagHtml,
-    /title="Question 1, Level 1, correct, practised 2 similar, current"/
+    /title="Question 1, Level 1, correct, practised 5 similar, current"/
   );
   assert.match(
     pagHtml,
-    /aria-label="Question 1, Level 1, correct, practised 2 similar, current"/
+    /aria-label="Question 1, Level 1, correct, practised 5 similar, current"/
   );
   assert.match(pagHtml, /lucide-check/);
   assert.ok(
@@ -1039,33 +1017,28 @@ async function testV1Migration() {
       "utf-8"
     );
 
-    // First mode=list lazily migrates v1 state
+    // A v1 session without similarSlots still restores its token and status.
     const listRes = await variantGET(
       new NextRequest(
         "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-88&qid=Q01&mode=list"
       )
     );
     assert.equal(listRes.status, 200);
-    const listData = (await listRes.json()) as {
-      unlocked: boolean;
-      tabs: Array<{ token: string; slot: number; status: string }>;
-    };
+    const listData = await listRes.json();
     assert.equal(listData.unlocked, true);
-    assert.equal(listData.tabs.length, 3);
-    // Bank variant 02 was v1, so slot 2 keeps token "v1" and status "correct"!
-    assert.equal(listData.tabs[1].token, "v1");
-    assert.equal(listData.tabs[1].status, "correct");
-    assert.equal(listData.tabs[0].status, "untried");
-    assert.equal(listData.tabs[2].status, "untried");
+    assert.deepEqual(listData.tabs, [{ slot: 1, status: "correct", token: "v1" }]);
 
-    // Disk state: activeVariant deleted, similarSlots persisted, role:"example" record preserved
-    const migrated = readProgress("DRL-MTH-T01-C04-88")?.problems?.Q01 as Record<string, unknown>;
-    assert.equal(migrated.activeVariant, undefined, "activeVariant must be deleted on migration");
-    assert.deepEqual(migrated.similarSlots, listData.tabs.map((t) => t.token));
-    assert.ok(
-      (migrated.variants as Record<string, { role: string }>).v2?.role === "example",
-      "existing v1 example record must be preserved"
-    );
+    const openedRes = await variantPOST(new NextRequest("http://127.0.0.1:3000/api/variant", {
+      method: "POST",
+      body: JSON.stringify({ drillId: "DRL-MTH-T01-C04-88", qid: "Q01", action: "open-next" }),
+    }));
+    assert.equal(openedRes.status, 200);
+    const opened = await openedRes.json();
+    assert.equal(opened.slot, 2);
+    const migrated = readProgress("DRL-MTH-T01-C04-88")?.problems?.Q01 as ProblemState & { activeVariant?: unknown };
+    assert.equal(migrated.activeVariant, undefined);
+    assert.deepEqual(migrated.similarSlots, ["v1", opened.token]);
+    assert.equal(migrated.variants?.v2.role, "example");
 
     // Old v1 token stays valid for mode=open and check-answer!
     const openOld = await variantGET(
@@ -1078,7 +1051,7 @@ async function testV1Migration() {
       slot: number;
       session: { durationMs: number; attempts: unknown[] };
     };
-    assert.equal(openOldData.slot, 2);
+    assert.equal(openOldData.slot, 1);
     assert.equal(openOldData.session.durationMs, 5000);
     assert.equal(openOldData.session.attempts.length, 1);
 
@@ -1239,7 +1212,7 @@ async function testReviewCycleIsolation() {
                 setupRevealed: false,
                 stepsRevealed: false,
                 durationMs: 0,
-                servedAt: "",
+                servedAt: "2026-11-01T10:01:00Z",
               },
               vb22222: {
                 variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-02",
@@ -1261,7 +1234,7 @@ async function testReviewCycleIsolation() {
                 setupRevealed: false,
                 stepsRevealed: false,
                 durationMs: 0,
-                servedAt: "",
+                servedAt: "2026-11-01T10:01:00Z",
               },
             },
           },
@@ -1398,12 +1371,12 @@ async function testReviewCycleIsolation() {
     assert.match(
       preReviewHtml,
       /role="tablist"/,
-      "strip must be visible on /review before the new review attempt (with locked ghost tabs)"
+      "strip must be visible on /review before the new review attempt"
     );
     assert.match(
       preReviewHtml,
-      /aria-disabled="true"[^>]*aria-label="Similar question 1"[^>]*aria-describedby="similar-lock-desc-Q01"[^>]*title="Answer Question 1 first"/,
-      "similar tabs on /review must be locked ghost tabs before the new review attempt"
+      /<button(?=[^>]*aria-label="Try a similar question")(?=[^>]*aria-disabled="true")(?=[^>]*title="Answer the question first")[^>]*>/,
+      "the add button is disabled before the new review attempt"
     );
     assert.doesNotMatch(
       preReviewHtml,
@@ -1455,17 +1428,19 @@ async function testReviewCycleIsolation() {
     const postList = (await postListRes.json()) as {
       unlocked: boolean;
       tabs: SimilarTabSummary[];
+      exhausted?: boolean;
       exampleViewedAt: string | null;
     };
     assert.equal(postList.unlocked, true);
     assert.deepEqual(
-      postList.tabs.map((t) => t.status),
-      ["untried", "untried", "untried"],
-      "mode=list must report all tabs untried after a new review attempt"
+      postList.tabs,
+      [],
+      "mode=list must show no similar tabs in a new cycle until '+' is pressed"
     );
+    assert.equal(postList.exhausted, false, "exhausted must reset per cycle");
     assert.equal(postList.exampleViewedAt, null, "prior-cycle exampleViewedAt must not bleed into new cycle");
 
-    // Strip SSR with the post-attempt state shows all similar tabs as "not tried"
+    // Strip SSR with the post-attempt state shows only the main tab + '+' (no prior-cycle tabs)
     const postReviewHtml = renderToStaticMarkup(
       <MathWorkspace
         problem={{ ...preparedQ1, state: stateAfterReviewAttempt }}
@@ -1484,19 +1459,22 @@ async function testReviewCycleIsolation() {
       />
     );
     assert.match(postReviewHtml, /role="tablist"/);
-    assert.match(postReviewHtml, /aria-label="Similar question 1, not tried"/);
-    assert.match(postReviewHtml, /aria-label="Similar question 2, not tried"/);
-    assert.match(postReviewHtml, /aria-label="Similar question 3, not tried"/);
-    assert.doesNotMatch(postReviewHtml, /Similar question 2, correct/);
+    assert.doesNotMatch(postReviewHtml, /id="tab-Q01-s/);
+    assert.doesNotMatch(postReviewHtml, /Similar 2, correct/);
 
-    // Opening Similar 2 in the new cycle starts clean (0 attempts, 0 duration, no revealed steps/setup).
-    const openCleanRes = await variantGET(
-      new NextRequest(
-        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=open&token=vb22222`
-      )
+    // Pressing '+' twice in the new cycle opens fresh tokens (wrapping to bank variant 01 then 02 since all 3 were seen)
+    const openNew1Res = await variantPOST(
+      new NextRequest("http://127.0.0.1:3000/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", action: "open-next" }),
+      })
     );
-    assert.equal(openCleanRes.status, 200);
-    const openClean = (await openCleanRes.json()) as {
+    assert.equal(openNew1Res.status, 200);
+    const openNew1 = (await openNew1Res.json()) as {
+      token: string;
+      slot: number;
+      exhausted: boolean;
       session: {
         attempts: unknown[];
         hintsRevealed: number;
@@ -1506,16 +1484,35 @@ async function testReviewCycleIsolation() {
       };
       revealed?: unknown;
     };
-    assert.equal(openClean.session.attempts.length, 0);
-    assert.equal(openClean.session.hintsRevealed, 0);
-    assert.equal(openClean.session.setupRevealed, false);
-    assert.equal(openClean.session.stepsRevealed, false);
-    assert.equal(openClean.session.durationMs, 0);
-    assert.equal(openClean.revealed, undefined);
+    assert.equal(openNew1.slot, 1);
+    assert.equal(openNew1.exhausted, false);
+    assert.equal(openNew1.session.attempts.length, 0);
+    assert.equal(openNew1.session.hintsRevealed, 0);
+    assert.equal(openNew1.session.setupRevealed, false);
+    assert.equal(openNew1.session.stepsRevealed, false);
+    assert.equal(openNew1.session.durationMs, 0);
+    assert.equal(openNew1.revealed, undefined);
+
+    const openNew2Res = await variantPOST(
+      new NextRequest("http://127.0.0.1:3000/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", action: "open-next" }),
+      })
+    );
+    assert.equal(openNew2Res.status, 200);
+    const openNew2 = (await openNew2Res.json()) as { token: string; slot: number };
+    assert.equal(openNew2.slot, 2);
+    const newTok1 = openNew1.token;
+    const newTok2 = openNew2.token;
+
+    // Prior-cycle variant history stays intact on disk
+    const progAfterNewOpen = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.equal(progAfterNewOpen.variants?.vb22222?.attempts?.length, 1);
 
     const stepsStillLockedRes = await revealGET(
       new NextRequest(
-        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=vb22222&part=steps`
+        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=${newTok2}&part=steps`
       )
     );
     assert.equal(
@@ -1532,7 +1529,7 @@ async function testReviewCycleIsolation() {
         body: JSON.stringify({
           drillId,
           qid: "Q01",
-          variantToken: "va11111",
+          variantToken: newTok1,
           action: "reveal-steps",
         }),
       })
@@ -1540,7 +1537,7 @@ async function testReviewCycleIsolation() {
     assert.equal(preAnswerRevealStepsRes.status, 200);
     const preAnswerStepsPayloadRes = await revealGET(
       new NextRequest(
-        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=va11111&part=steps`
+        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=${newTok1}&part=steps`
       )
     );
     assert.equal(
@@ -1557,7 +1554,7 @@ async function testReviewCycleIsolation() {
     ).json()) as { tabs: SimilarTabSummary[] };
     assert.deepEqual(
       listAfterUsedHelp.tabs.map((t) => t.status),
-      ["usedHelp", "untried", "untried"],
+      ["usedHelp", "untried"],
       "revealing steps before answering must mark Similar 1 as usedHelp"
     );
 
@@ -1570,7 +1567,7 @@ async function testReviewCycleIsolation() {
         body: JSON.stringify({
           drillId,
           qid: "Q01",
-          variantToken: "va11111",
+          variantToken: newTok1,
           input: "8/15",
         }),
       })
@@ -1585,7 +1582,7 @@ async function testReviewCycleIsolation() {
         body: JSON.stringify({
           drillId,
           qid: "Q01",
-          variantToken: "vb22222",
+          variantToken: newTok2,
           input: "7/15",
         }),
       })
@@ -1604,7 +1601,7 @@ async function testReviewCycleIsolation() {
     };
     assert.deepEqual(
       afterSimList.tabs.map((t) => t.status),
-      ["assisted", "correct", "untried"]
+      ["assisted", "correct"]
     );
     assert.equal(
       countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
@@ -1639,13 +1636,14 @@ async function testReviewCycleIsolation() {
           `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
         )
       )
-    ).json()) as { unlocked: boolean; tabs: SimilarTabSummary[] };
+    ).json()) as { unlocked: boolean; tabs: SimilarTabSummary[]; exhausted: boolean };
     assert.equal(retryUnlockedList.unlocked, true);
     assert.deepEqual(
-      retryUnlockedList.tabs.map((t) => t.status),
-      ["untried", "untried", "untried"],
-      "drill review retry must reset all similar tab statuses to untried in the new cycle"
+      retryUnlockedList.tabs,
+      [],
+      "drill reset must show no similar tabs until '+' is pressed in the new cycle"
     );
+    assert.equal(retryUnlockedList.exhausted, false, "exhausted must reset per cycle");
     assert.equal(
       countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
       0
@@ -1883,11 +1881,359 @@ async function testExecuteSimilarStepsReveal() {
   assert.match(calls4[1], /^GET \/api\/reveal\?.*part=steps/);
 }
 
+// ---------------------------------------------------------------------------
+// 8. Similar-tab Skip + Parity + Reset cycle wrap & per-cycle exhaustion
+// ---------------------------------------------------------------------------
+async function testSkipParityAndResetCycleWrap() {
+  // 8a. Unit tests for similar-tab Skip helper, status mark, '+' highlight, and resultCardActions
+  const untriedVariant = makeProblem({
+    id: "vtok1",
+    hasSetup: true,
+    hasHint: true,
+    state: baseState({ durationMs: 1_000 }),
+  });
+  const skipped = applySimilarSkipToLatestProblem(
+    untriedVariant,
+    "",
+    2_500,
+    true,
+    "2026-11-26T10:05:00Z",
+    "2026-11-26T10:00:00Z"
+  );
+  assert.equal(skipped.nextProblem.state.skipped, true);
+  assert.equal(skipped.nextProblem.state.score, 0);
+  assert.equal(skipped.nextProblem.state.lastCheck?.verdict, "skipped");
+  assert.equal(skipped.nextProblem.state.hintsRevealed, 1);
+  assert.equal(skipped.nextProblem.state.durationMs, 3_500);
+  assert.equal(skipped.needsSteps, true);
+  assert.equal(skipped.needsDisplay, true);
+  assert.equal(deriveVariantStatus(skipped.nextRecord, null), "skipped");
+
+  const skippedTabStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q01"
+      questionNumber={1}
+      realStatus="correct"
+      tabs={[{ token: "vtok1", slot: 1, status: "skipped" }]}
+      selectedTab="s1"
+      onAdd={noop}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(skippedTabStripHtml, /aria-label="Similar 1, skipped"/);
+  assertMark(skippedTabStripHtml, "skipped", statusTone.skipped.tabMark);
+  assert.match(
+    skippedTabStripHtml,
+    /data-invite="true"[^>]*aria-label="Try a similar question"/,
+    "skipping a similar tab highlights '+' the same way main Skip does"
+  );
+
+  const mainSkippedStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q01"
+      questionNumber={1}
+      realStatus="skipped"
+      tabs={[]}
+      selectedTab="q"
+      onAdd={noop}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(
+    mainSkippedStripHtml,
+    /data-invite="true"[^>]*aria-label="Try a similar question"/,
+    "skipping the main question highlights '+'"
+  );
+
+  const skippedSimPlan = resultCardActions({
+    tab: "s1",
+    hasVariants: true,
+    canOpenNext: true,
+    rState: baseState({ score: 1 }),
+    statuses: [{ token: "vtok1", slot: 1, status: "skipped" }],
+    exampleViewed: false,
+    activeSimilarToken: "vtok1",
+    activeSimilarVerdict: "skipped",
+  });
+  assert.equal(skippedSimPlan.showNextSimilar, true);
+  assert.equal(skippedSimPlan.showSimilarBackLink, true);
+  assert.equal(skippedSimPlan.showSimilarShowSteps, false);
+
+  // 8b. End-to-end server test: Skip + annotations + Reset -> empty tabs -> prefer never-served -> wrap -> per-cycle exhausted
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "learningos-similar-reset-wrap-"));
+  const drillsDir = path.join(base, "drills");
+  const variantsDir = path.join(base, "variants");
+  const progressDir = path.join(base, "progress");
+  fs.mkdirSync(path.join(drillsDir, "MTH-T01-C04"), { recursive: true });
+  fs.mkdirSync(variantsDir, { recursive: true });
+  fs.mkdirSync(progressDir, { recursive: true });
+
+  const prevDrills = process.env.DRILLS_DATA_DIR;
+  const prevVariants = process.env.VARIANTS_DIR;
+  const prevProgress = process.env.PROGRESS_DIR;
+  process.env.DRILLS_DATA_DIR = drillsDir;
+  process.env.VARIANTS_DIR = variantsDir;
+  process.env.PROGRESS_DIR = progressDir;
+
+  const drillId = "DRL-MTH-T01-C04-91";
+  const unitCode = "MTH-T01-C04";
+
+  const postVariant = (payload: Record<string, unknown>) =>
+    variantPOST(
+      new NextRequest("http://127.0.0.1:3000/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", ...payload }),
+      })
+    );
+  const getVariant = (query: string) =>
+    variantGET(new NextRequest(`http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&${query}`));
+
+  try {
+    fs.writeFileSync(
+      path.join(drillsDir, unitCode, `${drillId}.json`),
+      JSON.stringify({
+        schemaVersion: "2.0-math",
+        drillId,
+        subject: "MATH",
+        unitCode,
+        unitTitle: "Fractions",
+        chapterCode: unitCode,
+        topicCode: "MTH-T01",
+        mistakeTags: [
+          { id: "sign-error", label: "Sign error", name: "Sign error", autoFrom: [] },
+        ],
+        problems: [
+          {
+            id: "Q01",
+            level: 1,
+            levelLabel: "Level 1",
+            category: "Fractions",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            templateKey: "c04-fraction-simplification-gcf",
+            prompt: "Simplify $\\frac{27}{45}$.",
+            display: "\\frac{27}{45}",
+            plainText: "27/45",
+            answerSpec: { type: "number", value: "3/5" },
+            answerPlain: "3/5",
+            answerDisplay: "\\frac{3}{5}",
+            checkpointHint: "Find GCD.",
+            steps: [{ explain: "Divide by 9." }],
+          },
+        ],
+      }),
+      "utf-8"
+    );
+
+    fs.writeFileSync(
+      path.join(variantsDir, `${unitCode}.json`),
+      JSON.stringify({
+        unitCode,
+        variants: [
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-01",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{88}{165}$.",
+            display: "\\frac{88}{165}",
+            plainText: "88/165",
+            answerSpec: { type: "number", value: "8/15" },
+            answerPlain: "8/15",
+            answerDisplay: "\\frac{8}{15}",
+            checkpointHint: "Divide by 11.",
+            steps: [{ explain: "Divide by 11." }],
+          },
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-02",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{42}{90}$.",
+            display: "\\frac{42}{90}",
+            plainText: "42/90",
+            answerSpec: { type: "number", value: "7/15" },
+            answerPlain: "7/15",
+            answerDisplay: "\\frac{7}{15}",
+            checkpointHint: "Divide by 6.",
+            steps: [{ explain: "Divide by 6." }],
+          },
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-03",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{36}{60}$.",
+            display: "\\frac{36}{60}",
+            plainText: "36/60",
+            answerSpec: { type: "number", value: "3/5" },
+            answerPlain: "3/5",
+            answerDisplay: "\\frac{3}{5}",
+            checkpointHint: "Divide by 12.",
+            steps: [{ explain: "Divide by 12." }],
+          },
+        ],
+      }),
+      "utf-8"
+    );
+
+    // Cycle 1: answer Q01 wrong -> unlock -> open ONLY variant 01 & skip it -> annotate -> verify persistence & stepper count
+    const c1Main = await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", input: "1/2" }),
+      })
+    );
+    assert.equal(c1Main.status, 200);
+
+    const c1Open1 = await (await postVariant({ action: "open-next" })).json();
+    assert.equal(c1Open1.slot, 1);
+    assert.equal(c1Open1.exhausted, false);
+    const c1Tok1 = c1Open1.token as string;
+    const progAfterOpen1 = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.match(progAfterOpen1.variants?.[c1Tok1]?.variantId ?? "", /-01$/);
+
+    // Skip on Similar 1
+    const skipRes = await postVariant({
+      action: "skip",
+      variantToken: c1Tok1,
+      durationMs: 1800,
+      countHint: true,
+    });
+    assert.equal(skipRes.status, 200);
+
+    const listAfterSkip = await (await getVariant("mode=list")).json();
+    assert.deepEqual(listAfterSkip.tabs, [{ token: c1Tok1, slot: 1, status: "skipped" }]);
+
+    // Skipping counts as attempted for countPractisedSimilar (stepper tooltip)
+    const stateAfterSkip = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.equal(countPractisedSimilar(stateAfterSkip), 1);
+    assert.equal(stateAfterSkip.score, 0, "main score unaffected by similar skip");
+    assert.equal(stateAfterSkip.skipped, false, "main skipped flag unaffected by similar skip");
+
+    // Steps & display unlock after similar Skip; reopening returns skipped + revealed parts
+    const reopenSkipped = await (await getVariant(`mode=open&token=${c1Tok1}`)).json();
+    assert.equal(reopenSkipped.session.skipped, true);
+    assert.equal(reopenSkipped.revealed?.answerPlain, "8/15");
+    assert.equal(reopenSkipped.revealed?.plainText, "88/165");
+
+    // Parity annotations: mistake tag, diverged step, mistakeNote, revisitNote
+    assert.equal((await postVariant({ action: "toggle-mistake", variantToken: c1Tok1, tag: "sign-error" })).status, 200);
+    assert.equal((await postVariant({ action: "diverged-step", variantToken: c1Tok1, stepIdx: 0 })).status, 200);
+    assert.equal((await postVariant({ action: "note", variantToken: c1Tok1, mistakeNote: "Missed factor 11", revisitNote: "Check GCD first" })).status, 200);
+    const reopenAnnotated = await (await getVariant(`mode=open&token=${c1Tok1}`)).json();
+    assert.deepEqual(reopenAnnotated.session.mistakes, ["sign-error"]);
+    assert.equal(reopenAnnotated.session.divergedStep, 0);
+    assert.equal(reopenAnnotated.session.mistakeNote, "Missed factor 11");
+    assert.equal(reopenAnnotated.session.revisitNote, "Check GCD first");
+
+    // Self-score on a correct similar tab lowers 1.0 -> 0.5 (never raises skipped)
+    const c1Open2 = await (await postVariant({ action: "open-next" })).json();
+    const c1Tok2 = c1Open2.token as string;
+    await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", variantToken: c1Tok2, input: "7/15" }),
+      })
+    );
+    const lowerRes = await postVariant({ action: "self-score", variantToken: c1Tok2, score: 0.5 });
+    assert.equal(lowerRes.status, 200);
+    assert.equal((await lowerRes.json()).selfScore, 0.5);
+    const listAfterLower = await (await getVariant("mode=list")).json();
+    assert.deepEqual(
+      listAfterLower.tabs.map((t: { status: string }) => t.status),
+      ["skipped", "assisted"],
+      "lowering similar self-score from 1.0 to 0.5 updates tab status to assisted"
+    );
+
+    // Cycle 2 (Reset after serving only 01 & 02; 03 was NEVER served yet!)
+    const reset1 = await (await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+      method: "POST",
+      body: JSON.stringify({ drillId, action: "reset-all" }),
+    }))).json();
+    assert.ok(reset1.cycleStartedAt);
+
+    // Answer Q01 again in Cycle 2 -> list shows NO similar tabs yet, exhausted === false
+    await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", input: "3/5", cycleStartedAt: reset1.cycleStartedAt }),
+      })
+    );
+    const c2ListBeforePlus = await (await getVariant("mode=list")).json();
+    assert.equal(c2ListBeforePlus.unlocked, true);
+    assert.deepEqual(c2ListBeforePlus.tabs, [], "after reset, list shows no similar tabs until '+' is pressed");
+    assert.equal(c2ListBeforePlus.exhausted, false);
+
+    // Old variant attempts from Cycle 1 are preserved in history!
+    const progC2 = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.equal(progC2.variants?.[c1Tok1]?.attempts?.length, 1);
+    assert.equal(progC2.variants?.[c1Tok2]?.attempts?.length, 1);
+
+    // Cycle 2 '+': prefers never-served variant 03 FIRST, then wraps to 01, then 02 -> exhausted!
+    const c2ServedSuffixes: string[] = [];
+    for (const expected of [
+      { slot: 1, suffix: "03", exhausted: false },
+      { slot: 2, suffix: "01", exhausted: false },
+      { slot: 3, suffix: "02", exhausted: true },
+    ]) {
+      const opened = await (await postVariant({ action: "open-next" })).json();
+      assert.equal(opened.slot, expected.slot);
+      assert.equal(opened.exhausted, expected.exhausted);
+      const saved = readProgress(drillId)?.problems?.Q01 as ProblemState;
+      const vid = saved.variants?.[opened.token]?.variantId ?? "";
+      c2ServedSuffixes.push(vid.slice(-2));
+    }
+    assert.deepEqual(
+      c2ServedSuffixes,
+      ["03", "01", "02"],
+      "after reset '+' must prefer never-served variants in ladder order, then wrap from first"
+    );
+
+    const c2ExhaustedList = await (await getVariant("mode=list")).json();
+    assert.equal(c2ExhaustedList.exhausted, true);
+    assert.equal(c2ExhaustedList.tabs.length, 3);
+
+    // Cycle 3 (Reset AFTER full bank exhaustion in Cycle 2 -> exhausted resets to false, tabs = [], wraps from 01!)
+    const reset2 = await (await revealPOST(new NextRequest("http://127.0.0.1:3000/api/reveal", {
+      method: "POST",
+      body: JSON.stringify({ drillId, action: "reset-all" }),
+    }))).json();
+    await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drillId, qid: "Q01", input: "3/5", cycleStartedAt: reset2.cycleStartedAt }),
+      })
+    );
+    const c3ListBeforePlus = await (await getVariant("mode=list")).json();
+    assert.equal(c3ListBeforePlus.unlocked, true);
+    assert.deepEqual(c3ListBeforePlus.tabs, []);
+    assert.equal(c3ListBeforePlus.exhausted, false, "exhausted must reset per cycle after full bank use");
+
+    const c3First = await (await postVariant({ action: "open-next" })).json();
+    assert.equal(c3First.slot, 1);
+    assert.equal(c3First.exhausted, false);
+    const progC3 = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.match(progC3.variants?.[c3First.token]?.variantId ?? "", /-01$/, "when every variant was served before, wrap starts at first in ladder order");
+    assert.equal(progC3.variants?.[c1Tok1]?.attempts?.length, 1, "cycle 1 history remains preserved across multiple resets");
+  } finally {
+    if (prevDrills === undefined) delete process.env.DRILLS_DATA_DIR;
+    else process.env.DRILLS_DATA_DIR = prevDrills;
+    if (prevVariants === undefined) delete process.env.VARIANTS_DIR;
+    else process.env.VARIANTS_DIR = prevVariants;
+    if (prevProgress === undefined) delete process.env.PROGRESS_DIR;
+    else process.env.PROGRESS_DIR = prevProgress;
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+}
+
 testV1Migration()
   .then(() => testReviewCycleIsolation())
   .then(() => testExecuteSimilarStepsReveal())
+  .then(() => testSkipParityAndResetCycleWrap())
   .then(() => {
-    console.log("PASS: similarTabs.test.tsx (state model, cycle rule, migration, ARIA, copy, deep link, Review & Sync)");
+    console.log("PASS: similarTabs.test.tsx (state model, cycle rule, migration, ARIA, copy, deep link, Review & Sync, Skip parity, reset wrap)");
   })
   .catch((err) => {
     console.error(err);

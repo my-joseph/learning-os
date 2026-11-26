@@ -1,5 +1,7 @@
 import crypto from "crypto";
-import { loadVariantBankFromDisk } from "./paths";
+import { isSafeId, loadVariantBankFromDisk } from "./paths";
+import { isTimestampInCycle } from "./reviewGuard";
+import { openedSimilarTokens } from "./similarTabs";
 import { ProblemState, VariantSessionRecord } from "@/types/drill";
 
 const TOKEN_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -128,6 +130,59 @@ export function findVariantsForProblem(
   }
 
   return matches;
+}
+
+/**
+ * Pick the next matching variant for `"+"` (`action: "open-next"`) in the CURRENT cycle:
+ * - Excludes variants already served in the current cycle (either opened as a Similar tab
+ *   or viewed as a worked example in the current cycle).
+ * - Returns `null` when every matching variant has been served in the current cycle
+ *   (per-cycle exhaustion).
+ * - Prefers variants never served in any earlier cycle (in ladder/bank order).
+ * - When every variant has been served in an earlier cycle, wraps back to the first
+ *   available variant in ladder/bank order so the learner can re-practise after Reset.
+ */
+export function pickNextVariantForCycle(
+  variants: Array<Record<string, unknown>>,
+  state?: ProblemState | null
+): Record<string, unknown> | null {
+  const eligible = variants.filter(
+    (v) => typeof v.variantId === "string" && isSafeId(v.variantId)
+  );
+  if (eligible.length === 0) return null;
+
+  const servedInCurrentCycle = new Set<string>();
+  const cycleStartedAt = state?.cycleStartedAt ?? null;
+  for (const token of openedSimilarTokens(state)) {
+    const vid = state?.variants?.[token]?.variantId;
+    if (typeof vid === "string" && vid) {
+      servedInCurrentCycle.add(vid);
+    }
+  }
+  if (state?.variants && typeof state.variants === "object") {
+    for (const rec of Object.values(state.variants)) {
+      if (
+        rec?.role === "example" &&
+        typeof rec.variantId === "string" &&
+        rec.variantId &&
+        rec.servedAt &&
+        (!cycleStartedAt || isTimestampInCycle(rec.servedAt, cycleStartedAt))
+      ) {
+        servedInCurrentCycle.add(rec.variantId);
+      }
+    }
+  }
+
+  const availableInCycle = eligible.filter(
+    (v) => !servedInCurrentCycle.has(String(v.variantId))
+  );
+  if (availableInCycle.length === 0) return null;
+
+  const servedEver = new Set(collectSeenVariantIds(state));
+  const neverServed = availableInCycle.find(
+    (v) => !servedEver.has(String(v.variantId))
+  );
+  return neverServed ?? availableInCycle[0];
 }
 
 /**
