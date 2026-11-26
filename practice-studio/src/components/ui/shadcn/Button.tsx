@@ -39,7 +39,6 @@ export const buttonVariants = cva(
         assistScore: `${assistChip} rounded-lg font-sans tabular-nums disabled:opacity-subtle aria-[pressed=false]:text-foreground-subtle`,
         assistTag: `${assistChip} inline-flex items-center justify-center rounded-full text-xs disabled:opacity-disabled aria-[pressed=false]:text-muted`,
         assistFlag: "inline-flex items-center justify-center whitespace-nowrap rounded-lg border font-normal transition-all",
-        assistRetry: "inline-flex shrink-0 items-center justify-center gap-space-1 rounded font-normal text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-disabled",
         exampleBack: "inline-flex items-center gap-space-1 rounded-lg text-foreground-control hover:bg-surface-hover hover:text-foreground-action-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
         exampleQuiet: `inline-flex items-center rounded-lg text-xs font-normal text-foreground-subtle hover:text-foreground transition-colors ${keyboardRing}`,
         examplePrimary: `inline-flex items-center justify-center gap-space-1_5 rounded-xl bg-accent-primary hover:bg-accent-strong text-accent-on-primary text-xs font-semibold transition-colors ${keyboardRing} focus-visible:ring-offset-1`,
@@ -63,7 +62,6 @@ export const buttonVariants = cva(
         assistScore: "min-h-touch min-w-touch px-space-3 sm:min-h-control-xs sm:min-w-0 sm:px-space-2_5",
         assistTag: "min-h-touch min-w-touch px-space-2_5 py-space-1 sm:min-h-control-xs sm:min-w-0",
         assistFlag: "min-h-touch min-w-touch gap-space-1_5 px-space-2_5 py-space-1 text-xs sm:min-h-0 sm:min-w-0",
-        assistRetry: "min-h-touch min-w-touch px-space-2 py-space-0_5 sm:min-h-0 sm:min-w-0 sm:px-space-1_5",
         exampleBack: "min-h-touch px-space-1_5 sm:min-h-0",
         exampleQuiet: "min-h-touch py-space-1 sm:min-h-0",
         examplePrimary: "min-h-touch h-space-11 px-space-4 sm:min-h-0 sm:h-space-9",
@@ -94,6 +92,7 @@ const iconButtonVariants = cva(
         paletteQuick: `text-foreground-answer-detail dark:text-foreground-answer hover:bg-surface-hover select-none ${palettePress}`,
         paletteDisclosure: "text-foreground-subtle data-[selected=false]:hover:text-foreground data-[selected=false]:hover:bg-surface-hover data-[selected=true]:text-accent data-[selected=true]:bg-accent-tint dark:data-[selected=true]:bg-accent-tint/60",
         paletteKey: `rounded-lg border border-border bg-surface-raised dark:bg-surface-selected/70 dark:border-surface-hover-strong/70 shadow-ui-sm text-foreground-answer dark:text-foreground hover:bg-surface-hover dark:hover:bg-surface-selected hover:border-border-control dark:hover:border-foreground-faint select-none ${palettePress}`,
+        tabAdd: "text-muted data-[error=true]:text-warning",
         timer: "text-muted hover:text-foreground",
         timerPaused: warningTone.text,
       },
@@ -103,6 +102,7 @@ const iconButtonVariants = cva(
         sidebarToggle: "size-touch rounded-lg transition-colors hover:bg-surface-selected/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none lg:size-control-sm dark:hover:bg-surface-selected/50",
         sidebarAction: "mr-space-0_5 size-touch rounded-full transition-colors hover:text-foreground focus:outline-none before:absolute before:inset-space-2 before:rounded-full before:transition-colors hover:before:bg-surface-hover-strong/70 dark:hover:before:bg-surface-hover-strong/60 focus-visible:before:ring-2 focus-visible:before:ring-inset focus-visible:before:ring-muted lg:size-control-xs lg:before:inset-space-0 lg:before:hidden lg:focus-visible:before:block [&>svg]:relative",
         answer: `max-sm:size-touch transition-colors ${keyboardRing} disabled:pointer-events-auto disabled:opacity-subtle`,
+        tabAdd: "max-sm:size-touch transition-colors enabled:hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-disabled aria-disabled:hover:bg-transparent motion-reduce:transition-none",
         timer: "shrink transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 dark:focus-visible:ring-accent/60",
       },
     },
@@ -176,7 +176,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       ref={ref}
       icon={{ size, tone, hitArea }}
       data-selected={selected}
-      aria-busy={loading || undefined}
+      aria-busy={loading || props["aria-busy"]}
       disabled={disabled || loading}
     />
   )

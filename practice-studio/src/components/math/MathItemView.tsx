@@ -166,7 +166,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
     });
 
     const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
-    const answered = hasSubstantiveAttempt(problem.state);
+    const answered = hasSubstantiveAttempt(problem.state, { isVariant });
     const hasAttempt = answered;
     const setupUnopenedUnattempted =
       hasSetup &&
@@ -436,7 +436,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           showSetup={showSetup}
           setupUnopenedUnattempted={setupUnopenedUnattempted}
           onToggleSetup={toggleSetup}
-          hideShowStepsButton={hideShowStepsButton || (!isVariant && !hasAttempt)}
+          hideShowStepsButton={hideShowStepsButton || !hasAttempt}
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (

@@ -625,6 +625,17 @@ export function redactProblemStateForClient(
         ...(rec.setupRevealed ? { setupRevealed: true } : {}),
         ...(rec.stepsRevealed ? { stepsRevealed: true } : {}),
         ...(typeof rec.durationMs === "number" ? { durationMs: rec.durationMs } : {}),
+        ...(typeof rec.divergedStep === "number" ? { divergedStep: rec.divergedStep } : {}),
+        ...(typeof rec.selfScore === "number" ? { selfScore: rec.selfScore } : {}),
+        ...(Array.isArray(rec.mistakes) && rec.mistakes.length > 0
+          ? { mistakes: rec.mistakes.filter((m): m is string => typeof m === "string") }
+          : {}),
+        ...(typeof rec.mistakeNote === "string" && rec.mistakeNote
+          ? { mistakeNote: rec.mistakeNote }
+          : {}),
+        ...(typeof rec.revisitNote === "string" && rec.revisitNote
+          ? { revisitNote: rec.revisitNote }
+          : {}),
         servedAt: rec.servedAt,
       };
     }

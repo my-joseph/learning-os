@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Check, Minus, RefreshCw, X } from "lucide-react";
+import { Check, Minus, Plus, X } from "lucide-react";
 import {
-  buildLockedSimilarPlaceholders,
   RealTabStatus,
   SimilarTabId,
   SimilarTabStatus,
@@ -11,10 +10,11 @@ import {
   slotToTabId,
   tabStatusAccessibleSuffix,
 } from "@/lib/similarTabs";
-import { MUTED_UNTRIED_TAB_MARK, statusTone } from "@/lib/statusTone";
+import { statusTone } from "@/lib/statusTone";
 import { Badge } from "@/components/ui/shadcn/Badge";
-import { Button } from "@/components/ui/shadcn/Button";
+import { IconButton } from "@/components/ui/shadcn/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/shadcn/Tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/shadcn/Tooltip";
 
 export interface SimilarTabStripProps {
   problemId: string;
@@ -23,10 +23,10 @@ export interface SimilarTabStripProps {
   tabs: readonly SimilarTabSummary[];
   selectedTab: SimilarTabId;
   locked?: boolean;
-  lockedSlotCount?: number;
-  listError?: string | null;
-  loadingList?: boolean;
-  onRetryList?: () => void;
+  exhausted?: boolean;
+  error?: string | null;
+  loading?: boolean;
+  onAdd: () => void;
   onSelectTab: (tabId: SimilarTabId) => void;
 }
 
@@ -40,211 +40,148 @@ const MARKS = {
   untried: { tone: statusTone.notTried.tabMark },
 };
 
-function StatusMark({
-  status,
-  muted = false,
-}: {
-  status: SimilarTabStatus | RealTabStatus;
-  muted?: boolean;
-}) {
+function StatusMark({ status }: { status: SimilarTabStatus | RealTabStatus }) {
   const mark = MARKS[status];
   const Icon = "icon" in mark ? mark.icon : undefined;
   return (
-    <Badge
-      variant="tabMark"
-      data-status={status}
-      className={muted ? MUTED_UNTRIED_TAB_MARK : mark.tone}
-      aria-hidden="true"
-    >
+    <Badge variant="tabMark" data-status={status} className={mark.tone} aria-hidden="true">
       {Icon && <Icon className="size-space-2_5" strokeWidth={3} />}
     </Badge>
   );
 }
 
-/**
- * WAI-ARIA manual-activation tab strip for switching between the real question and
- * Similar 1..3 practice tabs inside a Math question card.
- * Shown by default including before the first attempt; similar tabs render as locked
- * ghost tabs (`aria-disabled="true"`) until the real question is attempted in the cycle.
- */
-export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
+export function SimilarTabStrip({
   problemId,
   questionNumber,
   realStatus,
   tabs,
   selectedTab,
   locked = false,
-  lockedSlotCount,
-  listError = null,
-  loadingList = false,
-  onRetryList,
+  exhausted = false,
+  error = null,
+  loading = false,
+  onAdd,
   onSelectTab,
-}) => {
-  const lockedSlots = locked ? buildLockedSimilarPlaceholders(lockedSlotCount) : [];
-  const effectiveSelected: SimilarTabId =
-    locked || tabs.length === 0 ? "q" : selectedTab;
+}: SimilarTabStripProps) {
+  const openedTabs = locked ? [] : tabs;
+  const activeTab = openedTabs.some((tab) => slotToTabId(tab.slot) === selectedTab)
+    ? selectedTab
+    : "q";
+  const [focusedTab, setFocusedTab] = useState<SimilarTabId>(activeTab);
+  const tabRefs = useRef(new Map<SimilarTabId, HTMLButtonElement>());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const addRef = useRef<HTMLButtonElement>(null);
 
-  const [focusedTab, setFocusedTab] = useState<SimilarTabId>(effectiveSelected);
-  const tabRefs = useRef<Map<SimilarTabId, HTMLButtonElement | null>>(new Map());
-  const listRef = useRef<HTMLDivElement | null>(null);
+  const lastSlot = openedTabs[openedTabs.length - 1]?.slot;
 
   useEffect(() => {
-    setFocusedTab(effectiveSelected);
-    const btn = tabRefs.current.get(effectiveSelected);
-    if (btn && typeof btn.scrollIntoView === "function") {
-      btn.scrollIntoView({ inline: "nearest", block: "nearest" });
+    setFocusedTab(activeTab);
+    const button = tabRefs.current.get(activeTab);
+    const row = scrollRef.current;
+    if (!button || !row) return;
+    const tabBounds = button.getBoundingClientRect();
+    const rowBounds = row.getBoundingClientRect();
+    const revealAdd = lastSlot !== undefined && slotToTabId(lastSlot) === activeTab;
+    const right = revealAdd ? addRef.current?.getBoundingClientRect().right ?? tabBounds.right : tabBounds.right;
+    if (tabBounds.left < rowBounds.left) {
+      row.scrollLeft += tabBounds.left - rowBounds.left;
+    } else if (right > rowBounds.right) {
+      row.scrollLeft += right - rowBounds.right;
     }
-  }, [effectiveSelected]);
+  }, [activeTab, lastSlot]);
 
-  const handleListBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    const nextTarget = event.relatedTarget as Node | null;
-    if (!nextTarget || !listRef.current?.contains(nextTarget)) {
-      setFocusedTab(effectiveSelected);
-    }
-  };
-
+  const activeEntryStatus =
+    activeTab === "q"
+      ? realStatus
+      : openedTabs.find((tab) => slotToTabId(tab.slot) === activeTab)?.status ?? "untried";
+  const needsPractice = (status: SimilarTabStatus | RealTabStatus) =>
+    status === "wrong" ||
+    status === "partial" ||
+    status === "assisted" ||
+    status === "skipped";
+  const disabled = locked || exhausted || loading;
+  const invite =
+    !disabled &&
+    !error &&
+    (needsPractice(realStatus) || (activeTab !== "q" && needsPractice(activeEntryStatus)));
+  const tooltip = locked
+    ? "Answer the question first"
+    : loading
+      ? "Loading similar questions"
+      : exhausted
+        ? "No more similar questions"
+        : error ?? "Try a similar question";
+  const descriptionId = `similar-add-${problemId}`;
   const panelId = `panel-${problemId}`;
-  const lockDescId = `similar-lock-desc-${problemId}`;
-  const lockTooltip = `Answer Question ${questionNumber} first`;
-
-  const realAriaLabel = `Question ${questionNumber}${tabStatusAccessibleSuffix(realStatus)}`;
-  const hasSimilarSlots = locked ? lockedSlots.length > 0 : tabs.length > 0;
-  const showListError = !locked && tabs.length === 0 && Boolean(listError);
-  const showListLoading = !locked && tabs.length === 0 && !listError && loadingList;
+  const entries = [
+    { id: "q" as const, label: `Question ${questionNumber}`, status: realStatus },
+    ...openedTabs.map((tab) => ({
+      id: slotToTabId(tab.slot),
+      label: `Similar ${tab.slot}`,
+      status: tab.status,
+    })),
+  ];
 
   return (
-    <div className="flex items-center justify-between gap-space-2 border-b border-border -mx-space-4 px-space-4 sm:mx-0 sm:px-0">
-      <Tabs
-        value={effectiveSelected}
-        activationMode="manual"
-        onValueChange={(value) => onSelectTab(value as SimilarTabId)}
+    <Tabs
+      ref={scrollRef}
+      value={activeTab}
+      activationMode="manual"
+      className="flex min-w-0 items-center gap-space-1 overflow-x-auto overflow-y-hidden scrollbar-hidden border-b border-border"
+      onValueChange={(value) => onSelectTab(value as SimilarTabId)}
+    >
+      <TabsList
+        variant="similar"
+        aria-label={`Question ${questionNumber} and similar questions`}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setFocusedTab(activeTab);
+        }}
       >
-        <TabsList
-          ref={listRef}
-          variant="similar"
-          aria-label={`Question ${questionNumber} and similar questions`}
-          onBlur={handleListBlur}
-        >
-          {locked && hasSimilarSlots && (
-            <span id={lockDescId} className="sr-only">
-              {lockTooltip}
-            </span>
-          )}
-
+        {entries.map(({ id, label, status }) => (
           <TabsTrigger
-            value="q"
-            ref={(el) => { tabRefs.current.set("q", el); }}
-            id={`tab-${problemId}-q`}
+            key={id}
+            value={id}
+            ref={(element) => {
+              if (element) tabRefs.current.set(id, element);
+              else tabRefs.current.delete(id);
+            }}
+            id={`tab-${problemId}-${id}`}
             aria-controls={panelId}
-            aria-label={realAriaLabel}
-            tabIndex={focusedTab === "q" ? 0 : -1}
-            onFocus={() => setFocusedTab("q")}
+            aria-label={`${label}${tabStatusAccessibleSuffix(status)}`}
+            tabIndex={focusedTab === id ? 0 : -1}
+            onFocus={() => setFocusedTab(id)}
           >
-            <StatusMark status={realStatus} />
-            <span className="hidden sm:inline">
-              Question <span className="font-sans tabular-nums">{questionNumber}</span>
-            </span>
-            <span className="sm:hidden font-sans tabular-nums">Q{questionNumber}</span>
+            <StatusMark status={status} />
+            <span className="tabular-nums">{label}</span>
           </TabsTrigger>
-
-          {hasSimilarSlots && (
-            <span
-              aria-hidden="true"
-              className={`sm:hidden shrink-0 pl-space-1 pr-space-0_5 text-xs select-none ${
-                locked
-                  ? "text-foreground-faint dark:text-surface-hover-strong opacity-secondary"
-                  : "text-muted"
-              }`}
-            >
-              Similar
-            </span>
-          )}
-
-          {locked
-            ? lockedSlots.map((slot) => {
-                const tabId = slotToTabId(slot);
-                return (
-                  <TabsTrigger
-                    key={`locked-${tabId}`}
-                    value={tabId}
-                    disabled
-                    type="button"
-                    id={`tab-${problemId}-${tabId}`}
-                    aria-disabled="true"
-                    aria-controls={panelId}
-                    aria-label={`Similar question ${slot}`}
-                    aria-describedby={lockDescId}
-                    title={lockTooltip}
-                  >
-                    <StatusMark status="untried" muted />
-                    <span className="hidden sm:inline">
-                      Similar <span className="font-sans tabular-nums">{slot}</span>
-                    </span>
-                    <span className="sm:hidden font-sans tabular-nums">{slot}</span>
-                  </TabsTrigger>
-                );
-              })
-            : tabs.map((tab) => {
-                const tabId = slotToTabId(tab.slot);
-                const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(
-                  tab.status
-                )}`;
-                return (
-                  <TabsTrigger
-                    key={tab.token}
-                    value={tabId}
-                    ref={(el) => {
-                      tabRefs.current.set(tabId, el);
-                    }}
-                    id={`tab-${problemId}-${tabId}`}
-                    aria-controls={panelId}
-                    aria-label={tabAriaLabel}
-                    tabIndex={focusedTab === tabId ? 0 : -1}
-                    onFocus={() => setFocusedTab(tabId)}
-                  >
-                    <StatusMark status={tab.status} />
-                    <span className="hidden sm:inline">
-                      Similar <span className="font-sans tabular-nums">{tab.slot}</span>
-                    </span>
-                    <span className="sm:hidden font-sans tabular-nums">{tab.slot}</span>
-                  </TabsTrigger>
-                );
-              })}
-        </TabsList>
-      </Tabs>
-
-      {showListError && (
-        <div
-          role="status"
-          data-similar-list-error="true"
-          className="flex items-center gap-space-2 shrink-0 py-space-1 text-xs text-muted"
-        >
-          <span className="truncate">{listError}</span>
-          {onRetryList && (
-            <Button
-              variant="assistRetry"
-              size="assistRetry"
-              onClick={onRetryList}
-              disabled={loadingList}
-            >
-              <RefreshCw
-                className={`size-space-3 ${loadingList ? "animate-spin" : ""}`}
-                aria-hidden="true"
-              />
-              <span>{loadingList ? "Retrying..." : "Retry"}</span>
-            </Button>
-          )}
-        </div>
-      )}
-
-      {showListLoading && (
-        <span
-          role="status"
-          className="shrink-0 py-space-1 text-xs text-foreground-faint"
-        >
-          Loading similar...
-        </span>
-      )}
-    </div>
+        ))}
+      </TabsList>
+      <span id={descriptionId} className="sr-only" role={error ? "status" : undefined}>
+        {tooltip}
+      </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            ref={addRef}
+            size="sm"
+            hitArea="tabAdd"
+            tone="tabAdd"
+            data-invite={invite || undefined}
+            data-error={(!disabled && Boolean(error)) || undefined}
+            aria-label="Try a similar question"
+            aria-describedby={descriptionId}
+            aria-disabled={disabled || undefined}
+            aria-busy={loading || undefined}
+            title={tooltip}
+            onClick={() => {
+              if (!disabled) onAdd();
+            }}
+          >
+            <Plus className="size-space-4" aria-hidden="true" />
+          </IconButton>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{tooltip}</TooltipContent>
+      </Tooltip>
+    </Tabs>
   );
-};
+}

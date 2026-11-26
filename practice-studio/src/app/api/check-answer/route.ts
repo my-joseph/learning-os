@@ -10,7 +10,7 @@ import {
   loadVariantFromDisk,
 } from "@/lib/paths";
 import { readProgress, recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
-import { similarUnlock } from "@/lib/similarTabs";
+import { openedSimilarTokens, similarUnlock } from "@/lib/similarTabs";
 import { isSubstantiveVerdict } from "@/lib/reviewGuard";
 import { currentPracticeCycle, practiceDuration, recordOriginalCheck } from "@/lib/practiceEvidence";
 import type { CheckResult, DrillDocument, Problem, ProblemState } from "@/types/drill";
@@ -127,10 +127,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (
-        !Array.isArray(resolved.state.similarSlots) ||
-        !resolved.state.similarSlots.includes(variantToken)
-      ) {
+      if (!openedSimilarTokens(resolved.state).includes(variantToken)) {
         return NextResponse.json(
           {
             verdict: "invalid input",

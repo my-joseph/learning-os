@@ -2,7 +2,7 @@
 
 Source: `pilot/research-2026-11-19/report_th.md` (learner decision 2026-11-19).
 
-**Status:** Phases 1 and 2 are shipped. Math/PRG template engines were removed in Phase 3 (2026-11-26); drills and Similar variants are AI-only. The Similar “+” refactor and PR B/C remain on hold. Phase 3–5 ideas remain future work and are not active implementation instructions.
+**Status:** Phases 1 and 2 are shipped. The Similar strip opens tabs on demand. Math/PRG template engines were removed in Phase 3 (2026-11-26); drills and Similar variants are AI-only. PR B/C remain on hold. Phase 3–5 ideas remain future work and are not active implementation instructions.
 Rules that still hold: original answers and steps require a substantive check or explicit Skip. Drill files are content only,
 learner state lives in `progress/`, single learner, clean minimal Studio (zinc + indigo, no uppercase).
 
@@ -27,13 +27,18 @@ math steps include an `explain` line; do not rebuild this capability.
    capped ("needs one L4 challenge without hints").
 4. Revisit note: optional one-line "next time I will…" note after a pass; shown first when that item comes back.
 
-## Phase 2 — Variant bank and Similar questions (shipped; Similar refactor on hold)
+## Phase 2 — Variant bank and Similar questions (shipped)
 1. **Variant bank** `drills/variants/<UNIT>.json` (content, not learner state): per archetype ≥ 3 verified
    math variants (same archetype + trap, different numbers/context), each with answerSpec, steps, and verify —
    passing the same math ingest gates as drills (`math_engine.ai_drill_ingest --check`).
-   Variants are generated through the AI gated workflow (blind-solve, reviewer, and originality); template engines have been removed. The Similar “+” refactor remains on hold.
-2. **"Try a similar question"** button after a wrong answer: serves an unseen variant of the same
-   archetype; attempts remain isolated from the original problem score and per-item review schedule.
+   Variants are generated through the AI gated workflow (blind-solve, reviewer, and originality); template engines have been removed.
+2. **"Try a similar question" (+)** unlocks after a substantive check or Skip in the current cycle. It
+   opens the next variant for the current cycle in bank order (preferring variants never served in earlier
+   cycles, then wrapping from the first) and is accented after a wrong, assisted, or skipped answer.
+   Opened tabs are scoped to the current cycle (Reset preserves history while clearing the strip until
+   **+** is pressed again), and exhaustion resets per cycle. Similar tabs offer full action parity
+   (including Skip, self-score, mistake tags, diverged-step flag, and notes) while remaining isolated
+   from the original problem score and per-item review schedule.
 3. **Worked example of a similar question** after two wrong attempts: shows one bank variant fully solved
    (steps with explain) before the learner retries their own problem. Never the learner's own problem.
 

@@ -1,7 +1,7 @@
 /**
  * Tests for Similar Questions v2 server-side sessions (`/api/variant` modes `list`/`open`/`example`,
  * `/api/check-answer` with opaque slot token, `/api/reveal` with opaque slot token, `/api/drill`
- * redaction + `hasVariants`, `action: "duration"`, lazy v1 migration,
+ * redaction + `hasVariants`, `action: "open-next"` and `action: "duration"`,
  * zero-leak invariants, and review-schedule isolation at level >= 2).
  * Run: npx tsx tests/variantBank.test.tsx
  */
@@ -23,7 +23,7 @@ import { readProgress, writeProgress } from "../src/lib/progress";
 import { applyCheckResult } from "../src/lib/applyCheckResult";
 import { buildScheduleFromProgress } from "../src/lib/reviewItems";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
-import type { Problem, WorkedExampleVariant } from "../src/types/drill";
+import type { Problem, ProblemState, WorkedExampleVariant } from "../src/types/drill";
 
 function makeTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "learningos-variant-test-"));
@@ -216,6 +216,22 @@ function makeTempEnv() {
     ],
   };
 
+  for (const [slot, numerator, denominator, answer] of [
+    [4, 30, 42, "5/7"],
+    [5, 42, 54, "7/9"],
+  ] as const) {
+    const variantId = `VAR-MTH-T01-C04-c04-fraction-simplification-gcf-0${slot}`;
+    sampleBank.variants.push({
+      ...sampleBank.variants[0],
+      id: variantId,
+      variantId,
+      prompt: `Reduce ${numerator}/${denominator}.`,
+      answerSpec: { ...sampleBank.variants[0].answerSpec, value: answer },
+      answerPlain: answer,
+      answerDisplay: answer,
+    });
+  }
+
   fs.writeFileSync(
     path.join(variantsDir, "MTH-T01-C04.json"),
     JSON.stringify(sampleBank, null, 2),
@@ -248,6 +264,13 @@ function makeMathProblem(overrides: Partial<Problem> = {}): Problem {
   };
 }
 
+function openNext(qid: string) {
+  return variantPOST(new NextRequest("http://127.0.0.1:3000/api/variant", {
+    method: "POST",
+    body: JSON.stringify({ drillId: "DRL-MTH-T01-C04-99", qid, action: "open-next" }),
+  }));
+}
+
 async function runTests() {
   const { base, drillsDir, variantsDir, progressDir } = makeTempEnv();
   const prevDrills = process.env.DRILLS_DATA_DIR;
@@ -269,9 +292,7 @@ async function runTests() {
       assert.equal(drillRes.status, 200);
       const drillData = (await drillRes.json()) as { problems: Problem[] };
       assert.equal(drillData.problems[0].hasVariants, true);
-      assert.equal(drillData.problems[0].similarCount, 3);
       assert.equal(drillData.problems[1].hasVariants, false);
-      assert.equal(drillData.problems[1].similarCount, undefined);
 
       // Legacy v1 modes `try` and `active` and `deactivate` action are removed (400).
       for (const legacyMode of ["try", "active"]) {
@@ -321,6 +342,8 @@ async function runTests() {
         )
       );
       assert.equal(lockedOpen.status, 403);
+      assert.equal((await openNext("Q01")).status, 403);
+      assert.equal(readProgress("DRL-MTH-T01-C04-99"), null);
     }
 
     // -----------------------------------------------------------------------
@@ -336,6 +359,15 @@ async function runTests() {
             userInput: "3/5",
             score: 1,
             lastCheck: { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+            similarSlots: ["vreserv"],
+            variants: {
+              vreserv: {
+                variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-01",
+                role: "try",
+                servedAt: "",
+                attempts: [],
+              },
+            },
             attempts: [
               { input: "3/5", ts: "2026-11-10T10:00:00Z", verdict: "correct" },
               { input: "3/5", ts: "2026-11-14T10:00:00Z", verdict: "correct" },
@@ -361,63 +393,51 @@ async function runTests() {
     assert.ok(q01Before && q01Before.level >= 2, "Q01 must start at level >= 2 for isolation check");
 
     // -----------------------------------------------------------------------
-    // 4. Correct on R unlocks mode=list with 3 stable random opaque tokens; any order mode=open works
+    // 4. The list makes no reservations. Each open-next appends one opaque session in bank order.
     // -----------------------------------------------------------------------
     let q01Tokens: string[] = [];
     let q03Tokens: string[] = [];
     {
+      const beforeList = readProgress("DRL-MTH-T01-C04-99");
       const listRes = await variantGET(
         new NextRequest(
           "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=list"
         )
       );
       assert.equal(listRes.status, 200);
-      const listData = (await listRes.json()) as {
-        unlocked: boolean;
-        tabs: Array<{ token: string; slot: number; status: string }>;
-      };
-      assert.equal(listData.unlocked, true);
-      assert.equal(listData.tabs.length, 3);
-      assert.deepEqual(
-        listData.tabs.map((t) => t.slot),
-        [1, 2, 3]
-      );
-      assert.deepEqual(
-        listData.tabs.map((t) => t.status),
-        ["untried", "untried", "untried"]
-      );
-      q01Tokens = listData.tabs.map((t) => t.token);
-      for (const tok of q01Tokens) {
-        assert.match(tok, /^v[a-z0-9]{6}$/, `token '${tok}' must be random v + 6 base36 chars`);
+      assert.deepEqual(await listRes.json(), {
+        unlocked: true, tabs: [], exhausted: false, exampleViewedAt: null,
+      });
+      assert.deepEqual(readProgress("DRL-MTH-T01-C04-99"), beforeList);
+      assert.equal((await variantGET(new NextRequest(
+        "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=open&token=vreserv"
+      ))).status, 403);
+      assert.equal((await revealGET(new NextRequest(
+        "http://127.0.0.1:3000/api/reveal?drillId=DRL-MTH-T01-C04-99&qid=Q01&part=hint&variantToken=vreserv"
+      ))).status, 403);
+
+      let firstOpen: unknown;
+      for (const slot of [1, 2, 3]) {
+        const response = await openNext("Q01");
+        assert.equal(response.status, 200);
+        const opened = await response.json();
+        assert.equal(opened.slot, slot);
+        assert.equal(opened.exhausted, false);
+        assert.match(opened.token, /^v[a-z0-9]{6}$/);
+        assert.ok(opened.session.servedAt);
+        assert.deepEqual(opened.tabs.map((t: { token: string }) => t.token), [...q01Tokens, opened.token]);
+        q01Tokens.push(opened.token);
+        if (slot === 1) firstOpen = opened;
+        const saved = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q01 as ProblemState | undefined;
+        assert.match(saved?.variants?.[opened.token]?.variantId ?? "", new RegExp(`-0${slot}$`));
       }
       assert.equal(new Set(q01Tokens).size, 3);
+      assert.ok(!q01Tokens.includes("vreserv"));
+      const q03Open = await openNext("Q03");
+      assert.equal(q03Open.status, 200);
+      q03Tokens = [(await q03Open.json()).token];
 
-      // Re-calling mode=list returns identical stable slots.
-      const listRes2 = await variantGET(
-        new NextRequest(
-          "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=list"
-        )
-      );
-      const listData2 = (await listRes2.json()) as {
-        tabs: Array<{ token: string }>;
-      };
-      assert.deepEqual(
-        listData2.tabs.map((t) => t.token),
-        q01Tokens,
-        "similarSlots must remain stable across mode=list calls"
-      );
-
-      // Allocate slots for Q03 too (for cross-question token binding check)
-      const q03List = (await (
-        await variantGET(
-          new NextRequest(
-            "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q03&mode=list"
-          )
-        )
-      ).json()) as { tabs: Array<{ token: string }> };
-      q03Tokens = q03List.tabs.map((t) => t.token);
-
-      // Open Similar 2 BEFORE Similar 1 (any order, no ladder, no 409!)
+      // A previously opened tab can be resumed without consuming the next variant.
       const openS2 = await variantGET(
         new NextRequest(
           `http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=open&token=${q01Tokens[1]}`
@@ -432,18 +452,8 @@ async function runTests() {
       };
       assert.equal(openS2Body.slot, 2);
       assert.equal(openS2Body.total, 3);
-      assert.ok(openS2Body.session.servedAt, "mode=open must set servedAt on first open");
-
-      // Open Similar 1 and run strict zero-leak checks (no checkpointHint, variantId, archetype, answers, steps, display)
-      const openS1 = await variantGET(
-        new NextRequest(
-          `http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=open&token=${q01Tokens[0]}`
-        )
-      );
-      assert.equal(openS1.status, 200);
-      const openS1Body = (await openS1.json()) as {
-        variant: Record<string, unknown>;
-      };
+      assert.ok(openS2Body.session.servedAt);
+      const openS1Body = firstOpen as { variant: Record<string, unknown> };
       const rawJson = JSON.stringify(openS1Body);
       assert.equal(openS1Body.variant.variantId, undefined);
       assert.equal(openS1Body.variant.checkpointHint, undefined);
@@ -644,6 +654,31 @@ async function runTests() {
         ["assisted", "wrong", "correct"]
       );
 
+      const responses = await Promise.all([openNext("Q01"), openNext("Q01")]);
+      const remaining = await Promise.all(responses.map(async (response) => {
+        assert.equal(response.status, 200);
+        return response.json();
+      }));
+      remaining.sort((a, b) => a.slot - b.slot);
+      assert.deepEqual(remaining.map((tab) => tab.slot), [4, 5]);
+      assert.deepEqual(remaining.map((tab) => tab.exhausted), [false, true]);
+      const allTokens = [...q01Tokens, ...remaining.map((tab) => tab.token)];
+      const saved = readProgress("DRL-MTH-T01-C04-99")?.problems?.Q01 as ProblemState | undefined;
+      assert.deepEqual(saved?.similarSlots, allTokens);
+      assert.deepEqual(allTokens.map((token) => saved?.variants?.[token]?.variantId?.slice(-2)), [
+        "01", "02", "03", "04", "05",
+      ]);
+      const listed = await (await variantGET(new NextRequest(
+        "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=list"
+      ))).json();
+      assert.deepEqual(listed.tabs.map((tab: { token: string }) => tab.token), allTokens);
+      assert.deepEqual(listed.tabs.map((tab: { status: string }) => tab.status), [
+        "assisted", "wrong", "correct", "untried", "untried",
+      ]);
+      assert.deepEqual(Object.keys(listed.tabs[4]).sort(), ["slot", "status", "token"]);
+      assert.equal(listed.exhausted, true);
+      assert.deepEqual(await (await openNext("Q01")).json(), { exhausted: true, tabs: listed.tabs });
+
       // Review schedule at level >= 2 is UNTOUCHED by similar attempts!
       assert.equal(fs.existsSync(path.join(progressDir, "review_items.json")), false);
       const scheduleAfterVariant = buildScheduleFromProgress({
@@ -775,7 +810,7 @@ async function runTests() {
     }
 
     // -----------------------------------------------------------------------
-    // 7. UI smoke check: untouched MathWorkspace shows locked ghost strip (zero-leak) & hides result links
+    // 7. UI smoke check: untouched MathWorkspace shows the locked add button (zero-leak) & hides result links
     // -----------------------------------------------------------------------
     {
       const noop = () => {};
@@ -798,8 +833,8 @@ async function runTests() {
         />
       );
       assert.ok(html0.includes('role="tablist"'), "tab strip must be visible before first attempt");
-      assert.ok(html0.includes('aria-disabled="true"'), "similar tabs must be locked ghost tabs before attempt");
-      assert.ok(html0.includes("Answer Question 1 first"), "locked tabs must show Answer Question N first hint");
+      assert.ok(html0.includes('aria-disabled="true"'), "the add button must be disabled before attempt");
+      assert.ok(html0.includes("Answer the question first"), "the add button explains how to unlock");
       assert.ok(!html0.includes("VAR-MTH-"), "zero-leak: no bank variant IDs before unlock");
       assert.ok(!html0.includes("Practise a similar question"));
       assert.ok(!html0.includes("See a worked example"));
