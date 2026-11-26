@@ -140,9 +140,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const {
     isUnlocked,
-    listEmpty,
+    exhausted,
     listError,
     isLoadingList,
+    isOpeningNext,
+    openNextError,
+    openNext,
     selectedTab,
     tabs,
     activeSimilarTab,
@@ -217,12 +220,18 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const realTabStatus = deriveRealTabStatus(problem.state);
   const hasVariantsAvailable = Boolean(drillId && problem.hasVariants);
-  const showTabStrip = Boolean(!showingExample && hasVariantsAvailable && !listEmpty);
-  const stripLocked = !isUnlocked;
+  const showTabStrip = Boolean(!showingExample && hasVariantsAvailable);
+  const canOpenNext = isUnlocked && !exhausted && !listError;
+  const loadingSimilar = isLoadingList || isOpeningNext;
+  const selectOrOpenSimilar = (slot: number | null) => {
+    if (slot !== null) selectTab(slotToTabId(slot));
+    else void openNext();
+  };
 
   const rPlan = resultCardActions({
     tab: "q",
     hasVariants: hasVariantsAvailable,
+    canOpenNext,
     isReviewSession,
     rState: problem.state,
     statuses: tabs,
@@ -230,18 +239,20 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   });
 
   const originalSecondaryActions: ResultCardSecondaryAction[] = [];
-  if (rPlan.showPractiseSimilarFirst && rPlan.targetSimilarSlot) {
+  if (rPlan.showPractiseSimilarFirst) {
     const slot = rPlan.targetSimilarSlot;
     originalSecondaryActions.push({
       label: "Practise a similar question first",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
-  } else if (rPlan.showPractiseSimilarConfidence && rPlan.targetSimilarSlot) {
+  } else if (rPlan.showPractiseSimilarConfidence) {
     const slot = rPlan.targetSimilarSlot;
     originalSecondaryActions.push({
       label: "Practise a similar question for confidence",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
   }
@@ -303,6 +314,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const sPlan = resultCardActions({
     tab: selectedTab,
     hasVariants: hasVariantsAvailable,
+    canOpenNext,
     isReviewSession,
     rState: problem.state,
     statuses: tabs,
@@ -313,11 +325,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   });
 
   const similarSecondaryActions: ResultCardSecondaryAction[] = [];
-  if (sPlan.showNextSimilar && sPlan.nextSimilarSlot) {
+  if (sPlan.showNextSimilar) {
     const slot = sPlan.nextSimilarSlot;
     similarSecondaryActions.push({
       label: "Next similar question",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
   }
@@ -375,11 +388,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 realStatus={realTabStatus}
                 tabs={tabs}
                 selectedTab={selectedTab}
-                locked={stripLocked}
-                lockedSlotCount={problem.similarCount}
-                listError={listError}
-                loadingList={isLoadingList}
-                onRetryList={retrySimilarList}
+                locked={!isUnlocked}
+                exhausted={exhausted}
+                error={listError ? `${listError} Try again.` : openNextError}
+                loading={loadingSimilar}
+                onAdd={listError ? retrySimilarList : () => void openNext()}
                 onSelectTab={(tabId) => selectTab(tabId)}
               />
             )}

@@ -8,7 +8,7 @@ import {
   isTimestampInCycle,
   parseIsoTimestampMs,
 } from "@/lib/reviewGuard";
-import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
+import { openedSimilarTokens } from "@/lib/similarTabs";
 import { generateVariantToken } from "@/lib/variants";
 import { AttemptRecord, ProblemState, VariantSessionRecord } from "@/types/drill";
 import type { NotionSyncRetry } from "@/lib/notionSyncRunner";
@@ -922,97 +922,6 @@ export function mutateProblemStates(
 }
 
 /**
- * Allocate (or lazily migrate from v1) up to 3 stable opaque `similarSlots` tokens
- * in bank order for `(drillId, qid)`. Preserves existing v1 `role:"try"` tokens and
- * `role:"example"` records, and deletes legacy `activeVariant`.
- */
-export function allocateSimilarSlots(
-  drillId: string,
-  unitCode: string | undefined,
-  qid: string,
-  bankVariants: Array<Record<string, unknown>>
-): { slots: string[]; state: ProblemState } {
-  const existingProgress = readProgress(drillId);
-  const existingState = (existingProgress?.problems?.[qid] as ProblemState | undefined) ?? null;
-  const hasLegacyActive =
-    existingState != null &&
-    Object.prototype.hasOwnProperty.call(existingState, "activeVariant");
-
-  if (
-    existingState &&
-    Array.isArray(existingState.similarSlots) &&
-    existingState.similarSlots.length > 0 &&
-    existingState.variants &&
-    existingState.similarSlots.every(
-      (tok) =>
-        typeof tok === "string" &&
-        tok.length > 0 &&
-        Boolean(existingState.variants?.[tok]?.variantId)
-    ) &&
-    !hasLegacyActive
-  ) {
-    return {
-      slots: existingState.similarSlots.slice(0, MAX_SIMILAR_TABS),
-      state: existingState,
-    };
-  }
-
-  const targetVariants = bankVariants
-    .filter((v) => typeof v.variantId === "string" && isSafeId(v.variantId))
-    .slice(0, MAX_SIMILAR_TABS);
-
-  let assignedSlots: string[] = [];
-  const state = mutateProblemState(drillId, unitCode, qid, (st) => {
-    const variants: Record<string, VariantSessionRecord> = st.variants
-      ? { ...st.variants }
-      : {};
-
-    // Map existing role:"try" tokens by variantId so v1 tokens stay valid in bank order.
-    const tryTokenByVariantId = new Map<string, string>();
-    for (const [tok, rec] of Object.entries(variants)) {
-      if (
-        rec &&
-        rec.role === "try" &&
-        typeof rec.variantId === "string" &&
-        rec.variantId &&
-        !tryTokenByVariantId.has(rec.variantId)
-      ) {
-        tryTokenByVariantId.set(rec.variantId, tok);
-      }
-    }
-
-    const slots: string[] = [];
-    for (const v of targetVariants) {
-      const vid = String(v.variantId);
-      const existingTok = tryTokenByVariantId.get(vid);
-      if (existingTok) {
-        slots.push(existingTok);
-      } else {
-        const tok = generateVariantToken(variants);
-        variants[tok] = {
-          variantId: vid,
-          role: "try",
-          attempts: [],
-          hintsRevealed: 0,
-          setupRevealed: false,
-          stepsRevealed: false,
-          durationMs: 0,
-          servedAt: "",
-        };
-        slots.push(tok);
-      }
-    }
-
-    st.variants = variants;
-    st.similarSlots = slots;
-    delete (st as unknown as Record<string, unknown>).activeVariant;
-    assignedSlots = slots;
-  });
-
-  return { slots: assignedSlots, state };
-}
-
-/**
  * Start a new attempt cycle for `(drillId, qid)` by stamping `cycleStartedAt`
  * (keeping the later timestamp if one already exists) without erasing attempt
  * history, notes, tags, or variant records.
@@ -1107,8 +1016,8 @@ export function addVariantDuration(
 }
 
 /**
- * Allocate an opaque per-problem token for a served bank variant (used by `mode=example`),
- * persist `variants[token]`, and update `exampleViewedAt`.
+ * Persist a served variant under an opaque token and append its tab or record
+ * the worked-example view.
  */
 export function registerServedVariant(
   drillId: string,
@@ -1123,6 +1032,7 @@ export function registerServedVariant(
   }
   let assignedToken = "";
   const state = mutateProblemState(drillId, unitCode, qid, (st) => {
+    const slots = role === "try" ? openedSimilarTokens(st) : null;
     const variants = st.variants ? { ...st.variants } : {};
     assignedToken = generateVariantToken(variants);
     variants[assignedToken] = {
@@ -1136,7 +1046,10 @@ export function registerServedVariant(
       servedAt: nowIso,
     };
     st.variants = variants;
-    if (role === "example") {
+    if (slots) {
+      st.similarSlots = [...slots, assignedToken];
+      delete (st as unknown as Record<string, unknown>).activeVariant;
+    } else {
       if (
         !st.exampleViewedAt ||
         (st.cycleStartedAt && !isTimestampInCycle(st.exampleViewedAt, st.cycleStartedAt))

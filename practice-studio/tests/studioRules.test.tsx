@@ -267,7 +267,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(mathWorkspace, /Practice only|· Practice|isPracticeOnly/);
 assert.doesNotMatch(mathWorkspace, /!similarHasAttempt/);
 
-// With variants available, untouched MathWorkspace renders locked ghost similar tabs & reduced top padding
+// With variants available, untouched MathWorkspace renders the locked add button & reduced top padding
 const beforeAttemptWithVariantsHtml = renderToStaticMarkup(
   <MathWorkspace
     problem={{ ...sampleMathProblem, hasVariants: true }}
@@ -287,7 +287,7 @@ const beforeAttemptWithVariantsHtml = renderToStaticMarkup(
 );
 assert.match(beforeAttemptWithVariantsHtml, /role="tablist"/);
 assert.match(beforeAttemptWithVariantsHtml, /aria-disabled="true"/);
-assert.match(beforeAttemptWithVariantsHtml, /Answer Question 1 first/);
+assert.match(beforeAttemptWithVariantsHtml, /Answer the question first/);
 assert.match(beforeAttemptWithVariantsHtml, /pt-2 sm:px-6 sm:pb-6 sm:pt-3/);
 assert.doesNotMatch(beforeAttemptWithVariantsHtml, /Level 1/);
 assert.doesNotMatch(beforeAttemptWithVariantsHtml, /Practice only/i);

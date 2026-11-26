@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { isSafeId, loadProblemFromDisk, loadVariantFromDisk } from "@/lib/paths";
 import {
   addVariantDuration,
-  allocateSimilarSlots,
   markVariantServed,
   readProgress,
   registerServedVariant,
@@ -19,6 +18,7 @@ import {
   countCycleOriginalWrongAttempts,
   cycleAttempts,
   deriveTabStatuses,
+  openedSimilarTokens,
   isInCycle,
   similarUnlock,
 } from "@/lib/similarTabs";
@@ -62,6 +62,80 @@ function findExistingExampleEntry(
   return null;
 }
 
+function nextUnservedVariant(
+  variants: Array<Record<string, unknown>>,
+  state?: ProblemState | null
+) {
+  const seen = new Set(collectSeenVariantIds(state));
+  return variants.find((variant) =>
+    typeof variant.variantId === "string" &&
+    isSafeId(variant.variantId) &&
+    !seen.has(variant.variantId)
+  );
+}
+
+function openedVariantPayload(
+  drillId: string,
+  qid: string,
+  token: string,
+  slot: number,
+  total: number,
+  variant: Record<string, unknown>,
+  state: ProblemState,
+  record: VariantSessionRecord
+) {
+  const cycleStartedAt = state.cycleStartedAt ?? null;
+  const cycleRecAttempts = cycleAttempts(record.attempts, cycleStartedAt);
+  const inCurrentCycle =
+    !cycleStartedAt ||
+    cycleRecAttempts.length > 0 ||
+    isInCycle(record.servedAt, cycleStartedAt);
+
+  const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
+  const revealed: Record<string, unknown> = {};
+  if ((record.setupRevealed && inCurrentCycle) || hasCorrectInCycle) {
+    const disp = extractRevealedPart(variant as Partial<Problem>, "display");
+    if ("display" in disp && (disp.display || disp.plainText)) {
+      revealed.display = disp.display;
+      revealed.plainText = disp.plainText;
+    }
+  }
+  if (
+    hasCorrectInCycle ||
+    (record.stepsRevealed &&
+      canRevealVariantSteps(record, cycleStartedAt))
+  ) {
+    const stp = extractRevealedPart(variant as Partial<Problem>, "steps");
+    if ("steps" in stp) {
+      revealed.steps = stp.steps;
+      revealed.answerDisplay = stp.answerDisplay;
+      revealed.answerPlain = stp.answerPlain;
+    }
+  }
+
+  return {
+    mode: "open",
+    drillId,
+    qid,
+    token,
+    slot,
+    total,
+    variant: redactVariantForTry(variant, token),
+    session: {
+      attempts: sanitizeVariantAttemptsForClient(cycleRecAttempts),
+      hintsRevealed: inCurrentCycle ? record.hintsRevealed || 0 : 0,
+      setupRevealed: Boolean(record.setupRevealed && inCurrentCycle),
+      stepsRevealed: Boolean(
+        record.stepsRevealed &&
+          canRevealVariantSteps(record, cycleStartedAt)
+      ),
+      durationMs: inCurrentCycle ? record.durationMs || 0 : 0,
+      servedAt: record.servedAt,
+    },
+    ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
+  };
+}
+
 export async function GET(req: NextRequest) {
   const { drillId, qid, mode, token } = resolveParams(req);
 
@@ -87,40 +161,23 @@ export async function GET(req: NextRequest) {
   }
 
   const { doc, problem } = loaded;
-  const variants = findVariantsForProblem(doc, problem);
   const progress = readProgress(drillId);
-  const state = (progress?.problems?.[qid] as ProblemState | undefined) ?? null;
+  const state = progress?.problems?.[qid] as ProblemState | undefined;
   const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
 
   if (mode === "list") {
-    if (variants.length === 0 || !similarUnlock(state)) {
-      return NextResponse.json({
-        unlocked: false,
-        tabs: [],
-      });
+    if (!similarUnlock(state)) {
+      return NextResponse.json({ unlocked: false, tabs: [] });
     }
-
-    const { state: nextState } = allocateSimilarSlots(drillId, unitCode, qid, variants);
-    const tabs = deriveTabStatuses(nextState);
-    const exampleViewedAt =
-      typeof nextState.exampleViewedAt === "string" &&
-      nextState.exampleViewedAt &&
-      isInCycle(nextState.exampleViewedAt, nextState.cycleStartedAt)
-        ? nextState.exampleViewedAt
-        : null;
-
     return NextResponse.json({
       unlocked: true,
-      tabs,
-      exampleViewedAt,
+      tabs: deriveTabStatuses(state),
+      exhausted: !nextUnservedVariant(findVariantsForProblem(doc, problem), state),
+      exampleViewedAt:
+        state?.exampleViewedAt && isInCycle(state.exampleViewedAt, state.cycleStartedAt)
+          ? state.exampleViewedAt
+          : null,
     });
-  }
-
-  if (variants.length === 0) {
-    return NextResponse.json(
-      { error: "No variants available for this archetype." },
-      { status: 404 }
-    );
   }
 
   if (mode === "open") {
@@ -130,7 +187,6 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-
     if (!similarUnlock(state)) {
       return NextResponse.json(
         { error: "Similar questions unlock after an attempt on the original question." },
@@ -138,12 +194,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { slots, state: slotState } = allocateSimilarSlots(
-      drillId,
-      unitCode,
-      qid,
-      variants
-    );
+    const slots = openedSimilarTokens(state);
     const slotIndex = slots.indexOf(token);
     if (slotIndex < 0) {
       return NextResponse.json(
@@ -152,79 +203,20 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const rawRecord = slotState.variants?.[token];
-    if (!rawRecord || typeof rawRecord.variantId !== "string" || !rawRecord.variantId) {
-      return NextResponse.json(
-        { error: "Variant not found" },
-        { status: 404 }
-      );
-    }
-
-    const loadedVar = loadVariantFromDisk(rawRecord.variantId);
+    const variantId = state?.variants?.[token]?.variantId;
+    const loadedVar = variantId ? loadVariantFromDisk(variantId) : null;
     if (!loadedVar) {
-      return NextResponse.json(
-        { error: "Variant not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Variant not found" }, { status: 404 });
     }
 
-    const { record: servedRec, state: afterServeState } = markVariantServed(
-      drillId,
-      unitCode,
-      qid,
-      token
-    );
-    const effectiveRec = servedRec ?? rawRecord;
-    const cycleStartedAt = afterServeState.cycleStartedAt ?? null;
-    const cycleRecAttempts = cycleAttempts(effectiveRec.attempts, cycleStartedAt);
-    const inCurrentCycle =
-      !cycleStartedAt ||
-      cycleRecAttempts.length > 0 ||
-      isInCycle(effectiveRec.servedAt, cycleStartedAt);
-
-    const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
-    const revealed: Record<string, unknown> = {};
-    if ((effectiveRec.setupRevealed && inCurrentCycle) || hasCorrectInCycle) {
-      const disp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "display");
-      if ("display" in disp && (disp.display || disp.plainText)) {
-        revealed.display = disp.display;
-        revealed.plainText = disp.plainText;
-      }
+    const served = markVariantServed(drillId, unitCode, qid, token);
+    if (!served.record) {
+      return NextResponse.json({ error: "Variant session not found" }, { status: 404 });
     }
-    if (
-      hasCorrectInCycle ||
-      (effectiveRec.stepsRevealed &&
-        canRevealVariantSteps(effectiveRec, cycleStartedAt))
-    ) {
-      const stp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "steps");
-      if ("steps" in stp) {
-        revealed.steps = stp.steps;
-        revealed.answerDisplay = stp.answerDisplay;
-        revealed.answerPlain = stp.answerPlain;
-      }
-    }
-
-    return NextResponse.json({
-      mode: "open",
-      drillId,
-      qid,
-      token,
-      slot: slotIndex + 1,
-      total: slots.length,
-      variant: redactVariantForTry(loadedVar.variant, token),
-      session: {
-        attempts: sanitizeVariantAttemptsForClient(cycleRecAttempts),
-        hintsRevealed: inCurrentCycle ? effectiveRec.hintsRevealed || 0 : 0,
-        setupRevealed: Boolean(effectiveRec.setupRevealed && inCurrentCycle),
-        stepsRevealed: Boolean(
-          effectiveRec.stepsRevealed &&
-            canRevealVariantSteps(effectiveRec, cycleStartedAt)
-        ),
-        durationMs: inCurrentCycle ? effectiveRec.durationMs || 0 : 0,
-        servedAt: effectiveRec.servedAt,
-      },
-      ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
-    });
+    return NextResponse.json(openedVariantPayload(
+      drillId, qid, token, slotIndex + 1, slots.length,
+      loadedVar.variant, served.state, served.record
+    ));
   }
 
   // mode === "example" (existing worked-example path kept intact per binding scope change)
@@ -282,8 +274,8 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const seenIds = collectSeenVariantIds(state);
-  const picked = pickExampleVariant(variants, seenIds);
+  const variants = findVariantsForProblem(doc, problem);
+  const picked = pickExampleVariant(variants, collectSeenVariantIds(state));
   if (!picked) {
     return NextResponse.json(
       { error: "No variants available for this archetype." },
@@ -311,6 +303,7 @@ export async function GET(req: NextRequest) {
 }
 
 const ALLOWED_ACTIONS = new Set([
+  "open-next",
   "reveal-steps",
   "reset",
   "duration",
@@ -325,13 +318,46 @@ export async function POST(req: NextRequest) {
       typeof body.variantToken === "string" ? body.variantToken.trim() : "";
     const action = typeof body.action === "string" ? body.action.trim() : "";
 
-    if (!isSafeId(drillId) || !ALLOWED_ACTIONS.has(action)) {
+    if (!isSafeId(drillId) || !isSafeId(qid) || !ALLOWED_ACTIONS.has(action)) {
       return NextResponse.json(
         { ok: false, error: "Invalid drillId or variant action" },
         { status: 400 }
       );
     }
-    if (!isSafeId(qid) || !isSafeId(variantToken)) {
+    if (action === "open-next") {
+      const loaded = loadProblemFromDisk(drillId, qid);
+      if (!loaded) {
+        return NextResponse.json({ error: "Drill or problem not found" }, { status: 404 });
+      }
+      const state = readProgress(drillId)?.problems?.[qid] as ProblemState | undefined;
+      if (!similarUnlock(state)) {
+        return NextResponse.json(
+          { error: "Similar questions unlock after an attempt on the original question." },
+          { status: 403 }
+        );
+      }
+
+      const { doc, problem } = loaded;
+      const variants = findVariantsForProblem(doc, problem);
+      const picked = nextUnservedVariant(variants, state);
+      if (!picked) {
+        return NextResponse.json({ exhausted: true, tabs: deriveTabStatuses(state) });
+      }
+
+      const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
+      const served = registerServedVariant(drillId, unitCode, qid, String(picked.variantId), "try");
+      const tabs = deriveTabStatuses(served.state);
+      return NextResponse.json({
+        ...openedVariantPayload(
+          drillId, qid, served.token, tabs.length, tabs.length,
+          picked, served.state, served.state.variants![served.token]
+        ),
+        tabs,
+        exhausted: !nextUnservedVariant(variants, served.state),
+      });
+    }
+
+    if (!isSafeId(variantToken)) {
       return NextResponse.json(
         { ok: false, error: "Invalid drillId, qid, or variantToken" },
         { status: 400 }
@@ -346,8 +372,7 @@ export async function POST(req: NextRequest) {
     }
     if (
       !similarUnlock(resolved.state) ||
-      !Array.isArray(resolved.state.similarSlots) ||
-      !resolved.state.similarSlots.includes(variantToken)
+      !openedSimilarTokens(resolved.state).includes(variantToken)
     ) {
       return NextResponse.json(
         { ok: false, error: "Invalid or locked similar question token" },

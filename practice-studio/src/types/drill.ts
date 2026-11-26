@@ -330,7 +330,7 @@ export interface ProblemState {
   durationMs?: number;
   /** Server-side variant sessions keyed by opaque per-problem token (e.g. "vk3m9x2"). */
   variants?: Record<string, VariantSessionRecord>;
-  /** Server-allocated opaque tokens for Similar 1..3 in tab order (max 3). */
+  /** Opaque tokens for opened Similar sessions in tab order. */
   similarSlots?: string[];
   /** ISO timestamp when a worked example was first viewed for this problem. */
   exampleViewedAt?: string | null;
@@ -386,8 +386,6 @@ export interface Problem {
   hasSetup?: boolean;
   hasHint?: boolean;
   hasVariants?: boolean;
-  /** Zero-leak count (0..3) of available similar questions for rendering locked ghost tabs before unlock. */
-  similarCount?: number;
   codeSnippet?: string;
   language?: string;
   codeType?:
