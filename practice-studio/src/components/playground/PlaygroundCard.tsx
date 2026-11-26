@@ -22,7 +22,10 @@ export function PlaygroundCardFooter({ title, caption, className }: {
  * Playground card: the figure is live and interactive right in the grid (drag, hover,
  * keyboard). The footer title links to the detail page with the full readout.
  */
-export function PlaygroundCard({ experiment, children }: { experiment: PlaygroundExperiment; children: ReactNode }) {
+export function PlaygroundCard({ experiment, children }: {
+  experiment: PlaygroundExperiment;
+  children: ReactNode;
+}) {
   return (
     <Card variant="playground" data-showcase={experiment.id === "ui-components" ? undefined : "grid"} className="flex h-full flex-col overflow-hidden transition-colors hover:border-accent focus-within:border-accent motion-reduce:transition-none">
       <div className="iso-figure-box bg-surface-raised">{children}</div>

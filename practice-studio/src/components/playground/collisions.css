@@ -1,0 +1,37 @@
+/* Token-only styling overrides for the Isometric Collisions figure and scrubber. */
+
+[data-iso="collisions"] .vel-shaft {
+  stroke-width: var(--border-width-2);
+}
+
+[data-iso="collisions"][data-interactive="card"] {
+  cursor: pointer;
+}
+
+[data-iso="collisions"][data-interactive="detail"] {
+  aspect-ratio: 5 / 3;
+}
+
+.collision-impact-marker {
+  left: var(--impact-left);
+}
+
+.collision-scrubber {
+  @apply appearance-none bg-transparent;
+}
+
+.collision-scrubber::-webkit-slider-runnable-track {
+  @apply h-space-1 rounded-full bg-border-control;
+}
+
+.collision-scrubber::-webkit-slider-thumb {
+  @apply -mt-space-1_5 h-space-4 w-space-4 appearance-none rounded-full border-2 border-surface-raised bg-accent-primary shadow-ui-sm transition-colors motion-reduce:transition-none;
+}
+
+.collision-scrubber::-moz-range-track {
+  @apply h-space-1 rounded-full bg-border-control;
+}
+
+.collision-scrubber::-moz-range-thumb {
+  @apply h-space-4 w-space-4 rounded-full border-2 border-surface-raised bg-accent-primary shadow-ui-sm transition-colors motion-reduce:transition-none;
+}
