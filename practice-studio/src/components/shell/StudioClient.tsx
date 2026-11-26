@@ -234,32 +234,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onSynced: () => loadDrillsList(),
     });
 
-  const handleStatusOverrideChange = (override: "Graded" | "Needs Retry") => {
-    setStatusOverride(override);
-    let updated: DrillDocument | null = null;
-    setCurrentDrill((prev) => {
-      if (!prev) return prev;
-      updated = {
-        ...prev,
-        sessionSummary: { ...prev.sessionSummary, statusOverride: override },
-      };
-      return updated;
-    });
-    if (updated) {
-      triggerAutoSave(updated);
-    }
-  };
-
-  const handleTrySimilarQuestion = (probId: string, idx: number) => {
-    setPendingSimilarProbId(probId);
-    handleSelectQuestion(idx);
-    if (currentDrill) {
-      const base = drillHref(currentDrill.drillId, probId);
-      const sep = base.includes("?") ? "&" : "?";
-      router.replace(`${base}${sep}similar=1`, { scroll: false });
-    }
-  };
-
   const handleSelectDrill = (nextDrillId: string) => {
     if (nextDrillId === drillId) return;
     router.push(drillHref(nextDrillId));
@@ -564,16 +538,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         >
           {isLabId(currentDrill.drillId) ? <LabReviewPage
             currentDrill={currentDrill}
-            statusOverride={statusOverride}
-            isSyncing={isSyncing}
-            syncState={syncState}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
             workspaceDrills={workspaceDrills}
-            onStatusOverrideChange={handleStatusOverrideChange}
             onBackToQuiz={() => setViewMode("quiz")}
-            onConfirmSync={handleConfirmSyncToNotion}
             onSelectQuestion={handleSelectQuestion}
-            onTrySimilarQuestion={handleTrySimilarQuestion}
             onSetScore={handleSetScore}
             onToggleMistakeTag={handleToggleMistakeTag}
             onMistakeNoteChange={handleMistakeNoteChange}

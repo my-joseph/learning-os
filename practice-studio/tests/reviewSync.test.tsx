@@ -480,8 +480,8 @@ const syncedHtml = render(syncedDrill, {
   syncState: { phase: "synced", unitReviews: { [mathDrill.unitCode]: schedule } },
 });
 assert.match(syncedHtml, /<button[^>]*bg-status-correct[^>]*disabled=""[^>]*>Synced<\/button>/);
-assert.match(syncedHtml, /Unit mastery 2 · Next review Tue 24 Nov/);
-assert.match(render(syncedDrill, { scheduleCache: { [mathDrill.unitCode]: schedule } }), /Next review Tue 24 Nov/);
+assert.match(syncedHtml, /Unit mastery 2 · next review Tue 24 Nov/);
+assert.match(render(syncedDrill, { scheduleCache: { [mathDrill.unitCode]: schedule } }), /next review Tue 24 Nov/);
 const pendingHtml = render({ ...syncedDrill, notionSyncProblems: ["blockCleanup"] });
 assert.match(pendingHtml, /Synced with problems/);
 assert.doesNotMatch(pendingHtml, />Synced<\/button>/);
@@ -492,11 +492,7 @@ assert.match(render(changedSinceSync), /Sync to update mastery and schedule/);
 const labHtml = renderToStaticMarkup(
   <LabReviewPage
     currentDrill={{ ...labDrill, problems: [makeProblem("M1")] }}
-    statusOverride={null}
-    isSyncing={false}
-    onStatusOverrideChange={noop}
     onBackToQuiz={noop}
-    onConfirmSync={noop}
     onSelectQuestion={noop}
     onSetScore={noop}
     onToggleMistakeTag={noop}

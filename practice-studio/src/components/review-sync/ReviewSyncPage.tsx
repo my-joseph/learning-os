@@ -46,7 +46,7 @@ function formatSchedule(
     .filter((unit) => unit.nextReview && /^\d{4}-\d{2}-\d{2}$/.test(unit.nextReview) && !Number.isNaN(Date.parse(unit.nextReview)))
     .sort((a, b) => (a.nextReview ?? "").localeCompare(b.nextReview ?? ""))[0];
   const mastery = earliest?.mastery ?? (units.length === 1 ? units[0].mastery : null);
-  const label = units.length > 1 ? "Earliest review" : "Next review";
+  const label = units.length > 1 ? "earliest review" : "next review";
   const date = earliest?.nextReview
     ? `${label} ${reviewDateFormatter.format(new Date(earliest.nextReview))}`
     : null;
@@ -174,9 +174,9 @@ export function ReviewSyncPage({
             Back
           </Button>
           <Button
-            variant="resultPrimary"
+            variant={synced ? "resultSuccess" : "resultPrimary"}
             size={null}
-            className={`h-touch text-sm ${synced ? `${statusTone.correct.solidBadge} disabled:opacity-100` : ""}`}
+            className="h-touch text-sm"
             disabled={syncing || synced || (!preview.hasAnyAttempt && !canRetry)}
             onClick={onConfirmSync}
           >

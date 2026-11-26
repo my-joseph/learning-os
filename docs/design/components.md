@@ -79,6 +79,8 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 
 `review-sync/DonutChart.tsx` exports `DonutChart` for the four drill outcome counts in Review & Sync. Load it client-side inside a same-size placeholder. The card supplies the central `Numeral` score, accessible image label, and visually hidden outcome table. The chart uses `statusTone` for segment colours and keeps the assisted arc outlined.
 
+Use the shared Button's `resultSuccess` variant for a disabled **Synced** action. It uses the accessible correct-status fill and keeps the geometry of `resultPrimary`.
+
 ## Playground experiments
 
 The Studio header opens `/playground`. The index links to the six `/playground/[id]` details. The three old `/ui-poc` routes redirect into Playground. The Programming workspace keeps its own Labs section at `/code/lab/[labId]`.

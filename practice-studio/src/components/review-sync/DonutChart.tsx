@@ -25,8 +25,8 @@ export function DonutChart({ counts }: { counts: OutcomeCounts }) {
     }));
 
   return (
-    <ChartContainer config={chartConfig} className="size-full" aria-hidden="true">
-      <PieChart accessibilityLayer={false}>
+    <ChartContainer config={chartConfig} className="size-full">
+      <PieChart accessibilityLayer aria-label="Drill outcomes">
         <ChartTooltip cursor={false} isAnimationActive={false} content={<ChartTooltipContent />} />
         <Pie
           data={segments}

@@ -145,6 +145,9 @@ export const MUTED_UNTRIED_TAB_MARK = "border-status border-status-neutral";
 export const DESTRUCTIVE_BUTTON_CLS =
   "bg-status-wrong text-status-on-wrong hover:brightness-95 dark:hover:brightness-110";
 
+/** Filled success action with readable text in both themes. */
+export const SUCCESS_BUTTON_CLS = "bg-status-correct-text text-status-on-correct";
+
 /**
  * Non-status warning recipes (amber).
  * Independent of `statusTone` — strictly for operational warnings, paused timers,

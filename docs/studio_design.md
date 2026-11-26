@@ -13,7 +13,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 
 ## Review & Sync
 
-- Math and Programming drills show one centered card. A lazy shadcn/Recharts donut shows the weighted score as a percentage, with segments for correct, correct with help (including partial credit), wrong, and skipped or not tried. Hover for a segment count. The chart's accessible description and hidden table include all four counts.
+- Math and Programming drills show one centered card. A lazy shadcn/Recharts donut shows the weighted score as a percentage, with segments for correct, correct with help (including partial credit), wrong, and skipped or not tried. Hover or focus the chart and use the arrow keys for segment counts. The chart's accessible description and hidden table include all four counts.
 - The card says **Great work!** at 80% and above, **Good progress** from 50% to below 80%, and **Keep practising** below 50%. The bold line gives the outcome totals. The line underneath explains what Sync updates or shows the recorded unit mastery and next review date. For several units it shows the earliest review and that unit's mastery when available.
 - **Back** returns to the last viewed question or problem. Per-item review, worked feedback, self-score where supported, mistake tags, and notes are available in the drill. Review & Sync shows aggregate results only. Project labs use their milestone review and terminal **Submit lab** workflow.
 - **Sync** saves local progress before exporting results. Notion includes question and solution blocks for items with a saved check, test run, or review in the current attempt cycle. Skipped items appear as concept gaps. The card disables Sync until there is an attempt or a Skip, shows **Syncing…** during the request, and uses the green **Synced** state while the latest results match the successful sync. Pilot and dry runs acknowledge locally.
@@ -31,7 +31,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Code display
 
 - Full-file blocks show the filename, line numbers, and Copy. Bug-finding problems also let learners select lines by click or keyboard. Wrap lines switches from horizontal scrolling to wrapped lines with a single number per source line. Studio remembers the choice per browser.
-- Input and Output examples, visible test assertions, and sync diagnostics wrap. Supported programming snippets use Studio's lazy-loaded Shiki grammars and GitHub light and dark themes.
+- Input and Output examples and visible test assertions wrap. Supported programming snippets use Studio's lazy-loaded Shiki grammars and GitHub light and dark themes.
 - Fences in prompts, worked steps, and review text support optional filenames, line highlights, and CLI transcripts. See the [Markdown code fence syntax](design/components.md#markdown-code-fences). Reference files appear in the Reference disclosure after a passing review in the current attempt cycle.
 - Run checks shows test counts and available diagnostics in a copyable Terminal block for both programming drills and labs. Hidden cases appear as aggregate counts. Private runner transcripts stay server-side.
 

@@ -6,11 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { m, type HTMLMotionProps } from "motion/react";
 import { cn } from "@/lib/cn";
 import { choiceTapPress, quick, tapPress } from "@/lib/motion";
-import { DESTRUCTIVE_BUTTON_CLS, warningTone } from "@/lib/statusTone";
+import { DESTRUCTIVE_BUTTON_CLS, SUCCESS_BUTTON_CLS, warningTone } from "@/lib/statusTone";
 
 const keyboardRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
 const actionBase = `inline-flex items-center justify-center rounded-md transition-colors motion-reduce:transition-none ${keyboardRing} disabled:pointer-events-none disabled:opacity-disabled focus-visible:ring-offset-background`;
 const resultAction = "gap-space-1_5 rounded-lg shrink-0 focus-visible:ring-offset-2";
+const filledResultAction = `${actionBase} ${resultAction} focus-visible:ring-offset-1 px-space-4 sm:px-space-3_5 font-semibold`;
 const palettePress = "active:bg-accent-tint dark:active:bg-accent-tint/60 active:text-accent dark:active:text-accent";
 
 const standardButton = "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-indigo-400 disabled:pointer-events-none disabled:opacity-50";
@@ -32,7 +33,8 @@ export const buttonVariants = cva(
         answerNav: `${footerAction} bg-transparent font-semibold text-foreground`,
         answerNavReview: `${footerAction} bg-transparent font-normal text-foreground-answer-detail`,
         resultOutline: `${actionBase} ${resultAction} border border-border/90 dark:border-border-control bg-surface-raised/90 dark:bg-surface-raised/80 text-foreground-answer hover:bg-surface-raised dark:hover:bg-surface-raised hover:border-border-control dark:hover:border-surface-hover-strong px-space-3_5 sm:px-space-3 font-normal`,
-        resultPrimary: `${actionBase} ${resultAction} focus-visible:ring-offset-1 bg-accent-primary text-accent-on-primary hover:bg-accent-strong px-space-4 sm:px-space-3_5 font-semibold`,
+        resultPrimary: `${filledResultAction} bg-accent-primary text-accent-on-primary hover:bg-accent-strong`,
+        resultSuccess: `${filledResultAction} ${SUCCESS_BUTTON_CLS} disabled:!opacity-100`,
         resultLink: `${actionBase} gap-space-1 bg-transparent hover:bg-surface-hover text-foreground-answer-detail hover:text-foreground-action-hover font-normal focus-visible:ring-offset-2`,
         choice: "flex items-center rounded-xl border transition-colors",
         assist: `${assistAction} motion-reduce:transition-none`,
