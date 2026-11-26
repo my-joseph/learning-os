@@ -18,7 +18,7 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 
 ### Isometric interactive figures (merged, experimental — learner polishes before use)
 
-Learner decision 2026-11-26: the ported Isometric engine is in the repo, but nothing uses it outside `/ui-poc/isometric` and `/ui-poc/isometric-math` until the learner has polished it and says to start. Do not add these figures to drills, unit pages or Studio screens before that.
+Learner decision 2026-11-26: Isometric figures appear only in the Playground at `/playground`, with details at `/playground/lever`, `/playground/pulley`, `/playground/disk-method`, and `/playground/cube`. Before using them in drills, unit pages, or other Studio screens, wait for the learner to polish and approve them.
 
 - What exists: engine `practice-studio/src/lib/isometric/` (MIT, vendored; primitives box, cylinder, pyramid, frustum, lathe, extrude, torus, tube, wheel/teeth, mapMesh; picking, springs, keyboard parts); figures Cube, Pulley, Lever (`practice-studio/src/lib/isometric/physics/lever.ts`), DiskMethod (`practice-studio/src/lib/isometric/math/diskMethod.ts`), each with pure logic + unit tests; research notes in `pilot/isometric/` (local).
 - Cost measured 2026-11-26: about 20 min and 0.3–0.5M agy tokens per new figure, plus 10–15 min review; about 3 KB gzip per figure, engine about 10 KB once, lazy-loaded.

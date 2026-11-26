@@ -1,0 +1,54 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
+import { FigureSkeleton, LazyCube, LazyLever, LazyPulley } from "@/components/isometric/LazyFigures";
+import { LazyDiskMethod } from "@/components/isometric/LazyDiskMethod";
+import type { PlaygroundExperimentId } from "./experiments";
+
+const LazyShapes = dynamic(
+  () => import("./ShapeGallery").then((module) => module.ShapeGallery),
+  { ssr: false, loading: FigureSkeleton },
+);
+const LazyComponents = dynamic(
+  () => import("@/components/ui-poc/ShadcnPocShowcase").then((module) => module.ShadcnPocPreview),
+  { ssr: false, loading: FigureSkeleton },
+);
+
+const previews = {
+  lever: <LazyLever className="w-full" />,
+  pulley: <LazyPulley className="w-full" />,
+  "disk-method": <LazyDiskMethod />,
+  cube: <LazyCube className="w-full" />,
+  shapes: <LazyShapes preview />,
+  "ui-components": <LazyComponents />,
+} satisfies Record<PlaygroundExperimentId, React.ReactNode>;
+
+export function PlaygroundPreview({ id }: { id: PlaygroundExperimentId }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const preview = ref.current;
+    if (!preview) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true);
+        observer.disconnect();
+      }
+    });
+    observer.observe(preview);
+    return () => observer.disconnect();
+  }, []);
+
+  // Live and interactive in the grid; the detail page adds the full readout.
+  return (
+    <div ref={ref} className="iso-studio-surface flex h-full w-full items-center justify-center">
+      {visible ? previews[id] : <FigureSkeleton />}
+    </div>
+  );
+}

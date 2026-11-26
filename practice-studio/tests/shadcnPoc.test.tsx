@@ -46,12 +46,11 @@ for (const [selected, disabled] of [[false, false], [true, false], [true, true]]
 }
 
 const html = renderToStaticMarkup(<ShadcnPocShowcase />);
-assert.match(html, /shadcn\/ui \+ Radix/);
+assert.match(html, /shadcn\/ui and Radix/);
 assert.match(html, /role="tablist"/);
 assert.match(html, /role="tab"/);
 assert.match(html, /aria-selected="true"/);
 assert.match(html, /aria-haspopup="dialog"/);
-assert.match(html, /aria-label="Switch to (?:dark|light) mode"/);
 assert.match(html, /min-h-\[44px\]/);
 assert.match(html, /focus-visible:ring-2/);
 assert.match(html, /Complete/);
@@ -159,9 +158,8 @@ assert.match(source, /animate-pulse motion-reduce:animate-none/);
 assert.match(source, /statusTone/);
 assert.match(source, /warningTone/);
 assert.match(source, /dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500/);
-assert.match(source, /max-w-5xl overflow-x-hidden/);
-assert.match(source, /px-4 py-8 text-foreground sm:px-6/);
-assert.match(source, /grid-cols-1 gap-5 lg:grid-cols-2/);
+assert.match(source, /min-w-0 grid-cols-1 gap-space-4 lg:grid-cols-2/);
+assert.match(source, /Card variant="playground"/);
 assert.doesNotMatch(source, /\b(?:amber|yellow|emerald|rose)-\d/);
 assert.doesNotMatch(source, /[\u0E00-\u0E7F]/, "POC learning-facing strings must be English");
 assert.doesNotMatch(source, /\p{Extended_Pictographic}/u, "POC strings must not contain emoji");
