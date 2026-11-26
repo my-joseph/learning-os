@@ -10,5 +10,10 @@ docs/prg_curriculum_v2.md|drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json  # Pre
 docs/prg_curriculum_v2.md|labs/LAB-PRG-T03-C01-01/lab.config.json  # Pre-migration v1 inventory snapshot in PRG v2 design proposal
 docs/prg_curriculum_v2.md|labs/LAB-PRG-T03-C01-01/package.json  # Pre-migration v1 inventory snapshot in PRG v2 design proposal
 docs/prg_curriculum_v2.md|prg_t01_c03.py  # Pre-migration v1 inventory snapshot in PRG v2 design proposal
+docs/prg_curriculum_v2.md|code_engine/templates/prg_t01_c01.py  # Pre-migration v1 inventory snapshot (templates removed in Phase 3)
+docs/prg_curriculum_v2.md|code_engine/generate.py  # Pre-migration v1 inventory snapshot (templates removed in Phase 3)
+docs/prg_curriculum_v2.md|scripts/benchmark_templates.py  # Pre-migration v1 inventory snapshot (templates removed in Phase 3)
+docs/prg_curriculum_v2.md|scripts/benchmark_results.json  # Pre-migration v1 inventory snapshot (templates removed in Phase 3)
+docs/prg_curriculum_v2.md|math_engine/templates/mth_t02_c01_u01.py  # Pre-migration v1 inventory snapshot (templates removed in Phase 3)
 .claude/skills/new-math-drill/SKILL.md|drills/data/MTH-BRIDGE/DRL-MTH-BRIDGE-NN.json  # Placeholder NN filename for future bridge drills
 docs/learning_features_plan.md|curriculum/prerequisites.json  # Planned Phase 3 file (currently on hold)
