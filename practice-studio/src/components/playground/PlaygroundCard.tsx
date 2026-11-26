@@ -24,7 +24,7 @@ export function PlaygroundCardFooter({ title, caption, className }: {
  */
 export function PlaygroundCard({ experiment, children }: { experiment: PlaygroundExperiment; children: ReactNode }) {
   return (
-    <Card variant="playground" className="flex h-full flex-col overflow-hidden transition-colors hover:border-accent focus-within:border-accent motion-reduce:transition-none">
+    <Card variant="playground" data-showcase={experiment.id === "ui-components" ? undefined : "grid"} className="flex h-full flex-col overflow-hidden transition-colors hover:border-accent focus-within:border-accent motion-reduce:transition-none">
       <div className="iso-figure-box bg-surface-raised">{children}</div>
       <PlaygroundCardFooter
         className="flex-1"

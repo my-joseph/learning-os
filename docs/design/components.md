@@ -75,10 +75,17 @@ Paths are relative to `practice-studio/src/components/ui/`. Radix parts accept t
 
 ## Playground experiments
 
-The Studio header opens `/playground`. The index links to the six `/lab/[id]` details. The three old `/ui-poc` routes redirect into Lab. The Programming workspace keeps its own Labs section at `/code/lab/[labId]`.
+The Studio header opens `/playground`. The index links to the six `/playground/[id]` details. The three old `/ui-poc` routes redirect into Playground. The Programming workspace keeps its own Labs section at `/code/lab/[labId]`.
 
 - `playground/PlaygroundCard.tsx` exports `PlaygroundCard` and `PlaygroundCardFooter`. Pass an experiment and a preview as children. The figure is live and interactive in the grid; the footer title (with an arrow) links to the detail page, which adds the full readout. The 5:4 figure area and title/caption footer keep their size while loading.
-- `playground/PlaygroundShowcase.tsx` exports `PlaygroundShowcase`, `PlaygroundReadout`, `PlaygroundStats` and `PlaygroundStat`. Pass a figure, title, caption and optional readout to the shared Playground frame. Use the readout with an optional control and a grid of stat tiles. A stat takes a label, value and optional detail.
+- `playground/PlaygroundShowcase.tsx` exports `PlaygroundShowcase`, `PlaygroundReadout`, `PlaygroundStats` and `PlaygroundStat`. Pass a figure, title, caption and optional readout to the shared Playground frame. Pass `reset` on details with editable values to show the shared Reset button. Use the readout with an optional control and a grid of stat tiles. A stat takes a label, value and optional detail.
+
+### Showcase loops
+
+- Lever, Pulley, Disk method, Cube and Shapes demonstrate themselves while visible and idle on the grid and on their detail pages. UI components are a static showcase.
+- Hover, keyboard focus within the card, and touch or drag stop playback and return the figure to default settings with springs. Playback starts again after two visible idle seconds. Grid figures always restart. On detail pages, a learner edit holds the current settings until Reset. Reset restores defaults and re-arms playback for the next release.
+- The engine shares one frame clock and sleeps offscreen or in a hidden tab. Reduced motion starts figures at their defaults and disables autoplay. Live readouts follow the figure during playback. Screen reader announcements stay quiet during automated motion.
+- To add a loop, host the stage inside `data-showcase="grid"` or `data-showcase="detail"` and use `showcaseLoop` in place of the engine's normal `loop`. Provide `defaults()` to retarget input springs and `play(seconds)` to feed an 8–14 second script with pauses. Return true when the script changes a target or an input. Call `change()` for actual learner edits, including adjacent controls. Keep keyboard focus and live telemetry in the figure's existing control and readout paths.
 
 ## Rendered prose
 

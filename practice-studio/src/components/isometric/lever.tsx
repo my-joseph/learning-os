@@ -6,7 +6,7 @@ import { frame } from "@/lib/isometric/entity"
 import { createFigure } from "@/lib/isometric/figure"
 import { clamp, deg, unproject, type Vec2, type Vec3 } from "@/lib/isometric/iso"
 import { box, cylinder, extrude, rotateX, rotateY, translate, type Mesh } from "@/lib/isometric/mesh"
-import { spring, step, type Spring } from "@/lib/isometric/motion"
+import { showcaseSpring, spring, step, type Spring } from "@/lib/isometric/motion"
 import {
   computeLeverState,
   DEFAULT_GRAVITY,
@@ -17,7 +17,9 @@ import {
   type LeverState,
 } from "@/lib/isometric/physics/lever"
 import { label, scene, type Item } from "@/lib/isometric/scene"
-import { bag, el, loop, pointer, type Mount } from "@/lib/isometric/stage"
+import { easeInOut } from "@/lib/isometric/showcase"
+import { showcaseLoop } from "@/lib/isometric/showcaseStage"
+import { bag, el, pointer, type Mount } from "@/lib/isometric/stage"
 
 export type LeverProps = {
   /** Initial left load mass in kg. */
@@ -53,12 +55,15 @@ const PART_NAMES: Record<PartId, string> = {
   "right-load": "Right load",
 }
 
-type State = {
+type Inputs = {
   leftMass: number
   rightMass: number
   leftM: number
   rightM: number
   fulcrumM: number
+}
+
+type State = Inputs & {
   g: number
   tiltDeg: Spring
   physics: LeverState
@@ -159,6 +164,16 @@ const mount: Mount<LeverProps> = ({ stage, svg, read, activated, debug }, _value
       g: initialG,
     }),
   }
+  const defaults: Inputs = { leftMass: state.leftMass, rightMass: state.rightMass, leftM: initialLeft, rightM: initialRight, fulcrumM: initialFulcrum }
+  const inputKeys = Object.keys(defaults) as (keyof Inputs)[]
+  const inputs = Object.fromEntries(inputKeys.map((key) => [key, showcaseSpring(defaults[key], 0.004)])) as Record<keyof Inputs, Spring>
+  const poses: Inputs[] = [
+    defaults,
+    { leftMass: 15, rightMass: 15, leftM: -1, rightM: 1, fulcrumM: 0 },
+    { leftMass: 10, rightMass: 25, leftM: -0.8, rightM: 1.8, fulcrumM: 0 },
+    { leftMass: 20, rightMass: 10, leftM: -0.5, rightM: 1, fulcrumM: 0 },
+  ]
+
   const initialTilt = targetTiltDegrees(state.physics, MAX_TILT_DEG)
   state.tiltDeg.x = initialTilt
   state.tiltDeg.to = initialTilt
@@ -218,33 +233,39 @@ const mount: Mount<LeverProps> = ({ stage, svg, read, activated, debug }, _value
     read.textContent = formatSummary(state)
   }
 
+  function setInput(key: keyof Inputs, value: number) {
+    if (value !== state[key]) L.change()
+    state[key] = inputs[key].x = inputs[key].to = value
+    inputs[key].v = 0
+  }
+
   function moveFulcrum(nextM: number) {
     const clampedF = clamp(round1(nextM), -FULCRUM_LIMIT_M, FULCRUM_LIMIT_M)
-    state.fulcrumM = clampedF
-    if (state.leftM > clampedF - MIN_ARM_M) {
-      state.leftM = clamp(round1(clampedF - MIN_ARM_M), -LEVER_BEAM_HALF_SPAN, clampedF - MIN_ARM_M)
+    setInput("fulcrumM", clampedF)
+    if (Math.max(state.leftM, inputs.leftM.to) > clampedF - MIN_ARM_M) {
+      setInput("leftM", clamp(round1(clampedF - MIN_ARM_M), -LEVER_BEAM_HALF_SPAN, clampedF - MIN_ARM_M))
     }
-    if (state.rightM < clampedF + MIN_ARM_M) {
-      state.rightM = clamp(round1(clampedF + MIN_ARM_M), clampedF + MIN_ARM_M, LEVER_BEAM_HALF_SPAN)
+    if (Math.min(state.rightM, inputs.rightM.to) < clampedF + MIN_ARM_M) {
+      setInput("rightM", clamp(round1(clampedF + MIN_ARM_M), clampedF + MIN_ARM_M, LEVER_BEAM_HALF_SPAN))
     }
     refreshPhysics()
   }
 
   function moveLeftLoad(nextM: number) {
-    state.leftM = clamp(round1(nextM), -LEVER_BEAM_HALF_SPAN, round1(state.fulcrumM - MIN_ARM_M))
+    setInput("leftM", clamp(round1(nextM), -LEVER_BEAM_HALF_SPAN, round1(state.fulcrumM - MIN_ARM_M)))
     refreshPhysics()
   }
 
   function moveRightLoad(nextM: number) {
-    state.rightM = clamp(round1(nextM), round1(state.fulcrumM + MIN_ARM_M), LEVER_BEAM_HALF_SPAN)
+    setInput("rightM", clamp(round1(nextM), round1(state.fulcrumM + MIN_ARM_M), LEVER_BEAM_HALF_SPAN))
     refreshPhysics()
   }
 
   function activatePart(part: PartId) {
     if (part === "left-load") {
-      state.leftMass = nextMassPreset(state.leftMass)
+      setInput("leftMass", nextMassPreset(state.leftMass))
     } else if (part === "right-load") {
-      state.rightMass = nextMassPreset(state.rightMass)
+      setInput("rightMass", nextMassPreset(state.rightMass))
     } else {
       moveFulcrum(0)
     }
@@ -359,10 +380,47 @@ const mount: Mount<LeverProps> = ({ stage, svg, read, activated, debug }, _value
     sc.render(cam, out)
   }
 
-  const L = loop(stage, (dt) => {
-    const moving = step(state.tiltDeg, dt)
+  const L = showcaseLoop(stage, (dt) => {
+    let moving = false
+    let changed = false
+    for (const key of inputKeys) {
+      const input = inputs[key]
+      if (step(input, dt)) moving = true
+      const next = key === "leftMass" || key === "rightMass" ? round1(input.x) : input.x
+      if (state[key] !== next) {
+        state[key] = next
+        changed = true
+      }
+    }
+    if (changed) refreshPhysics()
+    if (step(state.tiltDeg, dt)) moving = true
     renderScene()
     return moving
+  }, {
+    defaults() {
+      for (const key of inputKeys) inputs[key].to = defaults[key]
+      if (state.g !== initialG) {
+        state.g = initialG
+        refreshPhysics()
+      }
+    },
+    play(seconds) {
+      const duration = 2.7
+      const t = seconds + 1.5
+      const phase = Math.floor(t / duration)
+      const from = poses[Math.max(0, phase - 1) % poses.length]
+      const to = poses[phase % poses.length]
+      const eased = easeInOut((t % duration) / 0.95)
+      let changed = false
+      for (const key of inputKeys) {
+        const target = from[key] + (to[key] - from[key]) * eased
+        if (inputs[key].to !== target) {
+          inputs[key].to = target
+          changed = true
+        }
+      }
+      return changed
+    },
   })
   b.add(L.stop)
 
@@ -477,34 +535,37 @@ const mount: Mount<LeverProps> = ({ stage, svg, read, activated, debug }, _value
   b.add(() => svg.replaceChildren())
   refreshPhysics()
 
+  let previousProps = props
   return {
     set: () => {},
     props: (next) => {
       let changed = false
-      if (next.leftMass !== undefined && next.leftMass !== state.leftMass) {
-        state.leftMass = next.leftMass
+      if (next.leftMass !== undefined && next.leftMass !== previousProps.leftMass) {
+        setInput("leftMass", next.leftMass)
         changed = true
       }
-      if (next.rightMass !== undefined && next.rightMass !== state.rightMass) {
-        state.rightMass = next.rightMass
+      if (next.rightMass !== undefined && next.rightMass !== previousProps.rightMass) {
+        setInput("rightMass", next.rightMass)
         changed = true
       }
-      if (next.gravity !== undefined && next.gravity !== state.g) {
+      if (next.gravity !== undefined && next.gravity !== previousProps.gravity) {
         state.g = next.gravity
+        L.change()
         changed = true
       }
-      if (next.fulcrumPos !== undefined && next.fulcrumPos !== state.fulcrumM) {
+      if (next.fulcrumPos !== undefined && next.fulcrumPos !== previousProps.fulcrumPos) {
         moveFulcrum(next.fulcrumPos)
         changed = false
       }
-      if (next.leftPos !== undefined && next.leftPos !== state.leftM) {
+      if (next.leftPos !== undefined && next.leftPos !== previousProps.leftPos) {
         moveLeftLoad(next.leftPos)
         changed = false
       }
-      if (next.rightPos !== undefined && next.rightPos !== state.rightM) {
+      if (next.rightPos !== undefined && next.rightPos !== previousProps.rightPos) {
         moveRightLoad(next.rightPos)
         changed = false
       }
+      previousProps = next
       if (changed) refreshPhysics()
       L.wake()
     },

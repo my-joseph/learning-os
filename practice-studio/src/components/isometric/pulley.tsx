@@ -10,8 +10,9 @@ import { type Entity, entityMount } from "@/lib/isometric/entity"
 import { createFigure } from "@/lib/isometric/figure"
 import { clamp, type Vec3 } from "@/lib/isometric/iso"
 import { box, cylinder, rotateX, translate } from "@/lib/isometric/mesh"
-import { spring, step, type Spring } from "@/lib/isometric/motion"
+import { showcaseSpring, step, type Spring } from "@/lib/isometric/motion"
 import type { Item } from "@/lib/isometric/scene"
+import { easeInOut } from "@/lib/isometric/showcase"
 
 /**
  * Pulley — a block and tackle on a frame. Drag the rope's handle down and the
@@ -36,12 +37,12 @@ const R = 5.5,
   REST = 16,
   HAND = 40
 
-type State = { ratio: 2 | 4; kg: number; pull: Spring; held: number | null; grab: number }
+type State = { ratio: 2 | 4; nextRatio: 2 | 4; kg: number; refresh: boolean; releasing: boolean; pull: Spring; held: number | null; grab: number }
 
 /** Wheel centres along x: moving wheels hang under the load bar, fixed ones under the beam. */
 function layout(ratio: 2 | 4) {
   const n = ratio / 2
-  const moving = Array.from({ length: n }, (_, i) => -12 + R + i * 4 * R)
+  const moving = Array.from({ length: n }, (_, i) => 4.5 + (i - (n - 1) / 2) * 4 * R)
   const fixed = moving.map((x) => x + 2 * R)
   return { moving, fixed, anchor: moving[0] - R, hand: fixed[n - 1] + R }
 }
@@ -77,15 +78,45 @@ const entity: Entity<State, PulleyProps> = {
     zoom: 0.98,
   },
   parts: { rope: "Rope end: drag down to lift", load: "Load", fixed: "Fixed pulley", moving: "Moving pulley" },
-  init: (p) => ({ ratio: p.ratio === 4 ? 4 : 2, kg: p.load ?? 40, pull: spring(0, 90, 15, 0.01), held: null, grab: 0 }),
-  update: (s, p) => {
-    const r = p.ratio === 4 ? 4 : 2
-    if (r !== s.ratio) {
-      s.ratio = r
-      s.pull.to = s.pull.x = 0
-    }
-    s.kg = p.load ?? 40
+  init: (p) => {
+    const ratio = p.ratio === 4 ? 4 : 2
+    return { ratio, nextRatio: ratio, kg: p.load ?? 40, refresh: false, releasing: false, pull: showcaseSpring(0), held: null, grab: 0 }
   },
+  update: (s, p, ctx) => {
+    const ratio = p.ratio === 4 ? 4 : 2
+    const kg = p.load ?? 40
+    if (ratio === s.nextRatio && kg === s.kg) return
+    ctx.change?.()
+    s.nextRatio = ratio
+    s.pull.to = 0
+    s.kg = kg
+    s.refresh = true
+  },
+  showcase: (s, defaults) => ({
+    defaults() {
+      s.nextRatio = defaults.ratio ?? 2
+      s.kg = defaults.load ?? 40
+      s.pull.to = 0
+      s.refresh = true
+      s.releasing = false
+    },
+    play(seconds) {
+      // Two pulls per cycle, one at each ratio. Re-rig while the load is lowered.
+      const slot = 5.5
+      const nextRatio = Math.floor(seconds / slot) % 2 === 0 ? (defaults.ratio ?? 2) : defaults.ratio === 4 ? 2 : 4
+      const t = seconds % slot
+      const releaseAt = 3.35
+      const lowerFor = 1.35
+      const releasing = t >= releaseAt && t < releaseAt + lowerFor
+      const target = 30 * easeInOut((t - 0.35) / 1.6) * easeInOut((releaseAt + lowerFor - t) / lowerFor)
+      s.refresh = s.releasing !== releasing
+      s.releasing = releasing
+      const changed = s.refresh || s.nextRatio !== nextRatio || s.pull.to !== target
+      s.nextRatio = nextRatio
+      s.pull.to = target
+      return changed
+    },
+  }),
   pointer: (s, e, ctx) => {
     if (!e || !e.down) {
       s.held = null
@@ -98,28 +129,40 @@ const entity: Entity<State, PulleyProps> = {
     if (s.held === null) return
     // screen units to world height, then the intensity's gain
     const perUnit = 1 / (ctx.camera.s * Math.sqrt(1 - ctx.camera.k ** 2))
-    s.pull.to = clamp(s.grab + (e.p[1] - s.held) * perUnit * ctx.value, 0, PULL)
+    const target = clamp(s.grab + (e.p[1] - s.held) * perUnit * ctx.value, 0, PULL)
+    if (target !== s.pull.to) ctx.change?.()
+    s.pull.to = target
     return Math.abs(e.p[1] - s.held) > 2
   },
   step: (s, dt, ctx) => {
+    const previous = s.pull.x
+    // A ratio is discrete. Keep the old rig until the handle and load are at rest.
+    const swap = s.nextRatio !== s.ratio && s.pull.x < 0.12
+    if (swap) s.ratio = s.nextRatio
+    const requested = s.pull.to
+    if (s.nextRatio !== s.ratio) s.pull.to = 0
     const moving = step(s.pull, dt)
-    if (moving || s.held !== null) {
+    s.pull.to = requested
+    if (s.refresh || swap || previous !== s.pull.x || s.held !== null) {
+      s.refresh = false
       const pulled = Math.max(0, s.pull.x)
       const lift = pulled / s.ratio
       const pulledText = pulled < 0.5 ? "0" : pulled.toFixed(0)
       const liftText = lift < 0.05 ? "0.0" : lift.toFixed(1)
       const effortN = (s.kg * 9.8) / s.ratio
       const effortText = Math.abs(effortN - Math.round(effortN)) < 0.05 ? effortN.toFixed(0) : effortN.toFixed(1)
-      ctx.read(`pull ${pulledText} · lift ${liftText} · ${s.ratio}:1 · ${effortText} N effort`)
+      ctx.read(`pull ${pulledText} · lift ${liftText} · ${s.ratio}:1 · ${effortText} N effort${s.releasing ? " · ratchet released" : ""}`)
     }
-    return moving
+    return moving || s.nextRatio !== s.ratio
   },
-  activate: (s, part) => {
+  activate: (s, part, ctx) => {
     if (part === "load") {
+      if (s.pull.to !== 0) ctx.change?.()
       s.pull.to = 0
       return "Ratchet released: the load comes down"
     }
     if (part === "rope") {
+      if (s.pull.to < PULL) ctx.change?.()
       s.pull.to = Math.min(PULL, s.pull.to + 6)
       return `Pulled a notch · lift ${(s.pull.to / s.ratio).toFixed(0)}`
     }

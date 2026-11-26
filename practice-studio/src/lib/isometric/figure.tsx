@@ -9,7 +9,7 @@
 import * as React from "react"
 
 import { scale } from "./iso"
-import type { Mount, Readout } from "./stage"
+import type { Engine, Mount, Readout } from "./stage"
 import { inject } from "./styles"
 
 /**
@@ -22,7 +22,7 @@ import { inject } from "./styles"
  * inline function never remounts the figure.
  */
 
-export type FigureOptions = {
+export type FigureOptions<P = object> = {
   /** How strongly the figure answers the pointer, 0 (subtle) to 1 (strong). Default 0.5. */
   intensity?: number
   /** `"auto"` follows the page's tokens and `.dark`; the others pin a palette. Default `"auto"`. */
@@ -35,9 +35,11 @@ export type FigureOptions = {
   onActivate?: (part: string) => void
   /** Interactive figures: overlay face normals, painting order and pick polygons, for tuning a new object. */
   debug?: boolean
+  /** Sends an input update from adjacent controls to the mounted engine. */
+  inputRef?: React.MutableRefObject<Engine<P>["props"] | null>
 }
 
-export type FigureProps<P = object> = FigureOptions & Partial<P> & Omit<React.ComponentPropsWithoutRef<"div">, "children" | keyof FigureOptions>
+export type FigureProps<P = object> = FigureOptions<P> & Partial<P> & Omit<React.ComponentPropsWithoutRef<"div">, "children" | keyof FigureOptions>
 
 export type FigureSpec<P> = {
   /** Kebab-case id, written to `data-iso`. */
@@ -76,6 +78,7 @@ export function createFigure<P extends object>(name: string, spec: FigureSpec<P>
       onRead,
       onActivate,
       debug = false,
+      inputRef,
       style,
       ...rest
     } = rawProps as FigureProps<P>
@@ -149,6 +152,12 @@ export function createFigure<P extends object>(name: string, spec: FigureSpec<P>
     useIsoLayoutEffect(() => {
       engine.current?.debug?.(debug)
     }, [debug])
+
+    useIsoLayoutEffect(() => {
+      if (!inputRef) return
+      inputRef.current = engine.current?.props ?? null
+      return () => { inputRef.current = null }
+    }, [inputRef])
 
     const signature = JSON.stringify(own)
     useIsoLayoutEffect(() => {

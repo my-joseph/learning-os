@@ -25,7 +25,9 @@ import {
   type Shape,
 } from "@/lib/isometric/iso"
 import { spring, step } from "@/lib/isometric/motion"
-import { bag, draw, el, loop, pointer, solid, type Mount, type Solid } from "@/lib/isometric/stage"
+import { easeInOut } from "@/lib/isometric/showcase"
+import { showcaseLoop } from "@/lib/isometric/showcaseStage"
+import { bag, draw, el, pointer, solid, type Mount, type Solid } from "@/lib/isometric/stage"
 
 /**
  * Cube — a three by three by three cube of cubelets. The pointer's height
@@ -89,7 +91,8 @@ const mount: Mount<object> = ({ stage, svg, read }, maxTwist) => {
   }
 
   let held = -1
-  const L = loop(stage, (dt) => {
+  let demonstrating = false
+  const L = showcaseLoop(stage, (dt) => {
     let moving = step(twist, dt)
     for (const l of lifts) if (step(l, dt)) moving = true
     for (let layer = 0; layer < 3; layer++) {
@@ -111,11 +114,37 @@ const mount: Mount<object> = ({ stage, svg, read }, maxTwist) => {
       list.sort((m, n) => m.depth - n.depth).forEach((p) => groups[layer].appendChild(p.el.g))
     }
     // a settled quarter turn looks the same as none, so fold it away
-    if (!moving && pick < 0 && held >= 0) {
+    if (!moving && pick < 0 && held >= 0 && (!demonstrating || (twist.to === 0 && lifts.every((lift) => lift.to === 0)))) {
       twist.x = twist.to = 0
       held = -1
     }
+    if (demonstrating) {
+      read.textContent = held < 0 ? "cube" : `${NAMES[held]} · ${Math.round(twist.x)}°`
+    }
     return moving
+  }, {
+    defaults() {
+      demonstrating = true
+      pick = -1
+      twist.to = 0
+      lifts.forEach((lift) => { lift.to = 0 })
+    },
+    play(seconds) {
+      const slot = 3.4
+      const phase = Math.floor(seconds / slot)
+      const t = seconds % slot
+      // Raise one layer, then twist it. Centre it before closing the gap.
+      const lift = LIFT * easeInOut(t / 0.85) * easeInOut((2.95 - t) / 0.8)
+      const turn = (phase % 3 === 1 ? -18 : 18) * easeInOut((t - 0.45) / 0.9) * easeInOut((2.45 - t) / 0.75)
+      const layer = [2, 1, 0][phase % 3]
+      if (lift === 0 && held < 0 && t > 0.85) return false
+      const changed = held !== layer || twist.to !== turn || lifts[layer].to !== lift
+      demonstrating = true
+      held = layer
+      twist.to = turn
+      lifts.forEach((l, k) => { l.to = k === layer ? lift : 0 })
+      return changed
+    },
   })
   b.add(L.stop)
 
@@ -125,6 +154,8 @@ const mount: Mount<object> = ({ stage, svg, read }, maxTwist) => {
   b.add(
     pointer(stage, {
       move: (p) => {
+        if (L.returning()) return
+        demonstrating = false
         let best = 0
         ys.forEach((y, k) => {
           if (Math.abs(y - p[1]) < Math.abs(ys[best] - p[1])) best = k
@@ -140,6 +171,7 @@ const mount: Mount<object> = ({ stage, svg, read }, maxTwist) => {
         L.wake()
       },
       leave: () => {
+        if (pick < 0) return
         pick = -1
         twist.to = Math.round(twist.x / 90) * 90
         lifts.forEach((l) => {
@@ -165,6 +197,7 @@ export const Cube = createFigure("Cube", {
   label: "A three by three cube; the pointer's height picks a layer and moving across twists it.",
   rest: "cube",
   range: [45, 90, 180],
+  focusable: true,
   defaults: {},
   mount,
 })

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
+import type { DiskMethodInputs } from "@/components/isometric/disk-method";
 import { LazyDiskMethod } from "@/components/isometric/LazyDiskMethod";
 import { PlaygroundReadout, PlaygroundShowcase, PlaygroundStat, PlaygroundStats } from "@/components/playground/PlaygroundShowcase";
 import { Numeral } from "@/components/ui/Numeral";
@@ -11,7 +12,6 @@ import { SegmentedChips } from "@/components/ui/shadcn/Tabs";
 import {
   computePresetDiskMethod,
   DISK_PRESETS,
-  type DiskPresetId,
   type SampleRule,
 } from "@/lib/isometric/math/diskMethod";
 
@@ -44,9 +44,8 @@ function formatPercent(relativeError: number | null): string {
 }
 
 export function DiskMethodShowcase() {
-  const [preset, setPreset] = useState<DiskPresetId>("sqrt");
-  const [n, setN] = useState<number>(8);
-  const [rule, setRule] = useState<SampleRule>("right");
+  const [{ preset, n, rule }, setInputs] = useState<DiskMethodInputs>({ preset: "sqrt", n: 8, rule: "right" });
+  const inputRef = useRef<((patch: Partial<DiskMethodInputs>) => void) | null>(null);
   const [inspectedIndex, setInspectedIndex] = useState<number | null>(null);
   const [caption, setCaption] = useState<string>(
     "n = 8 · right endpoint",
@@ -63,23 +62,21 @@ export function DiskMethodShowcase() {
       ? result.disks[inspectedIndex]
       : null;
 
-  const handlePresetChange = useCallback((next: string) => {
+  function handlePresetChange(next: string) {
     if (next === "sqrt" || next === "cone" || next === "sine") {
-      setPreset(next);
-      setInspectedIndex(null);
+      inputRef.current?.({ preset: next });
     }
-  }, []);
+  }
 
-  const handleRuleChange = useCallback((next: string) => {
+  function handleRuleChange(next: string) {
     if (next === "left" || next === "midpoint" || next === "right") {
-      setRule(next);
+      inputRef.current?.({ rule: next });
     }
-  }, []);
+  }
 
-  const handleChangeN = useCallback((nextN: number) => {
-    const clamped = Math.max(MIN_DISKS, Math.min(MAX_DISKS, Math.round(nextN)));
-    setN(clamped);
-  }, []);
+  function handleChangeN(next: number) {
+    inputRef.current?.({ n: Math.max(MIN_DISKS, Math.min(MAX_DISKS, Math.round(next))) });
+  }
 
   const generalFormula =
     "$$V \\approx \\sum_{i=1}^{n} \\pi \\left[f(x_i^*)\\right]^2 \\Delta x \\longrightarrow \\pi \\int_{a}^{b} \\left[f(x)\\right]^2 \\, dx$$";
@@ -94,15 +91,14 @@ export function DiskMethodShowcase() {
   return (
     <PlaygroundShowcase
       title={<FormattedText text={`$${presetMeta.formulaLatex}$ on $${presetMeta.intervalLatex}$`} />}
+      reset
       caption={<span data-testid="disk-caption">{caption}</span>}
       figure={
         <LazyDiskMethod
-          preset={preset}
-          n={n}
-          rule={rule}
+          inputRef={inputRef}
+          onValuesChange={setInputs}
           onRead={setCaption}
           onInspectDisk={setInspectedIndex}
-          onChangeN={handleChangeN}
         />
       }
       readout={

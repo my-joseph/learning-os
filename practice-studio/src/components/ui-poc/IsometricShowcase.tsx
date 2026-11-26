@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
+import type { PulleyProps } from "@/components/isometric/pulley";
 import { LazyCube, LazyLever, LazyPulley } from "@/components/isometric/LazyFigures";
 import { PlaygroundReadout, PlaygroundShowcase, PlaygroundStat, PlaygroundStats } from "@/components/playground/PlaygroundShowcase";
 import { Numeral } from "@/components/ui/Numeral";
@@ -16,6 +17,7 @@ const RATIO_OPTIONS = [
 ] as const;
 
 type PulleyTelemetry = {
+  ratio: 2 | 4;
   ropePulled: string;
   loadRaised: string;
   effortForce: string;
@@ -49,6 +51,7 @@ function parsePulleyRead(text: string, ratio: 2 | 4, loadKg: number): Partial<Pu
   const stepMatch = text.match(/^pull\s+([\d.]+)\s+·\s+lift\s+([\d.]+)\s+·\s+(\d+):1\s+·\s+([\d.]+)\s+N/);
   if (stepMatch) {
     return {
+      ratio: stepMatch[3] === "4" ? 4 : 2,
       ropePulled: stepMatch[1],
       loadRaised: stepMatch[2],
       effortForce: `${stepMatch[4]} N`,
@@ -72,6 +75,11 @@ function parsePulleyRead(text: string, ratio: 2 | 4, loadKg: number): Partial<Pu
       effortForce: formatPulleyEffort(loadKg, ratio),
       caption: text,
     };
+  }
+  const rest = text.match(/^(2|4):1 · /);
+  if (rest) {
+    const nextRatio = rest[1] === "4" ? 4 : 2;
+    return { ratio: nextRatio, ropePulled: "0", loadRaised: "0.0", effortForce: formatPulleyEffort(loadKg, nextRatio), caption: text };
   }
   return { caption: text };
 }
@@ -127,9 +135,10 @@ export function CubeShowcase() {
 }
 
 export function PulleyShowcase() {
-  const [ratio, setRatio] = useState<2 | 4>(2);
+  const inputRef = useRef<((props: PulleyProps) => void) | null>(null);
   const [lastActivated, setLastActivated] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<PulleyTelemetry>({
+    ratio: 2,
     ropePulled: "0",
     loadRaised: "0.0",
     effortForce: formatPulleyEffort(LOAD_KG, 2),
@@ -137,28 +146,24 @@ export function PulleyShowcase() {
   });
 
   function handleRatioChange(next: string) {
-    const nextRatio = next === "4" ? 4 : 2;
-    setRatio(nextRatio);
-    setTelemetry({
-      ropePulled: "0",
-      loadRaised: "0.0",
-      effortForce: formatPulleyEffort(LOAD_KG, nextRatio),
-      caption: `${nextRatio}:1 · ${LOAD_KG} kg`,
-    });
+    inputRef.current?.({ ratio: next === "4" ? 4 : 2, load: LOAD_KG });
   }
 
   const handleRead = useCallback((caption: string) => {
-    setTelemetry((previous) => ({ ...previous, ...parsePulleyRead(caption, ratio, LOAD_KG) }));
-  }, [ratio]);
+    setTelemetry((previous) => ({ ...previous, ...parsePulleyRead(caption, previous.ratio, LOAD_KG) }));
+  }, []);
+  const { ratio } = telemetry;
 
   return (
     <PlaygroundShowcase
       title="Pulley"
+      reset
+      onReset={() => setLastActivated(null)}
       caption={<span data-testid="pulley-caption">{telemetry.caption}</span>}
       figure={
         <LazyPulley
           className="w-full"
-          ratio={ratio}
+          inputRef={inputRef}
           load={LOAD_KG}
           onRead={handleRead}
           onActivate={setLastActivated}
@@ -210,6 +215,8 @@ export function LeverShowcase() {
   return (
     <PlaygroundShowcase
       title="Lever"
+      reset
+      onReset={() => setActivePart(null)}
       caption={<span data-testid="lever-caption">{lever.caption}</span>}
       figure={<LazyLever className="w-full" onRead={handleRead} onActivate={setActivePart} />}
       readout={
