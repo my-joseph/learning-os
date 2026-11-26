@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PlaygroundBackLink } from "@/components/playground/PlaygroundBackLink";
+import { LazyCollisionsShowcase } from "@/components/playground/LazyCollisions";
 import { PlaygroundShowcase } from "@/components/playground/PlaygroundShowcase";
 import { ShapeGallery } from "@/components/playground/ShapeGallery";
 import { playgroundExperiments } from "@/components/playground/experiments";
@@ -27,6 +28,7 @@ function ShapesShowcase() {
 const showcases = {
   lever: LeverShowcase,
   pulley: PulleyShowcase,
+  collisions: LazyCollisionsShowcase,
   "disk-method": DiskMethodShowcase,
   cube: CubeShowcase,
   shapes: ShapesShowcase,

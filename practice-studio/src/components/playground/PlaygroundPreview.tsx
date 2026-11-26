@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { FigureSkeleton, LazyCube, LazyLever, LazyPulley } from "@/components/isometric/LazyFigures";
 import { LazyDiskMethod } from "@/components/isometric/LazyDiskMethod";
+import { LazyCollisions } from "./LazyCollisions";
 import type { PlaygroundExperimentId } from "./experiments";
 
 const LazyShapes = dynamic(
@@ -16,6 +17,7 @@ const LazyComponents = dynamic(
 );
 
 const previews = {
+  collisions: <LazyCollisions />,
   lever: <LazyLever className="w-full" />,
   pulley: <LazyPulley className="w-full" />,
   "disk-method": <LazyDiskMethod />,
