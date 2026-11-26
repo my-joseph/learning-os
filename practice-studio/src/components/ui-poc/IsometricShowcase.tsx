@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { LazyCube, LazyLever, LazyPulley } from "@/components/isometric/LazyFigures";
-import { LabReadout, LabShowcase, LabStat, LabStats } from "@/components/lab/LabShowcase";
+import { PlaygroundReadout, PlaygroundShowcase, PlaygroundStat, PlaygroundStats } from "@/components/playground/PlaygroundShowcase";
 import { Numeral } from "@/components/ui/Numeral";
 import { Badge } from "@/components/ui/shadcn/Badge";
 import { SegmentedChips } from "@/components/ui/shadcn/Tabs";
@@ -118,7 +118,7 @@ export function CubeShowcase() {
   const [caption, setCaption] = useState("cube");
 
   return (
-    <LabShowcase
+    <PlaygroundShowcase
       title="Cube"
       caption={<span data-testid="cube-caption">{caption}</span>}
       figure={<LazyCube className="w-full" onRead={setCaption} />}
@@ -152,7 +152,7 @@ export function PulleyShowcase() {
   }, [ratio]);
 
   return (
-    <LabShowcase
+    <PlaygroundShowcase
       title="Pulley"
       caption={<span data-testid="pulley-caption">{telemetry.caption}</span>}
       figure={
@@ -165,7 +165,7 @@ export function PulleyShowcase() {
         />
       }
       readout={
-        <LabReadout action={
+        <PlaygroundReadout action={
           <SegmentedChips
             label="Mechanical advantage ratio"
             options={RATIO_OPTIONS}
@@ -173,13 +173,13 @@ export function PulleyShowcase() {
             onValueChange={handleRatioChange}
           />
         }>
-          <LabStats>
-            <LabStat label="Ratio" value={`${ratio}:1`} testId="readout-ratio" />
-            <LabStat label="Load mass" value={`${LOAD_KG} kg`} testId="readout-load" />
-            <LabStat label="Rope pulled" value={telemetry.ropePulled} testId="readout-pulled" />
-            <LabStat label="Load raised" value={telemetry.loadRaised} testId="readout-raised" />
-            <LabStat label="Effort force" value={telemetry.effortForce} testId="readout-effort" />
-          </LabStats>
+          <PlaygroundStats>
+            <PlaygroundStat label="Ratio" value={`${ratio}:1`} testId="readout-ratio" />
+            <PlaygroundStat label="Load mass" value={`${LOAD_KG} kg`} testId="readout-load" />
+            <PlaygroundStat label="Rope pulled" value={telemetry.ropePulled} testId="readout-pulled" />
+            <PlaygroundStat label="Load raised" value={telemetry.loadRaised} testId="readout-raised" />
+            <PlaygroundStat label="Effort force" value={telemetry.effortForce} testId="readout-effort" />
+          </PlaygroundStats>
           {lastActivated && (
             <p className="text-xs text-foreground-secondary">
               Active part <span className="font-mono text-accent" data-testid="readout-activated">{lastActivated}</span>
@@ -188,7 +188,7 @@ export function PulleyShowcase() {
           <p className="text-xs text-foreground-secondary">
             Pull the handle down to raise the load. To inspect a part or release the ratchet, click it or tab to the figure, use the arrow keys, then press Enter.
           </p>
-        </LabReadout>
+        </PlaygroundReadout>
       }
     />
   );
@@ -208,12 +208,12 @@ export function LeverShowcase() {
   const statusLabel = lever.balanced ? "Balanced" : lever.tilt === "left" ? "Tips left" : "Tips right";
 
   return (
-    <LabShowcase
+    <PlaygroundShowcase
       title="Lever"
       caption={<span data-testid="lever-caption">{lever.caption}</span>}
       figure={<LazyLever className="w-full" onRead={handleRead} onActivate={setActivePart} />}
       readout={
-        <LabReadout action={
+        <PlaygroundReadout action={
           <Badge
             variant="status"
             data-testid="lever-status"
@@ -224,15 +224,15 @@ export function LeverShowcase() {
             {statusLabel}
           </Badge>
         }>
-          <LabStats>
-            <LabStat label="Left load" value={`${lever.m1} kg`} testId="lever-readout-left-mass"
+          <PlaygroundStats>
+            <PlaygroundStat label="Left load" value={`${lever.m1} kg`} testId="lever-readout-left-mass"
               detail={<LoadDetail weight={lever.w1} distance={lever.d1} />} />
-            <LabStat label="Right load" value={`${lever.m2} kg`} testId="lever-readout-right-mass"
+            <PlaygroundStat label="Right load" value={`${lever.m2} kg`} testId="lever-readout-right-mass"
               detail={<LoadDetail weight={lever.w2} distance={lever.d2} />} />
-            <LabStat label="Left torque" value={`${lever.tau1.toFixed(0)} N·m`} testId="lever-readout-tau1" />
-            <LabStat label="Right torque" value={`${lever.tau2.toFixed(0)} N·m`} testId="lever-readout-tau2" />
-            <LabStat label="Net torque" value={`${lever.netTorque.toFixed(1)} N·m`} testId="lever-readout-net" />
-          </LabStats>
+            <PlaygroundStat label="Left torque" value={`${lever.tau1.toFixed(0)} N·m`} testId="lever-readout-tau1" />
+            <PlaygroundStat label="Right torque" value={`${lever.tau2.toFixed(0)} N·m`} testId="lever-readout-tau2" />
+            <PlaygroundStat label="Net torque" value={`${lever.netTorque.toFixed(1)} N·m`} testId="lever-readout-net" />
+          </PlaygroundStats>
           {activePart && (
             <p className="text-xs text-foreground-secondary">
               Active part <span className="font-mono text-accent" data-testid="lever-readout-active">{activePart.replace(/-/g, " ")}</span>
@@ -241,7 +241,7 @@ export function LeverShowcase() {
           <p className="text-xs text-foreground-secondary">
             The beam is massless and g = 9.8 m/s². Drag the fulcrum or either load. On the keyboard, tab to a part, use the arrow keys to move it by 0.5 m, and press Enter on a load to change its mass.
           </p>
-        </LabReadout>
+        </PlaygroundReadout>
       }
     />
   );

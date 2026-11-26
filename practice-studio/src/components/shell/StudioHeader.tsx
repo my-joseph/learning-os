@@ -32,17 +32,17 @@ import { StudioSearchTrigger } from "./StudioSearchPalette";
 function StudioHeaderFrame({
   leading,
   beforeTheme,
-  afterLab,
+  afterPlayground,
   theme,
   onToggleTheme,
-  labCurrent = false,
+  playgroundCurrent = false,
 }: {
   leading: React.ReactNode;
   beforeTheme?: React.ReactNode;
-  afterLab?: React.ReactNode;
+  afterPlayground?: React.ReactNode;
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  labCurrent?: boolean;
+  playgroundCurrent?: boolean;
 }) {
   return (
     <header className="sticky top-0 z-sticky flex h-space-12 w-full shrink-0 items-center justify-between gap-space-2 border-b border-border/80 bg-surface-raised px-space-2 sm:px-space-3 lg:h-touch">
@@ -54,29 +54,29 @@ function StudioHeaderFrame({
           <TooltipTrigger asChild>
             <Button asChild variant="headerUtility" size="headerIcon">
               <Link
-                href="/lab"
-                aria-label="Open Lab"
-                aria-current={labCurrent ? "location" : undefined}
-                data-selected={labCurrent}
+                href="/playground"
+                aria-label="Open Playground"
+                aria-current={playgroundCurrent ? "location" : undefined}
+                data-selected={playgroundCurrent}
               >
                 <FlaskConical className="size-space-4" aria-hidden="true" />
               </Link>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Lab</TooltipContent>
+          <TooltipContent side="bottom">Playground</TooltipContent>
         </Tooltip>
-        {afterLab}
+        {afterPlayground}
       </div>
     </header>
   );
 }
 
-export function StudioLabHeader() {
+export function StudioPlaygroundHeader() {
   const { theme, handleToggleTheme } = useTheme();
   return (
     <TooltipProvider>
       <StudioHeaderFrame
-        labCurrent
+        playgroundCurrent
         theme={theme}
         onToggleTheme={handleToggleTheme}
         leading={
@@ -268,7 +268,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           )}
         </>
       )}
-      afterLab={showRightPanelToggle && (
+      afterPlayground={showRightPanelToggle && (
           <>
             <span
               aria-hidden="true"

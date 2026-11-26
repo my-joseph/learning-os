@@ -28,7 +28,7 @@ export function ShadcnPocShowcase() {
     <div className="space-y-space-4">
       <p className="text-sm text-foreground-secondary">Explore the shared shadcn/ui and Radix controls used in Practice Studio.</p>
       <div className="grid min-w-0 grid-cols-1 gap-space-4 lg:grid-cols-2">
-        <Card variant="lab" aria-labelledby="badges-heading">
+        <Card variant="playground" aria-labelledby="badges-heading">
           <CardHeader><CardTitle id="badges-heading">Badge variants</CardTitle><CardDescription>Compact labels use shared status tokens and the neutral palette.</CardDescription></CardHeader>
           <CardContent className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge>Default</Badge><Badge variant="secondary">Secondary</Badge><Badge variant="outline">Outline</Badge>
@@ -39,7 +39,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="buttons-heading">
+        <Card variant="playground" aria-labelledby="buttons-heading">
           <CardHeader><CardTitle id="buttons-heading">Button variants</CardTitle><CardDescription>Each control keeps a minimum 44 pixel touch target.</CardDescription></CardHeader>
           <CardContent>
             <div className="flex min-w-0 flex-wrap gap-2"><Button>Primary action</Button><Button variant="secondary">Secondary</Button><Button variant="outline">Outline</Button><Button variant="ghost">Ghost</Button><Button variant="destructive">Destructive</Button></div>
@@ -47,7 +47,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="tabs-heading">
+        <Card variant="playground" aria-labelledby="tabs-heading">
           <CardHeader><CardTitle id="tabs-heading">Tabs and status tokens</CardTitle><CardDescription>Use the arrow keys to move between tabs.</CardDescription></CardHeader>
           <CardContent>
             <Tabs defaultValue="overview">
@@ -59,7 +59,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="dialog-heading">
+        <Card variant="playground" aria-labelledby="dialog-heading">
           <CardHeader><CardTitle id="dialog-heading">Dialog confirmation</CardTitle><CardDescription>Radix manages focus containment, Escape dismissal, and focus restoration.</CardDescription></CardHeader>
           <CardContent>
             <Dialog><DialogTrigger asChild><Button variant="outline">Open confirmation</Button></DialogTrigger>
@@ -71,7 +71,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="popover-heading">
+        <Card variant="playground" aria-labelledby="popover-heading">
           <CardHeader><CardTitle id="popover-heading">Popover and tooltip</CardTitle><CardDescription>Both patterns support keyboard access and Escape dismissal.</CardDescription></CardHeader>
           <CardContent className="flex min-w-0 flex-wrap items-center gap-3">
             <Popover><PopoverTrigger asChild><Button variant="outline">Open details</Button></PopoverTrigger><PopoverContent aria-label="Interface details"><p className="font-normal">Interface details</p><p className="mt-1 text-sm text-foreground-secondary">The details panel anchors to its trigger.</p></PopoverContent></Popover>
@@ -79,12 +79,12 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="drawer-heading">
+        <Card variant="playground" aria-labelledby="drawer-heading">
           <CardHeader><CardTitle id="drawer-heading">Responsive drawer</CardTitle><CardDescription>Bottom sheet on narrow screens; right-side panel on desktop.</CardDescription></CardHeader>
           <CardContent><Drawer><DrawerTrigger asChild><Button variant="outline">Open drawer</Button></DrawerTrigger><DrawerContent aria-describedby="poc-drawer-description"><DrawerTitle className="pr-10 text-lg font-semibold">Drawer panel</DrawerTitle><DrawerDescription id="poc-drawer-description" className="mt-2 text-sm text-foreground-secondary">This panel adapts its position to the viewport and locks background interaction while open.</DrawerDescription><div className="mt-5 rounded-lg bg-surface-panel p-space-4 text-sm">The close control has a 44 pixel target.</div></DrawerContent></Drawer></CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="alert-dialog-heading">
+        <Card variant="playground" aria-labelledby="alert-dialog-heading">
           <CardHeader><CardTitle id="alert-dialog-heading">Alert dialog</CardTitle><CardDescription>Cancel is the safe default; outside clicks do not dismiss this confirmation.</CardDescription></CardHeader>
           <CardContent>
             <AlertDialog><AlertDialogTrigger asChild><Button variant="destructive">Reset sample</Button></AlertDialogTrigger>
@@ -95,7 +95,7 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="collapsible-heading">
+        <Card variant="playground" aria-labelledby="collapsible-heading">
           <CardHeader><CardTitle id="collapsible-heading">Collapsible details</CardTitle><CardDescription>Closed content stays unmounted until the learner opens it.</CardDescription></CardHeader>
           <CardContent>
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
@@ -105,24 +105,24 @@ export function ShadcnPocShowcase() {
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="hover-card-heading">
+        <Card variant="playground" aria-labelledby="hover-card-heading">
           <CardHeader><CardTitle id="hover-card-heading">Hover card</CardTitle><CardDescription>Supplementary previews are available on hover and keyboard focus.</CardDescription></CardHeader>
           <CardContent>
             <HoverCard openDelay={200}><HoverCardTrigger asChild><Button variant="outline">Preview a concept</Button></HoverCardTrigger><HoverCardContent><p className="font-normal">Concept preview</p><p className="mt-1 text-sm text-foreground-secondary">A short, optional summary can provide context without interrupting the page.</p></HoverCardContent></HoverCard>
           </CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="input-heading">
+        <Card variant="playground" aria-labelledby="input-heading">
           <CardHeader><CardTitle id="input-heading">Input states</CardTitle><CardDescription>Text fields keep clear focus and disabled states.</CardDescription></CardHeader>
           <CardContent className="grid min-w-0 gap-3"><label htmlFor="poc-search" className="text-sm font-normal">Search sample content</label><Input id="poc-search" placeholder="Enter a search term" /><Input aria-label="Disabled sample input" disabled placeholder="Disabled field" /></CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="skeleton-heading">
+        <Card variant="playground" aria-labelledby="skeleton-heading">
           <CardHeader><CardTitle id="skeleton-heading">Skeleton loading</CardTitle><CardDescription>Reduced-motion settings disable the pulse animation.</CardDescription></CardHeader>
           <CardContent aria-label="Loading preview" role="status" className="grid gap-3"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-4 w-full" /><Skeleton className="h-20 w-full" /></CardContent>
         </Card>
 
-        <Card variant="lab" aria-labelledby="states-heading">
+        <Card variant="playground" aria-labelledby="states-heading">
           <CardHeader><CardTitle id="states-heading">Interface states</CardTitle><CardDescription>Switch among empty, loading, error, and success examples.</CardDescription></CardHeader>
           <CardContent>
             <div className="flex min-w-0 flex-wrap gap-2">{(["empty", "loading", "error", "success"] as const).map((value) => <Button key={value} size="sm" variant={state === value ? "primary" : "outline"} onClick={() => setState(value)}>{value[0].toUpperCase() + value.slice(1)}</Button>)}</div>

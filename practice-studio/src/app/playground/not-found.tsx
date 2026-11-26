@@ -1,10 +1,10 @@
-import { LabBackLink } from "@/components/lab/LabBackLink";
+import { PlaygroundBackLink } from "@/components/playground/PlaygroundBackLink";
 import { Heading } from "@/components/ui/Heading";
 
 export default function LabNotFound() {
   return (
     <div className="space-y-space-4">
-      <LabBackLink />
+      <PlaygroundBackLink />
       <Heading>Experiment not found</Heading>
     </div>
   );

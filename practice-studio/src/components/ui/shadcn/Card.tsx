@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 
 export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   asChild?: boolean;
-  variant?: "default" | "feedback" | "assistPanel" | "assistStep" | "lab";
+  variant?: "default" | "feedback" | "assistPanel" | "assistStep" | "playground";
 }
 
 const cardVariants = {
@@ -12,7 +12,7 @@ const cardVariants = {
   feedback: "rounded-xl p-space-3_5 sm:p-space-4 space-y-space-2_5",
   assistPanel: "rounded-xl border border-border bg-surface-panel p-space-4",
   assistStep: "rounded-xl border border-border bg-surface-raised p-space-3",
-  lab: "w-full min-w-0 rounded-xl border border-border-control bg-surface-raised text-foreground",
+  playground: "w-full min-w-0 rounded-xl border border-border-control bg-surface-raised text-foreground",
 };
 
 export const Card = React.forwardRef<HTMLElement, CardProps>(

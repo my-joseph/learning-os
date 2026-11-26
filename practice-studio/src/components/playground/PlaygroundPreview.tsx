@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { FigureSkeleton, LazyCube, LazyLever, LazyPulley } from "@/components/isometric/LazyFigures";
 import { LazyDiskMethod } from "@/components/isometric/LazyDiskMethod";
-import type { LabExperimentId } from "./experiments";
+import type { PlaygroundExperimentId } from "./experiments";
 
 const LazyShapes = dynamic(
   () => import("./ShapeGallery").then((module) => module.ShapeGallery),
@@ -22,9 +22,9 @@ const previews = {
   cube: <LazyCube className="w-full" />,
   shapes: <LazyShapes preview />,
   "ui-components": <LazyComponents />,
-} satisfies Record<LabExperimentId, React.ReactNode>;
+} satisfies Record<PlaygroundExperimentId, React.ReactNode>;
 
-export function LabPreview({ id }: { id: LabExperimentId }) {
+export function PlaygroundPreview({ id }: { id: PlaygroundExperimentId }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 

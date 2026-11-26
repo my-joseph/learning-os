@@ -7,7 +7,7 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
-import { StudioHeader, StudioLabHeader } from "../src/components/shell/StudioHeader";
+import { StudioHeader, StudioPlaygroundHeader } from "../src/components/shell/StudioHeader";
 import { StudioShell } from "../src/components/shell/StudioShell";
 import { StudioSidebar } from "../src/components/shell/StudioSidebar";
 import { GeneratePopover } from "../src/components/shell/GeneratePopover";
@@ -836,16 +836,16 @@ assert.match(mathItemView, /problem\.plainText && !isChoice/);
   assert.doesNotMatch(headerOpenHtml, /aria-label="Expand sidebar"/);
   assert.match(headerOpenHtml, /aria-label="Generate drill set"/);
   assert.match(headerOpenHtml, /aria-label="Reset all questions"/);
-  assert.match(headerOpenHtml, /aria-label="Switch to dark mode"[\s\S]*aria-label="Open Lab"/);
-  assert.match(headerOpenHtml, /<a[^>]*aria-label="Open Lab"[^>]*href="\/lab"/);
-  assert.doesNotMatch(headerOpenHtml, /aria-label="Open Lab"[^>]*aria-current/);
+  assert.match(headerOpenHtml, /aria-label="Switch to dark mode"[\s\S]*aria-label="Open Playground"/);
+  assert.match(headerOpenHtml, /<a[^>]*aria-label="Open Playground"[^>]*href="\/playground"/);
+  assert.doesNotMatch(headerOpenHtml, /aria-label="Open Playground"[^>]*aria-current/);
   assert.match(headerOpenHtml, /aria-label="Due today &amp; weak spots"/);
   assert.match(headerOpenHtml, /lucide-list/);
   assert.match(headerOpenHtml, /aria-pressed="true"/);
   assert.match(headerOpenHtml, /Linear Equations/);
 
-  const labHeaderHtml = renderToStaticMarkup(<StudioLabHeader />);
-  assert.match(labHeaderHtml, /aria-label="Open Lab" aria-current="location" data-selected="true"/);
+  const labHeaderHtml = renderToStaticMarkup(<StudioPlaygroundHeader />);
+  assert.match(labHeaderHtml, /aria-label="Open Playground" aria-current="location" data-selected="true"/);
 
   const compactTilesHtml = renderToStaticMarkup(
     <QuizPaginationBar

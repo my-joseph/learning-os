@@ -2,12 +2,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/shadcn/Button";
 
-export function LabBackLink() {
+export function PlaygroundBackLink() {
   return (
     <Button asChild variant="exampleBack" size="exampleBack" className="text-sm">
-      <Link href="/lab">
+      <Link href="/playground">
         <ArrowLeft className="size-space-4" aria-hidden="true" />
-        Lab
+        Playground
       </Link>
     </Button>
   );

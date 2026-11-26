@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { LazyDiskMethod } from "@/components/isometric/LazyDiskMethod";
-import { LabReadout, LabShowcase, LabStat, LabStats } from "@/components/lab/LabShowcase";
+import { PlaygroundReadout, PlaygroundShowcase, PlaygroundStat, PlaygroundStats } from "@/components/playground/PlaygroundShowcase";
 import { Numeral } from "@/components/ui/Numeral";
 import { Button } from "@/components/ui/shadcn/Button";
 import { SegmentedChips } from "@/components/ui/shadcn/Tabs";
@@ -92,7 +92,7 @@ export function DiskMethodShowcase() {
         : "$\\pi \\int_{0}^{\\pi} \\sin^2 x \\, dx = \\frac{\\pi^2}{2}$";
 
   return (
-    <LabShowcase
+    <PlaygroundShowcase
       title={<FormattedText text={`$${presetMeta.formulaLatex}$ on $${presetMeta.intervalLatex}$`} />}
       caption={<span data-testid="disk-caption">{caption}</span>}
       figure={
@@ -106,7 +106,7 @@ export function DiskMethodShowcase() {
         />
       }
       readout={
-        <LabReadout action={
+        <PlaygroundReadout action={
           <SegmentedChips
             label="Preset function"
             options={PRESET_OPTIONS}
@@ -178,29 +178,29 @@ export function DiskMethodShowcase() {
               />
             </div>
           </div>
-          <LabStats>
-            <LabStat
+          <PlaygroundStats>
+            <PlaygroundStat
               label={<>Slice width (<FormattedText text={"$\\Delta x$"} />)</>}
               value={result.dx.toFixed(3)}
               testId="readout-dx"
             />
-            <LabStat
+            <PlaygroundStat
               label={<>Approx. volume (<FormattedText text={"$\\Sigma V_i$"} />)</>}
               value={result.approxVolume.toFixed(3)}
               testId="readout-approx"
             />
-            <LabStat
+            <PlaygroundStat
               label="Exact volume"
               value={<FormattedText text={`$${presetMeta.exactLatex}$`} />}
               detail={<Numeral>({presetMeta.exactVolume.toFixed(3)})</Numeral>}
               testId="readout-exact"
             />
-            <LabStat
+            <PlaygroundStat
               label={`Error (${RULE_LABELS[rule]})`}
               value={formatPercent(result.relativeError)}
               testId="readout-error"
             />
-          </LabStats>
+          </PlaygroundStats>
           <div
             className={
               activeDisk
@@ -252,7 +252,7 @@ export function DiskMethodShowcase() {
           <p className="text-xs text-foreground-secondary">
             Drag across the solid or use the slider to change the disk count. Tab to the figure and press Left or Right to inspect disks.
           </p>
-        </LabReadout>
+        </PlaygroundReadout>
       }
     />
   );

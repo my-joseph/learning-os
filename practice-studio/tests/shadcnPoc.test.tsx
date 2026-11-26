@@ -159,7 +159,7 @@ assert.match(source, /statusTone/);
 assert.match(source, /warningTone/);
 assert.match(source, /dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500/);
 assert.match(source, /min-w-0 grid-cols-1 gap-space-4 lg:grid-cols-2/);
-assert.match(source, /Card variant="lab"/);
+assert.match(source, /Card variant="playground"/);
 assert.doesNotMatch(source, /\b(?:amber|yellow|emerald|rose)-\d/);
 assert.doesNotMatch(source, /[\u0E00-\u0E7F]/, "POC learning-facing strings must be English");
 assert.doesNotMatch(source, /\p{Extended_Pictographic}/u, "POC strings must not contain emoji");

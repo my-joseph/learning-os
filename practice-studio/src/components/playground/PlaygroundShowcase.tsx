@@ -3,16 +3,16 @@ import { Heading } from "@/components/ui/Heading";
 import { Numeral } from "@/components/ui/Numeral";
 import { Card } from "@/components/ui/shadcn/Card";
 import { cn } from "@/lib/cn";
-import { LabCardFooter } from "./LabCard";
+import { PlaygroundCardFooter } from "./PlaygroundCard";
 
-export function LabShowcase({ title, caption, figure, readout }: {
+export function PlaygroundShowcase({ title, caption, figure, readout }: {
   title: ReactNode;
   caption: ReactNode;
   figure: ReactNode;
   readout?: ReactNode;
 }) {
   return (
-    <Card asChild variant="lab" className="iso-studio-surface">
+    <Card asChild variant="playground" className="iso-studio-surface">
       <section>
         <div className={cn("grid", readout && "lg:grid-cols-5")}>
           <div className={cn("flex min-w-0 flex-col justify-center p-space-4 sm:p-space-5", readout && "lg:col-span-3")}>
@@ -20,13 +20,13 @@ export function LabShowcase({ title, caption, figure, readout }: {
           </div>
           {readout}
         </div>
-        <LabCardFooter title={title} caption={caption} />
+        <PlaygroundCardFooter title={title} caption={caption} />
       </section>
     </Card>
   );
 }
 
-export function LabReadout({ action, children }: { action?: ReactNode; children: ReactNode }) {
+export function PlaygroundReadout({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
     <div className="min-w-0 space-y-space-4 border-t border-border p-space-4 sm:p-space-5 lg:col-span-2 lg:border-l lg:border-t-0">
       <div className="flex flex-wrap items-center justify-between gap-space-2">
@@ -38,11 +38,11 @@ export function LabReadout({ action, children }: { action?: ReactNode; children:
   );
 }
 
-export function LabStats({ children }: { children: ReactNode }) {
+export function PlaygroundStats({ children }: { children: ReactNode }) {
   return <dl className="grid grid-cols-2 gap-space-3">{children}</dl>;
 }
 
-export function LabStat({ label, value, detail, testId }: {
+export function PlaygroundStat({ label, value, detail, testId }: {
   label: ReactNode;
   value: ReactNode;
   detail?: ReactNode;
