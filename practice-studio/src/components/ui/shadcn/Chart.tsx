@@ -42,7 +42,7 @@ export function ChartTooltipContent({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="grid gap-space-1 rounded-lg border border-border bg-surface-raised px-space-3 py-space-1_5 shadow-lg">
+    <div className="grid gap-space-1 rounded-lg border border-border bg-surface-raised px-space-3 py-space-1_5 shadow-ui-lg">
       {payload.filter((item) => item.type !== "none").map((item) => {
         const key = String(item.name ?? item.dataKey ?? "value");
         const entry = config[key];

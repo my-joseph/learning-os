@@ -123,6 +123,8 @@ The Review Queue view should surface Units whose `Next Review` date is due.
 
 Studio reports a failed unit review as part of a partial Notion sync and retries each affected unit individually. The sync stamp advances after all required writes succeed.
 
+After a successful sync, the Studio Review & Sync card shows the recorded unit mastery and next review date when available. A drill that covers several units shows the earliest next review with that unit's mastery.
+
 `[code]` Drill practice updates these automatically: when a drill with an attempt is synced, `notion_sync.drill_sync.update_unit_reviews` writes, for every unit the drill covers, an evidence-based `Mastery (0–4)` from the learner's last 10 items in that unit (`scripts.weak_spots.evaluate_mastery` / `suggest_mastery(..., return_cap=True)` and `review_update`: 1 under 50%; 3 when at least 3 recent L3+ items average ≥ 70%, no weak spot is open, and the unit has at least one correct L4+ item with no hint ("challenge"); otherwise 2), `Last Reviewed` = the attempt date, and `Next Review` = attempt date + 2 / 5 / 17 / 45 days for Mastery 1 / 2 / 3 / 4. Assisted items (hints, equation set-up, or solution steps revealed before answering) are weighted at half of fluent items (`0.5` vs `1.0`) and never qualify as the L4+ challenge, capping Mastery at 2 and returning a cap reason so Practice Studio can display why a unit is capped. Drills cannot show Mastery 4 (Feynman explanation, cross-subject synthesis): only the learner sets 4, and a learner-set 4 is kept while the evidence still says 3.
 
 ### 9a. Per-item review engine
