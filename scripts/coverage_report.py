@@ -1,12 +1,12 @@
-"""Coverage Report Generator (Task 5 & Enhancements).
+"""Coverage Report Generator.
 
 Generates `reports/coverage.md` detailing:
-1. Skill (domain, tier) x Level x Form matrix (problems in drills/data vs template forms).
+1. Skill (domain, tier) x Level x Form matrix (problems in drills/data vs skills_taxonomy.json).
 2. Studio file deduplication audit (files ending with `-studio`).
-3. Gaps: skills with templates but 0 generated problems, missing levels per domain.
+3. Gaps: taxonomy skills with 0 drill problems and missing levels per domain.
 4. พร้อมเรียนต่อ (Ready to Learn): unmastered skills whose hard prerequisites are fully satisfied.
 5. Weaknesses & Mistake History: grouped primarily by trapTag with skills and files, including [inferred] tags.
-6. Prerequisites Taxonomy Graph & Table: 23 registered DAG edges with hard/soft strength and pedagogical rationale.
+6. Prerequisites Taxonomy Graph & Table: registered DAG edges with hard/soft strength and pedagogical rationale.
 
 Usage:
     python -m scripts.coverage_report [--data-dir drills/data] [--output reports/coverage.md]
@@ -18,7 +18,6 @@ import argparse
 import glob
 import json
 import os
-import random
 import re
 from collections import Counter, defaultdict
 from typing import Any
@@ -29,25 +28,6 @@ from progress_store import apply_progress, load_progress
 def load_taxonomy(taxonomy_path: str = "skills_taxonomy.json") -> dict[str, Any]:
     with open(taxonomy_path, "r", encoding="utf-8") as f:
         return json.load(f)
-
-
-def load_all_templates() -> dict[str, dict[str, Any]]:
-    """Loads all registered templates from math_engine and code_engine via auto-discovery."""
-    from code_engine.templates import get_all_unit_templates as get_code_units
-    from math_engine.templates import get_all_unit_templates as get_math_units
-
-    templates: dict[str, dict[str, Any]] = {}
-    for unit, tpls in get_math_units():
-        for tpl in tpls:
-            key = tpl.get("key") or tpl.get("name")
-            if key:
-                templates[key] = tpl
-    for unit, tpls in get_code_units():
-        for tpl in tpls:
-            key = tpl.get("key") or tpl.get("name")
-            if key:
-                templates[key] = tpl
-    return templates
 
 
 # Fallback mapping for legacy drill JSON problems that predate the `skill` field
@@ -90,13 +70,15 @@ def normalize_prompt(text: str) -> str:
 
 def scan_drills(
     data_dir: str,
-    templates: dict[str, Any] | None = None,
 ) -> tuple[
     dict[str, int],
     dict[tuple[str, str], int],
     list[dict[str, Any]],
     dict[str, dict[str, Any]],
     dict[str, list[float]],
+    dict[str, list[dict[str, Any]]],
+    dict[str, set[str]],
+    dict[str, set[str]],
 ]:
     """Scans all drill JSON files in data_dir with studio deduplication.
 
@@ -106,12 +88,18 @@ def scan_drills(
       - all_mistake_records: list of dicts with mistake details and is_inferred flag
       - studio_audit: dict[filepath, {total, duplicates, non_duplicates}]
       - skill_scores: dict[skill_id, list_of_attempted_scores]
+      - skill_drill_info: dict[skill_id, list[{archetypeKey, form, level}]]
+      - tag_skills_map: dict[trapTag, set[skill_id]]
+      - tag_archetypes_map: dict[trapTag, set[archetypeKey]]
     """
     skill_problem_counts: Counter[str] = Counter()
     skill_form_counts: Counter[tuple[str, str]] = Counter()
     all_mistake_records: list[dict[str, Any]] = []
     studio_audit: dict[str, dict[str, Any]] = {}
     skill_scores: dict[str, list[float]] = defaultdict(list)
+    skill_drill_info: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    tag_skills_map: dict[str, set[str]] = defaultdict(set)
+    tag_archetypes_map: dict[str, set[str]] = defaultdict(set)
 
     all_files = sorted(glob.glob(os.path.join(data_dir, "**", "*.json"), recursive=True))
     all_files = [f for f in all_files if "package.json" not in f]
@@ -121,6 +109,31 @@ def scan_drills(
     studio_files = [f for f in all_files if "-studio" in os.path.basename(f)]
 
     seen_normalized_prompts: set[str] = set()
+
+    def _record_problem_metadata(prob: dict[str, Any], skill: str | None, form: str) -> None:
+        arch_key = prob.get("archetypeKey") or prob.get("templateKey")
+        lvl = prob.get("level")
+        if skill:
+            skill_drill_info[skill].append(
+                {
+                    "archetypeKey": arch_key or "-",
+                    "form": form,
+                    "level": lvl,
+                }
+            )
+        ctag = prob.get("commonTrapTag")
+        if ctag:
+            if arch_key:
+                tag_archetypes_map[ctag].add(arch_key)
+            if skill:
+                tag_skills_map[ctag].add(skill)
+        for opt in (prob.get("answerSpec") or {}).get("options") or []:
+            if isinstance(opt, dict) and opt.get("trapTag"):
+                otag = opt["trapTag"]
+                if arch_key:
+                    tag_archetypes_map[otag].add(arch_key)
+                if skill:
+                    tag_skills_map[otag].add(skill)
 
     for filepath in main_files:
         try:
@@ -139,7 +152,6 @@ def scan_drills(
             raw_form = prob.get("form")
             trap_tag = prob.get("commonTrapTag")
             form = raw_form or prob.get("archetype") or "direct"
-            template_key = prob.get("templateKey")
 
             prompt_text = prob.get("prompt") or prob.get("question") or ""
             norm_p = normalize_prompt(prompt_text)
@@ -149,18 +161,6 @@ def scan_drills(
             # Resolve skill
             skill = raw_skill
             is_inferred = False
-            if not skill and template_key and templates and template_key in templates:
-                t = templates[template_key]
-                t_forms = t.get("forms", {})
-                if form in t_forms:
-                    skill = t_forms[form].get("skill")
-                elif "direct" in t_forms:
-                    skill = t_forms["direct"].get("skill")
-                elif t_forms:
-                    skill = list(t_forms.values())[0].get("skill")
-                else:
-                    skill = t.get("skill")
-
             if not skill and trap_tag in LEGACY_TRAP_MAP:
                 skill = LEGACY_TRAP_MAP[trap_tag]
 
@@ -170,6 +170,7 @@ def scan_drills(
             if skill:
                 skill_problem_counts[skill] += 1
                 skill_form_counts[(skill, form)] += 1
+            _record_problem_metadata(prob, skill, form)
 
             # Check mistakes and scores
             st = prob.get("state") or {}
@@ -238,7 +239,6 @@ def scan_drills(
             raw_form = prob.get("form")
             trap_tag = prob.get("commonTrapTag")
             form = raw_form or prob.get("archetype") or "direct"
-            template_key = prob.get("templateKey")
 
             prompt_text = prob.get("prompt") or prob.get("question") or ""
             norm_p = normalize_prompt(prompt_text)
@@ -254,18 +254,6 @@ def scan_drills(
             # Resolve skill
             skill = raw_skill
             is_inferred = False
-            if not skill and template_key and templates and template_key in templates:
-                t = templates[template_key]
-                t_forms = t.get("forms", {})
-                if form in t_forms:
-                    skill = t_forms[form].get("skill")
-                elif "direct" in t_forms:
-                    skill = t_forms["direct"].get("skill")
-                elif t_forms:
-                    skill = list(t_forms.values())[0].get("skill")
-                else:
-                    skill = t.get("skill")
-
             if not skill and trap_tag in LEGACY_TRAP_MAP:
                 skill = LEGACY_TRAP_MAP[trap_tag]
 
@@ -276,6 +264,7 @@ def scan_drills(
             if not is_dup and skill:
                 skill_problem_counts[skill] += 1
                 skill_form_counts[(skill, form)] += 1
+                _record_problem_metadata(prob, skill, form)
 
             # Practice state records (user attempts in studio)
             st = prob.get("state") or {}
@@ -332,6 +321,9 @@ def scan_drills(
         all_mistake_records,
         studio_audit,
         dict(skill_scores),
+        dict(skill_drill_info),
+        dict(tag_skills_map),
+        dict(tag_archetypes_map),
     )
 
 
@@ -414,40 +406,6 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         data_dir = os.environ.get("DRILLS_DATA_DIR", "drills/data")
     taxonomy = load_taxonomy()
     skills_meta = taxonomy.get("skills", {})
-    templates = load_all_templates()
-
-    # Build cross-template trapTag maps to detect shared tags and ambiguity
-    tag_skills_map: dict[str, set[str]] = {}
-    tag_templates_map: dict[str, set[str]] = {}
-
-    for tkey, tpl in templates.items():
-        forms = tpl.get("forms") or {}
-        for fname, fcfg in forms.items():
-            sk = (fcfg.get("skill") if isinstance(fcfg, dict) else None) or tpl.get("skill")
-            tt = tpl.get("trapTag") or (fcfg.get("trapTag") if isinstance(fcfg, dict) else None)
-            if tt:
-                tag_templates_map.setdefault(tt, set()).add(tkey)
-                if sk:
-                    tag_skills_map.setdefault(tt, set()).add(sk)
-
-            build_fn = tpl.get("build")
-            if callable(build_fn):
-                try:
-                    p = build_fn(random.Random(42), form=fname)
-                    ctag = p.get("commonTrapTag")
-                    pskill = p.get("skill") or sk
-                    if ctag:
-                        tag_templates_map.setdefault(ctag, set()).add(tkey)
-                        if pskill:
-                            tag_skills_map.setdefault(ctag, set()).add(pskill)
-                    for opt in p.get("answerSpec", {}).get("options", []):
-                        otag = opt.get("trapTag")
-                        if otag:
-                            tag_templates_map.setdefault(otag, set()).add(tkey)
-                            if pskill:
-                                tag_skills_map.setdefault(otag, set()).add(pskill)
-                except Exception:
-                    pass
 
     # Scan drills in drills/data with deduplication
     (
@@ -456,29 +414,18 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         mistake_records,
         studio_audit,
         skill_scores,
-    ) = scan_drills(data_dir, templates=templates)
+        skill_drill_info,
+        tag_skills_map,
+        tag_archetypes_map,
+    ) = scan_drills(data_dir)
 
-    # Map each skill to its template(s), forms, and level
-    skill_to_template_info: dict[str, list[dict[str, Any]]] = defaultdict(list)
     domain_levels_covered: dict[str, set[int]] = defaultdict(set)
-
-    for tpl_key, tpl in templates.items():
-        forms = tpl.get("forms") or {"direct": {}}
-        for form_name, form_cfg in forms.items():
-            sk = form_cfg.get("skill") or tpl.get("skill")
-            lvl = form_cfg.get("level") or tpl.get("level")
-            if sk:
-                skill_to_template_info[sk].append(
-                    {
-                        "templateKey": tpl_key,
-                        "form": form_name,
-                        "level": lvl,
-                    }
-                )
-                if sk in skills_meta:
-                    domain = skills_meta[sk].get("domain")
-                    if domain and lvl:
-                        domain_levels_covered[domain].add(lvl)
+    for sk, bindings in skill_drill_info.items():
+        if sk in skills_meta:
+            domain = skills_meta[sk].get("domain")
+            for b in bindings:
+                if domain and b.get("level"):
+                    domain_levels_covered[domain].add(int(b["level"]))
 
     lines: list[str] = [
         "# Coverage & Skills Taxonomy Report",
@@ -490,9 +437,9 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         "",
         "## 1. Skill (Domain, Tier) × Level × Form Matrix",
         "",
-        "ตารางเปรียบเทียบ Skill ใน `skills_taxonomy.json` กับ Template ที่รองรับ และจำนวนโจทย์จริงใน `drills/data/` (ตัดจำนวนโจทย์ซ้ำจากไฟล์ `-studio` ออกแล้ว):",
+        "ตารางเปรียบเทียบ Skill ใน `skills_taxonomy.json` กับจำนวนโจทย์จริงใน `drills/data/` (ตัดจำนวนโจทย์ซ้ำจากไฟล์ `-studio` ออกแล้ว):",
         "",
-        "| Domain | Skill ID | Skill Name | Tier | Level | Template Key | Forms Produced | Drill Problems in `drills/data` |",
+        "| Domain | Skill ID | Skill Name | Tier | Level | Archetype Key | Forms Produced | Drill Problems in `drills/data` |",
         "| :--- | :--- | :--- | :--- | :---: | :--- | :--- | :---: |",
     ]
 
@@ -506,34 +453,36 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         ),
     )
 
-    zero_problem_skills: list[tuple[str, str, str]] = []
+    zero_problem_skills: list[tuple[str, str]] = []
 
     for sk_id, meta in skills_sorted:
         domain = meta.get("domain", "-")
         name = meta.get("name", "-")
         tier = meta.get("tier", "-")
-        tpl_bindings = skill_to_template_info.get(sk_id, [])
+        bindings = skill_drill_info.get(sk_id, [])
 
-        if tpl_bindings:
-            tpl_keys = sorted(list(set(b["templateKey"] for b in tpl_bindings)))
-            forms_list = sorted(list(set(b["form"] for b in tpl_bindings)))
-            levels_list = sorted(list(set(b["level"] for b in tpl_bindings if b["level"] is not None)))
-            tpl_str = ", ".join(f"`{k}`" for k in tpl_keys)
-            forms_str = ", ".join(f"`{f}`" for f in forms_list)
+        if bindings:
+            arch_keys = sorted(
+                set(b["archetypeKey"] for b in bindings if b.get("archetypeKey") and b["archetypeKey"] != "-")
+            )
+            forms_list = sorted(set(b["form"] for b in bindings if b.get("form")))
+            levels_list = sorted(set(int(b["level"]) for b in bindings if b.get("level") is not None))
+            arch_str = ", ".join(f"`{k}`" for k in arch_keys) if arch_keys else "*None*"
+            forms_str = ", ".join(f"`{f}`" for f in forms_list) if forms_list else "*None*"
             lvl_str = ", ".join(f"L{lv}" for lv in levels_list) if levels_list else "-"
         else:
-            tpl_str = "*None*"
+            arch_str = "*None*"
             forms_str = "*None*"
             lvl_str = "-"
 
         count = skill_counts.get(sk_id, 0)
         count_str = f"**{count}**" if count > 0 else "0"
 
-        if count == 0 and tpl_bindings:
-            zero_problem_skills.append((sk_id, domain, tpl_str))
+        if count == 0:
+            zero_problem_skills.append((sk_id, domain))
 
         lines.append(
-            f"| `{domain}` | `{sk_id}` | {name} | `{tier}` | {lvl_str} | {tpl_str} | {forms_str} | {count_str} |"
+            f"| `{domain}` | `{sk_id}` | {name} | `{tier}` | {lvl_str} | {arch_str} | {forms_str} | {count_str} |"
         )
 
     # Studio deduplication audit subsection
@@ -566,26 +515,18 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             "",
             "## 2. ช่องว่างของระบบ (Coverage Gaps)",
             "",
-            "### 2.1 Skill ที่มี Template แล้ว แต่ยังไม่มีโจทย์จริงใน `drills/data`",
+            "### 2.1 Skill ใน Taxonomy ที่ยังไม่มีโจทย์จริงใน `drills/data`",
             "",
-            f"มีทั้งหมด **{len(zero_problem_skills)}** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:",
+            f"มีทั้งหมด **{len(zero_problem_skills)}** Skills ใน `skills_taxonomy.json` ที่ยังไม่มีโจทย์ใน `drills/data/`:",
             "",
-            "| Skill ID | Domain | Registered Template | สาเหตุ / สถานะ |",
-            "| :--- | :--- | :--- | :--- |",
+            "| Skill ID | Domain | สาเหตุ / สถานะ |",
+            "| :--- | :--- | :--- |",
         ]
     )
 
-    for sk_id, dom, tpls in zero_problem_skills:
-        reason = ""
-        if dom == "complex_numbers":
-            reason = "Unit `MTH-T02-C01-U01` อยู่ในสตูดิโอ ยังไม่ได้ generate ลงใน `drills/data/` ส่วนกลาง"
-        elif dom == "javascript_core":
-            reason = "Unit `PRG-T01-C01` มี template แล้ว แต่ยังไม่ได้รัน generate ชุดฝึกในโฟลเดอร์นี้"
-        elif dom == "geometry":
-            reason = "Form ทางเลือกหรือโจทย์ประยุกต์ของ template ยังไม่ถูกสุ่มลงในชุดฝึก 2 ชุดแรก"
-        else:
-            reason = "ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้"
-        lines.append(f"| `{sk_id}` | `{dom}` | {tpls} | {reason} |")
+    for sk_id, dom in zero_problem_skills:
+        reason = "ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้"
+        lines.append(f"| `{sk_id}` | `{dom}` | {reason} |")
 
     lines.extend(
         [
@@ -643,13 +584,9 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
 
     # 1. แนะนำถัดไป (Top 3): เชื่อม trapTag ที่พลาดบ่อยกับ skill เจ้าของ trap
     trap_to_skill: dict[str, str] = {}
-    for tkey, t in templates.items():
-        forms = t.get("forms") or {"direct": {}}
-        for fname, fcfg in forms.items():
-            tt = fcfg.get("trapTag") or t.get("trapTag")
-            sk = fcfg.get("skill") or t.get("skill")
-            if tt and sk:
-                trap_to_skill[tt] = sk
+    for tt, sk_set in tag_skills_map.items():
+        if sk_set:
+            trap_to_skill[tt] = sorted(sk_set)[0]
     for tt, sk in LEGACY_TRAP_MAP.items():
         if tt not in trap_to_skill and sk in skills_meta:
             trap_to_skill[tt] = sk
@@ -924,27 +861,27 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
 
     # Section 4.3: Shared Trap Tags Audit
     shared_tags = [
-        (t, len(tpls), sorted(tpls), sorted(tag_skills_map.get(t, [])))
-        for t, tpls in tag_templates_map.items()
-        if len(tpls) > 1
+        (t, len(archs), sorted(archs), sorted(tag_skills_map.get(t, [])))
+        for t, archs in tag_archetypes_map.items()
+        if len(archs) > 1
     ]
     shared_tags.sort(key=lambda x: (-x[1], x[0]))
 
     lines.extend(
         [
             "",
-            "### 4.3 ตรวจสอบชื่อ Trap Tag ที่ใช้ซ้ำข้าม Template (Shared Trap Tags Audit)",
+            "### 4.3 ตรวจสอบชื่อ Trap Tag ที่ใช้ซ้ำข้าม Archetype (Shared Trap Tags Audit)",
             "",
-            "รายงานรายชื่อ `trapTag` ที่มีการประกาศใช้งานในมากกว่า 1 Template เพื่อติดตามความกำกวมในการวิเคราะห์จุดอ่อน:",
+            "รายงานรายชื่อ `trapTag` ที่มีการใช้งานในมากกว่า 1 Archetype เพื่อติดตามความกำกวมในการวิเคราะห์จุดอ่อน:",
             "",
-            "| ลำดับ | Trap Tag ที่ใช้ซ้ำ | จำนวน Template ที่ใช้ | รายชื่อ Templates ที่ใช้ | รายชื่อ Skills ที่เกี่ยวข้อง |",
+            "| ลำดับ | Trap Tag ที่ใช้ซ้ำ | จำนวน Archetype ที่ใช้ | รายชื่อ Archetypes ที่ใช้ | รายชื่อ Skills ที่เกี่ยวข้อง |",
             "| :---: | :--- | :---: | :--- | :--- |",
         ]
     )
-    for s_idx, (stag, scnt, stpls, sskills) in enumerate(shared_tags, start=1):
-        tpls_str = ", ".join(f"`{t}`" for t in stpls)
+    for s_idx, (stag, scnt, sarchs, sskills) in enumerate(shared_tags, start=1):
+        archs_str = ", ".join(f"`{t}`" for t in sarchs)
         skills_str = ", ".join(f"`{s}`" for s in sskills) if sskills else "*None*"
-        lines.append(f"| {s_idx} | `{stag}` | **{scnt}** | {tpls_str} | {skills_str} |")
+        lines.append(f"| {s_idx} | `{stag}` | **{scnt}** | {archs_str} | {skills_str} |")
 
     # SECTION 5: Prerequisites Graph & Table
     edge_list: list[tuple[str, str, str]] = []
@@ -1066,9 +1003,7 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Generate skills coverage report from taxonomy, templates, and drills."
-    )
+    parser = argparse.ArgumentParser(description="Generate skills coverage report from taxonomy and drills.")
     parser.add_argument("--data-dir", default="drills/data", help="Directory of drill JSON files to analyze.")
     parser.add_argument("--output", default="reports/coverage.md", help="Destination markdown file path.")
     args = parser.parse_args()

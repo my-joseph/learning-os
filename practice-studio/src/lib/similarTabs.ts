@@ -12,7 +12,8 @@ export type SimilarTabStatus =
   | "correct"
   | "assisted"
   | "wrong"
-  | "partial";
+  | "partial"
+  | "skipped";
 export type RealTabStatus =
   | "untried"
   | "usedHelp"
@@ -21,30 +22,13 @@ export type RealTabStatus =
   | "wrong"
   | "partial"
   | "skipped";
-export type SimilarSlotNumber = 1 | 2 | 3;
-export type SimilarTabId = "q" | "s1" | "s2" | "s3";
+export type SimilarSlotNumber = number;
+export type SimilarTabId = "q" | `s${number}`;
 
 export interface SimilarTabSummary {
   token: string;
   slot: SimilarSlotNumber;
   status: SimilarTabStatus;
-}
-
-export const MAX_SIMILAR_TABS = 3;
-
-/** Return ordered slot numbers (1..count, default 3) for locked ghost similar tabs before unlock. */
-export function buildLockedSimilarPlaceholders(
-  count?: number
-): SimilarSlotNumber[] {
-  const n =
-    typeof count === "number" && Number.isFinite(count)
-      ? Math.max(0, Math.min(Math.trunc(count), MAX_SIMILAR_TABS))
-      : MAX_SIMILAR_TABS;
-  const slots: SimilarSlotNumber[] = [];
-  for (let i = 1; i <= n; i += 1) {
-    slots.push(i as SimilarSlotNumber);
-  }
-  return slots;
 }
 
 /** Return true when `ts` falls at or after `cycleStartedAt` (absent `cycleStartedAt` counts all history). */
@@ -141,6 +125,7 @@ export function deriveVariantStatus(
   if (scored.outcome === "correct") return "correct";
   if (scored.outcome === "assisted") return "assisted";
   if (scored.outcome === "wrong") return "wrong";
+  if (scored.outcome === "skipped") return "skipped";
   return scored.usedHelp ? "usedHelp" : "untried";
 }
 
@@ -154,67 +139,60 @@ export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus 
   return scored.usedHelp ? "usedHelp" : "untried";
 }
 
-/** Derive the ordered Similar 1..3 tab summaries from `state.similarSlots` and `state.variants`. */
+/**
+ * Opened tabs in the CURRENT cycle retain their saved order.
+ * When `cycleStartedAt` is set (after Reset or Daily Review retry), only variants opened
+ * or attempted in the current cycle appear as tabs; prior-cycle sessions remain in
+ * `state.variants` history without reappearing until "+" is pressed again.
+ * Older progress without `cycleStartedAt` or `similarSlots` remains backward-compatible.
+ */
+export function openedSimilarTokens(state?: ProblemState | null): string[] {
+  if (!state?.variants) return [];
+  const slots = Array.isArray(state.similarSlots)
+    ? state.similarSlots
+    : Object.keys(state.variants);
+  const cycleStartedAt = state.cycleStartedAt;
+  return Array.from(new Set(slots)).filter((token) => {
+    const record = state.variants?.[token];
+    if (record?.role !== "try") return false;
+    if (cycleStartedAt) {
+      const servedInCycle = Boolean(record.servedAt) && isInCycle(record.servedAt, cycleStartedAt);
+      const attemptedInCycle = cycleAttempts(record.attempts, cycleStartedAt).length > 0;
+      return servedInCycle || attemptedInCycle;
+    }
+    return Boolean(record.servedAt || record.attempts?.length);
+  });
+}
+
 export function deriveTabStatuses(
   state?: ProblemState | null
 ): SimilarTabSummary[] {
-  if (!state || !Array.isArray(state.similarSlots) || state.similarSlots.length === 0) {
-    return [];
-  }
-  const slots = state.similarSlots.slice(0, MAX_SIMILAR_TABS);
-  return slots.map((token, idx) => ({
+  return openedSimilarTokens(state).map((token, idx) => ({
     token,
-    slot: (idx + 1) as SimilarSlotNumber,
-    status: deriveVariantStatus(state.variants?.[token], state.cycleStartedAt),
+    slot: idx + 1,
+    status: deriveVariantStatus(state?.variants?.[token], state?.cycleStartedAt),
   }));
 }
 
-/**
- * Count how many similar questions in `similarSlots` have at least 1 substantive attempt
- * with `ts >= cycleStartedAt`. Viewing a worked example does not count.
- * Falls back to `role === "try"` records for un-migrated v1 state.
- */
+/** Count opened Similar tabs attempted in the current cycle. */
 export function countPractisedSimilar(state?: ProblemState | null): number {
-  if (!state?.variants || typeof state.variants !== "object") return 0;
-  const cycleStartedAt = state.cycleStartedAt;
-
-  if (Array.isArray(state.similarSlots) && state.similarSlots.length > 0) {
-    const seen = new Set<string>();
-    let count = 0;
-    for (const token of state.similarSlots.slice(0, MAX_SIMILAR_TABS)) {
-      if (!token || seen.has(token)) continue;
-      seen.add(token);
-      const rec = state.variants[token];
-      if (!rec || rec.role === "example") continue;
-      const hasSub = cycleAttempts(rec.attempts, cycleStartedAt).some((a) =>
-        isSubstantiveVerdict(a.verdict)
-      );
-      if (hasSub) count += 1;
-    }
-    return count;
-  }
-
-  // Fallback for un-migrated v1 progress before first mode=list
-  let count = 0;
-  for (const rec of Object.values(state.variants)) {
-    if (!rec || rec.role !== "try") continue;
-    const hasSub = cycleAttempts(rec.attempts, cycleStartedAt).some((a) =>
+  return openedSimilarTokens(state).filter((token) =>
+    cycleAttempts(state?.variants?.[token]?.attempts, state?.cycleStartedAt).some((a) =>
       isSubstantiveVerdict(a.verdict)
-    );
-    if (hasSub) count += 1;
-  }
-  return Math.min(count, MAX_SIMILAR_TABS);
+    )
+  ).length;
 }
 
-/** Convert slot number 1..3 to tab id "s1".."s3". */
 export function slotToTabId(slot: SimilarSlotNumber): SimilarTabId {
-  return `s${slot}` as SimilarTabId;
+  return `s${slot}`;
 }
 
-/** Parse a URL `tab` query parameter ("s1" | "s2" | "s3"); invalid or missing returns null. */
+/** Parse a positive, safe slot number from the URL. */
 export function parseTabParam(raw?: string | null): SimilarTabId | null {
-  if (raw === "s1" || raw === "s2" || raw === "s3") return raw;
-  return null;
+  if (!raw || !/^s[1-9]\d*$/.test(raw) || !Number.isSafeInteger(Number(raw.slice(1)))) {
+    return null;
+  }
+  return raw as SimilarTabId;
 }
 
 /** Pick the first untried similar tab, else the first used-help/wrong/partial similar tab, else null (all correct or none). */
@@ -249,7 +227,7 @@ export function pickNextUntriedTab(
 }
 
 /**
- * Resolve the initial tab from URL parameters (`?tab=s1..s3` or `?similar=1` deep link).
+ * Resolve the initial tab from URL parameters (`?tab=s1..sN` or `?similar=1` deep link).
  * Locked strips always fall back to `"q"`.
  */
 export function resolveInitialTab(params: {
@@ -334,6 +312,7 @@ export interface ResultCardActionPlan {
 export function resultCardActions(params: {
   tab: SimilarTabId;
   hasVariants: boolean;
+  canOpenNext?: boolean;
   isReviewSession?: boolean;
   rState: ProblemState;
   statuses: readonly SimilarTabSummary[];
@@ -345,6 +324,7 @@ export function resultCardActions(params: {
   const {
     tab,
     hasVariants,
+    canOpenNext = false,
     isReviewSession = false,
     rState,
     statuses,
@@ -382,8 +362,7 @@ export function resultCardActions(params: {
     if (isWrongOrPartial) {
       const target =
         statuses.length > 0 ? pickNextUntriedOrWrongTab(statuses) : null;
-      const targetSlot: SimilarSlotNumber | null =
-        statuses.length > 0 ? target?.slot ?? null : hasVariants ? 1 : null;
+      const targetSlot = target?.slot ?? null;
       const origWrongs = countCycleOriginalWrongAttempts(rState);
       const showSeeExample =
         hasVariants && !exampleViewed && origWrongs >= 2;
@@ -397,7 +376,7 @@ export function resultCardActions(params: {
           hasVariants && !isReviewSession
             ? "A correct answer now scores 0.5. Similar questions are practice and don't change your score."
             : undefined,
-        showPractiseSimilarFirst: hasVariants && targetSlot !== null,
+        showPractiseSimilarFirst: hasVariants && (targetSlot !== null || canOpenNext),
         targetSimilarSlot: targetSlot,
         showSeeExample,
       };
@@ -408,14 +387,13 @@ export function resultCardActions(params: {
         statuses.length > 0
           ? pickNextUntriedOrWrongTab(statuses) ?? statuses[0] ?? null
           : null;
-      const targetSlot: SimilarSlotNumber | null =
-        statuses.length > 0 ? target?.slot ?? null : 1;
+      const targetSlot = target?.slot ?? null;
       return {
         ...empty,
         footnote: isReviewSession
           ? undefined
           : "Similar questions don't change your score.",
-        showPractiseSimilarConfidence: targetSlot !== null,
+        showPractiseSimilarConfidence: targetSlot !== null || canOpenNext,
         targetSimilarSlot: targetSlot,
       };
     }
@@ -423,7 +401,7 @@ export function resultCardActions(params: {
     return empty;
   }
 
-  // Similar tab (s1..s3)
+  // Similar tab (s1..sN)
   if (!activeSimilarVerdict || !isSubstantiveVerdict(activeSimilarVerdict)) {
     return empty;
   }
@@ -432,8 +410,18 @@ export function resultCardActions(params: {
     const nextUntried = pickNextUntriedTab(statuses, activeSimilarToken);
     return {
       ...empty,
-      showNextSimilar: nextUntried !== null,
+      showNextSimilar: nextUntried !== null || canOpenNext,
       nextSimilarSlot: nextUntried?.slot ?? null,
+    };
+  }
+
+  if (activeSimilarVerdict === "skipped") {
+    const nextUntried = pickNextUntriedTab(statuses, activeSimilarToken);
+    return {
+      ...empty,
+      showNextSimilar: nextUntried !== null || canOpenNext,
+      nextSimilarSlot: nextUntried?.slot ?? null,
+      showSimilarBackLink: true,
     };
   }
 

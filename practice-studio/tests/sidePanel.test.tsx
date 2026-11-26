@@ -8,6 +8,11 @@ import { NextRequest } from "next/server";
 import { formatLocalDate, getDueTodayUnits } from "../src/lib/dueToday";
 import { getProgressDir } from "../src/lib/paths";
 import { GET as dueTodayGET } from "../src/app/api/due-today/route";
+import { GET as recentMistakesGET } from "../src/app/api/recent-mistakes/route";
+import { GET as reviewItemsGET } from "../src/app/api/review-items/route";
+import { canShowMistakeHistory, mistakeName, mistakePracticeHref } from "../src/lib/mistakePractice";
+import { getRecentMistakes } from "../src/lib/reviewItems";
+import type { ProblemState } from "../src/types/drill";
 import { GET as weakSpotsGET } from "../src/app/api/weak-spots/route";
 import { StudioSidePanel } from "../src/components/shell/StudioSidePanel";
 
@@ -203,6 +208,27 @@ async function runTests() {
       reason: "",
     });
 
+    const recentRes = recentMistakesGET(
+      new NextRequest("http://127.0.0.1:3000/api/recent-mistakes?subject=MTH&unit=MTH-T09-C01-U01")
+    );
+    assert.equal(recentRes.status, 200);
+    const { mistakes: mathMistakes } = await recentRes.json();
+    assert.equal(mathMistakes.length, 1);
+    assert.equal(mathMistakes[0].name, "Sign flip");
+    assert.equal(mathMistakes[0].recentMisses, 2);
+    assert.equal(mathMistakes[0].recentTries, 2);
+    assert.doesNotMatch(JSON.stringify(mathMistakes), /c09-sign-flip|Q01|DRL-/);
+    const reviewHref = mistakePracticeHref(mathMistakes[0].key);
+    const scope = new URL(reviewHref, "http://127.0.0.1").searchParams.get("scope");
+    const focusedRes = await reviewItemsGET(new NextRequest(
+      `http://127.0.0.1:3000/api/review-items?today=2026-11-01&scope=${scope}`
+    ));
+    assert.equal(focusedRes.status, 200);
+    const focused = await focusedRes.json();
+    assert.deepEqual(focused.items.map((item: { qid: string }) => item.qid), ["Q01", "Q02"]);
+    assert.equal(focused.bySubject.MTH, 0, "early practice must not affect the due count");
+    assert.ok(focused.items.every((item: { commonTrapTag: unknown }) => item.commonTrapTag === null));
+
     // 4. Component rendering: one-queue item counts, workspace split, unit mastery context,
     //    no unit to-do list, loading skeleton while drill loads, and mobile overflow guards
     assert.ok(due.unitMastery?.["MTH-T09-C01-U01"]);
@@ -221,28 +247,8 @@ async function runTests() {
         estimatedMinutes={11}
         currentUnitMastery={due.unitMastery?.["MTH-T09-C01-U01"]}
         dueUnits={due.units}
-        weakSpotUnits={[
-          {
-            unitCode: "MTH-T09-C01-U01",
-            unitTitle: "Complex Conjugates",
-            subject: "MTH",
-            itemCount: 4,
-            drillCount: 1,
-            open: [
-              {
-                id: "c09-sign-flip",
-                matches: 2,
-                drills: 1,
-                last: "2026-11-02",
-                subject: "MTH",
-              },
-            ],
-            closed: [],
-            levels: {},
-            assistedCount: 0,
-            skipped: [],
-          },
-        ]}
+        showMistakes
+        mistakes={mathMistakes}
       />
     );
     assert.match(mathHtml, /Due today/);
@@ -257,7 +263,7 @@ async function runTests() {
     // Unit mastery context for current unit stays visible with dots and cap reason, NOT as a to-do link:
     assert.match(mathHtml, /Complex Conjugates/);
     assert.match(mathHtml, /Mastery 2 of 4/);
-    assert.match(mathHtml, /Capped at <span[^>]*>2<\/span> · needs one L4 challenge without hints/);
+    assert.match(mathHtml, /Capped at <span[^>]*>2<\/span> · <span[^>]*>needs one L4 challenge without hints/);
     assert.doesNotMatch(
       mathHtml,
       /href="\/math\/DRL-MTH-T09-C01-U01-02"/,
@@ -271,7 +277,6 @@ async function runTests() {
         reviewSessionSize={8}
         otherWorkspaceDueCount={7}
         estimatedMinutes={44}
-        weakSpotUnits={[]}
       />
     );
     assert.match(cappedSessionHtml, /36 total across workspaces/);
@@ -283,8 +288,12 @@ async function runTests() {
       "Panel must not list other-workspace due units as a to-do list"
     );
     assert.doesNotMatch(mathHtml, /Async Error Boundaries/);
-    assert.match(mathHtml, /Repeated traps/);
-    assert.match(mathHtml, /c09-sign-flip/);
+    assert.match(mathHtml, /What I get wrong/);
+    assert.match(mathHtml, /Missed 2 of last 2/);
+    assert.match(mathHtml, /aria-expanded="true"/);
+    assert.match(mathHtml, /Sign flip/);
+    assert.doesNotMatch(mathHtml, /c09-sign-flip/);
+    assert.ok(mathHtml.includes(`href="${reviewHref}"`));
 
     // 4b. Fallback 1.5 min per item when estimatedMinutes is omitted (5 * 1.5 = 7.5 -> ~8 min)
     const fallbackEstimateHtml = renderToStaticMarkup(
@@ -294,7 +303,6 @@ async function runTests() {
         dueReviewCount={5}
         reviewSessionSize={5}
         dueUnits={due.units}
-        weakSpotUnits={[]}
       />
     );
     assert.match(fallbackEstimateHtml, /5<\/span> due · next 5 · ~8 min/);
@@ -311,29 +319,8 @@ async function runTests() {
         otherWorkspaceDueCount={6}
         estimatedMinutes={9}
         currentUnitMastery={due.unitMastery?.["PRG-T09-C01-U02"]}
-        weakSpotUnits={[
-          {
-            unitCode: "PRG-T09-C01-U02",
-            unitTitle: "Async Error Boundaries",
-            subject: "PRG",
-            itemCount: 3,
-            drillCount: 1,
-            open: [
-              {
-                id: "U-no-input-mutation",
-                detail: "Never mutate `req.body` directly.",
-                matches: 2,
-                drills: 2,
-                last: "2026-11-12",
-                subject: "PRG",
-              },
-            ],
-            closed: [],
-            levels: {},
-            assistedCount: 0,
-            skipped: [],
-          },
-        ]}
+        showMistakes
+        mistakes={[{ ...mathMistakes[0], name: "Input changed in place", fixed: true }]}
       />
     );
     assert.match(prgHtml, /4<\/span> due · next 4 · ~9 min/);
@@ -342,9 +329,9 @@ async function runTests() {
     assert.match(prgHtml, /href="\/review\?scope=subject:PRG"/);
     assert.match(prgHtml, /href="\/review\?scope=subject:MTH"/);
     assert.match(prgHtml, /Mastery 1 of 4/);
-    assert.match(prgHtml, /Checks and lint rules/);
-    assert.match(prgHtml, /U-no-input-mutation/);
-    assert.match(prgHtml, /<code[^>]*>req\.body<\/code>/);
+    assert.match(prgHtml, /Input changed in place/);
+    assert.match(prgHtml, />Fixed</);
+    assert.doesNotMatch(prgHtml, /U-no-input-mutation/);
 
     // 4d. Empty workspace due queue still shows other-workspace hint and nextDueDate
     const prgEmptyHtml = renderToStaticMarkup(
@@ -355,95 +342,52 @@ async function runTests() {
         otherWorkspaceDueCount={2}
         nextDueDate="2026-11-22"
         dueUnits={due.units}
-        weakSpotUnits={[]}
+        showMistakes
       />
     );
     assert.match(prgEmptyHtml, /Nothing due today/);
     assert.match(prgEmptyHtml, /Next due: 2026-11-22/);
     assert.match(prgEmptyHtml, /2 due in the other workspace/);
     assert.match(prgEmptyHtml, /2 total across workspaces/);
-    assert.match(prgEmptyHtml, /No open check or lint issues in this unit\./);
-    // Header count must NOT show dueUnits.length when dueReviewCount is 0
-    assert.doesNotMatch(prgEmptyHtml, /Due today<\/h2><span[^>]*>2<\/span>/);
+    assert.match(prgEmptyHtml, /Nothing you keep getting wrong in this unit yet\./);
 
-    // 4e. Loading skeleton while drill is still loading: NEVER show "Open a drill to see unit weak spots."
     const loadingDrillHtml = renderToStaticMarkup(
-      <StudioSidePanel
-        workspace="code"
-        currentUnitCode={undefined}
-        drillLoading={true}
-        dueLoading={true}
-        dueReviewCount={0}
-        weakSpotUnits={[]}
-      />
+      <StudioSidePanel workspace="code" drillLoading dueLoading showMistakes mistakes={mathMistakes} />
     );
-    assert.doesNotMatch(
-      loadingDrillHtml,
-      /Open a drill to see unit weak spots/,
-      "Must not show 'Open a drill to see unit weak spots.' while a drill is still loading"
-    );
-    assert.match(loadingDrillHtml, /animate-pulse/);
-    assert.match(loadingDrillHtml, /aria-label="Loading unit weak spots"/);
     assert.match(loadingDrillHtml, /aria-label="Loading due reviews"/);
+    assert.match(loadingDrillHtml, /aria-expanded="false"/);
+    assert.doesNotMatch(loadingDrillHtml, /Nothing you keep getting wrong|Sign flip|Practise/);
 
-    // When NOT loading and no drill is open, the empty prompt IS shown
-    const noDrillOpenHtml = renderToStaticMarkup(
-      <StudioSidePanel
-        workspace="code"
-        currentUnitCode={undefined}
-        drillLoading={false}
-        weakLoading={false}
-        dueReviewCount={0}
-        weakSpotUnits={[]}
-      />
+    const loadingMistakesHtml = renderToStaticMarkup(
+      <StudioSidePanel workspace="math" showMistakes mistakesLoading />
     );
-    assert.match(noDrillOpenHtml, /Open a drill to see unit weak spots\./);
+    assert.match(loadingMistakesHtml, /aria-label="Loading recent mistakes"/);
 
-    const embeddedDrawerHtml = renderToStaticMarkup(
-      <StudioSidePanel
-        workspace="math"
-        currentUnitCode="MTH-T09-C01-U01"
-        dueReviewCount={3}
-        reviewSessionSize={3}
-        weakSpotUnits={[
-          {
-            unitCode: "MTH-T09-C01-U01",
-            unitTitle: "Complex Conjugates",
-            subject: "MTH",
-            itemCount: 4,
-            drillCount: 1,
-            open: [
-              {
-                id: "t02-c02-u01-reciprocal-vs-reciprocal-squared-sign-trap",
-                detail: "Watch `veryLongIdentifierWithoutBreaksOrSpaces` on narrow screens.",
-                matches: 3,
-                drills: 2,
-                last: "2026-11-18",
-                subject: "MTH",
-              },
-            ],
-            closed: [],
-            levels: {},
-            assistedCount: 0,
-            skipped: [],
-          },
-        ]}
-        embedded
-      />
+    const errorHtml = renderToStaticMarkup(
+      <StudioSidePanel workspace="math" showMistakes mistakesError />
     );
-    assert.doesNotMatch(embeddedDrawerHtml, /rounded-2xl border/, "embedded side panel must not render a nested bordered card");
-    assert.doesNotMatch(embeddedDrawerHtml, /-mx-/, "panel must not use negative horizontal margins that overflow mobile drawer");
-    assert.match(embeddedDrawerHtml, /overflow-x-hidden/);
-    assert.match(
-      embeddedDrawerHtml,
-      /\[overflow-wrap:anywhere\][^>]*>t02-c02-u01-reciprocal-vs-reciprocal-squared-sign-trap/,
-      "long trap IDs must wrap anywhere so the matches badge is never clipped on a 390px mobile drawer"
+    assert.match(errorHtml, /Could not load recent mistakes/);
+
+    const unansweredHtml = renderToStaticMarkup(
+      <StudioSidePanel workspace="math" mistakes={mathMistakes} embedded />
     );
-    assert.match(
-      embeddedDrawerHtml,
-      /flex flex-wrap items-baseline justify-between/,
-      "Due today header row must wrap cleanly on narrow mobile drawers"
-    );
+    assert.match(unansweredHtml, /What I get wrong/);
+    assert.match(unansweredHtml, /aria-expanded="false"/);
+    assert.doesNotMatch(unansweredHtml, /Missed 2|Sign flip|Practise|mistake%3A/);
+    assert.match(unansweredHtml, /overflow-x-hidden/);
+    assert.doesNotMatch(unansweredHtml, /rounded-2xl border|-mx-/);
+
+    const baseState: ProblemState = { userInput: "draft", score: null, mistakes: [], divergedStep: null };
+    const previousAttempt = { input: "", verdict: "incorrect", ts: "2026-11-01" };
+    const resetState = { ...baseState, cycleStartedAt: "2026-11-02", attempts: [previousAttempt] };
+    assert.equal(canShowMistakeHistory(baseState), false);
+    assert.equal(canShowMistakeHistory(resetState), false);
+    assert.equal(canShowMistakeHistory({ ...resetState, attempts: [{ ...previousAttempt, verdict: "parse_error", ts: "2026-11-02" }] }), false);
+    assert.equal(canShowMistakeHistory({ ...baseState, attempts: [{ ...previousAttempt, verdict: "skipped" }] }), false);
+    assert.equal(canShowMistakeHistory({ ...baseState, attempts: [previousAttempt] }), true);
+    assert.equal(canShowMistakeHistory(baseState, "similar"), false);
+    assert.equal(canShowMistakeHistory({ ...baseState, attempts: [{ ...previousAttempt, kind: "variant" }] }, "similar"), true);
+    assert.equal(canShowMistakeHistory({ ...baseState, testRuns: [{ ts: "2026-11-02", allPassed: false }] }, "code"), true);
 
     const shellSource = fs.readFileSync("src/components/shell/StudioShell.tsx", "utf8");
     const sidePanelDataSource = fs.readFileSync("src/hooks/useSidePanelData.ts", "utf8");
@@ -455,11 +399,55 @@ async function runTests() {
     assert.match(sidePanelDataSource, /api\/review-items\?limit=8/, "session size must come from the API-limited item batch");
     assert.match(
       sidePanelDataSource,
-      /weakLoadedScope === scope/,
-      "weak spots hook must keep loading state until the current unit scope resolves"
+      /if \(!mistakesKey\) return/,
+      "mistake history is fetched only when the active problem is safe to show it"
     );
     assert.match(shellSource, /overflow-x-hidden/, "mobile drawer panel must prevent horizontal overflow");
     assert.doesNotMatch(shellSource, /calc\(100vw-2\.5rem\)/, "invalid space-less calc() width must not remain on mobile drawer");
+
+    const secondUnit = "MTH-T09-C01-U02";
+    const otherMathId = `DRL-${secondUnit}-01`;
+    fs.mkdirSync(path.join(dataDir, secondUnit));
+    fs.writeFileSync(path.join(dataDir, secondUnit, `${otherMathId}.json`), JSON.stringify({
+      drillId: otherMathId, unitCode: secondUnit,
+      problems: [{ id: "Q01", commonTrapTag: "lost-factor" }],
+    }));
+    const attempt = (day: string, matchedTrap?: string) =>
+      ({ verdict: matchedTrap ? "incorrect" : "correct", ts: `2026-11-${day}`, matchedTrap });
+    fs.writeFileSync(path.join(progressDir, `${otherMathId}.json`), JSON.stringify({
+      drillId: otherMathId,
+      problems: { Q01: {
+        attempts: [
+          attempt("05", "lost-factor"), attempt("06", "lost-factor"),
+          attempt("07"), attempt("08"), attempt("09"),
+        ],
+      } },
+    }));
+    const review = (day: string, missed: boolean) => ({
+      at: `2026-11-${day}`,
+      verdict: missed ? "revise" : "pass",
+      findings: missed ? [{ check: "QC-RETURNS" }, { check: "QC-disputed", disputed: true }] : [],
+      lint: missed ? [{ rule: "@typescript-eslint/no-explicit-any" }] : [],
+      tests: { passed: 1, total: 1, failed: [] },
+    });
+    fs.writeFileSync(path.join(progressDir, "DRL-PRG-T09-C01-01.json"), JSON.stringify({
+      drillId: "DRL-PRG-T09-C01-01",
+      problems: { Q01: { reviews: [review("06", true), review("07", false), review("08", true)] } },
+    }));
+    assert.deepEqual(getRecentMistakes("MTH", secondUnit, { today: "2026-11-09" }).map((row) => [row.name, row.fixed, row.recentMisses, row.recentTries]), [
+      ["Lost factor", true, 2, 5], ["Sign flip", false, 2, 2],
+    ]);
+    assert.deepEqual(getRecentMistakes("MTH", undefined, { today: "2026-11-09" }).map((row) => row.name), ["Sign flip", "Lost factor"]);
+    assert.deepEqual(getRecentMistakes("MTH", secondUnit, { today: "2026-11-10" }).map((row) => row.name), ["Sign flip"]);
+    const codeMistakes = getRecentMistakes("PRG", undefined, { today: "2026-11-09" });
+    assert.deepEqual(codeMistakes.map((row) => row.name).sort(), ["Return value missing or incorrect", "Used any type"]);
+    for (const row of codeMistakes) {
+      const res = await reviewItemsGET(new NextRequest(`http://127.0.0.1:3000${mistakePracticeHref(row.key)}`));
+      const payload = await res.json();
+      assert.deepEqual(payload.items.map((item: { drillId: string }) => item.drillId), ["DRL-PRG-T09-C01-01"]);
+    }
+    assert.equal(mistakeName("QC-PRG-T09-C02-U03-check-result", "PRG", {}), "Check result");
+    assert.equal(mistakeName("@new-plugin/no-draft-results", "PRG", {}), "No draft results");
 
     // 5. Bug #7: unitsWithL4Challenge parity with Python weak_spots._has_l4_challenge
     //    (cycle scoping for PRG & Math, review help timestamps, and variant attempt exclusion)

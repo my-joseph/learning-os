@@ -24,7 +24,7 @@ import {
   writeReviewItemsStore,
 } from "@/lib/reviewItems";
 import { isSubstantiveVerdict, isTimestampInCycle } from "@/lib/reviewGuard";
-import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
+import { cycleAttempts, openedSimilarTokens, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
 
 const VALID_PARTS = new Set<RevealPart>(["steps", "display", "solution"]);
@@ -71,8 +71,7 @@ export async function GET(req: NextRequest) {
     }
     if (
       !similarUnlock(resolved.state) ||
-      !Array.isArray(resolved.state.similarSlots) ||
-      !resolved.state.similarSlots.includes(variantToken)
+      !openedSimilarTokens(resolved.state).includes(variantToken)
     ) {
       return NextResponse.json(
         { error: "Requested variant is locked or invalid for this problem" },

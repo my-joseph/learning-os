@@ -18,3 +18,4 @@ Each surface has a different job. Use these principles to carry the learner's ta
 - Use the surface’s scrim token to keep the modal legible. The Search preset uses a translucent scrim without blur. See the [approved search palette](references/studio-search-palette-approved.png).
 - Keep motion subtle and respect reduced-motion preferences. See: [sidebar chevron](references/prg-sidebar-chevron.png), [sidebar sections](references/prg-sidebar-sections.png).
 - Playground: one card language for all visual experiments.
+- Playground figures play a calm demo loop when idle and return to defaults on engagement.

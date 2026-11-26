@@ -14,16 +14,23 @@ import json
 import os
 import re
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from code_engine.runners import (  # noqa: E402
+    parse_completed_junit_run as _parse_completed_junit_run,  # noqa: F401 - re-exported for callers/tests
+)
+from code_engine.runners import (  # noqa: E402
+    parse_junit_xml as _parse_junit_xml,  # noqa: F401 - re-exported for callers/tests
+)
+from code_engine.runners import (  # noqa: E402
+    run_node_junit_cmd,
+    run_vitest_junit,
+)
 from code_engine.sandbox import (  # noqa: E402
-    DEFAULT_REACT_TIMEOUT_SEC,
-    DEFAULT_TIMEOUT_SEC,
     JSON_SUFFIXES,
     assert_safe_contained_path,
     create_sandbox_dir,
@@ -85,69 +92,6 @@ def resolve_workspace(drill_id: str, cwd: Path | None = None) -> tuple[Path, Pat
     return repo_root, workspace
 
 
-def _parse_junit_xml(raw: str, force_hidden: bool = False, *, require_complete: bool = False) -> list:
-    xml_start = raw.find("<?xml")
-    if xml_start == -1:
-        xml_start = raw.find("<testsuites")
-    if xml_start == -1:
-        return []
-
-    xml_text = raw[xml_start:].strip()
-    end_tag = "</testsuites>"
-    end_idx = xml_text.rfind(end_tag)
-    if end_idx != -1:
-        xml_text = xml_text[: end_idx + len(end_tag)]
-
-    try:
-        root = ET.fromstring(xml_text)
-    except Exception:
-        return []
-
-    if require_complete:
-        if root.tag not in {"testsuites", "testsuite"} or root.find(".//skipped") is not None:
-            return []
-        for suite in (root, *root.iterfind(".//testsuite")):
-            declared = suite.get("tests")
-            # Node counts immediate child suites as tests; Vitest reports the total number of cases.
-            if declared is not None and declared not in {
-                str(len(suite.findall("testcase")) + len(suite.findall("testsuite"))),
-                str(len(suite.findall(".//testcase"))),
-            }:
-                return []
-
-    cases = []
-    for tc in root.findall(".//testcase"):
-        name = tc.attrib.get("name", "")
-        f_elem = tc.find("failure")
-        if f_elem is None:
-            f_elem = tc.find("error")
-        is_fail = f_elem is not None
-        fail_msg = ""
-        if is_fail:
-            fail_msg = f_elem.attrib.get("message", f_elem.text or "Assertion failed")
-
-        is_hidden = force_hidden or "HIDDEN" in name.upper()
-        cases.append(
-            {
-                "name": name,
-                "file": tc.attrib.get("file", ""),
-                "classname": tc.attrib.get("classname", ""),
-                "passed": not is_fail,
-                "failure_msg": fail_msg,
-                "is_hidden": is_hidden,
-            }
-        )
-    return cases
-
-
-def _parse_completed_junit_run(raw: str, returncode: int, *, force_hidden: bool) -> list[dict]:
-    """Reject incomplete reports and runner failures that are absent from the test cases."""
-    cases = _parse_junit_xml(raw, force_hidden=force_hidden, require_complete=True)
-    if returncode != 0 and all(case["passed"] for case in cases):
-        return []
-    return cases
-
-
 def _write_hidden_test_file(
     tmp_dir: Path, ws_dir: Path, drill_id: str, prob: dict, is_ts: bool, react_dom: bool = False
 ) -> Path:
@@ -197,50 +141,17 @@ def _run_node_junit_cmd(
     file_hint: str = "",
     qid_hint: str = "Q01",
 ) -> list[dict]:
-    eff_timeout = timeout_sec if timeout_sec is not None else DEFAULT_TIMEOUT_SEC
     node_args = cmd[1:] if cmd and Path(cmd[0]).name == "node" else list(cmd)
-    proc = run_node_isolated(
+    return run_node_junit_cmd(
         node_args,
         cwd=cwd,
         sandbox_root=sandbox_root,
-        timeout_sec=eff_timeout,
+        force_hidden=force_hidden,
+        timeout_sec=timeout_sec,
+        file_hint=file_hint,
+        qid_hint=qid_hint,
+        run_node_fn=run_node_isolated,
     )
-    if proc.timed_out:
-        return [
-            {
-                "name": f"[{qid_hint}] Timeout",
-                "file": file_hint,
-                "classname": "",
-                "passed": False,
-                "failure_msg": f"Execution exceeded {eff_timeout}s limit",
-                "is_hidden": force_hidden,
-            }
-        ]
-    if proc.output_truncated:
-        return [
-            {
-                "name": f"[{qid_hint}] Output limit exceeded",
-                "file": file_hint,
-                "classname": "",
-                "passed": False,
-                "failure_msg": "Execution exceeded output size limit",
-                "is_hidden": force_hidden,
-            }
-        ]
-    parsed = _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=force_hidden)
-    if not parsed and proc.returncode != 0:
-        err_msg = (proc.stderr or proc.stdout or f"Exited with code {proc.returncode}").strip()
-        return [
-            {
-                "name": f"[{qid_hint}] Execution failure",
-                "file": file_hint,
-                "classname": "",
-                "passed": False,
-                "failure_msg": err_msg,
-                "is_hidden": force_hidden,
-            }
-        ]
-    return parsed
 
 
 def run_tests_junit(
@@ -374,107 +285,17 @@ def _run_vitest_junit(
     sandbox_root: Path | None = None,
 ) -> list[dict]:
     """Run React component tests with shared Vitest inside the sandbox and return JUnit cases."""
-    tools_dir = (_REPO_ROOT / "tools" / "lint").resolve()
-    shared_modules = (tools_dir / "node_modules").resolve()
-    vitest = shared_modules / ".bin" / "vitest"
-    if not vitest.is_file():
-        return [
-            {
-                "name": "React runner unavailable",
-                "file": "",
-                "classname": "",
-                "passed": False,
-                "failure_msg": f"Vitest is missing at {vitest}; run npm ci in tools/lint.",
-                "is_hidden": force_hidden,
-            }
-        ]
-
-    eff_timeout = timeout_sec if timeout_sec is not None else DEFAULT_REACT_TIMEOUT_SEC
-    cwd_real = Path(os.path.realpath(cwd))
-    test_files_real = [Path(os.path.realpath(f)) for f in test_files]
-    test_root = Path(os.path.commonpath([str(f.parent) for f in test_files_real])) if test_files_real else cwd_real
-
-    own_sbx = create_sandbox_dir(prefix="prg_vitest_") if sandbox_root is None else None
-    try:
-        sbx_root = Path(os.path.realpath(own_sbx.name)) if own_sbx is not None else Path(os.path.realpath(sandbox_root))
-        sbx_nm = sbx_root / "node_modules"
-        if shared_modules.is_dir() and not sbx_nm.exists() and not sbx_nm.is_symlink():
-            sbx_nm.symlink_to(shared_modules, target_is_directory=True)
-        allowed_dirs = list(
-            dict.fromkeys(
-                str(d)
-                for d in (
-                    sbx_root,
-                    cwd_real,
-                    test_root,
-                    shared_modules,
-                    tools_dir,
-                )
-            )
-        )
-        config_path = sbx_root / f"vitest.config.{os.getpid()}.{id(test_files)}.ts"
-        report_path = sbx_root / f"vitest-junit-{os.getpid()}-{id(test_files)}.xml"
-        allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
-        config_path.write_text(
-            "import { defineConfig } from 'vitest/config';\n"
-            f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
-            encoding="utf-8",
-        )
-        # Forward only explicit non-secret overrides (e.g. LAB_SRC_DIR).
-        env_extra = {k: v for k, v in (env or {}).items() if k in ("LAB_SRC_DIR",)}
-        proc = run_vitest_isolated(
-            test_files_real,
-            cwd=cwd_real,
-            sandbox_root=sbx_root,
-            config_path=config_path,
-            report_path=report_path,
-            reporter="junit",
-            timeout_sec=eff_timeout,
-            env_extra=env_extra,
-            tools_lint_dir=tools_dir,
-        )
-        if proc.timed_out:
-            return [
-                {
-                    "name": "React test timeout",
-                    "file": "",
-                    "classname": "",
-                    "passed": False,
-                    "failure_msg": f"Execution exceeded {eff_timeout}s limit",
-                    "is_hidden": force_hidden,
-                }
-            ]
-        if proc.output_truncated:
-            return [
-                {
-                    "name": "React test output limit exceeded",
-                    "file": "",
-                    "classname": "",
-                    "passed": False,
-                    "failure_msg": "Execution exceeded output size limit",
-                    "is_hidden": force_hidden,
-                }
-            ]
-        raw = report_path.read_text(encoding="utf-8") if report_path.is_file() else ""
-        if require_complete:
-            return _parse_completed_junit_run(raw, proc.returncode, force_hidden=force_hidden)
-        cases = _parse_junit_xml(raw, force_hidden=force_hidden)
-        if not cases:
-            message = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
-            return [
-                {
-                    "name": "React test execution failure",
-                    "file": "",
-                    "classname": "",
-                    "passed": False,
-                    "failure_msg": message,
-                    "is_hidden": force_hidden,
-                }
-            ]
-        return cases
-    finally:
-        if own_sbx is not None:
-            own_sbx.cleanup()
+    return run_vitest_junit(
+        test_files,
+        cwd,
+        timeout_sec=timeout_sec,
+        force_hidden=force_hidden,
+        env=env,
+        require_complete=require_complete,
+        sandbox_root=sandbox_root,
+        tools_lint_dir=_REPO_ROOT / "tools" / "lint",
+        run_vitest_fn=run_vitest_isolated,
+    )
 
 
 def extract_qid(tc: dict, default: str = "Q01") -> str:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Math Variant Bank: gated bank storage, uniqueness checks, and template seeding.
+"""Math Variant Bank: gated AI variant bank storage, uniqueness checks, and coverage reporting.
 
 Bank files live at ``drills/variants/<UNIT_CODE>.json`` (override with ``VARIANTS_DIR``):
 
@@ -26,12 +26,11 @@ import copy
 import glob
 import json
 import os
-import random
 import re
 import tempfile
 from collections import Counter
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.ai_drill_ingest import (
@@ -51,7 +50,6 @@ from math_engine.figure_autofill import collect_figure_title_warnings
 from math_engine.fmt import LEVEL_LABELS
 from math_engine.source_cores import resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
-from math_engine.templates import load_unit
 from math_engine.verify import verify_problem
 from progress_store import find_repo_root, strip_progress
 from quality_rules import (
@@ -548,158 +546,8 @@ def add_variants(
     return candidate_doc
 
 
-def _adapt_legacy_template_problem(
-    raw: Dict[str, Any],
-    tpl: Dict[str, Any],
-    vault_archs: List[Dict[str, Any]],
-) -> Optional[Dict[str, Any]]:
-    """Best-effort adapter from legacy ``math_engine/templates`` output to contract-compliant variant."""
-    prob = copy.deepcopy(raw)
-    trap_tag = prob.get("commonTrapTag") or tpl.get("trapTag")
-    arch = next(
-        (
-            a
-            for a in vault_archs
-            if a.get("archetypeKey") == tpl.get("key")
-            or trap_tag in [(t.get("trapTag") if isinstance(t, dict) else t) for t in (a.get("cognitiveTraps") or [])]
-        ),
-        None,
-    )
-    if arch is None:
-        return None
-
-    prob["archetypeKey"] = arch["archetypeKey"]
-    prob["sourceArchetype"] = arch["archetypeKey"]
-    prob["level"] = int(prob.get("level") or tpl.get("level") or arch.get("level") or 1)
-    prob["verificationLevel"] = "partial"
-    prob["context"] = ""
-    if "trapValue" not in prob and (prob.get("verify") or {}).get("trapValue") is not None:
-        prob["trapValue"] = prob["verify"]["trapValue"]
-
-    if not prob.get("givens"):
-        nums = normalize_prompt_numbers(story_text(prob), keep_exponents=True)
-        prob["givens"] = {f"n{i}": int(v) if float(v).is_integer() else v for i, v in enumerate(nums, 1)}
-    prob.setdefault("constants", {})
-    return prob
-
-
-def _resolve_template_builders(
-    unit_code: str,
-    vault_archs: List[Dict[str, Any]],
-) -> Dict[str, Callable[[random.Random], Optional[Dict[str, Any]]]]:
-    """Return ``{archetypeKey: builder(rng) -> problem_dict}`` for ``unit_code``."""
-    mod = load_unit(unit_code)
-    explicit = getattr(mod, "VARIANT_TEMPLATES", None)
-    if isinstance(explicit, dict) and explicit:
-        return dict(explicit)
-
-    # Fallback: adapt legacy TEMPLATES entries that map cleanly onto vault archetypes.
-    builders: Dict[str, Callable[[random.Random], Optional[Dict[str, Any]]]] = {}
-    for tpl in getattr(mod, "TEMPLATES", []):
-        sample = _adapt_legacy_template_problem(tpl["build"](random.Random(1)), tpl, vault_archs)
-        if sample is None:
-            continue
-        arch_key = sample["archetypeKey"]
-        if arch_key in builders:
-            continue
-
-        def _make_builder(template_spec: Dict[str, Any]) -> Callable[[random.Random], Optional[Dict[str, Any]]]:
-            return lambda rng: _adapt_legacy_template_problem(template_spec["build"](rng), template_spec, vault_archs)
-
-        builders[arch_key] = _make_builder(tpl)
-    return builders
-
-
-def generate_variants_from_templates(
-    unit_code: str,
-    per_archetype: int = 3,
-    seed: int = 20261119,
-    variants_dir: Optional[str] = None,
-    data_root: Optional[str] = None,
-    vault_dir: Optional[str] = None,
-    rules: Optional[Dict[str, Any]] = None,
-    overwrite: bool = False,
-) -> Dict[str, Any]:
-    """Deterministically generate and gate ``per_archetype`` variants per template archetype."""
-    if per_archetype < 1:
-        raise ValueError("--per-archetype must be >= 1.")
-
-    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
-    if not vault_archs:
-        raise VariantBankError(f"No reasoning vault archetypes found for '{unit_code}'.")
-
-    builders = _resolve_template_builders(unit_code, vault_archs)
-    if not builders:
-        raise VariantBankError(f"Unit '{unit_code}' templates do not map to any vault archetypes.")
-
-    path = bank_path(unit_code, variants_dir=variants_dir)
-    if not overwrite and os.path.exists(path):
-        existing_doc = load_bank(path, variants_dir=variants_dir)
-        variants = copy.deepcopy(existing_doc.get("variants") or [])
-    else:
-        variants = []
-
-    drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
-    active_rules = rules or QUALITY_RULES
-    rng = random.Random(seed)
-
-    for arch_key, builder in builders.items():
-        current_for_arch = [v for v in variants if (v.get("archetypeKey") or v.get("sourceArchetype")) == arch_key]
-        needed = per_archetype - len(current_for_arch)
-        if needed <= 0:
-            continue
-
-        added = 0
-        attempts = 0
-        max_attempts = max(120, needed * 40)
-        while added < needed and attempts < max_attempts:
-            attempts += 1
-            raw = builder(rng)
-            if not isinstance(raw, dict):
-                continue
-
-            prepared = _prepare_variant_for_bank(raw, unit_code, variants, vault_archs)
-            prob_copy = copy.deepcopy(prepared)
-
-            try:
-                validate_against_vault(prob_copy, vault_archs, unit_code)
-                require_figure_decision(prob_copy, vault_archs)
-                autofill_problem_figure(prob_copy, vault_archs)
-                require_figure_if_declared(prob_copy, vault_archs)
-                validate_ai_problem_contract(prob_copy)
-                verify_problem(prob_copy, rules=active_rules)
-            except Exception:
-                continue
-
-            existing_items = drill_items + [(str(v.get("variantId") or v.get("id") or "?"), v) for v in variants]
-            if check_variant_uniqueness(prob_copy, existing_items):
-                continue
-
-            # Keep clean verified fields (including fingerprint and qualityGates)
-            prepared["fingerprint"] = prob_copy.get("fingerprint") or compute_fingerprint(prepared)
-            if "qualityGates" in prob_copy:
-                prepared["qualityGates"] = prob_copy["qualityGates"]
-            if "figure" in prob_copy:
-                prepared["figure"] = prob_copy["figure"]
-            variants.append(prepared)
-            added += 1
-
-        if added < needed:
-            raise VariantBankError(
-                f"Could only generate {len(current_for_arch) + added}/{per_archetype} distinct gated "
-                f"variants for '{arch_key}' in '{unit_code}' after {attempts} attempts."
-            )
-
-    bank_doc = {"unitCode": unit_code, "variants": variants}
-    errs = check_variant_bank(bank_doc, data_root=data_root, vault_dir=vault_dir, rules=active_rules)
-    if errs:
-        raise VariantBankError("Generated variant bank failed final check:\n" + "\n".join(f"  - {e}" for e in errs))
-
-    save_bank(unit_code, bank_doc, variants_dir=variants_dir)
-    return bank_doc
-
-
 DEFAULT_MIN_VARIANTS = 3
+COVERAGE_BASELINE_PATH = Path("tests/data/variant_coverage_baseline.json")
 
 
 def _candidate_bank_codes_for_scope(codes: Iterable[str], variants_dir: Optional[str] = None) -> List[str]:
@@ -846,6 +694,62 @@ def compute_drill_coverage(
     )
 
 
+def collect_uncovered_pairs(repo_root: Path) -> Dict[str, List[Dict[str, Any]]]:
+    """Return uncovered coverage entries keyed by drill ID for canonical math drills."""
+    data_root = repo_root / "drills" / "data"
+    variants_dir = str(repo_root / "drills" / "variants")
+    uncovered = {}
+    for scope in sorted(data_root.iterdir()):
+        # PRG-* drills have no Similar banks. Only MTH-* is in scope for this gate.
+        if not scope.name.startswith("MTH-"):
+            continue
+        for path in sorted(scope.glob("*.json")):
+            drill_file = assert_safe_contained_path(path, data_root, suffixes=JSON_SUFFIXES)
+            drill = json.loads(drill_file.read_text(encoding="utf-8"))
+            gaps = compute_drill_coverage(drill, variants_dir=variants_dir)["uncoveredPairs"]
+            if gaps:
+                uncovered[drill.get("drillId") or path.stem] = gaps
+    return uncovered
+
+
+def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
+    """Check canonical math drill coverage against the shrink-only baseline."""
+    root = repo_root or Path(find_repo_root())
+    baseline = json.loads((root / COVERAGE_BASELINE_PATH).read_text(encoding="utf-8"))
+    expected = {(drill, arch, level) for drill, pairs in baseline.items() for arch, level in pairs}
+    uncovered = collect_uncovered_pairs(root)
+    actual = {
+        (drill, entry["archetypeKey"], entry["level"]): entry
+        for drill, entries in uncovered.items()
+        for entry in entries
+    }
+    new = actual.keys() - expected
+    stale = expected - actual.keys()
+    passed = not (new or stale)
+    lines = [
+        f"{'PASS' if passed else 'FAIL'} Similar variant coverage gate "
+        f"(minimum {DEFAULT_MIN_VARIANTS} variants per pair)."
+    ]
+    for key, entry in sorted(actual.items()):
+        drill, arch, level = key
+        status = "FAIL New uncovered pair" if key in new else "Baseline uncovered pair"
+        lines.append(
+            f"{status}: {drill} {arch} @ L{level} (have {entry['variantCount']}, need {entry['needed']} more)."
+        )
+    if new:
+        lines.append("Add reviewed Similar variants to cover new pairs. Adding baseline entries is forbidden.")
+    for drill, arch, level in sorted(stale):
+        pair = json.dumps([arch, level])
+        lines.append(
+            f"FAIL Stale baseline entry: {drill} {arch} @ L{level} is covered or no longer used. "
+            f"Delete {pair} under {drill} in {COVERAGE_BASELINE_PATH}."
+        )
+    if stale:
+        lines.append("Remove any drill key left with an empty list.")
+    lines.append(f"Baseline: {len(baseline)} drill(s), {len(expected)} pair(s).")
+    return passed, "\n".join(lines)
+
+
 def compute_coverage(
     target: str,
     *,
@@ -953,12 +857,13 @@ def format_coverage_warning(
     target_hint = drill_path or drill_doc.get("unitCode") or ""
     return (
         f"WARNING: Similar variant bank has {len(uncovered)} uncovered pair(s) (< {min_variants} variants): "
-        f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}"
+        f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}. "
+        "Check CI readiness with: python -m math_engine.variant_bank --coverage-gate"
     )
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Validate, append, inspect coverage, or seed math variant banks.")
+    parser = argparse.ArgumentParser(description="Validate, append, or inspect coverage of math variant banks.")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--check", metavar="FILE_OR_UNIT", help="Validate a variant bank JSON file or unit code.")
     group.add_argument("--add", metavar="DRAFT_JSON", help="Gate and append variants from a draft JSON file.")
@@ -968,9 +873,9 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Report variant counts per (archetypeKey, level) used by a unit's drills or a drill JSON file.",
     )
     group.add_argument(
-        "--from-templates",
-        metavar="UNIT",
-        help="Deterministically generate gated variants from math_engine/templates for UNIT.",
+        "--coverage-gate",
+        action="store_true",
+        help="Check all math drills against the shrink-only Similar coverage baseline.",
     )
     parser.add_argument("--unit", help="Unit code override (optional with --add).")
     parser.add_argument(
@@ -980,14 +885,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help=f"Minimum variants per (archetypeKey, level) for --coverage (default: {DEFAULT_MIN_VARIANTS}).",
     )
     parser.add_argument("--json", action="store_true", help="With --coverage: print structured JSON output.")
-    parser.add_argument(
-        "--per-archetype",
-        type=int,
-        default=3,
-        help="Number of variants per archetype for --from-templates (default: 3).",
-    )
-    parser.add_argument("--seed", type=int, default=20261119, help="Deterministic RNG seed for --from-templates.")
-    parser.add_argument("--overwrite", action="store_true", help="Replace existing bank file on --from-templates.")
     parser.add_argument(
         "--originality",
         action=argparse.BooleanOptionalAction,
@@ -1005,6 +902,15 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.coverage_gate:
+        try:
+            passed, report = check_coverage_gate()
+        except (OSError, ValueError) as exc:
+            print(f"FAIL Could not check the Similar variant coverage gate: {exc}")
+            return 1
+        print(report)
+        return 0 if passed else 1
 
     if args.coverage:
         try:
@@ -1064,23 +970,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"OK: {saved['unitCode']} now holds {len(saved['variants'])} gated variant(s).")
         for warn in collect_figure_title_warnings(saved.get("variants") or []):
             print(f"WARNING: {warn}")
-        return 0
-
-    if args.from_templates:
-        try:
-            saved = generate_variants_from_templates(
-                args.from_templates,
-                per_archetype=args.per_archetype,
-                seed=args.seed,
-                overwrite=args.overwrite,
-            )
-        except (VariantBankError, KeyError, ValueError) as exc:
-            print(f"FAIL {exc}")
-            return 1
-        print(
-            f"OK: generated and verified {len(saved['variants'])} variant(s) for "
-            f"{saved['unitCode']} -> {bank_path(saved['unitCode'])}"
-        )
         return 0
 
     return 1

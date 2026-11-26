@@ -10,9 +10,17 @@ import pytest
 
 from math_engine.ai_drill_ingest import AiContractError, check_ai_drill, validate_ai_problem_contract
 from math_engine.latex_guard import find_bare_words, wrap_bare_words_in_latex
-from math_engine.templates._prealg_helpers import S
 from math_engine.verify import VerificationError, check_text_safety, verify_problem
 from notion_sync.blocks import eq_block, eq_inline
+
+
+def S(latex: str, explain: str, val: str | None = None, eq: list[str] | None = None) -> dict:
+    step: dict = {"latex": latex, "explain": explain}
+    if val is not None:
+        step["val"] = val
+    if eq is not None:
+        step["eq"] = list(eq)
+    return step
 
 
 @pytest.mark.parametrize(

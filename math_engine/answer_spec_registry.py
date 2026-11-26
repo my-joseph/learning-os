@@ -84,13 +84,13 @@ ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# Deprecated PRG template answerSpec types (no drill/lab/variant uses them; kept here only for clear rejection messages).
+# Deprecated PRG answerSpec types from retired templates (no drill/lab/variant uses them; kept here for clear rejection messages).
 DEPRECATED_ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
     "code_output": {
         "engine": "code",
         "deprecated": True,
         "replacement": "predict_output",
-        "description": "Deprecated alias for 'predict_output' (legacy templates only).",
+        "description": "Deprecated alias for 'predict_output' (retired templates).",
         "required_fields": [],
         "required_any_of": ["tokens", "value"],
         "optional_fields": ["tokens", "value", "commonTrapTag", "allowPartial"],

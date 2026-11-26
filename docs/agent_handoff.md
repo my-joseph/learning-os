@@ -17,6 +17,11 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 ## Learner decisions
 
+### Completed
+
+- Studio Generate button and **C08** `/api/generate-drill` route: approved and removed in Phase 2 (2026-11-26).
+- Math and PRG template engines, template generators, and template-only scripts/tests removed and `rules/06` renamed to `rules/06_quality_contract.md` in Phase 3 (2026-11-26); drills and Similar variants are AI-only.
+
 ### Working style
 
 - Speak with the learner in polite Thai; write learning content in English.
@@ -51,15 +56,17 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 ### ON HOLD — do not start without the learner
 
-- Similar “+” button refactor; removal of math and PRG templates and the Studio Generate button (including **C08** `/api/generate-drill` validation/bounds, which waits for the Similar/template refactor); rename of `rules/06`; PRG Similar/variant bank.
-- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” / template refactor.
+- The Similar “+” button refactor and PRG Similar/variant bank remain on hold.
+- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” refactor.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
-- PR B, PR C (including issue `0852fe`, Weak spots trap-name leak), Example redesign, and learning-feature Phases 3–5.
-- Engine roadmap Phase 2 (`pilot/improve-engine-2026-11-21/roadmap.md`, items 2.1–2.3): wait for quota reset and learner go-ahead.
+- Due-review tree and drill review mode, Question-jump shortcut, Example redesign, and learning-feature Phases 3–5.
+- Engine clean-up (unify PRG runners, split math answer checker, shared ingest core) (`pilot/improve-engine-2026-11-21/roadmap.md`): wait for learner approval.
 - Scheduled/automatic jobs: wait until the system is stable.
 - Ideas noted, not started: Skills Status mastery overview page; Skip-reason prompt; Review & Sync page “back to drill” button; slow `npm run dev`; flaky sync (partly in `fix/sync-stamps-persist`).
 
 ## Current state and how to refresh it
+
+- The **What I get wrong list** is implemented and awaiting visual review. The disclosure stays closed next to an unanswered problem (issue `0852fe`).
 
 The following snapshot came from the learner-decision digest dated 2026-11-21. Treat it as historical context; refresh live state before choosing work.
 

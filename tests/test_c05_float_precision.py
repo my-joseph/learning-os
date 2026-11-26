@@ -6,8 +6,16 @@ import unittest
 import sympy as sp
 
 from math_engine.answer_check import is_equal, to_expr
-from math_engine.templates._prealg_helpers import S
 from math_engine.verify import verify_problem
+
+
+def S(latex, explain, val=None, eq=None):
+    step = {"latex": latex, "explain": explain}
+    if val is not None:
+        step["val"] = val
+    if eq is not None:
+        step["eq"] = list(eq)
+    return step
 
 
 class TestC05FloatPrecision(unittest.TestCase):

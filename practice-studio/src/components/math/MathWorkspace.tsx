@@ -1,7 +1,9 @@
 "use client";
 
 import { Heading } from "@/components/ui/Heading";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/shadcn/Input";
+import { PenLine } from "lucide-react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { tabPanel } from "@/lib/motion";
 import { Problem, MistakeTag } from "@/types/drill";
@@ -20,6 +22,7 @@ import {
   TabActivatedInfo,
   useSimilarTabs,
 } from "@/hooks/useSimilarTabs";
+import { mistakeAttemptKey } from "@/lib/mistakePractice";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { maxAllowedSelfScore, scoreProblem } from "@/lib/scoring";
 import {
@@ -30,6 +33,8 @@ import {
 } from "@/lib/similarTabs";
 import { isCurriculumId, plainTitle } from "@/lib/titleText";
 import type { SkipOptions } from "@/hooks/types";
+
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export interface MathWorkspaceProps {
   problem: Problem;
@@ -53,6 +58,7 @@ export interface MathWorkspaceProps {
   onBeforeFetchVariant?: () => Promise<void>;
   onExampleViewed?: (viewedAt: string) => void;
   onSimilarProgressSync?: (patch: SimilarProgressPatch) => void;
+  onMistakeAttemptChange?: (key: string | null) => void;
   onVariantModeChange?: (inVariantMode: boolean) => void;
   autoOpenSimilar?: boolean;
   onAutoOpenSimilarConsumed?: () => void;
@@ -96,6 +102,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onBeforeFetchVariant,
   onExampleViewed,
   onSimilarProgressSync,
+  onMistakeAttemptChange,
   onVariantModeChange,
   autoOpenSimilar = false,
   onAutoOpenSimilarConsumed,
@@ -140,9 +147,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const {
     isUnlocked,
-    listEmpty,
+    exhausted,
     listError,
     isLoadingList,
+    isOpeningNext,
+    openNextError,
+    openNext,
     selectedTab,
     tabs,
     activeSimilarTab,
@@ -166,6 +176,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     closeWorkedExample,
     handleSimilarInputChange,
     handleSimilarCheckAnswer,
+    handleSimilarSkip,
+    handleSimilarMarkDivergedStep,
+    handleSimilarSetScore,
+    handleSimilarToggleMistakeTag,
+    handleSimilarMistakeNoteChange,
+    handleSimilarRevisitNoteChange,
     handleSimilarHintRevealed,
     handleSimilarSetupRevealed,
     handleSimilarSolutionRevealed,
@@ -183,6 +199,17 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     onSimilarProgressSync,
     onTabActivated: handleTabActivated,
   });
+
+  const mistakeContext = showingExample
+    ? null
+    : selectedTab === "q"
+    ? mistakeAttemptKey(problem.state)
+    : mistakeAttemptKey(activeSimilarProblem?.state, "similar");
+  // Synchronize with the shell before painting a newly selected tab.
+  useBrowserLayoutEffect(() => {
+    onMistakeAttemptChange?.(mistakeContext ? `${selectedTab}:${mistakeContext}` : null);
+    return () => onMistakeAttemptChange?.(null);
+  }, [mistakeContext, onMistakeAttemptChange, selectedTab]);
 
   // Pause Q_N's timer while on a similar tab or viewing the worked example.
   useEffect(() => {
@@ -205,6 +232,32 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showingExample, closeWorkedExample]);
 
+  // Match main-question "P" timer pause/resume shortcut while on a similar tab.
+  useEffect(() => {
+    if (selectedTab === "q" || showingExample) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key.toLowerCase() !== "p") return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.tagName === "MATH-FIELD" ||
+          target.isContentEditable ||
+          Boolean(target.closest('[role="alertdialog"], [role="dialog"], [role="tablist"]')))
+      ) {
+        return;
+      }
+      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
+      e.preventDefault();
+      toggleSimilarPaused();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedTab, showingExample, toggleSimilarPaused]);
+
   const hasAttempt = hasSubstantiveAttempt(problem.state);
   const score = scoreProblem(problem.state).score;
   const maxSelfScore = maxAllowedSelfScore(problem.state);
@@ -217,12 +270,18 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const realTabStatus = deriveRealTabStatus(problem.state);
   const hasVariantsAvailable = Boolean(drillId && problem.hasVariants);
-  const showTabStrip = Boolean(!showingExample && hasVariantsAvailable && !listEmpty);
-  const stripLocked = !isUnlocked;
+  const showTabStrip = Boolean(!showingExample && hasVariantsAvailable);
+  const canOpenNext = isUnlocked && !exhausted && !listError;
+  const loadingSimilar = isLoadingList || isOpeningNext;
+  const selectOrOpenSimilar = (slot: number | null) => {
+    if (slot !== null) selectTab(slotToTabId(slot));
+    else void openNext();
+  };
 
   const rPlan = resultCardActions({
     tab: "q",
     hasVariants: hasVariantsAvailable,
+    canOpenNext,
     isReviewSession,
     rState: problem.state,
     statuses: tabs,
@@ -230,18 +289,20 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   });
 
   const originalSecondaryActions: ResultCardSecondaryAction[] = [];
-  if (rPlan.showPractiseSimilarFirst && rPlan.targetSimilarSlot) {
+  if (rPlan.showPractiseSimilarFirst) {
     const slot = rPlan.targetSimilarSlot;
     originalSecondaryActions.push({
       label: "Practise a similar question first",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
-  } else if (rPlan.showPractiseSimilarConfidence && rPlan.targetSimilarSlot) {
+  } else if (rPlan.showPractiseSimilarConfidence) {
     const slot = rPlan.targetSimilarSlot;
     originalSecondaryActions.push({
       label: "Practise a similar question for confidence",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
   }
@@ -299,10 +360,50 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const similarIsCorrect =
     activeSimilarProblem?.state.lastCheck?.verdict === "correct";
+  const similarIsSkipped = Boolean(
+    activeSimilarProblem?.state.skipped ||
+      activeSimilarProblem?.state.lastCheck?.verdict === "skipped"
+  );
+  const similarIsDone = similarIsCorrect || similarIsSkipped;
+  const similarAttempted = Boolean(
+    activeSimilarProblem &&
+      hasSubstantiveAttempt(activeSimilarProblem.state, { isVariant: true })
+  );
+  const similarScore = activeSimilarProblem
+    ? scoreProblem(activeSimilarProblem.state, { isVariant: true }).score
+    : null;
+  const similarMaxSelfScore = activeSimilarProblem
+    ? maxAllowedSelfScore(activeSimilarProblem.state, { isVariant: true })
+    : 1;
+  const similarReviewSupplement =
+    isReviewSession && similarIsCorrect && activeSimilarProblem ? (
+      <div className="space-y-space-1_5 pt-space-1">
+        <label
+          htmlFor={`revisit-note-${activeSimilarProblem.id}`}
+          className="block text-xs font-normal text-foreground-subtle"
+        >
+          Next time I will…
+        </label>
+        <div className="flex items-center gap-space-2 bg-surface-panel dark:bg-surface-raised border border-border rounded-xl px-space-3 py-space-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 dark:focus-within:ring-accent/25">
+          <PenLine className="size-space-3_5 text-muted shrink-0" aria-hidden="true" />
+          <Input
+            id={`revisit-note-${activeSimilarProblem.id}`}
+            type="text"
+            variant="embedded"
+            value={activeSimilarProblem.state.revisitNote || ""}
+            onChange={(e) => handleSimilarRevisitNoteChange(e.target.value)}
+            aria-label="Next time I will…"
+            placeholder="Next time I will…"
+            className="text-xs"
+          />
+        </div>
+      </div>
+    ) : undefined;
 
   const sPlan = resultCardActions({
     tab: selectedTab,
     hasVariants: hasVariantsAvailable,
+    canOpenNext,
     isReviewSession,
     rState: problem.state,
     statuses: tabs,
@@ -313,11 +414,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   });
 
   const similarSecondaryActions: ResultCardSecondaryAction[] = [];
-  if (sPlan.showNextSimilar && sPlan.nextSimilarSlot) {
+  if (sPlan.showNextSimilar) {
     const slot = sPlan.nextSimilarSlot;
     similarSecondaryActions.push({
       label: "Next similar question",
-      onClick: () => selectTab(slotToTabId(slot)),
+      onClick: () => selectOrOpenSimilar(slot),
+      disabled: slot === null && loadingSimilar,
       trailingChevron: true,
     });
   }
@@ -375,11 +477,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 realStatus={realTabStatus}
                 tabs={tabs}
                 selectedTab={selectedTab}
-                locked={stripLocked}
-                lockedSlotCount={problem.similarCount}
-                listError={listError}
-                loadingList={isLoadingList}
-                onRetryList={retrySimilarList}
+                locked={!isUnlocked}
+                exhausted={exhausted}
+                error={listError ? `${listError} Try again.` : openNextError}
+                loading={loadingSimilar}
+                onAdd={listError ? retrySimilarList : () => void openNext()}
                 onSelectTab={(tabId) => selectTab(tabId)}
               />
             )}
@@ -451,16 +553,18 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                             <QuestionTimer
                               questionMs={similarTimerMs}
                               totalMs={similarTimerMs}
-                              isPaused={similarIsCorrect ? false : isSimilarPaused}
-                              onTogglePause={similarIsCorrect ? undefined : toggleSimilarPaused}
+                              isPaused={similarIsDone ? false : isSimilarPaused}
+                              onTogglePause={similarIsDone ? undefined : toggleSimilarPaused}
                             />
                           </div>
                         }
                         unitCode={unitCode}
                         drillTitle={drillTitle}
-                        mistakeTags={[]}
+                        mistakeTags={mistakeTags}
                         isVariant={true}
                         useSessionInputMode={isReviewSession}
+                        skipLabel="Skip"
+                        autoRevealOnSkip={!isReviewSession}
                         hideShowStepsButton={sPlan.showSimilarShowSteps}
                         loadingSteps={loadingSteps}
                         ariaLabel={`Answer for similar question ${activeSimilarTab.slot} of ${tabs.length}`}
@@ -474,11 +578,29 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                         resultSecondaryActions={similarSecondaryActions}
                         onInputChange={handleSimilarInputChange}
                         onCheckAnswer={handleSimilarCheckAnswer}
+                        onSkip={(opts) => void handleSimilarSkip(opts)}
+                        onMarkDivergedStep={handleSimilarMarkDivergedStep}
                         onReset={handleSimilarReset}
                         onHintRevealed={handleSimilarHintRevealed}
                         onSetupRevealed={() => void handleSimilarSetupRevealed()}
                         onSolutionRevealed={() => void handleSimilarSolutionRevealed()}
                         onStepsOpenChange={setSimilarStepsOpen}
+                        supplement={similarReviewSupplement}
+                        footer={
+                          <ProblemSelfEval
+                            hasAttempt={similarAttempted}
+                            maxScore={similarMaxSelfScore}
+                            skipped={similarIsSkipped}
+                            score={similarScore}
+                            mistakes={activeSimilarProblem.state.mistakes}
+                            mistakeNote={activeSimilarProblem.state.mistakeNote}
+                            mistakeTags={mistakeTags}
+                            noteAriaLabel={`Note for similar question ${activeSimilarTab.slot}`}
+                            onSetScore={handleSimilarSetScore}
+                            onToggleMistakeTag={handleSimilarToggleMistakeTag}
+                            onMistakeNoteChange={handleSimilarMistakeNoteChange}
+                          />
+                        }
                       />
                     )
                   ) : (

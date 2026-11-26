@@ -11,10 +11,14 @@ import {
   type DiskSlice,
   type SampleRule,
 } from "@/lib/isometric/math/diskMethod";
-import { reducedMotion, spring, step, type Spring } from "@/lib/isometric/motion";
+import { reducedMotion, showcaseSpring, spring, step, type Spring } from "@/lib/isometric/motion";
 import { label, scene, type Item } from "@/lib/isometric/scene";
-import { bag, el, loop, pointer } from "@/lib/isometric/stage";
+import { easeInOut } from "@/lib/isometric/showcase";
+import { showcaseLoop } from "@/lib/isometric/showcaseStage";
+import { bag, el, pointer } from "@/lib/isometric/stage";
 import { inject } from "@/lib/isometric/styles";
+
+export type DiskMethodInputs = { preset: DiskPresetId; n: number; rule: SampleRule };
 
 export type DiskMethodProps = {
   /** Which preset curve y = f(x) to revolve around the x-axis. */
@@ -31,6 +35,10 @@ export type DiskMethodProps = {
   theme?: "auto" | "light" | "dark";
   /** Called whenever the figure's live caption changes. */
   onRead?: (text: string) => void;
+  /** The effective inputs, including the live showcase values. */
+  onValuesChange?: (inputs: DiskMethodInputs) => void;
+  /** Sends learner input to the mounted figure from adjacent controls. */
+  inputRef?: React.MutableRefObject<((patch: Partial<DiskMethodInputs>) => void) | null>;
   /** Called when the user hovers, focuses, or pins a disk (or clears inspection). */
   onInspectDisk?: (diskIndex: number | null) => void;
   /** Called when the user drags horizontally or uses Up/Down arrows on the figure to change n. */
@@ -89,6 +97,8 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
       label: ariaLabel,
       theme = "auto",
       onRead,
+      onValuesChange,
+      inputRef,
       onInspectDisk,
       onChangeN,
       onActivate,
@@ -102,15 +112,17 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
 
     const callbacksRef = React.useRef({
       onRead,
+      onValuesChange,
       onInspectDisk,
       onChangeN,
       onActivate,
     });
     useIsoLayoutEffect(() => {
-      callbacksRef.current = { onRead, onInspectDisk, onChangeN, onActivate };
+      callbacksRef.current = { onRead, onValuesChange, onInspectDisk, onChangeN, onActivate };
     });
 
     const controllerRef = React.useRef<{
+      input: (patch: Partial<DiskMethodInputs>) => void;
       sync: (
         nextPreset: DiskPresetId,
         nextN: number,
@@ -120,6 +132,7 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
     } | null>(null);
 
     const initialRef = React.useRef({ preset, n, rule, highlightedDisk });
+    const appliedProps = React.useRef(initialRef.current);
 
     useIsoLayoutEffect(() => {
       const stage = hostRef.current!;
@@ -148,7 +161,8 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
       const radii: Spring[] = Array.from({ length: MAX_N }, () =>
         spring(0, 180, 22, 0.015),
       );
-      const settle: Spring = spring(1, 180, 22, 0.005);
+      const count = showcaseSpring(curN, 0.05);
+      const inShowcase = stage.closest("[data-showcase]") !== null;
 
       const toWorldX = (x: number, a: number, bb: number) =>
         X_START + ((x - a) / (bb - a)) * AXIS_LEN;
@@ -162,8 +176,6 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
           radii[i].x = radii[i].to = target;
           radii[i].v = 0;
         }
-        settle.x = settle.to = 1;
-        settle.v = 0;
       };
       seedImmediate();
 
@@ -356,91 +368,112 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
         sc.render(cam, items);
       };
 
-      const L = loop(stage, (dt) => {
-        let moving = step(settle, dt);
+      function applyInputs(next: DiskMethodInputs, manual = false) {
+        if (next.preset === curPreset && next.n === curN && next.rule === curRule) return false;
+
+        const previousN = curN;
+        const snapshot = radii.slice(0, previousN).map((radius) => radius.x);
+        curPreset = next.preset;
+        curN = next.n;
+        curRule = next.rule;
+        result = computePresetDiskMethod(curPreset, curN, curRule);
+        const p = DISK_PRESETS[curPreset];
+
+        for (let i = 0; i < curN; i++) {
+          const radius = radii[i];
+          radius.to = toWorldR(result.disks[i].r, p.maxRadius);
+          if (previousN !== curN && !reducedMotion()) {
+            // Start a new slice from the current surface at its centre.
+            const at = clamp(((i + 0.5) / curN) * previousN - 0.5, 0, previousN - 1);
+            const low = Math.floor(at);
+            const high = Math.ceil(at);
+            radius.x = (snapshot[low] + (snapshot[high] - snapshot[low]) * (at - low)) * (manual ? 0.82 : 1);
+            radius.v = 0;
+          }
+        }
+
+        if (hoverIndex !== null && hoverIndex >= curN) hoverIndex = curN - 1;
+        if (focusIndex !== null && focusIndex >= curN) focusIndex = curN - 1;
+        if (pinnedIndex !== null && pinnedIndex >= curN) pinnedIndex = curN - 1;
+
+        callbacksRef.current.onValuesChange?.(next);
+        emitInspect();
+        return true;
+      }
+
+      const defaults = initialRef.current;
+      const demoRules: SampleRule[] = [defaults.rule, ...(["midpoint", "left", "right"] as const).filter((rule) => rule !== defaults.rule)];
+      const L = showcaseLoop(stage, (dt) => {
+        let moving = step(count, dt);
+        applyInputs({ preset: curPreset, n: clamp(Math.round(count.x), MIN_N, MAX_N), rule: curRule });
         for (let i = 0; i < curN; i++) {
           if (step(radii[i], dt)) moving = true;
         }
         renderScene();
         return moving;
+      }, {
+        defaults() {
+          pinnedIndex = null;
+          count.to = defaults.n;
+          if (!applyInputs({ preset: defaults.preset, n: curN, rule: defaults.rule })) emitInspect();
+        },
+        play(seconds) {
+          const cycle = 11.2;
+          const phase = Math.floor(seconds / cycle);
+          const t = seconds % cycle;
+          const start = phase === 0 ? defaults.n - MIN_N : 0;
+          const sweep = easeInOut((t - 1.5) / 3.4) * easeInOut((10.05 - t) / 3.4);
+          const target = MIN_N + start * (1 - easeInOut(t / 1.1)) + (MAX_N - MIN_N) * sweep;
+          const changed = applyInputs({ preset: curPreset, n: curN, rule: demoRules[phase % demoRules.length] });
+          if (count.to === target) return changed;
+          count.to = target;
+          return true;
+        },
       });
       b.add(L.stop);
 
-      writeRead(formatRestCaption(curPreset, curN, curRule, result.approxVolume));
+      callbacksRef.current.onValuesChange?.({ preset: curPreset, n: curN, rule: curRule });
+      emitInspect();
 
-      const setTargets = (prevN: number, prevPreset: DiskPresetId, prevRadiiSnapshot: number[]) => {
-        const p = DISK_PRESETS[curPreset];
-        const instant = reducedMotion();
-        const samePresetAndN = prevN === curN && prevPreset === curPreset;
-
-        for (let i = 0; i < MAX_N; i++) {
-          const target =
-            i < result.disks.length ? toWorldR(result.disks[i].r, p.maxRadius) : 0;
-          if (instant) {
-            radii[i].x = radii[i].to = target;
-            radii[i].v = 0;
-          } else if (i < result.disks.length) {
-            if (!samePresetAndN && prevN !== curN) {
-              // Seed from the nearest previous disk's radius scaled slightly down so spring settle reads clearly
-              const mappedIdx = clamp(
-                Math.floor(((i + 0.5) / curN) * prevN),
-                0,
-                Math.max(0, prevN - 1),
-              );
-              const seed = prevRadiiSnapshot[mappedIdx] ?? target * 0.72;
-              radii[i].x = seed * 0.82;
-              radii[i].v = 0;
-            }
-            radii[i].to = target;
-          } else {
-            radii[i].x = radii[i].to = 0;
-            radii[i].v = 0;
-          }
+      function input(patch: Partial<DiskMethodInputs>) {
+        const next = {
+          preset: patch.preset ?? curPreset,
+          n: clamp(Math.round(patch.n ?? curN), MIN_N, MAX_N),
+          rule: patch.rule ?? curRule,
+        };
+        if (next.preset === curPreset && next.n === curN && next.rule === curRule) return;
+        L.change();
+        if (patch.n !== undefined) {
+          count.x = count.to = next.n;
+          count.v = 0;
         }
-        if (instant) {
-          settle.x = settle.to = 1;
-          settle.v = 0;
-        } else {
-          settle.x = 0;
-          settle.to = 1;
-          settle.v = 0;
-        }
-      };
+        applyInputs(next, true);
+        L.wake();
+      }
 
       controllerRef.current = {
+        input,
         sync(nextPreset, nextN, nextRule, nextExternalHighlight) {
-          const prevPreset = curPreset;
-          const prevN = curN;
-          const prevRule = curRule;
-          const prevExternal = externalHighlight;
-          externalHighlight = nextExternalHighlight;
-
-          if (
-            nextPreset === prevPreset &&
-            nextN === prevN &&
-            nextRule === prevRule
-          ) {
-            if (nextExternalHighlight !== prevExternal) {
-              L.wake();
-            }
-            return;
+          const previous = appliedProps.current;
+          appliedProps.current = { preset: nextPreset, n: nextN, rule: nextRule, highlightedDisk: nextExternalHighlight };
+          input({
+            preset: nextPreset !== previous.preset ? nextPreset : undefined,
+            n: nextN !== previous.n ? nextN : undefined,
+            rule: nextRule !== previous.rule ? nextRule : undefined,
+          });
+          if (nextExternalHighlight !== externalHighlight) {
+            externalHighlight = nextExternalHighlight;
+            emitInspect();
+            L.wake();
           }
-
-          const snapshot = radii.slice(0, prevN).map((sp) => sp.x);
-          curPreset = nextPreset;
-          curN = nextN;
-          curRule = nextRule;
-          result = computePresetDiskMethod(curPreset, curN, curRule);
-
-          if (hoverIndex !== null && hoverIndex >= curN) hoverIndex = curN - 1;
-          if (focusIndex !== null && focusIndex >= curN) focusIndex = curN - 1;
-          if (pinnedIndex !== null && pinnedIndex >= curN) pinnedIndex = curN - 1;
-
-          setTargets(prevN, prevPreset, snapshot);
-          emitInspect();
-          L.wake();
         },
       };
+
+      function changeN(next: number) {
+        if (next === curN) return;
+        if (inShowcase) input({ n: next });
+        callbacksRef.current.onChangeN?.(next);
+      }
 
       let dragStartX: number | null = null;
       let dragStartN = curN;
@@ -455,9 +488,7 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
               if (dragged) {
                 const deltaN = Math.round(dxScreen / 7);
                 const nextN = clamp(dragStartN + deltaN, MIN_N, MAX_N);
-                if (nextN !== curN) {
-                  callbacksRef.current.onChangeN?.(nextN);
-                }
+                changeN(nextN);
                 return;
               }
             }
@@ -529,13 +560,13 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
         if (e.key === "ArrowUp" || e.key === "+" || e.key === "=") {
           e.preventDefault();
           const nextN = clamp(curN + 1, MIN_N, MAX_N);
-          if (nextN !== curN) callbacksRef.current.onChangeN?.(nextN);
+          changeN(nextN);
           return;
         }
         if (e.key === "ArrowDown" || e.key === "-") {
           e.preventDefault();
           const nextN = clamp(curN - 1, MIN_N, MAX_N);
-          if (nextN !== curN) callbacksRef.current.onChangeN?.(nextN);
+          changeN(nextN);
           return;
         }
         if ((e.key === "Enter" || e.key === " ") && focusIndex !== null) {
@@ -581,6 +612,12 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
       controllerRef.current?.sync(preset, n, rule, highlightedDisk);
     }, [preset, n, rule, highlightedDisk]);
 
+    useIsoLayoutEffect(() => {
+      if (!inputRef) return;
+      inputRef.current = controllerRef.current?.input ?? null;
+      return () => { inputRef.current = null; };
+    }, [inputRef]);
+
     const setRef = React.useCallback(
       (node: HTMLDivElement | null) => {
         hostRef.current = node;
@@ -592,10 +629,7 @@ export const DiskMethod = React.forwardRef<HTMLDivElement, DiskMethodProps>(
       [ref],
     );
 
-    const presetMeta = DISK_PRESETS[preset];
-    const computedLabel =
-      ariaLabel ??
-      `Isometric Disk Method solid for ${presetMeta.label} on ${presetMeta.description.split(" on ")[1] ?? ""} with ${n} ${rule}-endpoint disks. Use Left and Right arrows to inspect disks, Up and Down arrows or drag horizontally to adjust disk count.`;
+    const computedLabel = ariaLabel ?? "Isometric Disk Method solid. Use Left and Right arrows to inspect disks, Up and Down arrows or drag horizontally to adjust disk count.";
 
     return (
       <div

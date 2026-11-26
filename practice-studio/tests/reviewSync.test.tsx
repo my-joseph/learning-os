@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { renderToStaticMarkup } from "react-dom/server";
 import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
 import { ReviewSyncPage } from "../src/components/review-sync/ReviewSyncPage";
+import { NextActions } from "../src/components/review-sync/NextActions";
 import { executeNotionSync, mergeSyncStampIntoLatestDrill } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
 import { buildSessionSummary, buildSyncPayload, getPersistedStatusOverride, summaryFingerprint } from "../src/lib/sessionSummary";
@@ -195,6 +196,28 @@ const nextDrill = findNextDrill(mathDrill, [{ drillId: "DRL-MTH-T02-C01-U01-04",
 assert.equal(nextDrill?.drillId, "DRL-MTH-T02-C01-U01-03", "next drill excludes the current drill");
 assert.equal(nextDrill?.title, "Complex Numbers · Set 3", "next drill names its unit and set");
 assert.notEqual(nextDrill?.href, "/math/DRL-MTH-T02-C01-U01-04", "next drill never links to the current drill");
+const noNextDrillActionsHtml = renderToStaticMarkup(
+  <NextActions
+    dueReviewCount={0}
+    topWeakSpot={null}
+    firstWrong={null}
+    nextDrill={null}
+    primary={false}
+  />
+);
+assert.equal(noNextDrillActionsHtml, "", "no next-drill action leaves the What next slot empty");
+const otherActionWithoutNextDrillHtml = renderToStaticMarkup(
+  <NextActions
+    dueReviewCount={2}
+    topWeakSpot={null}
+    firstWrong={null}
+    nextDrill={null}
+    primary={false}
+  />
+);
+assert.match(otherActionWithoutNextDrillHtml, /Daily review/);
+assert.doesNotMatch(otherActionWithoutNextDrillHtml, /Next drill|Generate a drill/,
+  "other next actions remain when there is no next drill");
 
 // Sync state and metadata adoption: server is the source of truth; client only adopts stamps on real success.
 const reply = (data: unknown, ok = true, status?: number) =>
