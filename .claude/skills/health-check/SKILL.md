@@ -30,7 +30,9 @@ Run in one clean, dedicated worktree at `AUDIT_SHA`, with required local depende
 11. Compare drill/lab IDs and active references against `id_map.json` using read-only inspection. Report missing/orphaned IDs, invalid unit/chapter/reference keys, duplicate Notion page IDs, and active references to `RETIRED-*`. Never edit `id_map.json`.
 12. Read-only git hygiene: check `core.hooksPath`, tracked `.env*`, `progress/`, `pilot/`, `scratch/`, and `sources/` files; list worktrees and merged-branch candidates without removing anything.
 13. Run `.venv/bin/python -m scripts.doc_refs` to verify paths, module commands, CLI flags, npm scripts, and skill references across skills, rules, and docs.
-14. Run `.venv/bin/python -m scripts.self_review --compare-at <YYYY-MM-DD> --json` (read-only) to collect ranked auto-signals and the before/after delta table from the issue log, `pilot/agent-usage.jsonl`, merged PR rework, drill quality, and `doc_refs`. Use the latest `since` date in `docs/self_review_addressed.json` as the default comparison boundary when no date is supplied. Include the comparison table in the Thai report, and list post-boundary runs with fewer than five runs as insufficient data.
+14. Run `.venv/bin/python -m scripts.self_review --no-progress --compare-at <YYYY-MM-DD> --json` (read-only) to collect ranked auto-signals and the before/after delta table from the issue log, `pilot/agent-usage.jsonl`, merged PR rework, and `doc_refs`. Use the latest `since` date in `docs/self_review_addressed.json` as the default comparison boundary when no date is supplied. Include the comparison table in the Thai report, and list post-boundary runs with fewer than five runs as insufficient data.
+
+- Use `python -m scripts.source_gap <UNIT> --no-progress` for any source gap audit. This leaves bridge eligibility unassessed.
 
 ## 3. Launch read-only worker audits
 

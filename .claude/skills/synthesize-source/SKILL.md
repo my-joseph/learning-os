@@ -79,6 +79,8 @@ Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
 .venv/bin/python -m scripts.source_gap <UNIT>
 ```
 
+For progress-free audits, pass `--no-progress` on the gap report. Bridge candidate eligibility remains unassessed.
+
 Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward cards from other units' files marked `carriedFrom`) against the reasoning vault:
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):** matched vs unmatched candidate archetypes, uncovered `chain` cards (and L2 cards with ≥ 2 `operations`, warning `"no L2 chain archetype"` when the unit vault has none), new trap tags, missing reasoning moves & levels, exam formats seen, deferred `laterUnit` cards, and `Bridge candidates` (`ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`).
 - For bridge candidates, the gap report lists existing bridge archetypes with the same set of units.
