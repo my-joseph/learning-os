@@ -43,6 +43,7 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
 ## 4. Source synthesis (MTH & PRG)
 
 Run `.venv/bin/python -m scripts.source_find <UNIT> --plan` (watch for any unregistered-folder warning under `sources/` or `sources/prg/`; builds the budgeted, diverse, ledger-aware `sources/_index/plan_<UNIT>.json`, skipping `scope`-only and `NO-AUTOMATION` families) and `.venv/bin/python -m scripts.source_gap <UNIT>` (which includes carried-forward cards from other units' `laterUnit` / `units` and compares against `math_engine/reasoning_vault/` for MTH or `code_engine/reasoning_vault/` for PRG).
+- Check the plan’s carried card list even if no new pages are selected. A card deferred to the unit’s chapter carries into each registered child unit.
 - If `plan_<UNIT>.json` has planned batches **or** carried-forward cards exist for `<UNIT>`, run `.claude/skills/synthesize-source/SKILL.md` steps 3–5:
   - Step 3: run worker batches via `scripts.extract_cards_job <UNIT> --batch <k>` + `tools/agents/run-worker.sh` (with `DONE_FILE`) and check `scripts.source_gap <UNIT> --novelty <batch_jsonl>` after each batch, stopping on saturation (two consecutive batches adding `< 2` new cores) or when the plan budget is exhausted.
   - Steps 4–5 (Claude): review `scripts.source_gap <UNIT>` output, update the reasoning vault (for PRG, run `.venv/bin/python -m code_engine.quality_checks --check-vaults`), and run the vault reviewer subagent so the Notion page and first drill already use the synthesised archetypes, traps, and `QC-*` checks.
@@ -101,5 +102,3 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:start-unit --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:start-unit`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
-
-Check the plan’s carried card list even if no new pages are selected. A card deferred to the unit’s chapter carries into each registered child unit.

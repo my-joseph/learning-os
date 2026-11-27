@@ -45,6 +45,7 @@ from math_engine.source_cores import (
     PRG_ARCHETYPE_KINDS,
     REASONING_MOVES,
     CoreCardError,
+    card_targets_unit,
     cores_path,
     is_prg_card,
     is_prg_unit,
@@ -1256,11 +1257,7 @@ def _score_skill_overlap(
 
 
 def _card_effective_unit(card: dict[str, Any], report_unit_code: str) -> str:
-    later = str(card.get("laterUnit") or "").strip()
-    if later == report_unit_code:
-        return report_unit_code
-    units = card.get("units")
-    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == report_unit_code for u in units):
+    if card.get("carriedFrom") or card_targets_unit(card, report_unit_code):
         return report_unit_code
     return str(card.get("unitCode") or report_unit_code).strip()
 

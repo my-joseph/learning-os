@@ -1681,3 +1681,28 @@ def test_prg_fuzzy_duplicates_require_same_level_and_unit_routing_in_both_direct
         other = {**card, **change}
         assert not source_gap.cards_are_fuzzy_duplicate(card, other)[0]
         assert not source_gap.cards_are_fuzzy_duplicate(other, card)[0]
+
+
+def test_chapter_only_carried_card_scores_in_destination_without_deduplicating(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    origin = "MTH-T02-C01-U01"
+    chapter = "MTH-T02-C02"
+    destination = f"{chapter}-U01"
+    codes = {origin, chapter, destination}
+    monkeypatch.setattr(source_cores, "load_valid_unit_codes", lambda: dict.fromkeys(codes, ""))
+    card = _sample_card(id="CORE-ROUTED", unitCode=origin, laterUnit=chapter)
+    source_cores.save_core_cards(origin, [card], sources_dir=str(tmp_path))
+    carried = source_cores.load_core_cards(destination, sources_dir=str(tmp_path))[0]
+    assert carried["carriedFrom"] == origin
+    assert "units" not in carried
+
+    arch = {"archetypeKey": "target-arch", "unitCode": destination, "level": card["level"]}
+    for input_card in (card, carried):
+        scored = source_gap.score_card_against_archetype(input_card, arch, unit_code=destination, is_prg=False)
+        assert scored["scoreBreakdown"]["compatibility"] == 1.0
+        assert "unit match" in scored["reason"]
+
+    local = _sample_card(id="CORE-LOCAL", unitCode=destination)
+    assert not source_gap.cards_are_fuzzy_duplicate(carried, local)[0]
+    assert not source_gap.cards_are_fuzzy_duplicate(local, carried)[0]

@@ -1418,15 +1418,18 @@ def _iter_jsonl_cards(path: str) -> Iterable[tuple[int, dict[str, Any]]]:
             yield line_no, card
 
 
-def _card_targets_unit(card: dict[str, Any], unit_code: str, known_codes: set[str]) -> bool:
+def card_targets_unit(card: dict[str, Any], unit_code: str, known_codes: set[str] | None = None) -> bool:
+    """Check explicit unit routing and expand registered chapter targets to their child units."""
     later = card.get("laterUnit")
     if isinstance(later, str):
         target = later.strip()
         if target == unit_code:
             return True
         chapter, separator, _ = unit_code.rpartition("-U")
-        if separator and target == chapter and target in known_codes and unit_code in known_codes:
-            return True
+        if separator and target == chapter:
+            registered = load_valid_unit_codes() if known_codes is None else known_codes
+            if target in registered and unit_code in registered:
+                return True
     units = card.get("units")
     return isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units)
 
@@ -1478,7 +1481,7 @@ def load_core_cards(
                 if not os.path.isfile(other_path):
                     continue
                 for line_no, card in _iter_jsonl_cards(other_path):
-                    if not _card_targets_unit(card, unit_code, known_codes):
+                    if not card_targets_unit(card, unit_code, known_codes):
                         continue
                     cid = card.get("id")
                     if isinstance(cid, str) and cid in seen_ids:
