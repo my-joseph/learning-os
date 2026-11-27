@@ -840,7 +840,128 @@ async function runTests() {
       assert.ok(!html0.includes("See a worked example"));
     }
 
-    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation)");
+    // -----------------------------------------------------------------------
+    // 8. Quarantined variants (item-level and bank-level) are never served
+    // -----------------------------------------------------------------------
+    {
+      const qUnit = "MTH-T99-C02-U05";
+      const qDrillId = "DRL-MTH-T99-C02-U05-01";
+      fs.mkdirSync(path.join(drillsDir, qUnit), { recursive: true });
+      fs.writeFileSync(
+        path.join(drillsDir, qUnit, `${qDrillId}.json`),
+        JSON.stringify(
+          {
+            schemaVersion: "2.0-math",
+            drillId: qDrillId,
+            subject: "MATH",
+            unitCode: qUnit,
+            unitTitle: "Quarantine Test",
+            chapterCode: "MTH-T99-C02",
+            topicCode: "MTH-T99",
+            problems: [
+              {
+                id: "Q01",
+                level: 2,
+                archetypeKey: "q-arch",
+                prompt: "Evaluate $2 + 2$.",
+                display: "2 + 2",
+                plainText: "2 + 2",
+                answerSpec: { type: "number", value: "4" },
+                answerPlain: "4",
+                answerDisplay: "4",
+                commonTrapTag: "q-trap",
+                trapValue: "5",
+                checkpointHint: "Add both terms.",
+                steps: [{ latex: "2 + 2 = 4", explain: "Add." }],
+              },
+            ],
+          },
+          null,
+          2
+        ),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(variantsDir, `${qUnit}.json`),
+        JSON.stringify(
+          {
+            unitCode: qUnit,
+            variants: [
+              {
+                variantId: `VAR-${qUnit}-q-arch-01`,
+                id: `VAR-${qUnit}-q-arch-01`,
+                archetypeKey: "q-arch",
+                sourceArchetype: "q-arch",
+                level: 2,
+                status: "quarantined",
+                quarantineReason: "pre-distractor-provenance gate; parent drill retired in #338",
+                since: "2026-11-27",
+                prompt: "Evaluate $3 + 3$.",
+                display: "3 + 3",
+                plainText: "3 + 3",
+                answerSpec: { type: "number", value: "6" },
+                answerPlain: "6",
+                answerDisplay: "6",
+                commonTrapTag: "q-trap",
+                trapValue: "7",
+                checkpointHint: "Add both terms.",
+                steps: [{ latex: "3 + 3 = 6", explain: "Add." }],
+              },
+            ],
+          },
+          null,
+          2
+        ),
+        "utf-8"
+      );
+
+      // /api/drill must report hasVariants = false when only quarantined variants exist
+      const qDrillRes = await drillGET(new NextRequest(`http://127.0.0.1:3000/api/drill?id=${qDrillId}`));
+      assert.equal(qDrillRes.status, 200);
+      const qDrillJson = (await qDrillRes.json()) as {
+        problems: Array<{ id: string; hasVariants?: boolean }>;
+      };
+      assert.equal(qDrillJson.problems[0].hasVariants, false, "quarantined variant must not enable Similar");
+
+      // Seed two wrong attempts so both Similar "+" and worked example unlock, then verify neither serves quarantined variants
+      writeProgress({
+        drillId: qDrillId,
+        problems: [
+          {
+            id: "Q01",
+            state: {
+              userInput: "5",
+              score: 0,
+              divergedStep: null,
+              mistakes: [],
+              lastCheck: { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+              attempts: [
+                { input: "5", ts: "2026-11-27T10:00:00Z", verdict: "incorrect" },
+                { input: "6", ts: "2026-11-27T10:05:00Z", verdict: "incorrect" },
+              ],
+            },
+          },
+        ],
+      });
+      const qExRes = await variantGET(
+        new NextRequest(`http://127.0.0.1:3000/api/variant?drillId=${qDrillId}&qid=Q01&mode=example`)
+      );
+      assert.equal(qExRes.status, 404, "mode=example must not serve quarantined variant");
+
+      const qNextRes = await variantPOST(
+        new NextRequest("http://127.0.0.1:3000/api/variant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId: qDrillId, qid: "Q01", action: "open-next" }),
+        })
+      );
+      assert.equal(qNextRes.status, 200);
+      const qNextBody = (await qNextRes.json()) as { exhausted?: boolean; token?: string };
+      assert.equal(qNextBody.exhausted, true, "open-next must skip quarantined variants");
+      assert.equal(qNextBody.token, undefined, "no variant token should be minted for quarantined variants");
+    }
+
+    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation, quarantine)");
   } finally {
     if (prevDrills === undefined) delete process.env.DRILLS_DATA_DIR;
     else process.env.DRILLS_DATA_DIR = prevDrills;

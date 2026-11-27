@@ -73,7 +73,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-01",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of g(x) = #*x^# - #*x^# + #*x - # divided by x - #"
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of g(x) = #*x^# - #*x^# + #*x - # divided by x - #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-02",
@@ -145,7 +148,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-02",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of h(x) = x^# + #*x^# - #*x + # divided by x + #"
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of h(x) = x^# + #*x^# - #*x + # divided by x + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-03",
@@ -221,7 +227,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-03",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of p(x) = #*x^# - #*x^# + #*x - # divided by x + #"
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of p(x) = #*x^# - #*x^# + #*x - # divided by x + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-01",
@@ -307,7 +316,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-01",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $g(x) = x^# + #x^# + #x + #$?"
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $g(x) = x^# + #x^# + #x + #$?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-02",
@@ -393,7 +405,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-02",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $h(x) = x^# - #x^# + #x - #$?"
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $h(x) = x^# - #x^# + #x - #$?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-03",
@@ -479,7 +494,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-03",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $p(x) = x^# + #x^# + #x + #$?"
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $p(x) = x^# + #x^# + #x + #$?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-01",
@@ -552,7 +570,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-01",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + x + #"
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + x + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-02",
@@ -626,7 +647,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-02",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# + #*x^# - #*x + #"
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# + #*x^# - #*x + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-03",
@@ -700,7 +724,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-03",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + #*x + #"
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + #*x + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-01",
@@ -787,7 +814,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-01",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of g(x) = x^# + #*x^# - #*x^# - #*x + # given zero #"
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of g(x) = x^# + #*x^# - #*x^# - #*x + # given zero #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-02",
@@ -875,7 +905,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-02",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of h(x) = x^# - #*x^# - #*x^# + #*x^# + #*x - # given zero #"
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of h(x) = x^# - #*x^# - #*x^# + #*x^# + #*x - # given zero #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-03",
@@ -967,7 +1000,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-03",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of p(x) = x^# - #*x^# - #*x^# + #*x^# + #*x^# - #*x given zero #"
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of p(x) = x^# - #*x^# - #*x^# + #*x^# + #*x^# - #*x given zero #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-01",
@@ -1047,7 +1083,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-01",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and # through (#, #)"
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and # through (#, #)",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-02",
@@ -1127,7 +1166,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-02",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and -# through (#, #)"
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and -# through (#, #)",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-03",
@@ -1206,7 +1248,10 @@
       ],
       "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-03",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Cubic polynomial with zeros -#, #, and # through (#, -#)"
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Cubic polynomial with zeros -#, #, and # through (#, -#)",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     }
   ]
 }

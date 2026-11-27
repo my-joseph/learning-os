@@ -24,7 +24,7 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
   .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --list-vault
   .venv/bin/python -m scripts.vault_report <UNIT>
   ```
-  The report includes failures logged by `vault_report --log` at each archetype's base level.
+  The report includes failures logged by `vault_report --log` at each archetype's base level and flags any `Quarantined variants: N` in this unit. If quarantined variants exist, run `.venv/bin/python -m math_engine.variant_bank --reverify <UNIT>` and re-verify or replace them before authoring Similar variants.
   If the unit has no archetypes (or too few to cover its learning objectives), add them to `math_engine/reasoning_vault/<UNIT>.json` (`{"unitCode": "<UNIT>", "archetypes": [...]}`), each with `unitCode`, `level` (base level), `name`, `coreConcept`, `mentalModel`, `governingRelation`, `cognitiveTraps` as objects (`trapTag`, `description`, `trapFormula`; older vaults use bare tag strings, which still work, but write objects in new archetypes), `versatileDomains` (only real ones), `usedContexts: []`, `source` (the OpenStax section) and a figure decision: `figureBuilders` for anything a learner would sketch (shapes, graphs, number lines, the complex plane), or `figureNone` with a reason (`rules/03` §3.1). Label the asked-for quantity `?`. One L1–L2 archetype per learning objective first, then archetypes that go beyond the book. Follow the shape of `.claude/skills/new-math-drill/template/MTH-TEMPLATE.json` and existing vaults.
 
 - **PRG:**

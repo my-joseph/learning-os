@@ -35,7 +35,7 @@ Cross-check the reports, then recommend specific next actions without leaking co
 - Which named trap to inspect or rewrite when wrong attempts never match it.
 - Which missing archetype or level to drill next; distinguish never drilled from attempted with no clean evidence.
 - For PRG, state which QC check pass/fail counts suggest review work and use `reviews[]` evidence only.
-- Call out Similar variants that exist but were never opened, and drills with no recorded attempt.
+- Call out active Similar variants that have never been opened, and drills with no recorded attempt. Quarantined variants are excluded from this flag.
 
 Keep findings evidence-based and separate system/content issues from learner decisions. Do not reveal an answer while explaining a recommendation.
 

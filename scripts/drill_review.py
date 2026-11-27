@@ -23,7 +23,7 @@ from collections import Counter, defaultdict
 from typing import Any
 
 from math_engine.bridge import BRIDGE_SCOPE, problem_unit_codes
-from math_engine.variant_bank import bank_path
+from math_engine.variant_bank import bank_path, is_quarantined_variant
 from progress_store import (
     compare_iso_timestamps,
     cycle_evidence,
@@ -346,7 +346,7 @@ def _similar_variants_for_missed(
     by_pair: dict[tuple[str, int], list[str]] = defaultdict(list)
     by_arch: Counter[str] = Counter()
     for var in variants:
-        if not isinstance(var, dict):
+        if not isinstance(var, dict) or is_quarantined_variant(var, bank):
             continue
         arch = var.get("sourceArchetype") or var.get("archetypeKey")
         lvl = var.get("level")

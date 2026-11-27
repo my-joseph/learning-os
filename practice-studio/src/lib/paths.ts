@@ -336,9 +336,19 @@ export function loadProblemFromDisk(
   return { doc, problem };
 }
 
+/** True when a variant (or its enclosing bank) is marked quarantined and must never be served. */
+export function isQuarantinedVariant(
+  variant: Record<string, unknown> | null | undefined,
+  bank?: Record<string, unknown> | null
+): boolean {
+  if (bank && bank.status === "quarantined") return true;
+  return Boolean(variant && variant.status === "quarantined");
+}
+
 /** Load an unredacted variant bank JSON file (`drills/variants/<unitCode>.json`) on the server. */
 export function loadVariantBankFromDisk(
-  unitCode: string
+  unitCode: string,
+  options?: { includeQuarantined?: boolean }
 ): { unitCode: string; variants: Array<Record<string, unknown>> } | null {
   if (!isSafeId(unitCode)) return null;
   const filePath = resolveContainedPath(getVariantsDir(), `${unitCode}.json`, {
@@ -348,10 +358,13 @@ export function loadVariantBankFromDisk(
   try {
     const raw = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
     if (!raw || typeof raw !== "object" || !Array.isArray(raw.variants)) return null;
+    const includeQuarantined = Boolean(options?.includeQuarantined);
     return {
       unitCode: typeof raw.unitCode === "string" ? raw.unitCode : unitCode,
       variants: raw.variants.filter(
-        (v): v is Record<string, unknown> => Boolean(v && typeof v === "object")
+        (v): v is Record<string, unknown> =>
+          Boolean(v && typeof v === "object") &&
+          (includeQuarantined || !isQuarantinedVariant(v as Record<string, unknown>, raw))
       ),
     };
   } catch {

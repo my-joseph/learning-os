@@ -159,7 +159,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-02",
@@ -267,7 +270,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-02",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-03",
@@ -427,7 +433,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-01",
@@ -1506,7 +1515,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-02",
@@ -2585,7 +2597,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-03",
@@ -3664,7 +3679,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-01",
@@ -3763,7 +3781,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-01",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-02",
@@ -3858,7 +3879,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-02",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x - #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x - #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-03",
@@ -3953,7 +3977,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-03",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-01",
@@ -4053,7 +4080,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-01",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A test fitted the line $T(x) = #x + #$ to water temperature data collected from $#$ to $#$ minutes. At $#$ minutes, a thermostat limit valve activates to cap the temperature. Should engineers rely on $T(x) = #x + #$ to predict the temperature at $#$ minutes?"
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A test fitted the line $T(x) = #x + #$ to water temperature data collected from $#$ to $#$ minutes. At $#$ minutes, a thermostat limit valve activates to cap the temperature. Should engineers rely on $T(x) = #x + #$ to predict the temperature at $#$ minutes?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-02",
@@ -4153,7 +4183,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-02",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A warehouse study fitted $P(x) = #x + #$ to hourly parcel output for crew sizes from $#$ through $#$ workers. Beyond $#$ workers, the single loading dock saturates. Is it reasonable to use $P(x) = #x + #$ to forecast output for $#$ workers?"
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A warehouse study fitted $P(x) = #x + #$ to hourly parcel output for crew sizes from $#$ through $#$ workers. Beyond $#$ workers, the single loading dock saturates. Is it reasonable to use $P(x) = #x + #$ to forecast output for $#$ workers?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-03",
@@ -4253,7 +4286,10 @@
       },
       "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-03",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A transit agency fitted $R(x) = #x + #$ (in hundreds of riders) to weekday ridership data from weeks $#$ through $#$. At week $#$, the university closed for recess. Should the agency rely on $R(x) = #x + #$ to predict ridership in week $#$ during the recess?"
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A transit agency fitted $R(x) = #x + #$ (in hundreds of riders) to weekday ridership data from weeks $#$ through $#$. At week $#$, the university closed for recess. Should the agency rely on $R(x) = #x + #$ to predict ridership in week $#$ during the recess?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     }
   ]
 }
