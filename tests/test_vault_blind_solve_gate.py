@@ -83,9 +83,15 @@ def test_demand_level_mapping(tags, expected):
     assert demand_level(tags) == expected
 
 
-@pytest.mark.parametrize("level", [3, 4])
-def test_tags_at_or_above_label_pass(level):
-    check(problem(level=level, blindSolve=GOOD_BLIND))  # tags give L4
+def test_tags_matching_label_pass():
+    check(problem(level=4, blindSolve=GOOD_BLIND))  # tags give L4
+
+
+def test_under_labelled_problem_rejected():
+    with pytest.raises(AiContractError, match="under-labelled"):
+        check(problem(level=3, blindSolve=GOOD_BLIND))  # tags give L4 > L3
+    with pytest.raises(AiContractError, match="under-labelled"):
+        check(problem(level=1, blindSolve={"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}))  # L2 > L1
 
 
 def test_l3_must_reach_label_too():
