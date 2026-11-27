@@ -52,6 +52,9 @@ Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api 
   - `sources/_cores/_ledger.json` — incremental extraction ledger keyed by `(unit, file, page)` with extraction timestamp, run ID, produced card IDs, source file SHA-256 hash, and `schemaFingerprint` (SHA-256 of the active schema structure, extraction prompt template and card rules version). Plans revisit legacy entries without a fingerprint. Schema formatting and documentation edits leave the fingerprint unchanged.
 - **Committed summaries:** Only original, source-free archetypes and traps enter `math_engine/reasoning_vault/<UNIT>.json` (`"source": "OpenStax <Book> §x.y; cores: <families>"`; chain archetypes may declare an optional `operations` list) or `code_engine/reasoning_vault/<CHAPTER>.json` (`"source": "docs: <primary doc>; cores: <families>"`).
 
+Math card levels follow the reasoning move. Direct computation is L1–L2 and chain is L2. Translate and reverse start at L2. Case-check, diagnose, multi-relation, model, and generalise start at L3. Diagnose cards require `flawForm`, an object with source-free `step` and `error` descriptions of the flawed transformation and why it is wrong. Only diagnose cards may use this field. Stored legacy cards remain readable and can be retagged without applying the new move bounds. New extraction batches must meet the current rules.
+
+
 Fuzzy card deduplication requires matching levels and unit scope, including deferred and cross-unit targets. Shared traps only support a match when the skills overlap. Math and PRG vault matching discount trap evidence when skill overlap is below 0.12.
 
 Each extraction plan reports scanned source-family count, empty and garbled pages or chunks before OCR, and a PDF OCR retry list under `diagnostics`. The retry list omits scope-only sources and keeps pages without reliable OCR. Text output previews up to ten entries.
