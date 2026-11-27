@@ -131,3 +131,5 @@ Rejections (8-word shingle overlap, normalised text similarity ≥ 0.6, math num
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:synthesize-source --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:synthesize-source`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
+
+Review the plan’s empty and garbled counts before OCR and its source-family total. Use `diagnostics.ocrRetry` in the plan JSON to find unresolved PDF pages.

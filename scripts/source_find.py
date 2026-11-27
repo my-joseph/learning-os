@@ -880,6 +880,10 @@ def find_sources(
     image_only_files: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
 
+    page_quality: Counter[str] = Counter()
+    scanned_families: set[str] = set()
+    ocr_retry: list[dict[str, Any]] = []
+
     if prg_mode:
         code_files, skipped_no_auto = _discover_source_code_files(sdir, families=families, registry_path=registry_path)
         scanned_count = len(code_files)
@@ -922,6 +926,7 @@ def find_sources(
         if mode == "no-automation":
             continue
 
+        scanned_families.add(fam)
         matched_pages: list[dict[str, Any]] = []
         image_pages: list[int] = []
         has_any_text = False
@@ -930,6 +935,7 @@ def find_sources(
             pnum = int(p.get("page", 0))
             text = str(p.get("text") or "")
             quality = classify_text_quality(text) if not prg_mode else ("empty" if not text.strip() else "ok")
+            page_quality[quality] += 1
             ocr_result = None
             if not prg_mode and ocr and quality in {"empty", "garbled"} and mode != "no-automation":
                 pdf_bytes = None
@@ -949,6 +955,18 @@ def find_sources(
                     elif ocr_result:
                         p["needsImage"] = True
                         p["imageFile"] = ocr_result.get("imageFile")
+            if not prg_mode and mode != "scope" and quality in {"empty", "garbled"}:
+                needs_retry = (
+                    not ocr_result
+                    or ocr_result.get("ocrUnavailable")
+                    or ocr_result.get("needsImage")
+                    or classify_text_quality(text) != "ok"
+                )
+                if needs_retry:
+                    retry = {"relPath": rel_path, "page": pnum, "originalQuality": quality}
+                    if ocr_result and ocr_result.get("imageFile"):
+                        retry["imageFile"] = ocr_result["imageFile"]
+                    ocr_retry.append(retry)
             text_source = str(p.get("textSource") or "pdf")
             if not text.strip():
                 if not prg_mode:
@@ -1020,12 +1038,19 @@ def find_sources(
     core_matches.sort(key=lambda r: (-r["totalHits"], r["relPath"]))
     scope_matches.sort(key=lambda r: (-r["totalHits"], r["relPath"]))
 
+    diagnostics = {
+        "emptyPages": page_quality["empty"],
+        "garbledPages": page_quality["garbled"],
+        "sourceFamilyCount": len(scanned_families),
+        "ocrRetry": sorted(ocr_retry, key=lambda item: (item["relPath"], item["page"])),
+    }
     manifest = {
         "unitCode": unit_code,
         "track": "prg" if prg_mode else "math",
         "terms": search_terms,
         "matches": core_matches + scope_matches,
         "imageOnlyFiles": image_only_files,
+        "diagnostics": diagnostics,
         "skippedNoAutomation": skipped_no_auto,
     }
     os.makedirs(idx_dir, exist_ok=True)
@@ -1046,6 +1071,7 @@ def find_sources(
         "coreMatches": core_matches,
         "scopeMatches": scope_matches,
         "imageOnlyFiles": image_only_files,
+        "diagnostics": diagnostics,
         "errors": errors,
         "ocrEnabled": ocr,
     }
@@ -1386,6 +1412,15 @@ def build_extraction_plan(
             "candidatesByFamily": dict(sorted(candidates_by_family.items())),
         },
         "unregisteredSources": list(find_result.get("unregisteredSources") or []),
+        "diagnostics": find_result.get(
+            "diagnostics",
+            {
+                "emptyPages": 0,
+                "garbledPages": 0,
+                "sourceFamilyCount": len(candidates_by_family),
+                "ocrRetry": [],
+            },
+        ),
         "selectedPages": selected,
         "batches": batches,
     }
@@ -1489,6 +1524,18 @@ def format_plan_report(plan: dict[str, Any]) -> str:
         f"Selected: {s['selectedPageCount']} page(s), ~{s['selectedEstimatedItems']} item(s) "
         f"in {s['batchCount']} batch(es)",
     ]
+
+    diagnostics = plan.get("diagnostics", {})
+    retry = diagnostics.get("ocrRetry", [])
+    lines.append(
+        f"Source scan: {diagnostics.get('sourceFamilyCount', 0)} families, "
+        f"{diagnostics.get('emptyPages', 0)} empty and {diagnostics.get('garbledPages', 0)} garbled "
+        f"pages/chunks before OCR. OCR retry: {len(retry)} page(s)."
+    )
+    for item in retry[:10]:
+        lines.append(f"  - {item['relPath']} page {item['page']} ({item['originalQuality']})")
+    if len(retry) > 10:
+        lines.append(f"  See diagnostics.ocrRetry in the plan JSON for all {len(retry)} pages.")
 
     skipped_no_auto = s.get("skippedNoAutomationFamilies") or []
     if skipped_no_auto:
