@@ -14,7 +14,8 @@ Take the brief from the request; ask only if the unit is missing or no vault exi
 - **Context to inspect first**:
   1. Read the unit's Notion page via `id_map.json` (`from notion_sync.client import load_env, require_token, get_all_blocks; token = require_token(load_env().get("NOTION_TOKEN")); blocks = get_all_blocks(page_id, token)`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
   2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels; `(vault)` records are counted at the archetype's base level.
-  3. Run `.venv/bin/python -m scripts.weak_spots <UNIT>` to see open weak spots (`matchedTrap >= 2`, ESLint rules, `QC-*` findings, and the `NEXT` line). Target open weak spots when present.
+  3. Run `.venv/bin/python -m scripts.authoring_signals <UNIT>` (default step; read-only aggregates only, no answers/code; add `--no-progress` for offline/audit runs) to combine `scripts.weak_spots`, `scripts.drill_quality`, recent recurring mistake/check tags, and unit issues. Target open weak spots and difficulty/ladder flags when present, and pass the aggregate summary in the worker spec when delegating authoring.
+  4. For detailed `NEXT`-line weak-spot drill details, `.venv/bin/python -m scripts.weak_spots <UNIT>` remains available.
 - **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4/L5), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
 - **Environment preset**: `node-vanilla` (JS) or `typescript-strict` / `backend-sqlite` / `react-dom` (TS) per the curriculum row.
 
@@ -137,7 +138,7 @@ Report to the learner in polite Thai in a few lines, **without prompts, code, or
    .venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json
    ```
    Report a partial sync with the steps listed in `failedSteps`. A degraded result means registration could not be confirmed.
-2. Create a branch `drill/<DRILL_ID>` (never on `main`), commit **only** the new drill file under `drills/data/<UNIT>/`, its unit/chapter vault file, and `id_map.json`, push, and open a PR (`gh pr create`).
+2. Create a branch `drill/<DRILL_ID>` (never on `main`), commit **only** the new drill file under `drills/data/<UNIT>/`, its unit/chapter vault file, and `id_map.json`, push, and open a PR (`gh pr create`) with a `Signals used:` line in the PR body (from `scripts.authoring_signals <UNIT>`).
 3. Verify the PR diff and CI result, then follow `rules/00_core.md` §10 for delivery. Do not repeat or expand the policy here.
 
 ## Final documentation check
