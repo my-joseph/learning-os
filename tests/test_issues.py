@@ -122,3 +122,29 @@ def test_main_checkout_root_from_worktree(tmp_path):
     (wt / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'wt'}\n")
     assert il.main_checkout_root(str(wt)) == str(main)
     assert il.main_checkout_root(str(main)) == str(main)
+
+
+def test_canonicalize_where_normalises_repo_paths_without_breaking_ids(log):
+    assert (
+        il.canonicalize_where("drills/data/MTH-T02-C04-U01/DRL-MTH-T02-C04-U01-01.json/Q02")
+        == "DRL-MTH-T02-C04-U01-01/Q02"
+    )
+    assert (
+        il.canonicalize_where("./math_engine/reasoning_vault/MTH-T02-C01-U01.json/t02-c01-u01-powers-of-i-cycle@L2")
+        == "MTH-T02-C01-U01/t02-c01-u01-powers-of-i-cycle@L2"
+    )
+    assert il.canonicalize_where("drills/variants/MTH-T02-C02-U05.json") == "MTH-T02-C02-U05"
+    assert il.canonicalize_where("labs/LAB-PRG-T01-C01-01/M2") == "LAB-PRG-T01-C01-01/M2"
+    assert il.canonicalize_where("quality_rules.py") == "quality_rules.py"
+
+    iid, created = il.add_issue(
+        "level",
+        "batch",
+        "gate",
+        "drills/data/MTH-T02-C04-U01/DRL-MTH-T02-C04-U01-01.json/Q02",
+        "fell short of L2",
+    )
+    assert created
+    (rec,) = il.issues(log)
+    assert rec["id"] == iid
+    assert rec["where"] == "DRL-MTH-T02-C04-U01-01/Q02"

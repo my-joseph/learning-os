@@ -821,6 +821,8 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
         ),
         _sample_card(
             id="FX-OVERRIDE",
+            reasoningMove="case-check",
+            level=2,
             laterUnit="MTH-T99-BOGUS",
             skill="Abstract task overridden explicitly",
             notes="Uses explicit override map",
@@ -851,7 +853,7 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert "UNMAPPED:MTH-T99-UNKNOWN: 1" in dry_out
     assert jsonl_path.read_bytes() == orig_bytes
 
-    # Apply rewrites file atomically and every card passes validate_core_card
+    # Apply rewrites file atomically without changing the legacy move or level.
     rc_apply = source_cores_retag.main(
         [str(jsonl_path), "--apply", "--id-map", str(id_map_file), "--overrides", str(overrides_file)]
     )
@@ -868,8 +870,10 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert by_id["FX-POLY"]["laterUnit"] == "MTH-T02-C04-U05"
     assert by_id["FX-OVERRIDE"]["laterUnit"] == "MTH-T02-C09-U08"
     assert by_id["FX-UNMAPPED"]["laterUnit"] == "UNMAPPED:MTH-T99-UNKNOWN"
+    assert by_id["FX-OVERRIDE"]["reasoningMove"] == "case-check"
+    assert by_id["FX-OVERRIDE"]["level"] == 2
     for card in rewritten:
-        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes) == []
+        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes, enforce_move_contract=False) == []
 
 
 def test_source_find_warns_on_unregistered_folders(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1244,12 +1248,12 @@ def test_source_gap_structured_matching_distinct_ambiguous_unmatched(
                 }
             ],
         ),
-        # 2. Ambiguous card spanning two archetypes (plus a 3rd trap to verify <=2 cap)
+        # 2. The skill explicitly names both archetypes’ techniques. The third trap alone should not match.
         _sample_card(
             id="CARD-AMBIGUOUS",
             level=3,
             reasoningMove="multi-relation",
-            skill="Expand complex binomials and rationalize complex quotients in standard form",
+            skill="Expand complex binomials and divide complex numbers by rationalizing with the denominator conjugate",
             difficultyDriver="Combines FOIL expansion, denominator conjugate, and modulus check",
             traps=[
                 {
@@ -1617,3 +1621,41 @@ def test_source_gap_prg_trap_aliases_and_threshold(tmp_path: Path) -> None:
     assert "preserve-input" not in new_trap_tags
     assert "custom-vault-declared-alias" not in new_trap_tags
     assert "circular-import-deadlock" in new_trap_tags
+
+
+@pytest.mark.parametrize("is_prg", [False, True], ids=["math", "prg"])
+@pytest.mark.parametrize(("skill", "trap_factor"), [(0.0, 0.0), (0.06, 0.5), (0.12, 1.0), (0.20, 1.0)])
+def test_trap_weight_requires_skill_overlap(
+    monkeypatch: pytest.MonkeyPatch, is_prg: bool, skill: float, trap_factor: float
+) -> None:
+    card = _sample_prg_card() if is_prg else _sample_card()
+    arch = {"archetypeKey": "arch", "archetypeKind": "refactor"}
+    monkeypatch.setattr(source_gap, "_score_trap_overlap", lambda *a, **kw: (1.0, ["trap"], [], []))
+    monkeypatch.setattr(source_gap, "_score_skill_overlap", lambda *a, **kw: (skill, []))
+    monkeypatch.setattr(source_gap, "_compatibility_score", lambda *a, **kw: (1.0, ""))
+    match = source_gap.score_card_against_archetype(card, arch, unit_code=card["unitCode"], is_prg=is_prg)
+    compatibility_factor = 1.0 if trap_factor else 0.0
+    expected = round(
+        source_gap._TRAP_WEIGHT * trap_factor
+        + source_gap._SKILL_WEIGHT * skill
+        + source_gap._COMPAT_WEIGHT * compatibility_factor,
+        3,
+    )
+    assert match["score"] == expected
+
+
+def test_prg_fuzzy_duplicates_require_same_level_and_unit_routing_in_both_directions() -> None:
+    card = _sample_prg_card(units=["PRG-T00-C03-U01", "PRG-T00-C03-U02"])
+    reorder = {**card, "units": list(reversed(card["units"]))}
+    assert source_gap.cards_are_fuzzy_duplicate(card, reorder) == source_gap.cards_are_fuzzy_duplicate(reorder, card)
+    assert source_gap.cards_are_fuzzy_duplicate(card, reorder)[0]
+
+    for change in (
+        {"level": 4},
+        {"unitCode": "PRG-T00-C03-U03"},
+        {"laterUnit": "PRG-T00-C03-U02"},
+        {"units": ["PRG-T00-C03-U01", "PRG-T00-C03-U03"]},
+    ):
+        other = {**card, **change}
+        assert not source_gap.cards_are_fuzzy_duplicate(card, other)[0]
+        assert not source_gap.cards_are_fuzzy_duplicate(other, card)[0]

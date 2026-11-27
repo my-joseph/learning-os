@@ -53,6 +53,8 @@ For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
      scratch/prompts/<UNIT>-extract-b<k>.txt \
      scratch/logs/<UNIT>-extract-b<k>.log
    ```
+   Diagnose math cards require a source-free `flawForm` object with `step` naming the flawed transformation in the given work and `error` describing why it is wrong. Apply the move-level bounds in the math schema.
+
    The worker drafts batch cards into the batch JSONL and runs `.venv/bin/python -m scripts.extract_cards_job <UNIT> --batch <k> --commit <batch_jsonl> --run-id <run_id> --done-file <done_file>`, which validates every card with `validate_core_card(card, source_item_text=...)`, appends new cards to `sources/_cores/<UNIT>.jsonl`, updates `sources/_cores/_ledger.json` for every page/chunk in batch `k` (including 0-card items), and writes `DONE_FILE`.
 3. Check batch novelty / saturation:
    ```bash
@@ -132,5 +134,7 @@ Rejections (8-word shingle overlap, normalised text similarity ≥ 0.6, math num
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:synthesize-source --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:synthesize-source`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
+
+Fuzzy novelty checks compare cards at the same level and in the same unit scope, including any deferred or cross-unit targets.
 
 Review the plan’s empty and garbled counts before OCR and its source-family total. Use `diagnostics.ocrRetry` in the plan JSON to find unresolved PDF pages.
