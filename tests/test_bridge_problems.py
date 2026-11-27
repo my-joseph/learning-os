@@ -698,3 +698,19 @@ def test_core_card_units_validation_and_source_gap_bridge_candidates(tmp_path: P
     assert "Bridge candidates (2 pair(s), 3 card(s)):" in text
     assert f"{U1} + {U2} [ELIGIBLE] (2 card(s)):" in text
     assert f"{U1} + {U3} [not eligible — needs {U3}] (1 card(s)):" in text
+
+
+def test_source_gap_no_progress_keeps_bridge_candidates(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setattr(source_cores, "load_valid_unit_codes", lambda: {U1: "", U2: ""})
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("The bridge eligibility loader must be skipped")
+
+    monkeypatch.setattr(source_gap, "load_eligible_units", forbidden)
+    source_cores.save_core_cards(U1, [_sample_card(units=[U1, U2])], sources_dir=str(tmp_path))
+    rc = source_gap.main([U1, "--sources-dir", str(tmp_path), "--no-progress", "--json"])
+    assert rc == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["bridgeCandidates"][0]["units"] == sorted([U1, U2])
+    assert report["bridgeCandidates"][0]["eligible"] is None
+    assert "eligibility skipped (--no-progress)" in source_gap.format_gap_report(report)

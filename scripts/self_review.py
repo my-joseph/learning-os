@@ -1133,6 +1133,7 @@ def build_self_review(
     target: str | None = None,
     prs: list[dict[str, Any]] | None = None,
     use_gh: bool = True,
+    no_progress: bool = False,
     python_exe: str | None = None,
 ) -> dict[str, Any]:
     """Run all read-only auto-signal collectors and return ranked improvement proposals."""
@@ -1242,10 +1243,14 @@ def build_self_review(
         followup_prs=gh_sig.get("followupFixPrs", []),
     )
 
-    dq_sig, dq_props, dq_skip = collect_drill_quality_signals(repo_root=root)
-    all_proposals.extend(dq_props)
-    if dq_skip:
-        skipped.append(f"drill-quality: {dq_skip}")
+    if no_progress:
+        dq_sig = {"unitsChecked": 0, "tooEasy": [], "tooHard": []}
+        skipped.append("drill-quality: skipped (--no-progress)")
+    else:
+        dq_sig, dq_props, dq_skip = collect_drill_quality_signals(repo_root=root)
+        all_proposals.extend(dq_props)
+        if dq_skip:
+            skipped.append(f"drill-quality: {dq_skip}")
 
     doc_sig, doc_props, doc_skip = collect_doc_refs_signals(repo_root=root, python_exe=python_exe)
     all_proposals.extend(doc_props)
@@ -1386,13 +1391,18 @@ def main(argv: list[str] | None = None) -> int:
         help="filter proposals to a target skill or area (e.g. engine, ux, skill:health-check)",
     )
     ap.add_argument("--limit", type=int, default=20, help="max proposals to print in text mode (0 = all)")
+    ap.add_argument("--no-progress", action="store_true", help="skip progress-derived drill-quality signals")
     ap.add_argument("--no-gh", action="store_true", help="skip calling `gh pr list`")
     ap.add_argument("--json", action="store_true", help="emit full structured report as JSON")
     args = ap.parse_args(argv)
 
     try:
         report = build_self_review(
-            since=args.since, compare_at=args.compare_at, target=args.target, use_gh=not args.no_gh
+            since=args.since,
+            compare_at=args.compare_at,
+            target=args.target,
+            use_gh=not args.no_gh,
+            no_progress=args.no_progress,
         )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)

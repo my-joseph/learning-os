@@ -821,3 +821,18 @@ def test_every_skill_has_self_review_step() -> None:
         assert f"scripts.issues propose --target skill:{skill_name}" in text, (
             f"{skill_md} missing scripts.issues propose --target skill:{skill_name}"
         )
+
+
+def test_self_review_no_progress_skips_collector(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def forbidden(*args, **kwargs):
+        pytest.fail("The progress collector must be skipped")
+
+    monkeypatch.setattr(sr, "collect_drill_quality_signals", forbidden)
+    report = sr.build_self_review(
+        repo_root=str(tmp_path),
+        issues_path=str(tmp_path / "issues.jsonl"),
+        use_gh=False,
+        no_progress=True,
+    )
+    assert "drill-quality: skipped (--no-progress)" in report["skipped"]
+    assert all(proposal["category"] != "drill-quality" for proposal in report["proposals"])
