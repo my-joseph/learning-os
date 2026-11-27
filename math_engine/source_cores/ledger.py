@@ -8,18 +8,71 @@ which core cards it produced, and the source file's SHA-256 content hash. Stored
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
 import tempfile
 import zipfile
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Iterable
 
-from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores import PRG_SCHEMA_PATH, REPO_ROOT, SCHEMA_PATH, is_prg_unit, resolve_sources_dir
 
 LEDGER_FILENAME = "_ledger.json"
 LEDGER_VERSION = 1
+# Bump for extraction-relevant changes to validate_core_card alone.
+CARD_RULES_VERSION = "1"
+EXTRACTION_PROMPT_PATH = Path(REPO_ROOT) / "scripts" / "extract_cards_job.py"
+
+_SCHEMA_DOC_KEYS = {"$schema", "$id", "title", "description", "$comment", "examples"}
+_SCHEMA_MAP_KEYS = {"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"}
+_SCHEMA_LIST_KEYS = {"allOf", "anyOf", "oneOf", "prefixItems"}
+_SCHEMA_CHILD_KEYS = {
+    "additionalProperties",
+    "unevaluatedProperties",
+    "propertyNames",
+    "items",
+    "contains",
+    "unevaluatedItems",
+    "not",
+    "if",
+    "then",
+    "else",
+    "additionalItems",
+    "contentSchema",
+}
+
+
+def _structural_schema(schema: Any) -> Any:
+    """Skip annotations at schema nodes while preserving property names and literal values."""
+    if not isinstance(schema, dict):
+        return schema
+    result = {}
+    for key, value in schema.items():
+        if key in _SCHEMA_DOC_KEYS:
+            continue
+        if key in _SCHEMA_MAP_KEYS:
+            value = {name: _structural_schema(child) for name, child in value.items()}
+        elif key in _SCHEMA_LIST_KEYS or (key == "items" and isinstance(value, list)):
+            value = [_structural_schema(child) for child in value]
+        elif key in _SCHEMA_CHILD_KEYS:
+            value = _structural_schema(value)
+        result[key] = value
+    return result
+
+
+def card_schema_fingerprint(unit_code: str) -> str:
+    """Hash the active schema structure, prompt template, and validator rules version."""
+    schema_path = PRG_SCHEMA_PATH if is_prg_unit(unit_code) else SCHEMA_PATH
+    schema = _structural_schema(json.loads(Path(schema_path).read_text(encoding="utf-8")))
+    prompt_module = ast.parse(EXTRACTION_PROMPT_PATH.read_text(encoding="utf-8"))
+    template = next(
+        node for node in prompt_module.body if isinstance(node, ast.FunctionDef) and node.name == "build_worker_prompt"
+    )
+    payload = json.dumps([schema, ast.dump(template), CARD_RULES_VERSION], sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def ledger_path(sources_dir: str | None = None) -> str:
@@ -136,20 +189,14 @@ def is_page_extracted(
     page: int | str,
     *,
     current_file_hash: str | None = None,
+    current_schema_fingerprint: str | None = None,
 ) -> bool:
-    """Return True if ``(unit_code, rel_path, page)`` is recorded and its file hash still matches.
-
-    If ``current_file_hash`` is provided and differs from the recorded ``fileHash`` (or the entry
-    lacks a hash), returns False so the modified file will be re-extracted.
-    """
+    """Check that the recorded file hash and extraction contract still match."""
     entry = get_ledger_entry(ledger, unit_code, rel_path, page)
-    if entry is None:
+    if entry is None or not current_file_hash:
         return False
-    if current_file_hash:
-        recorded_hash = entry.get("fileHash")
-        if not isinstance(recorded_hash, str) or recorded_hash != current_file_hash:
-            return False
-    return True
+    fingerprint = current_schema_fingerprint or card_schema_fingerprint(unit_code)
+    return entry.get("fileHash") == current_file_hash and entry.get("schemaFingerprint") == fingerprint
 
 
 def record_extraction(
@@ -176,6 +223,7 @@ def record_extraction(
         "cardsProduced": card_ids,
         "cardCount": len(card_ids),
         "fileHash": file_hash,
+        "schemaFingerprint": card_schema_fingerprint(unit_code),
     }
     ledger["entries"][ledger_key(unit_code, norm_file, page)] = entry
     save_ledger(ledger, sources_dir=sources_dir)
@@ -197,6 +245,7 @@ def record_batch_extractions(
     """
     ledger = load_ledger(sources_dir=sources_dir)
     ts = extracted_at or _utc_now_iso()
+    fingerprint = card_schema_fingerprint(unit_code)
     written: list[dict[str, Any]] = []
     for rec in page_records:
         raw_file = rec.get("file") or rec.get("relPath") or ""
@@ -214,6 +263,7 @@ def record_batch_extractions(
             "cardsProduced": card_ids,
             "cardCount": len(card_ids),
             "fileHash": str(rec.get("fileHash") or ""),
+            "schemaFingerprint": fingerprint,
         }
         ledger["entries"][ledger_key(unit_code, norm_file, page)] = entry
         written.append(entry)
