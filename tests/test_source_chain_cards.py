@@ -680,3 +680,28 @@ def test_u01_chain_archetype_covers_prompt_example_and_bare_operations(
     # Out-of-scope operation is not falsely covered
     out_of_scope = _math_card(reasoningMove="chain", level=2, operations=["multiply", "square root"])
     assert not source_gap._archetype_covers_chain_card(out_of_scope, arch)
+
+
+@pytest.mark.parametrize(
+    ("move", "level"),
+    [
+        ("direct", 3),
+        ("translate", 1),
+        ("reverse", 1),
+        ("case-check", 2),
+        ("diagnose", 2),
+        ("multi-relation", 2),
+        ("model", 2),
+        ("generalise", 2),
+    ],
+)
+def test_math_card_move_level_bounds(move: str, level: int) -> None:
+    errors = source_cores.validate_core_card(_math_card(reasoningMove=move, level=level))
+    assert any(error.startswith("level:") for error in errors)
+
+
+def test_diagnose_card_requires_abstract_flaw_form() -> None:
+    card = _math_card(reasoningMove="diagnose", level=3)
+    assert any(error.startswith("flawForm:") for error in source_cores.validate_core_card(card))
+    card["flawForm"] = "Given a quotient derivation, identify where conjugation changes the denominator incorrectly."
+    assert source_cores.validate_core_card(card) == []

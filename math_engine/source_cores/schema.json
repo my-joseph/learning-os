@@ -100,6 +100,13 @@
         "maxLength": 200
       }
     },
+    "flawForm": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "\\S",
+      "description": "Source-free description of the given work and its wrong step. Required when reasoningMove is diagnose."
+    },
     "difficultyDriver": {
       "type": "string",
       "minLength": 1,
@@ -174,5 +181,23 @@
     "properties": {
       "level": { "const": 2 }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "reasoningMove": { "const": "direct" } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "maximum": 2 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "enum": ["translate", "reverse"] } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "minimum": 2 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "enum": ["case-check", "diagnose", "model", "multi-relation", "generalise"] } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "minimum": 3 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "const": "diagnose" } }, "required": ["reasoningMove"] },
+      "then": { "required": ["flawForm"] }
+    }
+  ]
 }
