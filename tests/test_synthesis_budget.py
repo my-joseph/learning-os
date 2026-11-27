@@ -471,6 +471,31 @@ def test_ledger_skip_hash_change_and_refresh_flag(
     assert all(p["relPath"] == "SmartMathPro/smp.pdf" for p in plan_changed["selectedPages"])
 
 
+def test_ledger_replans_legacy_entries_and_prompt_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    sdir, registry, backlog = _setup_multi_family_sources(
+        tmp_path, monkeypatch, smp_pages=2, thai_pages=0, mg_pages=0, im_pages=0, items_per_page=1
+    )
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(sdir))
+    found = source_find.find_sources(UNIT, registry_path=str(registry))
+    plan = source_find.build_extraction_plan(found, registry_path=str(registry), backlog_path=str(backlog))
+    for page in plan["selectedPages"]:
+        ledger.record_extraction(
+            UNIT, page["relPath"], page["page"], run_id="test", cards_produced=[], file_hash=page["fileHash"]
+        )
+    stored = ledger.load_ledger()
+    first = next(iter(stored["entries"].values()))
+    first.pop("schemaFingerprint")
+    ledger.save_ledger(stored)
+    legacy = source_find.build_extraction_plan(found, registry_path=str(registry), backlog_path=str(backlog))
+    assert legacy["summary"]["selectedPageCount"] == 1
+    assert legacy["summary"]["skippedLedgerPages"] == 1
+
+    monkeypatch.setattr(ledger, "EXTRACTION_PROMPT_VERSION", "test-version")
+    changed = source_find.build_extraction_plan(found, registry_path=str(registry), backlog_path=str(backlog))
+    assert changed["summary"]["selectedPageCount"] == 2
+    assert changed["summary"]["skippedLedgerPages"] == 0
+
+
 # ---------------------------------------------------------------------------
 # 4. Batch novelty & saturation counting (scripts.source_gap --novelty)
 # ---------------------------------------------------------------------------

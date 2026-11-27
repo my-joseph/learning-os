@@ -14,12 +14,22 @@ import os
 import tempfile
 import zipfile
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Iterable
 
-from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores import PRG_SCHEMA_PATH, SCHEMA_PATH, resolve_sources_dir
 
 LEDGER_FILENAME = "_ledger.json"
 LEDGER_VERSION = 1
+# Bump when the extraction instructions in scripts/extract_cards_job.py change.
+EXTRACTION_PROMPT_VERSION = "1"
+
+
+def card_schema_fingerprint(unit_code: str) -> str:
+    """Hash the schema for this unit and the extraction prompt version."""
+    schema_path = PRG_SCHEMA_PATH if unit_code.strip().startswith("PRG-") else SCHEMA_PATH
+    version = EXTRACTION_PROMPT_VERSION.encode("utf-8")
+    return hashlib.sha256(version + bytes(1) + Path(schema_path).read_bytes()).hexdigest()
 
 
 def ledger_path(sources_dir: str | None = None) -> str:
@@ -136,20 +146,14 @@ def is_page_extracted(
     page: int | str,
     *,
     current_file_hash: str | None = None,
+    current_schema_fingerprint: str | None = None,
 ) -> bool:
-    """Return True if ``(unit_code, rel_path, page)`` is recorded and its file hash still matches.
-
-    If ``current_file_hash`` is provided and differs from the recorded ``fileHash`` (or the entry
-    lacks a hash), returns False so the modified file will be re-extracted.
-    """
+    """Check that the recorded file hash and extraction contract still match."""
     entry = get_ledger_entry(ledger, unit_code, rel_path, page)
-    if entry is None:
+    if entry is None or not current_file_hash:
         return False
-    if current_file_hash:
-        recorded_hash = entry.get("fileHash")
-        if not isinstance(recorded_hash, str) or recorded_hash != current_file_hash:
-            return False
-    return True
+    fingerprint = current_schema_fingerprint or card_schema_fingerprint(unit_code)
+    return entry.get("fileHash") == current_file_hash and entry.get("schemaFingerprint") == fingerprint
 
 
 def record_extraction(
@@ -176,6 +180,7 @@ def record_extraction(
         "cardsProduced": card_ids,
         "cardCount": len(card_ids),
         "fileHash": file_hash,
+        "schemaFingerprint": card_schema_fingerprint(unit_code),
     }
     ledger["entries"][ledger_key(unit_code, norm_file, page)] = entry
     save_ledger(ledger, sources_dir=sources_dir)
@@ -197,6 +202,7 @@ def record_batch_extractions(
     """
     ledger = load_ledger(sources_dir=sources_dir)
     ts = extracted_at or _utc_now_iso()
+    fingerprint = card_schema_fingerprint(unit_code)
     written: list[dict[str, Any]] = []
     for rec in page_records:
         raw_file = rec.get("file") or rec.get("relPath") or ""
@@ -214,6 +220,7 @@ def record_batch_extractions(
             "cardsProduced": card_ids,
             "cardCount": len(card_ids),
             "fileHash": str(rec.get("fileHash") or ""),
+            "schemaFingerprint": fingerprint,
         }
         ledger["entries"][ledger_key(unit_code, norm_file, page)] = entry
         written.append(entry)
