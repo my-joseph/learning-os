@@ -93,7 +93,7 @@ For L3+, copy the answer, ambiguity, the six tags and `edgeRejected` (when `chec
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file scratch/drafts/<file>.json --check
 ```
 
-It lists every failing problem at once. Fix them all and re-run until it prints `OK`.
+It lists every failing problem at once, prints figure-title and distractor-provenance warnings, and states in its final summary whether originality was checked or skipped (and why). Fix every error and re-run until it prints `OK`. To inspect corpus-wide originality skips across math drills and variant banks, run `.venv/bin/python -m math_engine.ai_drill_ingest --originality-summary`.
 
 ## 7. Automated review (replaces learner approval)
 

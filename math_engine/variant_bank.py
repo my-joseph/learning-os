@@ -36,6 +36,7 @@ from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.ai_drill_ingest import (
     AiContractError,
     _run_problem_gates,
+    check_distractor_provenance,
     load_scope_archetypes,
     normalize_prompt_numbers,
     story_text,
@@ -555,6 +556,8 @@ def add_variants(
         raise VariantBankError("Variant bank gates failed:\n" + "\n".join(f"  - {e}" for e in errs))
 
     save_bank(resolved_unit, candidate_doc, variants_dir=variants_dir)
+    for warn in check_variant_bank_warnings(candidate_doc, vault_dir=vault_dir):
+        print(f"WARNING: {warn}")
     return candidate_doc
 
 
@@ -936,6 +939,178 @@ def collect_uncovered_pairs(repo_root: Path) -> Dict[str, List[Dict[str, Any]]]:
     return uncovered
 
 
+def check_variant_bank_warnings(
+    bank_doc: Dict[str, Any],
+    vault_dir: Optional[str] = None,
+) -> List[str]:
+    """Return non-blocking warnings (figure titles + distractor provenance) for a variant bank."""
+    unit_code = bank_doc.get("unitCode")
+    variants = [v for v in (bank_doc.get("variants") or []) if isinstance(v, dict)]
+    if not unit_code or not variants:
+        return []
+    vault_archs = load_scope_archetypes(str(unit_code), vault_dir=vault_dir)
+    checked: List[Dict[str, Any]] = []
+    prov_warnings: List[str] = []
+    for idx, original in enumerate(variants, 1):
+        if is_quarantined_variant(original, bank_doc):
+            continue
+        prob = copy.deepcopy(original)
+        prob["id"] = str(original.get("variantId") or original.get("id") or f"V{idx:02d}")
+        autofill_problem_figure(prob, vault_archs)
+        checked.append(prob)
+        _, p_warns = check_distractor_provenance(prob, vault_archs)
+        prov_warnings.extend(p_warns)
+    return list(dict.fromkeys([*collect_figure_title_warnings(checked), *prov_warnings]))
+
+
+def check_variant_bank_report(
+    bank_doc: Dict[str, Any],
+    data_root: Optional[str] = None,
+    vault_dir: Optional[str] = None,
+    rules: Optional[Dict[str, Any]] = None,
+    check_originality: bool = True,
+    sources_dir: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Run all variant bank gates and return structured errors, warnings, and originality skip status."""
+    errors = check_variant_bank(
+        bank_doc,
+        data_root=data_root,
+        vault_dir=vault_dir,
+        rules=rules,
+        check_originality=False,
+    )
+    warnings = check_variant_bank_warnings(bank_doc, vault_dir=vault_dir)
+    variants = [v for v in (bank_doc.get("variants") or []) if isinstance(v, dict)]
+    n = len(variants)
+    unit_code = str(bank_doc.get("unitCode") or "")
+    if not check_originality:
+        orig = {
+            "status": "skipped",
+            "checkedVariants": 0,
+            "skippedVariants": n,
+            "reason": "disabled by --no-originality",
+            "errors": [],
+        }
+    else:
+        resolved_sources = resolve_sources_dir(sources_dir=sources_dir)
+        if not os.path.isdir(resolved_sources):
+            orig = {
+                "status": "skipped",
+                "checkedVariants": 0,
+                "skippedVariants": n,
+                "reason": f"sources directory not found ({resolved_sources})",
+                "errors": [],
+            }
+        else:
+            orig_errors, orig_notice = check_document_originality(
+                bank_doc,
+                unit_code=unit_code,
+                sources_dir=resolved_sources,
+            )
+            if orig_notice:
+                orig = {
+                    "status": "skipped",
+                    "checkedVariants": 0,
+                    "skippedVariants": n,
+                    "reason": orig_notice,
+                    "errors": orig_errors,
+                }
+            else:
+                orig = {
+                    "status": "checked",
+                    "checkedVariants": n,
+                    "skippedVariants": 0,
+                    "reason": None,
+                    "errors": orig_errors,
+                }
+            errors = list(dict.fromkeys([*errors, *orig_errors]))
+    return {
+        "unitCode": unit_code,
+        "variantCount": n,
+        "errors": errors,
+        "warnings": warnings,
+        "originality": orig,
+    }
+
+
+def find_orphaned_variant_banks(
+    repo_root: Optional[Path] = None,
+    *,
+    variants_dir: Optional[str] = None,
+    data_root: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Read-only listing of math variant banks with zero matching active drill (archetypeKey, level) pairs."""
+    root = repo_root or Path(find_repo_root())
+    droot = Path(data_root) if data_root else (root / "drills" / "data")
+    vroot = Path(variants_dir) if variants_dir else (root / "drills" / "variants")
+
+    active_pairs: set[Tuple[str, int]] = set()
+    if droot.is_dir():
+        for scope in sorted(droot.iterdir()):
+            if not scope.is_dir() or not scope.name.startswith("MTH-"):
+                continue
+            for path in sorted(scope.glob("*.json")):
+                drill_file = assert_safe_contained_path(path, droot, suffixes=JSON_SUFFIXES)
+                doc = json.loads(drill_file.read_text(encoding="utf-8"))
+                for prob in doc.get("problems") or []:
+                    if not isinstance(prob, dict):
+                        continue
+                    key, lv = prob.get("archetypeKey"), prob.get("level")
+                    if isinstance(key, str) and key.strip() and isinstance(lv, int):
+                        active_pairs.add((key.strip(), lv))
+
+    orphaned: List[Dict[str, Any]] = []
+    total_variants = 0
+    if vroot.is_dir():
+        for path in sorted(vroot.glob("MTH-*.json")):
+            bank_file = assert_safe_contained_path(path, vroot, suffixes=JSON_SUFFIXES)
+            doc = json.loads(bank_file.read_text(encoding="utf-8"))
+            unit_code = str(doc.get("unitCode") or path.stem)
+            variants = [v for v in (doc.get("variants") or []) if isinstance(v, dict)]
+            bank_pairs = {
+                (str(v.get("archetypeKey")).strip(), v.get("level"))
+                for v in variants
+                if isinstance(v.get("archetypeKey"), str)
+                and str(v.get("archetypeKey")).strip()
+                and isinstance(v.get("level"), int)
+            }
+            if not (bank_pairs & active_pairs):
+                rel_path = str(bank_file.relative_to(root)) if bank_file.is_relative_to(root) else str(bank_file)
+                arch_keys = sorted({k for k, _ in bank_pairs})
+                orphaned.append(
+                    {
+                        "unitCode": unit_code,
+                        "path": rel_path,
+                        "variantCount": len(variants),
+                        "archetypeKeys": arch_keys,
+                        "reason": "no matching active drill pair",
+                    }
+                )
+                total_variants += len(variants)
+
+    return {
+        "bankCount": len(orphaned),
+        "variantCount": total_variants,
+        "orphanedBanks": orphaned,
+    }
+
+
+def format_orphaned_banks_report(report: Dict[str, Any]) -> str:
+    """Format ``find_orphaned_variant_banks`` output as a read-only CLI listing (no deletions)."""
+    banks = report.get("orphanedBanks") or []
+    if not banks:
+        return "Orphaned variant banks (read-only): 0 bank(s), 0 variant(s)."
+    lines = [
+        f"Orphaned variant banks (read-only; no files deleted): "
+        f"{report['bankCount']} bank(s), {report['variantCount']} variant(s)."
+    ]
+    for entry in banks:
+        lines.append(
+            f"  ORPHAN {entry['unitCode']}: {entry['variantCount']} variant(s) ({entry['path']}) — {entry['reason']}"
+        )
+    return "\n".join(lines)
+
+
 def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
     """Check canonical math drill coverage against the shrink-only baseline."""
     root = repo_root or Path(find_repo_root())
@@ -971,6 +1146,13 @@ def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
     if stale:
         lines.append("Remove any drill key left with an empty list.")
     lines.append(f"Baseline: {len(baseline)} drill(s), {len(expected)} pair(s).")
+    orphans = find_orphaned_variant_banks(root)
+    if orphans["bankCount"]:
+        summary = ", ".join(f"{b['unitCode']} ({b['variantCount']})" for b in orphans["orphanedBanks"])
+        lines.append(
+            f"Orphaned variant banks (read-only): {orphans['bankCount']} bank(s), "
+            f"{orphans['variantCount']} variant(s): {summary}."
+        )
     return passed, "\n".join(lines)
 
 
@@ -1106,6 +1288,11 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="UNIT",
         help="Run current gates on quarantined variants in UNIT and list which pass (add --apply to un-quarantine passing ones).",
     )
+    group.add_argument(
+        "--orphans",
+        action="store_true",
+        help="Read-only listing of math variant banks with no matching active drill (no deletions).",
+    )
     parser.add_argument(
         "--apply",
         action="store_true",
@@ -1118,7 +1305,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_MIN_VARIANTS,
         help=f"Minimum variants per (archetypeKey, level) for --coverage (default: {DEFAULT_MIN_VARIANTS}).",
     )
-    parser.add_argument("--json", action="store_true", help="With --coverage or --reverify: print structured JSON output.")
+    parser.add_argument(
+        "--json", action="store_true", help="With --coverage, --orphans, or --reverify: print structured JSON output."
+    )
     parser.add_argument(
         "--originality",
         action=argparse.BooleanOptionalAction,
@@ -1163,6 +1352,21 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(format_reverify_report(report))
         return 0
 
+    if args.orphans:
+        try:
+            report = find_orphaned_variant_banks(
+                variants_dir=os.environ.get("VARIANTS_DIR") or None,
+                data_root=os.environ.get("DRILLS_DATA_DIR") or None,
+            )
+        except (OSError, ValueError) as exc:
+            print(f"FAIL Could not list orphaned variant banks: {exc}")
+            return 1
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            print(format_orphaned_banks_report(report))
+        return 0
+
     if args.coverage:
         try:
             report = compute_coverage(args.coverage, min_variants=args.min_variants)
@@ -1186,9 +1390,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
         errs = check_variant_bank(doc)
         resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+        orig_skip_reason: Optional[str] = None
         if args.originality is False:
-            pass
+            orig_skip_reason = "disabled by --no-originality"
         elif not os.path.isdir(resolved_sources):
+            orig_skip_reason = f"sources directory not found ({resolved_sources})"
             print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
         else:
             orig_errors, orig_notice = check_document_originality(
@@ -1197,17 +1403,24 @@ def main(argv: Optional[List[str]] = None) -> int:
                 sources_dir=resolved_sources,
             )
             if orig_notice:
+                orig_skip_reason = orig_notice
                 print(f"NOTE: {orig_notice}")
             errs.extend(orig_errors)
-        for warn in collect_figure_title_warnings(doc.get("variants") or []):
+        for warn in check_variant_bank_warnings(doc):
             print(f"WARNING: {warn}")
         for line in errs:
             print(f"  FAIL {line}")
         n = len(doc.get("variants") or [])
+        orig_tail = (
+            f"originality skipped ({n}/{n} variants skipped: {orig_skip_reason})"
+            if orig_skip_reason
+            else f"originality checked (0/{n} variants skipped)"
+        )
         if errs:
-            print(f"\n{len(errs)} error(s) across {n} variant(s).")
+            print(f"\n{len(errs)} error(s) across {n} variant(s); {orig_tail}.")
             return 1
-        print(f"OK: all {n} variants in {doc.get('unitCode')} pass every gate.")
+        gate_label = "checked gates" if orig_skip_reason else "every gate"
+        print(f"OK: all {n} variants in {doc.get('unitCode')} pass {gate_label}; {orig_tail}.")
         return 0
 
     if args.add:
@@ -1219,8 +1432,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"FAIL {exc}")
             return 1
         print(f"OK: {saved['unitCode']} now holds {len(saved['variants'])} gated variant(s).")
-        for warn in collect_figure_title_warnings(saved.get("variants") or []):
-            print(f"WARNING: {warn}")
         return 0
 
     return 1
