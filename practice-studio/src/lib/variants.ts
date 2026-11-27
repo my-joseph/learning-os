@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { isSafeId, loadVariantBankFromDisk } from "./paths";
+import { isQuarantinedVariant, isSafeId, loadVariantBankFromDisk } from "./paths";
 import { isTimestampInCycle } from "./reviewGuard";
 import { openedSimilarTokens } from "./similarTabs";
 import { ProblemState, VariantSessionRecord } from "@/types/drill";
@@ -113,6 +113,7 @@ export function findVariantsForProblem(
     }
 
     for (const v of variants) {
+      if (isQuarantinedVariant(v)) continue;
       const vid = typeof v.variantId === "string" ? v.variantId : "";
       if (!vid || seenIds.has(vid)) continue;
       const vArch =
@@ -147,7 +148,7 @@ export function pickNextVariantForCycle(
   state?: ProblemState | null
 ): Record<string, unknown> | null {
   const eligible = variants.filter(
-    (v) => typeof v.variantId === "string" && isSafeId(v.variantId)
+    (v) => !isQuarantinedVariant(v) && typeof v.variantId === "string" && isSafeId(v.variantId)
   );
   if (eligible.length === 0) return null;
 
@@ -192,10 +193,11 @@ export function pickExampleVariant(
   variants: Array<Record<string, unknown>>,
   variantsSeen: string[]
 ): Record<string, unknown> | null {
-  if (variants.length === 0) return null;
+  const active = variants.filter((v) => !isQuarantinedVariant(v));
+  if (active.length === 0) return null;
   const seenSet = new Set(variantsSeen);
-  const unseen = variants.find(
+  const unseen = active.find(
     (v) => typeof v.variantId === "string" && !seenSet.has(v.variantId)
   );
-  return unseen ?? variants[0];
+  return unseen ?? active[0];
 }
