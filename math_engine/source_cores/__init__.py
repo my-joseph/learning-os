@@ -36,6 +36,7 @@ ALLOWED_USE_MODES: tuple[str, ...] = ("scope", "cores", "reuse", "no-automation"
 
 REASONING_MOVES: tuple[str, ...] = (
     "direct",
+    "chain",
     "reverse",
     "translate",
     "diagnose",
@@ -162,7 +163,7 @@ _REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "format",
     "representation",
 )
-_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units"))
+_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units", "operations"))
 
 _PRG_REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "id",
@@ -772,6 +773,10 @@ def _content_string_fields(card: dict[str, Any]) -> list[tuple[str, str]]:
         val = card.get(key)
         if isinstance(val, str):
             fields.append((key, val))
+    if isinstance(card.get("operations"), list):
+        for idx, op in enumerate(card["operations"]):
+            if isinstance(op, str):
+                fields.append((f"operations[{idx}]", op))
     for idx, trap in enumerate(card.get("traps") or []):
         if isinstance(trap, dict):
             for sub in ("tag", "description"):
@@ -1190,6 +1195,25 @@ def validate_core_card(
 
     if "reasoningMove" in card and card["reasoningMove"] not in REASONING_MOVES:
         errors.append(f"reasoningMove: must be one of {list(REASONING_MOVES)}, got {card['reasoningMove']!r}.")
+
+    if "operations" in card:
+        ops = card["operations"]
+        if not isinstance(ops, list) or len(ops) < 2:
+            errors.append("operations: must be a list of at least 2 ordered sub-skill names.")
+        else:
+            distinct_ops: set[str] = set()
+            for idx, op in enumerate(ops):
+                if not isinstance(op, str) or not op.strip():
+                    errors.append(f"operations[{idx}]: must be a non-empty string.")
+                else:
+                    norm_op = " ".join(re.findall(r"[a-z0-9]+", op.lower())) or op.strip().lower()
+                    distinct_ops.add(norm_op)
+            if len(distinct_ops) < 2 and all(isinstance(op, str) and op.strip() for op in ops):
+                errors.append("operations: must contain at least 2 distinct sub-skill names.")
+    elif card.get("reasoningMove") == "chain":
+        errors.append(
+            "operations: required when reasoningMove is 'chain' (list of at least 2 ordered sub-skill names)."
+        )
 
     if "level" in card:
         lvl = card["level"]

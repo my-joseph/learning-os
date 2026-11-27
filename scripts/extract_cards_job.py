@@ -257,16 +257,25 @@ def build_worker_prompt(
         intro = "Read ONLY the assigned pages listed below, abstract source-free mathematical core cards, validate every card"
         rules_section = [
             "## Strict No-Copy, Zero-Leak & Validation Rules",
-            "1. **Abstract mathematical cores ONLY:** extract `skill`, `reasoningMove`, `difficultyDriver`, `level` (1-5), "
-            "`traps` (`[{tag, description}]`), `format` (`{kind, optionCount?, distractorPatterns?}`), `representation`, "
-            "and optional `notes`.",
+            "1. **Abstract mathematical cores ONLY:** extract `skill`, `reasoningMove`, optional `operations` "
+            "(ordered list of >= 2 distinct taught sub-skill names; required when `reasoningMove` is `chain`), "
+            "`difficultyDriver`, `level` (1-5), `traps` (`[{tag, description}]`), "
+            "`format` (`{kind, optionCount?, distractorPatterns?}`), `representation`, and optional `notes`.",
             "2. **ZERO source wording:** NEVER copy, translate, or paraphrase source sentences or phrases (even short "
             "6-word overlaps are rejected by `validate_core_card`).",
             "3. **ZERO source numbers:** NEVER reuse any numeric literal from the source item text anywhere in content "
-            "fields (`skill`, `difficultyDriver`, `traps`, `format.distractorPatterns`, `notes`).",
+            "fields (`skill`, `operations`, `difficultyDriver`, `traps`, `format.distractorPatterns`, `notes`).",
             f"4. **Length limit:** EVERY string field (top-level and nested) MUST be <= {MAX_FIELD_LENGTH} characters.",
-            "5. **Allowed enums:**",
+            "5. **Allowed enums & move boundary (`chain` vs `multi-relation`/`model`):**",
             f"   - `reasoningMove`: {list(REASONING_MOVES)}",
+            "   - **`chain` (L2, requires `operations` with >= 2 distinct ordered sub-skills):** given expression, "
+            "method obvious, >= 2 different taught operations executed in sequence. Original example: "
+            '`{"skill": "Expand a product of binomials then simplify the quotient via conjugate rationalization", '
+            '"reasoningMove": "chain", "operations": ["complex-multiply", "complex-divide"], "level": 2}`.',
+            "   - **`multi-relation` / `model` (L3+):** the solver must combine relations into an equation the prompt "
+            "does not state. Original example: "
+            '`{"skill": "Combine an unstated modulus relation with a real-part constraint to form and solve a '
+            'quadratic equation for a parameter", "reasoningMove": "multi-relation", "level": 3}`.',
             f"   - `format.kind`: {list(FORMAT_KINDS)}",
             f"   - `representation`: {list(REPRESENTATIONS)}",
             "6. **Scope & provenance:**",
@@ -288,8 +297,9 @@ def build_worker_prompt(
             f"source-free JSONL cards into `{out_batch}` (create an empty file if a batch yields 0 usable cards)."
         )
         step3 = (
-            "3. If `--commit` reports any validation errors (copied digits, wording overlap, length > 200, unknown "
-            "`laterUnit`), fix the flagged card(s) in the batch JSONL and re-run the commit command until it exits 0."
+            "3. If `--commit` reports any validation errors (copied digits, wording overlap, length > 200, missing "
+            "`operations` on a `chain` card, unknown `laterUnit`), fix the flagged card(s) in the batch JSONL and "
+            "re-run the commit command until it exits 0."
         )
 
     sections = [

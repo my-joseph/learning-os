@@ -480,6 +480,127 @@ def _norm_skill_str(text: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
 
 
+_OP_TOKEN_ALIASES: dict[str, str] = {
+    "multiplication": "multiply",
+    "multiplying": "multiply",
+    "multiplied": "multiply",
+    "product": "multiply",
+    "division": "divide",
+    "dividing": "divide",
+    "divided": "divide",
+    "quotient": "divide",
+    "addition": "add",
+    "adding": "add",
+    "added": "add",
+    "subtraction": "subtract",
+    "subtracting": "subtract",
+    "subtracted": "subtract",
+    "expanding": "expand",
+    "expansion": "expand",
+    "expanded": "expand",
+    "simplifying": "simplify",
+    "simplification": "simplify",
+    "simplified": "simplify",
+    "factoring": "factor",
+    "factorization": "factor",
+    "factorisation": "factor",
+    "squaring": "square",
+    "squared": "square",
+    "powers": "power",
+    "conjugation": "conjugate",
+    "rationalization": "rationalize",
+    "rationalisation": "rationalize",
+    "rationalizing": "rationalize",
+    "rationalising": "rationalize",
+}
+
+
+def _normalize_operation(op: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", (op or "").lower()))
+
+
+def _card_operations_list(card: dict[str, Any]) -> list[str]:
+    raw = card.get("operations")
+    if not isinstance(raw, list):
+        return []
+    return [op.strip() for op in raw if isinstance(op, str) and op.strip()]
+
+
+def _card_operations_set(card: dict[str, Any]) -> set[str]:
+    return {norm for op in _card_operations_list(card) if (norm := _normalize_operation(op))}
+
+
+def _archetype_operations_set(arch: dict[str, Any]) -> set[str]:
+    raw = arch.get("operations")
+    if not isinstance(raw, list):
+        return set()
+    return {norm for op in raw if isinstance(op, str) and (norm := _normalize_operation(op))}
+
+
+def _is_chain_card(card: dict[str, Any]) -> bool:
+    move = str(card.get("reasoningMove") or "").strip().lower()
+    if move == "chain":
+        return True
+    lvl = card.get("level")
+    return lvl == 2 and len(_card_operations_set(card)) >= 2
+
+
+def _op_tokens(op: str) -> set[str]:
+    words = re.findall(r"[a-z0-9]+", (op or "").lower())
+    out: set[str] = set()
+    for w in words:
+        if w in _STOPWORDS:
+            continue
+        out.add(_OP_TOKEN_ALIASES.get(w, _light_stem(w)))
+    return out
+
+
+def _op_matches(op_c: str, op_a: str) -> bool:
+    if op_c == op_a:
+        return True
+    tc = _op_tokens(op_c)
+    ta = _op_tokens(op_a)
+    if not tc or not ta:
+        return False
+    return tc <= ta or ta <= tc or _dice_similarity(tc, ta) >= 0.6
+
+
+def _operations_covered(card_ops: set[str], arch_ops: set[str]) -> bool:
+    if len(arch_ops) < len(card_ops):
+        return False
+    c_list = sorted(card_ops)
+    a_list = sorted(arch_ops)
+    used: set[int] = set()
+
+    def _dfs(idx: int) -> bool:
+        if idx == len(c_list):
+            return True
+        c_op = c_list[idx]
+        for j, a_op in enumerate(a_list):
+            if j not in used and _op_matches(c_op, a_op):
+                used.add(j)
+                if _dfs(idx + 1):
+                    return True
+                used.remove(j)
+        return False
+
+    return _dfs(0)
+
+
+def _archetype_covers_chain_card(card: dict[str, Any], arch: dict[str, Any]) -> bool:
+    arch_ops = _archetype_operations_set(arch)
+    if len(arch_ops) < 2:
+        return False
+    a_lvl = arch.get("level")
+    c_lvl = card.get("level")
+    if isinstance(a_lvl, int) and isinstance(c_lvl, int) and a_lvl > c_lvl:
+        return False
+    card_ops = _card_operations_set(card)
+    if not card_ops:
+        return True
+    return _operations_covered(card_ops, arch_ops)
+
+
 def _card_trap_tags(card: dict[str, Any]) -> set[str]:
     return {
         t["tag"].strip().lower()
@@ -671,11 +792,25 @@ def cards_are_fuzzy_duplicate(
     else:
         move_a = str(candidate.get("reasoningMove") or "").strip().lower()
         move_b = str(existing.get("reasoningMove") or "").strip().lower()
+        ops_a = _card_operations_set(candidate)
+        ops_b = _card_operations_set(existing)
         if move_a != move_b:
+            reason = "chain vs non-chain card" if "chain" in (move_a, move_b) else "different reasoningMove"
             return (
                 False,
-                {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different reasoningMove"},
+                {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": reason},
             )
+        if ops_a or ops_b:
+            if ops_a > ops_b or ops_b > ops_a:
+                return (
+                    False,
+                    {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "strictly broader operation set"},
+                )
+            if ops_a != ops_b:
+                return (
+                    False,
+                    {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different operation set"},
+                )
         desc_a = str(candidate.get("skill") or "")
         desc_b = str(existing.get("skill") or "")
 
@@ -729,6 +864,17 @@ def cards_are_fuzzy_duplicate(
                 "trapSimilarity": trap_sim,
                 "sharedTraps": shared_traps,
                 "reason": f"same {axis} + high skill similarity",
+                "duplicateType": "near",
+            },
+        )
+    if not cand_prg and move_a == "chain" and len(ops_a) >= 2 and ops_a == ops_b:
+        return (
+            True,
+            {
+                "skillSimilarity": skill_sim,
+                "trapSimilarity": trap_sim,
+                "sharedTraps": shared_traps,
+                "reason": "same chain operation set",
                 "duplicateType": "near",
             },
         )
@@ -966,6 +1112,8 @@ def _infer_vault_moves(archetypes: list[dict[str, Any]]) -> set[str]:
         lvl = arch.get("level")
         if isinstance(lvl, int) and lvl <= 2:
             moves.add("direct")
+        if len(_archetype_operations_set(arch)) >= 2:
+            moves.add("chain")
         blob = " ".join(
             _flatten_text(arch.get(k))
             for k in ("archetypeKey", "name", "coreConcept", "mentalModel", "levelNote", "governingRelation")
@@ -1222,7 +1370,9 @@ def _compatibility_score(
 
 
 def _card_skill_tokens(card: dict[str, Any]) -> set[str]:
-    primary = _match_tokens(" ".join(_flatten_text(card.get(k)) for k in ("core", "skill", "relation", "concept")))
+    primary = _match_tokens(
+        " ".join(_flatten_text(card.get(k)) for k in ("core", "skill", "relation", "concept", "operations"))
+    )
     if primary:
         return primary
     return _match_tokens(_flatten_text(card.get("difficultyDriver")))
@@ -1232,7 +1382,7 @@ def _archetype_skill_tokens(arch: dict[str, Any]) -> set[str]:
     return _match_tokens(
         " ".join(
             _flatten_text(arch.get(k))
-            for k in ("name", "coreConcept", "governingRelation", "governingInvariant", "competencies")
+            for k in ("name", "coreConcept", "governingRelation", "governingInvariant", "competencies", "operations")
         )
     )
 
@@ -1381,6 +1531,7 @@ def _match_cards_to_archetypes(
         c_traps = _card_trap_entries(card)
         c_qcs = _card_qc_entries(card) if is_prg else []
         c_skill = _card_skill_tokens(card)
+        card_is_chain = (not is_prg) and _is_chain_card(card)
 
         candidates = [
             _score_card_with_features(
@@ -1399,6 +1550,7 @@ def _match_cards_to_archetypes(
                 a_aliases=arch_alias_cache[idx],
             )
             for idx, arch in enumerate(archetypes)
+            if (not card_is_chain) or _archetype_covers_chain_card(card, arch)
         ]
 
         candidates.sort(
@@ -1433,6 +1585,9 @@ def _match_cards_to_archetypes(
                 "level": card["level"],
                 "reasoningMove": card["reasoningMove"],
             }
+            card_ops = _card_operations_list(card)
+            if card_ops:
+                summary["operations"] = card_ops
         if card.get("carriedFrom"):
             summary["carriedFrom"] = card["carriedFrom"]
 
@@ -1699,6 +1854,34 @@ def build_gap_report(
             if card["id"] not in entry["cardIds"]:
                 entry["cardIds"].append(card["id"])
 
+    # Chain-card coverage (chain move or L2 cards with >= 2 operations)
+    chain_cards = [c for c in current_cards if _is_chain_card(c)]
+    vault_chain_archetypes = [a for a in archetypes if len(_archetype_operations_set(a)) >= 2]
+    vault_l2_chain_archetypes = [a for a in vault_chain_archetypes if a.get("level") == 2]
+    covered_chain_cards: list[dict[str, Any]] = []
+    uncovered_chain_cards: list[dict[str, Any]] = []
+    for card in chain_cards:
+        covering = [
+            str(a.get("archetypeKey") or "") for a in vault_chain_archetypes if _archetype_covers_chain_card(card, a)
+        ]
+        chain_entry: dict[str, Any] = {
+            "id": card["id"],
+            "level": card["level"],
+            "reasoningMove": card["reasoningMove"],
+            "skill": card["skill"],
+            "operations": _card_operations_list(card),
+        }
+        if card.get("carriedFrom"):
+            chain_entry["carriedFrom"] = card["carriedFrom"]
+        if covering:
+            covered_chain_cards.append({**chain_entry, "matchedArchetypes": covering})
+        else:
+            uncovered_chain_cards.append(chain_entry)
+
+    chain_warnings: list[str] = []
+    if chain_cards and not vault_l2_chain_archetypes:
+        chain_warnings.append("no L2 chain archetype in unit vault for extracted chain card(s).")
+
     # Reasoning moves & levels gap
     card_levels = Counter(int(c["level"]) for c in current_cards)
     card_moves = Counter(str(c["reasoningMove"]) for c in current_cards)
@@ -1802,6 +1985,15 @@ def build_gap_report(
         "vaultArchetypeCount": len(archetypes),
         "matchedCards": matched_cards,
         "unmatchedCards": unmatched_cards,
+        "chainCards": {
+            "totalChainCards": len(chain_cards),
+            "vaultChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_chain_archetypes],
+            "vaultL2ChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_l2_chain_archetypes],
+            "hasL2ChainArchetype": bool(vault_l2_chain_archetypes),
+            "coveredCards": covered_chain_cards,
+            "uncoveredCards": uncovered_chain_cards,
+            "warnings": chain_warnings,
+        },
         "newTraps": sorted(new_traps_map.values(), key=lambda x: x["tag"]),
         "levels": {
             "vaultBaseLevels": sorted(vault_levels),
@@ -1982,6 +2174,23 @@ def format_gap_report(report: dict[str, Any]) -> str:
     for item in unmatched:
         carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
         lines.append(f"  - [{item['id']}] L{item['level']} {item['reasoningMove']} — {item['skill']}{carried_tag}")
+
+    lines.append("")
+    chain_info = report.get("chainCards") or {}
+    uncovered_chains = chain_info.get("uncoveredCards") or []
+    total_chains = int(chain_info.get("totalChainCards") or 0)
+    chain_warnings = chain_info.get("warnings") or []
+    lines.append(f"Chain cards not covered by vault archetypes ({len(uncovered_chains)}/{total_chains}):")
+    for warn in chain_warnings:
+        lines.append(f"  WARNING: {warn}")
+    if not uncovered_chains:
+        lines.append("  (none)")
+    for item in uncovered_chains:
+        ops_tag = f" [{' -> '.join(item['operations'])}]" if item.get("operations") else ""
+        carried_tag = f" [carried from {item['carriedFrom']}]" if item.get("carriedFrom") else ""
+        lines.append(
+            f"  - [{item['id']}] L{item['level']} {item['reasoningMove']}{ops_tag} — {item['skill']}{carried_tag}"
+        )
 
     lines.append("")
     new_traps = report["newTraps"]

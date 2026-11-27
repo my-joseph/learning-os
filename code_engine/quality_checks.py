@@ -357,6 +357,11 @@ def validate_math_archetype(
                 elif getattr(figure_builder, spec["fn"], None) is None:
                     errors.append(f"{label}.figureBuilders[{idx}]: unknown builder function '{spec['fn']}'.")
 
+    if "operations" in archetype:
+        ops = archetype["operations"]
+        if not isinstance(ops, list) or not ops or not all(isinstance(item, str) and item.strip() for item in ops):
+            errors.append(f"{label}: 'operations' must be a non-empty list of non-empty strings when present.")
+
     for rec in ("unitCode", "source"):
         val = archetype.get(rec)
         if not isinstance(val, str) or not val.strip():
