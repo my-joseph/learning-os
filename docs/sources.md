@@ -48,5 +48,6 @@ Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api 
 - **Local artifacts (all gitignored under `sources/`):**
   - `sources/_index/` — cached extracted PDF/code/markdown text (`pdf_*.json`, `code_*.json`), per-unit located manifests (`located_<UNIT>.json`), and budgeted extraction plans (`plan_<UNIT>.json`).
   - `sources/_cores/<UNIT>.jsonl` — validated, source-free core cards (≤ 200 chars per field, zero copied wording, numbers, code, identifiers, test names, or strings).
+  - Vault archetypes may list contributing card IDs in `sourceCards`. The gap report prefers explicit links, then reports cards with no match and trap tags missing from the scoped vault.
   - `sources/_cores/_ledger.json` — incremental extraction ledger keyed by `(unit, file, page)` with extraction timestamp, run ID, produced card IDs, and source file SHA-256 hash.
 - **Committed summaries:** Only original, source-free archetypes and traps enter `math_engine/reasoning_vault/<UNIT>.json` (`"source": "OpenStax <Book> §x.y; cores: <families>"`; chain archetypes may declare an optional `operations` list) or `code_engine/reasoning_vault/<CHAPTER>.json` (`"source": "docs: <primary doc>; cores: <families>"`).
