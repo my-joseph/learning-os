@@ -134,3 +134,93 @@ def test_prg_scope_vault_report(tmp_path, monkeypatch):
     assert rows["prg-u1"]["earned"] == {3: 1} and rows["prg-u1"]["flags"] == []
     assert rows["prg-u2"]["flags"] == ["UNPROVEN"]
     assert sorted(_rows(vr.unit_report("PRG-X-C01-U01", str(vault), str(tmp_path / "data")))) == ["prg-u1"]
+
+
+def test_vault_report_counts_legacy_paths_qids_and_gate_gaps_without_rewriting_log(tmp_path, monkeypatch):
+    log_file = tmp_path / "legacy_log.jsonl"
+    monkeypatch.setenv("LEARNINGOS_ISSUE_LOG", str(log_file))
+    vault = tmp_path / "vault"
+    vault.mkdir()
+    (vault / "MTH-Z-U01.json").write_text(
+        json.dumps(
+            {
+                "unitCode": "MTH-Z-U01",
+                "archetypes": [
+                    {"archetypeKey": "z-alpha", "unitCode": "MTH-Z-U01", "level": 2},
+                    {"archetypeKey": "z-beta", "unitCode": "MTH-Z-U01", "level": 3},
+                ],
+            }
+        )
+    )
+    data_dir = tmp_path / "data" / "MTH-Z-U01"
+    data_dir.mkdir(parents=True)
+    (data_dir / "DRL-MTH-Z-U01-01.json").write_text(
+        json.dumps(
+            {
+                "drillId": "DRL-MTH-Z-U01-01",
+                "unitCode": "MTH-Z-U01",
+                "problems": [
+                    {"id": "Q01", "archetypeKey": "z-alpha", "level": 2},
+                    {"id": "Q02", "archetypeKey": "z-beta", "level": 3},
+                ],
+            }
+        )
+    )
+    # Write raw legacy JSONL directly (must not be rewritten by vault_report).
+    raw_lines = [
+        {
+            "id": "a1",
+            "date": "2026-11-20",
+            "kind": "level",
+            "severity": "batch",
+            "source": "reviewer",
+            "where": "MTH-Z-U01/Q01",
+            "what": "short L2",
+            "action": "dropped",
+        },
+        {
+            "id": "a2",
+            "date": "2026-11-20",
+            "kind": "level",
+            "severity": "batch",
+            "source": "gate",
+            "where": "drills/data/MTH-Z-U01/DRL-MTH-Z-U01-01.json/Q02",
+            "what": "missed L3",
+            "action": "dropped",
+        },
+        {
+            "id": "a3",
+            "date": "2026-11-20",
+            "kind": "gate-gap",
+            "severity": "batch",
+            "source": "gate",
+            "where": "DRL-MTH-Z-U01-01/Q01,Q02",
+            "what": "distractor gap",
+            "action": "open",
+        },
+        {
+            "id": "a4",
+            "date": "2026-11-20",
+            "kind": "level",
+            "severity": "batch",
+            "source": "reviewer",
+            "where": "MTH-Z-U01/synthesis-draft/Q09",
+            "what": "draft fell short",
+            "action": "auto-fixed",
+        },
+    ]
+    raw_content = "\n".join(json.dumps(r) for r in raw_lines) + "\n"
+    log_file.write_text(raw_content, encoding="utf-8")
+
+    rep = vr.unit_report("MTH-Z-U01", str(vault), str(tmp_path / "data"), log=str(log_file))
+    rows = _rows(rep)
+    assert rows["z-alpha"]["failed"] == {2: 1}
+    assert rows["z-beta"]["failed"] == {3: 1}
+    assert rows["z-alpha"]["gateFailed"] == 1
+    assert rows["z-beta"]["gateFailed"] == 1
+    assert [f["id"] for f in rep["scopeFailures"]] == ["a4"]
+    text = vr.format_report(rep)
+    assert "gate-gap x1" in text
+    assert "Scope level/gate issues (1 unattributed): [a4]" in text
+    # Log file stays untouched on disk.
+    assert log_file.read_text(encoding="utf-8") == raw_content
