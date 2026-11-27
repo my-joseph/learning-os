@@ -1,0 +1,106 @@
+{
+  "drills": {
+    "DRL-MTH-T01-C04-01": [
+      "Q04"
+    ],
+    "DRL-MTH-T01-C04-02": [
+      "Q03"
+    ],
+    "DRL-MTH-T01-C07-01": [
+      "Q04"
+    ],
+    "DRL-MTH-T02-C01-U01-03": [
+      "Q03",
+      "Q04"
+    ],
+    "DRL-MTH-T02-C01-U01-05": [
+      "Q01"
+    ],
+    "DRL-MTH-T02-C02-U03-01": [
+      "Q02"
+    ],
+    "DRL-MTH-T02-C02-U06-01": [
+      "Q04"
+    ],
+    "DRL-MTH-T02-C02-U07-01": [
+      "Q03"
+    ],
+    "DRL-MTH-T02-C03-U01-01": [
+      "Q04"
+    ],
+    "DRL-MTH-T02-C04-U02-01": [
+      "Q03",
+      "Q04"
+    ],
+    "DRL-MTH-T02-C04-U03-01": [
+      "Q05"
+    ]
+  },
+  "variants": {
+    "MTH-T01-C04": [
+      "VAR-MTH-T01-C04-c04-fraction-addition-like-denominators-01",
+      "VAR-MTH-T01-C04-c04-fraction-addition-like-denominators-02",
+      "VAR-MTH-T01-C04-c04-fraction-addition-like-denominators-03",
+      "VAR-MTH-T01-C04-c04-fraction-addition-unlike-denominators-lcd-01",
+      "VAR-MTH-T01-C04-c04-fraction-addition-unlike-denominators-lcd-03",
+      "VAR-MTH-T01-C04-c04-fraction-division-reciprocal-inversion-01",
+      "VAR-MTH-T01-C04-c04-fraction-division-reciprocal-inversion-02",
+      "VAR-MTH-T01-C04-c04-fraction-division-reciprocal-inversion-03"
+    ],
+    "MTH-T01-C07": [
+      "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-01",
+      "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-02",
+      "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-03"
+    ],
+    "MTH-T02-C01-U01": [
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-01",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-02",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-03",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-02",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-01",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-02",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-03",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-01",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-02",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-03"
+    ],
+    "MTH-T02-C02-U03": [
+      "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-02"
+    ],
+    "MTH-T02-C02-U05": [
+      "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-01",
+      "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-02"
+    ],
+    "MTH-T02-C02-U06": [
+      "VAR-MTH-T02-C02-U06-t02-c02-u06-solve-absolute-value-inequality-01",
+      "VAR-MTH-T02-C02-U06-t02-c02-u06-solve-absolute-value-inequality-02",
+      "VAR-MTH-T02-C02-U06-t02-c02-u06-solve-absolute-value-inequality-03"
+    ],
+    "MTH-T02-C02-U07": [
+      "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-01",
+      "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-02",
+      "VAR-MTH-T02-C02-U07-t02-c02-u07-restrict-domain-and-swap-sets-03"
+    ],
+    "MTH-T02-C03-U01": [
+      "VAR-MTH-T02-C03-U01-t02-c03-u01-classify-line-relations-01",
+      "VAR-MTH-T02-C03-U01-t02-c03-u01-classify-line-relations-02",
+      "VAR-MTH-T02-C03-U01-t02-c03-u01-classify-line-relations-03"
+    ],
+    "MTH-T02-C04-U02": [
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-01",
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-02",
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-03",
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-01",
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-02",
+      "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-03"
+    ],
+    "MTH-T02-C04-U03": [
+      "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-01",
+      "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-02",
+      "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-03"
+    ],
+    "MTH-T02-C05-U01": [
+      "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-02"
+    ]
+  }
+}

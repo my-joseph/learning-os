@@ -392,6 +392,43 @@ def test_plan_budget_caps_pages_and_items(tmp_path: Path, monkeypatch: pytest.Mo
     assert item_plan["summary"]["selectedEstimatedItems"] == 12
     assert [p["itemAllowance"] for p in item_plan["selectedPages"]] == [5, 5, 2]
 
+    first_pages = {(p["relPath"], p["page"]) for p in item_plan["selectedPages"]}
+    stop = item_plan["continuation"]["stopAfter"]
+    assert (stop["relPath"], stop["page"]) == (
+        item_plan["selectedPages"][-1]["relPath"],
+        item_plan["selectedPages"][-1]["page"],
+    )
+    next_plan = source_find.build_extraction_plan(
+        find_res2,
+        budget_items=12,
+        sources_dir=str(sdir2_src),
+        registry_path=str(reg2),
+        backlog_path=str(backlog2),
+    )
+    next_pages = {(p["relPath"], p["page"]) for p in next_plan["selectedPages"]}
+    assert len(next_pages) == 3 and first_pages.isdisjoint(next_pages)
+    assert next_plan["summary"]["skippedPlannedPages"] == 3
+
+    reset = source_find.build_extraction_plan(
+        find_res2,
+        budget_items=12,
+        sources_dir=str(sdir2_src),
+        refresh=True,
+        registry_path=str(reg2),
+        backlog_path=str(backlog2),
+    )
+    assert {(p["relPath"], p["page"]) for p in reset["selectedPages"]} == first_pages
+
+
+def test_exercise_heading_and_numbered_items_raise_rank() -> None:
+    plain = {"hits": 2, "charLen": 600, "estimatedItems": 1}
+    exercise = {**plain, "estimatedItems": 4, "exerciseHeading": True}
+    args = {"registry_priorities": {}, "backlog_ranks": {}}
+    first_score, _ = source_find._score_candidate_page("fixture.pdf", "fixture", plain, **args)
+    exercise_score, breakdown = source_find._score_candidate_page("fixture.pdf", "fixture", exercise, **args)
+    assert exercise_score > first_score
+    assert breakdown["exerciseBoost"] > 0
+
 
 # ---------------------------------------------------------------------------
 # 3. Extraction ledger: incremental skip, hash-change refresh, --refresh flag
@@ -566,6 +603,7 @@ def test_source_gap_novelty_fuzzy_duplicates_and_saturation(
             "CORE-EX-02",
             skill="Determine parameter bounds from quadratic discriminant condition",
             move="case-check",
+            level=3,
             traps=[{"tag": "t02-c01-u02-discriminant-sign-error-trap", "description": "Sign error in -4ac"}],
         ),
     ]
@@ -585,6 +623,7 @@ def test_source_gap_novelty_fuzzy_duplicates_and_saturation(
             "CORE-B1-02",
             skill="Find unknown parameter using quadratic discriminant constraint",
             move="case-check",
+            level=3,
             traps=[{"tag": "discriminant-sign-trap", "description": "Wrong sign on 4ac"}],
         ),
         # 3. Truly NEW core: different reasoningMove ("reverse") even on completing-the-square
@@ -869,3 +908,83 @@ def test_extract_cards_job_prompt_and_commit(
     )
     assert plan_after["summary"]["skippedLedgerPages"] == 2
     assert plan_after["summary"]["selectedPageCount"] == 1
+
+
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "แบบฝึกหัดที่ 1",
+        "แบบฝึกหัดท้ายบท",
+        "Exercises",
+        "Practice Problems",
+        "## Exercises",
+        "### 2.1 Problem Set",
+        "4) Exercises",
+        "2. แบบฝึกหัดที่ 1",
+    ],
+)
+def test_exercise_heading_recognizes_pdf_and_markdown_forms(heading: str) -> None:
+    assert source_find._EXERCISE_HEADING_RE.search(f"Intro text\n{heading}\n")
+
+
+@pytest.mark.parametrize("line", ["Reading exercises are helpful", "## Exerciseless", "## Concept Summary"])
+def test_exercise_heading_does_not_match_prose_or_unrelated_headings(line: str) -> None:
+    assert not source_find._EXERCISE_HEADING_RE.search(line)
+
+
+def test_prg_continuation_accepts_legacy_plan_and_retains_uncommitted_chunks_after_exhaustion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unit = "PRG-T00-C03"
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(tmp_path))
+    index = tmp_path / "_index"
+    index.mkdir()
+    (index / f"plan_{unit}.json").write_text(
+        json.dumps({"summary": {"includeAnswerKeys": False}, "selectedPages": [{"page": 1}]}), encoding="utf-8"
+    )
+    found = {
+        "unitCode": unit,
+        "coreMatches": [
+            {"relPath": "prg/exercism-javascript/fixture.md", "pages": [{"page": 1}, {"page": 2}, {"page": 3}]}
+        ],
+    }
+
+    def plan(**kwargs):
+        return source_find.build_extraction_plan(found, budget_items=1, **kwargs)
+
+    first = plan()
+    assert first["track"] == "prg"
+    assert first["selectedPages"][0]["page"] == 1
+    assert plan()["selectedPages"][0]["page"] == 2
+    last = plan()
+    assert last["selectedPages"][0]["page"] == 3
+    assert last["continuation"]["exhausted"]
+    exhausted = plan()
+    assert exhausted["selectedPages"] == []
+    assert exhausted["summary"]["skippedPlannedPages"] == 3
+    assert exhausted["continuation"] == last["continuation"]
+    assert plan(refresh=True)["selectedPages"][0]["page"] == 1
+
+
+def test_changed_card_schema_replans_ledger_and_continuation_pages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(tmp_path))
+    schema_file = tmp_path / "schema.json"
+    schema = json.loads(Path(ledger.SCHEMA_PATH).read_text(encoding="utf-8"))
+    schema_file.write_text(json.dumps(schema), encoding="utf-8")
+    monkeypatch.setattr(ledger, "SCHEMA_PATH", str(schema_file))
+    rel_path = "SmartMathPro/fixture.pdf"
+    found = {"unitCode": UNIT, "coreMatches": [{"relPath": rel_path, "pages": [{"page": 1}, {"page": 2}]}]}
+    first = source_find.build_extraction_plan(found, budget_items=1)
+    ledger.record_extraction(
+        UNIT, rel_path, 1, run_id="test", cards_produced=[], file_hash=first["selectedPages"][0]["fileHash"]
+    )
+    assert source_find.build_extraction_plan(found, budget_items=1)["summary"]["skippedLedgerPages"] == 1
+
+    schema["properties"]["skill"]["maxLength"] -= 1
+    schema_file.write_text(json.dumps(schema), encoding="utf-8")
+    changed = source_find.build_extraction_plan(found)
+    assert [page["page"] for page in changed["selectedPages"]] == [1, 2]
+    assert changed["summary"]["skippedLedgerPages"] == 0
+    assert changed["summary"]["skippedPlannedPages"] == 0

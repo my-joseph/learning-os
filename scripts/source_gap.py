@@ -40,11 +40,12 @@ from typing import Any, Iterable
 
 from code_engine.ai_drill_ingest import load_scope_archetypes as load_code_scope_archetypes
 from math_engine.ai_drill_ingest import load_scope_archetypes as load_math_scope_archetypes
-from math_engine.bridge import MIN_BRIDGE_UNITS
+from math_engine.bridge import MIN_BRIDGE_UNITS, load_bridge_vault
 from math_engine.source_cores import (
     PRG_ARCHETYPE_KINDS,
     REASONING_MOVES,
     CoreCardError,
+    card_targets_unit,
     cores_path,
     is_prg_card,
     is_prg_unit,
@@ -1256,11 +1257,7 @@ def _score_skill_overlap(
 
 
 def _card_effective_unit(card: dict[str, Any], report_unit_code: str) -> str:
-    later = str(card.get("laterUnit") or "").strip()
-    if later == report_unit_code:
-        return report_unit_code
-    units = card.get("units")
-    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == report_unit_code for u in units):
+    if card.get("carriedFrom") or card_targets_unit(card, report_unit_code):
         return report_unit_code
     return str(card.get("unitCode") or report_unit_code).strip()
 
@@ -1439,6 +1436,98 @@ def score_card_against_archetype(
     )
 
 
+def _source_card_ids(arch: dict[str, Any]) -> set[str]:
+    ids = arch.get("sourceCards")
+    if not isinstance(ids, list):
+        return set()
+    return {cid.strip() for cid in ids if isinstance(cid, str) and cid.strip()}
+
+
+def _source_link_unit_matches(card: dict[str, Any], arch_unit: str) -> bool:
+    later = str(card.get("laterUnit") or "").strip()
+    targets = {later or str(card.get("unitCode") or "").strip()}
+    units = card.get("units")
+    if isinstance(units, list):
+        targets.update(unit.strip() for unit in units if isinstance(unit, str))
+    return any(
+        target and (arch_unit == target or arch_unit.startswith(target + "-") or target.startswith(arch_unit + "-"))
+        for target in targets
+    )
+
+
+def _source_link_issues(card: dict[str, Any], arch: dict[str, Any], unit_code: str, *, is_prg: bool) -> list[str]:
+    issues = []
+    arch_unit = str(arch.get("unitCode") or arch.get("_vaultFile") or unit_code).strip()
+    if not _source_link_unit_matches(card, arch_unit):
+        issues.append(f"card is routed outside archetype unit {arch_unit}")
+    if card.get("level") != arch.get("level"):
+        issues.append(f"level differs: card L{card.get('level')}, archetype L{arch.get('level')}")
+    if is_prg:
+        card_kind = _normalize_prg_archetype_kind(card.get("archetypeKind"))
+        if card_kind and card_kind not in _infer_vault_prg_kinds([arch]):
+            issues.append(f"archetype kind differs from {card_kind}")
+    elif _is_chain_card(card):
+        if not _archetype_covers_chain_card(card, arch):
+            issues.append("chain requires an L2 archetype with matching operations")
+    else:
+        move = card.get("reasoningMove")
+        arch_move = arch.get("reasoningMove")
+        if (arch_move and move != arch_move) or (not arch_move and move not in _infer_vault_moves([arch])):
+            issues.append(f"archetype does not indicate reasoning move {move}")
+    return issues
+
+
+def _source_link_warnings(
+    cards_path: str,
+    unit_code: str,
+    cards: list[dict[str, Any]],
+    archetypes: list[dict[str, Any]],
+    matches: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    warnings = [
+        {"cardId": card["id"], "archetypeKey": hit["archetypeKey"], "issues": hit["compatibilityWarnings"]}
+        for card in matches
+        for hit in card["matches"]
+        if hit.get("compatibilityWarnings")
+    ]
+    matched_links = {
+        (hit["archetypeKey"], card["id"]) for card in matches for hit in card["matches"] if hit.get("sourceCardLink")
+    }
+    unresolved = [
+        (arch, cid)
+        for arch in archetypes
+        for cid in sorted(_source_card_ids(arch))
+        if (arch["archetypeKey"], cid) not in matched_links
+    ]
+    if unresolved:
+        known = {card["id"]: card for card in cards}
+        missing = {cid for _, cid in unresolved} - known.keys()
+        cores_dir = os.path.dirname(cards_path)
+        if missing and os.path.isdir(cores_dir):
+            for filename in sorted(os.listdir(cores_dir)):
+                if not filename.endswith(".jsonl") or filename[:-6] == unit_code:
+                    continue
+                for card in load_core_cards(
+                    filename[:-6], sources_dir=os.path.dirname(cores_dir), validate=False, include_carried=False
+                ):
+                    cid = card.get("id")
+                    if isinstance(cid, str) and cid in missing:
+                        known[cid] = card
+                        missing.remove(cid)
+                if not missing:
+                    break
+        for arch, cid in unresolved:
+            arch_unit = str(arch.get("unitCode") or arch.get("_vaultFile") or unit_code).strip()
+            if cid not in known:
+                issue = "card ID not found in local source files"
+            elif not _source_link_unit_matches(known[cid], arch_unit):
+                issue = f"card is routed outside archetype unit {arch_unit}"
+            else:
+                continue
+            warnings.append({"cardId": cid, "archetypeKey": arch["archetypeKey"], "issues": [issue]})
+    return sorted(warnings, key=lambda row: (row["cardId"], row["archetypeKey"]))
+
+
 def _match_cards_to_archetypes(
     unit_code: str,
     cards: list[dict[str, Any]],
@@ -1472,14 +1561,21 @@ def _match_cards_to_archetypes(
     matched_cards: list[dict[str, Any]] = []
     unmatched_cards: list[dict[str, Any]] = []
 
+    source_links = [_source_card_ids(arch) for arch in archetypes]
+
     for card in cards:
         c_traps = _card_trap_entries(card)
         c_qcs = _card_qc_entries(card) if is_prg else []
         c_skill = _card_skill_tokens(card)
         card_is_chain = (not is_prg) and _is_chain_card(card)
 
-        candidates = [
-            _score_card_with_features(
+        candidates = []
+        linked_hits = []
+        for idx, arch in enumerate(archetypes):
+            linked = card["id"] in source_links[idx]
+            if not linked and card_is_chain and not _archetype_covers_chain_card(card, arch):
+                continue
+            match = _score_card_with_features(
                 card,
                 arch,
                 c_traps=c_traps,
@@ -1494,9 +1590,13 @@ def _match_cards_to_archetypes(
                 default_idf=default_idf,
                 a_aliases=arch_alias_cache[idx],
             )
-            for idx, arch in enumerate(archetypes)
-            if (not card_is_chain) or _archetype_covers_chain_card(card, arch)
-        ]
+            if linked:
+                match["sourceCardLink"] = True
+                match["compatibilityWarnings"] = _source_link_issues(card, arch, unit_code, is_prg=is_prg)
+                match["reason"] = f"explicit sourceCards reference; {match['reason']}"
+                linked_hits.append(match)
+            else:
+                candidates.append(match)
 
         candidates.sort(
             key=lambda m: (
@@ -1536,12 +1636,15 @@ def _match_cards_to_archetypes(
         if card.get("carriedFrom"):
             summary["carriedFrom"] = card["carriedFrom"]
 
+        if linked_hits:
+            hits = sorted(linked_hits, key=lambda match: match["archetypeKey"])
+
         if hits:
             matched_cards.append({**summary, "matches": hits})
         else:
             unmatched_cards.append(summary)
 
-    return matched_cards, unmatched_cards
+    return matched_cards, sorted(unmatched_cards, key=lambda card: card["id"])
 
 
 def _build_prg_gap_report(
@@ -1558,9 +1661,7 @@ def _build_prg_gap_report(
         if carried:
             carried_count += 1
         later = card.get("laterUnit")
-        raw_units = card.get("units")
-        in_units = isinstance(raw_units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in raw_units)
-        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not (carried and in_units):
+        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not carried:
             later_by_unit[later.strip()].append(card)
         else:
             current_cards.append(card)
@@ -1708,7 +1809,11 @@ def _build_prg_gap_report(
         "vaultQualityCheckIds": sorted(all_vault_qcs),
         "matchedCards": matched_cards,
         "unmatchedCards": unmatched_cards,
-        "newTraps": sorted(new_traps_map.values(), key=lambda x: x["tag"]),
+        "sourceCardWarnings": _source_link_warnings(cpath, unit_code, cards, archetypes, matched_cards),
+        "newTraps": [
+            {**entry, "cardIds": sorted(entry["cardIds"]), "descriptions": sorted(entry["descriptions"])}
+            for _, entry in sorted(new_traps_map.items())
+        ],
         "newBugPatterns": sorted(new_bug_patterns_map.values(), key=lambda x: x["bugPattern"].lower()),
         "newQualityChecks": sorted(new_qcs_map.values(), key=lambda x: x["id"]),
         "levels": {
@@ -1764,9 +1869,7 @@ def build_gap_report(
         if carried:
             carried_count += 1
         later = card.get("laterUnit")
-        raw_units = card.get("units")
-        in_units = isinstance(raw_units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in raw_units)
-        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not (carried and in_units):
+        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not carried:
             later_by_unit[later.strip()].append(card)
         else:
             current_cards.append(card)
@@ -1898,6 +2001,7 @@ def build_gap_report(
     else:
         eligible_set = set()
 
+    bridge_archetypes = load_bridge_vault(vault_dir).get("archetypes", [])
     bridge_candidates: list[dict[str, Any]] = []
     for pair, items in sorted(bridge_by_pair.items()):
         missing_units = [u for u in pair if u not in eligible_set] if eligible_set is not None else []
@@ -1907,6 +2011,9 @@ def build_gap_report(
                 "units": list(pair),
                 "eligible": is_eligible,
                 "missingUnits": missing_units,
+                "vaultArchetypes": sorted(
+                    arch["archetypeKey"] for arch in bridge_archetypes if set(arch.get("unitCodes") or []) == set(pair)
+                ),
                 "cards": [
                     {
                         "id": c["id"],
@@ -1932,6 +2039,7 @@ def build_gap_report(
         "vaultArchetypeCount": len(archetypes),
         "matchedCards": matched_cards,
         "unmatchedCards": unmatched_cards,
+        "sourceCardWarnings": _source_link_warnings(cpath, unit_code, cards, archetypes, matched_cards),
         "chainCards": {
             "totalChainCards": len(chain_cards),
             "vaultChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_l2_chain_archetypes],
@@ -1941,7 +2049,10 @@ def build_gap_report(
             "uncoveredCards": uncovered_chain_cards,
             "warnings": chain_warnings,
         },
-        "newTraps": sorted(new_traps_map.values(), key=lambda x: x["tag"]),
+        "newTraps": [
+            {**entry, "cardIds": sorted(entry["cardIds"]), "descriptions": sorted(entry["descriptions"])}
+            for _, entry in sorted(new_traps_map.items())
+        ],
         "levels": {
             "vaultBaseLevels": sorted(vault_levels),
             "cardLevelCounts": {str(k): v for k, v in sorted(card_levels.items())},
@@ -2093,6 +2204,10 @@ def format_gap_report(report: dict[str, Any]) -> str:
         f"Vault archetypes in scope: {report['vaultArchetypeCount']}",
     ]
 
+    for warning in report.get("sourceCardWarnings", []):
+        issues = ", ".join(warning["issues"])
+        lines.append(f"WARNING: sourceCards {warning['archetypeKey']} → {warning['cardId']}: {issues}")
+
     if report.get("track") == "prg":
         return _format_prg_gap_report(report, lines)
 
@@ -2198,6 +2313,8 @@ def format_gap_report(report: dict[str, Any]) -> str:
         else:
             status = f"not eligible — needs {', '.join(grp['missingUnits'])}"
         lines.append(f"  {pair_label} [{status}] ({len(grp['cards'])} card(s)):")
+        if grp.get("vaultArchetypes"):
+            lines.append(f"    Vault archetypes for these units: {', '.join(grp['vaultArchetypes'])}")
         for c in grp["cards"]:
             lines.append(f"    - [{c['id']}] L{c['level']} {c['reasoningMove']} — {c['skill']}")
 
