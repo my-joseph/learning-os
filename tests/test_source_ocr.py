@@ -147,3 +147,41 @@ def test_plan_diagnostics_count_nonmatching_pages_and_only_retry_unresolved_ocr(
         "ocrRetry": [{"relPath": "SmartMathPro/fixture.pdf", "page": 1, "originalQuality": "empty"}],
     }
     assert "OCR retry: 1 page(s)" in source_find.format_plan_report(plan)
+
+
+def test_prg_plan_counts_scanned_families_without_ocr(tmp_path, monkeypatch) -> None:
+    for family in ("exercism-javascript", "exercism-typescript"):
+        document = tmp_path / "prg" / family / "fixture.md"
+        document.parent.mkdir(parents=True)
+        document.write_text("## Practice\n\nUse closure scope in a function.", encoding="utf-8")
+
+    def unexpected_ocr(*args, **kwargs):
+        raise AssertionError("PRG scans should never use OCR")
+
+    monkeypatch.setattr(source_find, "_ocr_page", unexpected_ocr)
+    found = source_find.find_sources("PRG-T00-C03", terms=["closure"], sources_dir=str(tmp_path))
+    result = source_find.build_extraction_plan(found)
+    assert result["diagnostics"] == {"sourceFamilyCount": 2, "emptyPages": 0, "garbledPages": 0, "ocrRetry": []}
+    assert "Source scan: 2 families" in source_find.format_plan_report(result)
+
+
+def test_plan_report_limits_ocr_retry_preview_and_accepts_legacy_plan(tmp_path) -> None:
+    retry = [{"relPath": "fixture.pdf", "page": page, "originalQuality": "empty"} for page in range(1, 13)]
+    plan = source_find.build_extraction_plan(
+        {
+            "unitCode": "MTH-T02-C01-U02",
+            "diagnostics": {"sourceFamilyCount": 1, "emptyPages": 12, "garbledPages": 0, "ocrRetry": retry},
+        },
+        sources_dir=str(tmp_path),
+    )
+    report = source_find.format_plan_report(plan)
+    assert report.count("  - fixture.pdf page ") == 10
+    assert "fixture.pdf page 10 (empty)" in report
+    assert "fixture.pdf page 11 (empty)" not in report
+    assert "diagnostics.ocrRetry in the plan JSON for all 12 pages" in report
+    assert json.loads(Path(plan["planPath"]).read_text(encoding="utf-8"))["diagnostics"]["ocrRetry"] == retry
+
+    plan.pop("diagnostics")
+    legacy_report = source_find.format_plan_report(plan)
+    assert "Extraction plan for MTH-T02-C01-U02" in legacy_report
+    assert "OCR retry: 0 page(s)" in legacy_report

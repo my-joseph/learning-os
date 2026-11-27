@@ -1453,14 +1453,20 @@ def _iter_jsonl_cards(path: str) -> Iterable[tuple[int, dict[str, Any]]]:
             yield line_no, card
 
 
-def _card_targets_unit(card: dict[str, Any], unit_code: str) -> bool:
+def card_targets_unit(card: dict[str, Any], unit_code: str, known_codes: set[str] | None = None) -> bool:
+    """Check explicit unit routing and expand registered chapter targets to their child units."""
     later = card.get("laterUnit")
-    if isinstance(later, str) and later.strip() == unit_code:
-        return True
+    if isinstance(later, str):
+        target = later.strip()
+        if target == unit_code:
+            return True
+        chapter, separator, _ = unit_code.rpartition("-U")
+        if separator and target == chapter:
+            registered = load_valid_unit_codes() if known_codes is None else known_codes
+            if target in registered and unit_code in registered:
+                return True
     units = card.get("units")
-    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units):
-        return True
-    return False
+    return isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units)
 
 
 def load_core_cards(
@@ -1475,7 +1481,8 @@ def load_core_cards(
     """Load core cards for ``unit_code`` from ``sources/_cores/<unit_code>.jsonl``.
 
     When ``include_carried`` is True (default), also scans other ``sources/_cores/*.jsonl``
-    files for cards whose ``laterUnit == unit_code`` or whose ``units`` contains ``unit_code``,
+    files for cards whose ``laterUnit`` names the unit or its registered chapter, or whose
+    ``units`` contains ``unit_code``,
     deduplicating by ``id`` and annotating carried-forward cards with ``carriedFrom``.
     """
     cards: list[dict[str, Any]] = []
@@ -1498,6 +1505,7 @@ def load_core_cards(
             cards.append(card)
 
     if include_carried:
+        known_codes = set(load_valid_unit_codes() if valid_unit_codes is None else valid_unit_codes)
         cores_dir = os.path.dirname(path)
         if os.path.isdir(cores_dir):
             for fname in sorted(os.listdir(cores_dir)):
@@ -1510,7 +1518,7 @@ def load_core_cards(
                 if not os.path.isfile(other_path):
                     continue
                 for line_no, card in _iter_jsonl_cards(other_path):
-                    if not _card_targets_unit(card, unit_code):
+                    if not card_targets_unit(card, unit_code, known_codes):
                         continue
                     cid = card.get("id")
                     if isinstance(cid, str) and cid in seen_ids:

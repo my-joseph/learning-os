@@ -266,14 +266,27 @@ class IngestFillsSyncFields(unittest.TestCase):
                     f,
                 )
             custom = perimeter_problem(
-                id="Q02", archetypeKey="c12-perimeter", levelLabel="Level 1 - Core Foundations", form="reverse"
+                id="Q02",
+                archetypeKey="c12-perimeter",
+                level=2,
+                levelLabel="Level 2 - Core Application",
+                form="reverse",
+                steps=[
+                    {
+                        "latex": "P = 2(14) + 2(8)",
+                        "explain": "Substitute the side lengths into the perimeter relation.",
+                    },
+                    {"latex": "2 \\times 14 = 28", "explain": "Double the length."},
+                    {"latex": "2 \\times 8 = 16", "explain": "Double the width."},
+                    {"latex": "28 + 16 = 44", "explain": "Add both pairs of sides.", "val": "44"},
+                ],
             )
             doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter"), custom]}
             saved = ingest_ai_drill(doc, data_root=os.path.join(tmp, "data"), vault_dir=vault)
 
         self.assertEqual((saved["topicCode"], saved["chapterCode"]), ("MTH-T01", "MTH-T01-C12"))
         self.assertEqual(saved["problems"][0]["levelLabel"], "Level 1 - Foundation")
-        self.assertEqual(saved["problems"][1]["levelLabel"], "Level 1 - Core Foundations")
+        self.assertEqual(saved["problems"][1]["levelLabel"], "Level 2 - Core Application")
         self.assertNotIn("sessionSummary", saved, "learner progress is not written into drill content")
         self.assertTrue(all("state" not in p for p in saved["problems"]))
 

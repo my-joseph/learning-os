@@ -30,6 +30,8 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
   - Always skips **`scope`-only** and **`no-automation`** families.
   - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` only when both the source file hash and the card-schema fingerprint match. Replans legacy entries without a fingerprint. Pass `--refresh` to include already recorded pages.
   - Bump `CARD_RULES_VERSION` in `math_engine/source_cores/ledger.py` for extraction-relevant changes confined to `validate_core_card`. Schema structure and worker prompt template changes are tracked automatically.
+- When an item cap leaves pages, rerun `--plan` manually to continue after the saved stop point. `--refresh` restarts planning and includes ledger pages. Finish any planned batches you intend to extract before replacing the plan. Schema or extraction prompt changes make those pages eligible again.
+- The plan lists carried card IDs, including cards deferred to the unit’s chapter.
 - Review the plan summary (selected pages/chunks per family, skipped ledger/scope/no-automation counts, and batch count). If `selectedPageCount == 0` and carried-forward cards exist, proceed directly to step 4.
 
 ## 3. Extract source-free core cards in bounded worker batches (`extract_cards_job` + `run-worker.sh`)
@@ -77,8 +79,11 @@ Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
 .venv/bin/python -m scripts.source_gap <UNIT>
 ```
 
+For progress-free audits, pass `--no-progress` on the gap report. Bridge candidate eligibility remains unassessed.
+
 Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward cards from other units' files marked `carriedFrom`) against the reasoning vault:
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):** matched vs unmatched candidate archetypes, uncovered `chain` cards (and L2 cards with ≥ 2 `operations`, warning `"no L2 chain archetype"` when the unit vault has none), new trap tags, missing reasoning moves & levels, exam formats seen, deferred `laterUnit` cards, and `Bridge candidates` (`ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`).
+- For bridge candidates, the gap report lists existing bridge archetypes with the same set of units.
 - **PRG (`code_engine/reasoning_vault/<CHAPTER>.json`):** matched vs unmatched candidate archetypes, new `cognitiveTraps`, new bug patterns / smells, new `QC-*` `qualityCheckIdeas` not yet in the vault, missing PRG archetype kinds (`implement`, `predict-output`, `find-the-bug`, `refactor`, `project-milestone`) and levels, languages/concepts, and deferred `laterUnit` cards.
 
 ## 5. Update the Reasoning Vault (with reviewer subagent)
@@ -136,6 +141,7 @@ Rejections (8-word shingle overlap, normalised text similarity ≥ 0.6, math num
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:synthesize-source --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:synthesize-source`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
+
 
 Fuzzy novelty checks compare cards at the same level and in the same unit scope, including any deferred or cross-unit targets.
 
