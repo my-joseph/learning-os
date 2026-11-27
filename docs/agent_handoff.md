@@ -44,7 +44,7 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 - Default to the Codex pool: Sol (`gpt-6.2-sol`) for UI and most coding, Luna (`gpt-6-luna`) for simple, high-volume, documentation and read-only audit work. Use the `agy` pool when Codex is out or for a second parallel job: Hydrogen (`gemini-4-hydrogen-high`) for everyday coding, Neon (`gemini-4-neon-high`) for hard cross-cutting work, Carbon (`gemini-4-carbon-high`) as another agy option. Argon is retired (learner 2026-11-25). Neon, Hydrogen and Carbon share one `agy` quota pool; Sol and Luna share the Codex pool. Always pass a fallback chain in `MODELS` that crosses pools.
 - The learner switches the `agy` account themselves between jobs and will tell the agent which account is active. Do not change or check-and-block on a specific account; if an `agy` run fails on login or quota, report it and fall back per the routing above.
 - Keep each job to one concern, put file paths and line evidence first, name acceptance criteria and tests, and merge `origin/main` with a merge (never rebase) before clean-environment checks.
-- Run no more than two workers in parallel and allow no more than two revision rounds per job. After that, stop and report.
+- Run as many workers in parallel as the work needs (learner 2026-11-27: no parallel limit), each in its own worktree and branch, never two on the same file or vault. Allow no more than two revision rounds per job; after that, stop and report.
 
 ### Merge and safety
 
@@ -121,7 +121,7 @@ Merge only a PR with green CI that is docs/tests-only or small (at most three fi
 
 - Starting ON HOLD work; editing `rules/*.md` contracts; Notion writes other than normal drill/lab sync; touching `progress/` or `id_map.json`.
 - Deleting files, worktrees, or branches the learner keeps; changing accounts, permissions, branch protection, or required CI checks; force-pushing.
-- Running more than two parallel workers or more than two revision rounds per job. At the limit, stop and report.
+- Running more than two revision rounds per job. At the limit, stop and report. (Parallel workers have no limit; learner 2026-11-27.)
 
 ### TOKEN BUDGET — the lead thinks, workers do
 
