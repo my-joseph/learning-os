@@ -821,6 +821,8 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
         ),
         _sample_card(
             id="FX-OVERRIDE",
+            reasoningMove="case-check",
+            level=2,
             laterUnit="MTH-T99-BOGUS",
             skill="Abstract task overridden explicitly",
             notes="Uses explicit override map",
@@ -851,7 +853,7 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert "UNMAPPED:MTH-T99-UNKNOWN: 1" in dry_out
     assert jsonl_path.read_bytes() == orig_bytes
 
-    # Apply rewrites file atomically and every card passes validate_core_card
+    # Apply rewrites file atomically without changing the legacy move or level.
     rc_apply = source_cores_retag.main(
         [str(jsonl_path), "--apply", "--id-map", str(id_map_file), "--overrides", str(overrides_file)]
     )
@@ -868,8 +870,10 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert by_id["FX-POLY"]["laterUnit"] == "MTH-T02-C04-U05"
     assert by_id["FX-OVERRIDE"]["laterUnit"] == "MTH-T02-C09-U08"
     assert by_id["FX-UNMAPPED"]["laterUnit"] == "UNMAPPED:MTH-T99-UNKNOWN"
+    assert by_id["FX-OVERRIDE"]["reasoningMove"] == "case-check"
+    assert by_id["FX-OVERRIDE"]["level"] == 2
     for card in rewritten:
-        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes) == []
+        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes, enforce_move_contract=False) == []
 
 
 def test_source_find_warns_on_unregistered_folders(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1617,6 +1621,48 @@ def test_source_gap_prg_trap_aliases_and_threshold(tmp_path: Path) -> None:
     assert "preserve-input" not in new_trap_tags
     assert "custom-vault-declared-alias" not in new_trap_tags
     assert "circular-import-deadlock" in new_trap_tags
+
+
+def test_prg_source_links_keep_matches_and_report_missing_wrong_unit_and_mismatched_links(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unit = "PRG-T00-C03-U01"
+    foreign_unit = "PRG-T00-C03-U02"
+    card = _sample_prg_card(id="CORE-LINKED")
+    foreign = _sample_prg_card(id="CORE-WRONG-UNIT", unitCode=foreign_unit)
+    unmatched = [
+        _sample_prg_card(id=cid, traps=[{"tag": tag, "description": cid}])
+        for cid, tag in [("CORE-Z", "a-new"), ("CORE-Y", "z-new"), ("CORE-A", "a-new")]
+    ]
+    arch = {
+        "archetypeKey": "linked-arch",
+        "unitCode": unit,
+        "level": 1,
+        "archetypeKind": "refactor",
+        "sourceCards": [card["id"], foreign["id"], "CORE-MISSING"],
+    }
+    monkeypatch.setattr(source_gap, "load_code_scope_archetypes", lambda *args, **kwargs: [arch])
+    source_cores.save_core_cards(foreign_unit, [foreign], sources_dir=str(tmp_path))
+    source_cores.save_core_cards(unit, [card, *unmatched], sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path))
+    hit = report["matchedCards"][0]["matches"][0]
+    assert hit["sourceCardLink"]
+    assert hit["scoreBreakdown"]["compatibility"] < 1
+    warnings = {warning["cardId"]: warning["issues"] for warning in report["sourceCardWarnings"]}
+    assert "archetype kind differs from find-the-bug" in warnings[card["id"]]
+    assert "level differs: card L3, archetype L1" in warnings[card["id"]]
+    assert "not found" in warnings["CORE-MISSING"][0]
+    assert "outside archetype unit" in warnings[foreign["id"]][0]
+    assert "WARNING: sourceCards linked-arch" in source_gap.format_gap_report(report)
+    assert [item["id"] for item in report["unmatchedCards"]] == ["CORE-A", "CORE-Y", "CORE-Z"]
+    assert [item["tag"] for item in report["newTraps"]] == ["a-new", "mutation-breaks-narrowing", "z-new"]
+    assert report["newTraps"][0]["cardIds"] == ["CORE-A", "CORE-Z"]
+
+    source_cores.save_core_cards(unit, [*reversed(unmatched), card], sources_dir=str(tmp_path))
+    reversed_report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path))
+    assert reversed_report["unmatchedCards"] == report["unmatchedCards"]
+    assert reversed_report["newTraps"] == report["newTraps"]
 
 
 @pytest.mark.parametrize("is_prg", [False, True], ids=["math", "prg"])

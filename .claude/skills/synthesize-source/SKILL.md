@@ -53,6 +53,8 @@ For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
      scratch/prompts/<UNIT>-extract-b<k>.txt \
      scratch/logs/<UNIT>-extract-b<k>.log
    ```
+   Diagnose math cards require a source-free `flawForm` object with `step` naming the flawed transformation in the given work and `error` describing why it is wrong. Apply the move-level bounds in the math schema.
+
    The worker drafts batch cards into the batch JSONL and runs `.venv/bin/python -m scripts.extract_cards_job <UNIT> --batch <k> --commit <batch_jsonl> --run-id <run_id> --done-file <done_file>`, which validates every card with `validate_core_card(card, source_item_text=...)`, appends new cards to `sources/_cores/<UNIT>.jsonl`, updates `sources/_cores/_ledger.json` for every page/chunk in batch `k` (including 0-card items), and writes `DONE_FILE`.
 3. Check batch novelty / saturation:
    ```bash
@@ -80,6 +82,8 @@ Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward c
 - **PRG (`code_engine/reasoning_vault/<CHAPTER>.json`):** matched vs unmatched candidate archetypes, new `cognitiveTraps`, new bug patterns / smells, new `QC-*` `qualityCheckIdeas` not yet in the vault, missing PRG archetype kinds (`implement`, `predict-output`, `find-the-bug`, `refactor`, `project-milestone`) and levels, languages/concepts, and deferred `laterUnit` cards.
 
 ## 5. Update the Reasoning Vault (with reviewer subagent)
+
+Record contributing card IDs in the archetype’s optional `sourceCards` list when adding or extending an archetype. The gap report preserves explicit matches and flags incompatible, missing, or misrouted links.
 
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):**
   - Add new archetypes for genuine unmatched cores (including L2 chain archetypes declaring an optional `operations` array of ≥ 2 sub-skills, validated by `code_engine.quality_checks --check-vaults`); extend existing archetypes' `cognitiveTraps`, `levelNote`s, and `usedContexts` (preserving figure decisions per `rules/03` §3.1).
