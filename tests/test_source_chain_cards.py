@@ -603,3 +603,80 @@ def test_math_vault_validator_accepts_optional_operations_and_rejects_malformed(
         encoding="utf-8",
     )
     assert qc.main(["--check-vaults", "--vault-dir", str(prg_dir), "--math-vault-dir", str(math_dir)]) == 1
+
+
+def test_u01_chain_archetype_covers_prompt_example_and_bare_operations(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    vault_path = Path(__file__).resolve().parent.parent / "math_engine" / "reasoning_vault" / f"{UNIT}.json"
+    vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
+    chain_archs = [a for a in vault_data["archetypes"] if a.get("archetypeKey") == "t02-c01-u01-mixed-operations-chain"]
+    assert len(chain_archs) == 1
+    arch = chain_archs[0]
+
+    errors, warnings_list = qc.validate_math_archetype(arch)
+    assert errors == []
+    assert warnings_list == []
+
+    # Build a real math extraction prompt and parse its chain example operations
+    sdir = tmp_path / "sources"
+    pdf_path = sdir / "mathsgenie" / "Grade_8" / "complex.pdf"
+    pdf_path.parent.mkdir(parents=True)
+    pdf_path.write_bytes(b"%PDF-1.4 dummy")
+    reg = tmp_path / "sources.md"
+    reg.write_text(
+        "| Family (under `sources/`) | What it is | Language | Licence / Terms | Allowed use | Priority | Notes |\n"
+        "| :--- | :--- | :--- | :--- | :--- | :---: | :--- |\n"
+        "| `mathsgenie/` | GCSE worksheets | EN | Free | `cores` | `60` | Math |\n",
+        encoding="utf-8",
+    )
+    backlog = tmp_path / "backlog.md"
+    backlog.write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        source_find,
+        "extract_pdf_pages",
+        lambda _src: [{"page": 1, "text": "Simplify complex conjugate product and quotient.", "isImagePage": False}],
+    )
+    find_res = source_find.find_sources(UNIT, sources_dir=str(sdir), registry_path=str(reg))
+    source_find.build_extraction_plan(
+        find_res,
+        budget_pages=2,
+        budget_items=5,
+        batch_size=2,
+        sources_dir=str(sdir),
+        registry_path=str(reg),
+        backlog_path=str(backlog),
+    )
+    prompt = extract_cards_job.build_worker_prompt(UNIT, 1, sources_dir=str(sdir))
+
+    chain_example = None
+    for chunk in prompt.split("`"):
+        if chunk.startswith("{") and '"reasoningMove": "chain"' in chunk:
+            chain_example = json.loads(chunk)
+            break
+    assert chain_example is not None, "Expected JSON chain example in math worker prompt"
+
+    prompt_card = _math_card(
+        reasoningMove="chain",
+        level=2,
+        operations=chain_example["operations"],
+    )
+    assert source_gap._archetype_covers_chain_card(prompt_card, arch)
+
+    # Bare operation forms and normalised aliases are all covered
+    for ops in (
+        ["add", "subtract"],
+        ["multiply", "divide"],
+        ["power-of-i", "subtract"],
+        ["add", "subtract", "multiply", "divide", "power-of-i"],
+        ["addition", "subtraction"],
+        ["multiplication", "division"],
+        ["powers of i", "multiply"],
+    ):
+        card = _math_card(reasoningMove="chain", level=2, operations=ops)
+        assert source_gap._archetype_covers_chain_card(card, arch), f"Expected U01 chain archetype to cover {ops!r}"
+
+    # Out-of-scope operation is not falsely covered
+    out_of_scope = _math_card(reasoningMove="chain", level=2, operations=["multiply", "square root"])
+    assert not source_gap._archetype_covers_chain_card(out_of_scope, arch)

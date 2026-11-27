@@ -272,9 +272,11 @@ def build_worker_prompt(
             "given expression, method obvious, >= 2 different taught operations executed in sequence. Excludes any "
             "`rules/06` §2.3 L3 trigger on a given expression — a check that rejects a candidate (extraneous root, "
             "domain, ± case -> `case-check`), find-the-flaw (`diagnose`), choosing among taught methods, or "
-            "`generalise`: if any applies, it is NOT `chain`. Original example: "
+            "`generalise`: if any applies, it is NOT `chain`. Use concise bare sub-skill names matching the unit "
+            "vault vocabulary (e.g., `add`, `subtract`, `multiply`, `divide`, `power-of-i` — no redundant topic "
+            "prefixes). Original example: "
             '`{"skill": "Expand a product of binomials then simplify the quotient via conjugate rationalization", '
-            '"reasoningMove": "chain", "operations": ["complex-multiply", "complex-divide"], "level": 2}`.',
+            '"reasoningMove": "chain", "operations": ["multiply", "divide"], "level": 2}`.',
             "   - **`multi-relation` / `model` (L3+):** the solver must combine relations into an equation the prompt "
             "does not state. Original example: "
             '`{"skill": "Combine an unstated modulus relation with a real-part constraint to form and solve a '

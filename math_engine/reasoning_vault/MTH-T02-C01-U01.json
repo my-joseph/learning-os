@@ -456,11 +456,11 @@
       "level": 2,
       "name": "Mixed Operations on Complex Expressions",
       "operations": [
-        "add-complex",
-        "subtract-complex",
-        "multiply-binomials",
-        "divide-via-conjugate",
-        "reduce-powers-of-i"
+        "add",
+        "subtract",
+        "multiply",
+        "divide",
+        "power-of-i"
       ],
       "coreConcept": "Simplify a single given complex expression that chains two or more taught unit operations in sequence—such as reducing powers of i, expanding binomial products, rationalising quotients by the denominator conjugate, and combining standard-form parts—until the final result is in a + bi form.",
       "mentalModel": "Treat a compound complex expression as a staged pipeline: resolve inner powers and products or quotients into a + bi first, carry signs cleanly between stages, and combine real and imaginary parts only after each sub-expression is in standard form.",
@@ -468,11 +468,19 @@
       "cognitiveTraps": [
         {
           "trapTag": "t02-c01-u01-chain-order-of-operations-trap",
-          "description": "Applies operations in the wrong sequence across a multi-operation expression (e.g., adding terms before completing a product/quotient or distributing a power across a sum before simplifying inside)."
+          "description": "Applies chained operations out of precedence order (for example, adding a trailing term before completing a product or quotient, or inverting a sum term-by-term before combining the denominator)."
         },
         {
           "trapTag": "t02-c01-u01-chain-carried-sign-drop-trap",
           "description": "Drops or flips a negative sign produced by an earlier step when substituting that intermediate result into the next operation."
+        },
+        {
+          "trapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+          "description": "Combines a real term directly with an imaginary coefficient into a single term instead of keeping real and imaginary components separate."
+        },
+        {
+          "trapTag": "t02-c01-u01-imaginary-unit-squared-in-sum-trap",
+          "description": "Replaces i + i with i^2 = -1 instead of 2i when adding imaginary parts."
         },
         {
           "trapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
@@ -512,12 +520,13 @@
         }
       ],
       "versatileDomains": [
-        "symbolic_complex_simplification",
-        "cascaded_impedance_reduction"
+        "ac_voltage_divider_transfer",
+        "cascaded_impedance_reduction",
+        "parallel_series_ac_network"
       ],
       "usedContexts": [],
       "figureNone": "Purely symbolic multi-step complex-number simplification in standard a + bi form; a complex-plane plot does not clarify the algebraic operation sequence.",
-      "levelNote": "Base L2: given expression, obvious execution order, >= 4 real single-transformation steps chaining at least two taught operations in sequence. Earns L3 only when a structural shortcut must be chosen (strategy=choose: e.g., simplifying a quotient before raising to a small power, or reducing exponents mod 4 before inverting)—the blind solver must tag it honestly, never relabel. Do not use find-the-flaw (diagnose) here; flaw diagnosis stays in the existing L3 single-operation archetypes. Scope boundaries: stay strictly in standard-form arithmetic with integer/rational parts; no sqrt-normalised bases, no modulus or polar form (later unit); do not overlap t02-c01-u01-power-periodicity (periodic bases such as (1+i)^k or conjugate-binomial quotients raised to large powers belong there).",
+      "levelNote": "Base L2: given expression, obvious execution order, >= 4 real single-transformation steps chaining at least two taught operations in sequence. Earns L3 only when a genuine choice among taught methods is needed (strategy=choose)—for example, spotting a conjugate pair so a product collapses to a real number (a+bi)(a-bi)=a^2+b^2 instead of expanding by FOIL, combining two quotients over a common real denominator when their denominators are conjugates instead of rationalising each fraction separately, or factoring a difference-of-squares structure before expanding. The L3 item must also offer a longer direct route that works, and the blind solver must tag strategy=choose itself (never relabel). Do not use find-the-flaw (diagnose) here; flaw diagnosis stays in the existing L3 single-operation archetypes. Scope boundaries: stay strictly in standard-form arithmetic with integer/rational parts; no sqrt-normalised bases, no modulus or polar form (later unit); do not overlap t02-c01-u01-power-periodicity (periodic bases such as (1+i)^k or conjugate-binomial quotients raised to large powers belong there).",
       "source": "OpenStax Algebra and Trigonometry 2e §2.4; cores: smartmathpro"
     }
   ]
