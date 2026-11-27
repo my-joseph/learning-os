@@ -1628,9 +1628,15 @@ def test_trap_weight_requires_skill_overlap(
     arch = {"archetypeKey": "arch", "archetypeKind": "refactor"}
     monkeypatch.setattr(source_gap, "_score_trap_overlap", lambda *a, **kw: (1.0, ["trap"], [], []))
     monkeypatch.setattr(source_gap, "_score_skill_overlap", lambda *a, **kw: (skill, []))
-    monkeypatch.setattr(source_gap, "_compatibility_score", lambda *a, **kw: (0.0, ""))
+    monkeypatch.setattr(source_gap, "_compatibility_score", lambda *a, **kw: (1.0, ""))
     match = source_gap.score_card_against_archetype(card, arch, unit_code=card["unitCode"], is_prg=is_prg)
-    expected = round(source_gap._TRAP_WEIGHT * trap_factor + source_gap._SKILL_WEIGHT * skill, 3)
+    compatibility_factor = 1.0 if trap_factor else 0.0
+    expected = round(
+        source_gap._TRAP_WEIGHT * trap_factor
+        + source_gap._SKILL_WEIGHT * skill
+        + source_gap._COMPAT_WEIGHT * compatibility_factor,
+        3,
+    )
     assert match["score"] == expected
 
 
