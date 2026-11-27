@@ -731,3 +731,25 @@ def test_load_core_cards_accepts_legacy_bounds_and_missing_flaw_form(tmp_path: P
         assert source_cores.validate_core_card(card)
         assert source_cores.validate_core_card(card, enforce_move_contract=False) == []
     assert source_cores.load_core_cards(UNIT, sources_dir=str(tmp_path)) == legacy
+
+
+def test_fuzzy_duplicate_requires_same_level_and_routing() -> None:
+    original = _math_card()
+    for change in ({"level": 3}, {"laterUnit": "MTH-T02-C01-U02"}, {"unitCode": "MTH-T02-C01-U02"}):
+        other = {**original, **change}
+        assert not source_gap.cards_are_fuzzy_duplicate(original, other)[0]
+        assert not source_gap.cards_are_fuzzy_duplicate(other, original)[0]
+
+
+def test_fuzzy_duplicate_is_symmetric_with_missing_traps() -> None:
+    original = _math_card()
+    other = _math_card(traps=[])
+    assert source_gap.cards_are_fuzzy_duplicate(original, other) == source_gap.cards_are_fuzzy_duplicate(
+        other, original
+    )
+
+
+def test_shared_trap_cannot_duplicate_a_distinct_skill() -> None:
+    original = _math_card(skill="Factor")
+    other = _math_card(skill="Sum")
+    assert not source_gap.cards_are_fuzzy_duplicate(original, other)[0]
