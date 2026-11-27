@@ -30,6 +30,7 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
   - Always skips **`scope`-only** and **`no-automation`** families.
   - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` only when both the source file hash and the card-schema fingerprint match. Replans legacy entries without a fingerprint. Pass `--refresh` to include already recorded pages.
   - Bump `CARD_RULES_VERSION` in `math_engine/source_cores/ledger.py` for extraction-relevant changes confined to `validate_core_card`. Schema structure and worker prompt template changes are tracked automatically.
+- When an item cap leaves pages, rerun `--plan` manually to continue after the saved stop point. `--refresh` restarts planning and includes ledger pages. Finish any planned batches you intend to extract before replacing the plan. Schema or extraction prompt changes make those pages eligible again.
 - Review the plan summary (selected pages/chunks per family, skipped ledger/scope/no-automation counts, and batch count). If `selectedPageCount == 0` and carried-forward cards exist, proceed directly to step 4.
 
 ## 3. Extract source-free core cards in bounded worker batches (`extract_cards_job` + `run-worker.sh`)
@@ -132,8 +133,6 @@ Rejections (8-word shingle overlap, normalised text similarity ≥ 0.6, math num
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:synthesize-source --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:synthesize-source`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
-
-When an item cap leaves pages, rerun `--plan` manually to continue after the saved stop point. `--refresh` restarts planning and includes ledger pages. Finish any planned batches you intend to extract before replacing the plan.
 
 Fuzzy novelty checks compare cards at the same level and in the same unit scope, including any deferred or cross-unit targets.
 

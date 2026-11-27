@@ -906,3 +906,83 @@ def test_extract_cards_job_prompt_and_commit(
     )
     assert plan_after["summary"]["skippedLedgerPages"] == 2
     assert plan_after["summary"]["selectedPageCount"] == 1
+
+
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "แบบฝึกหัดที่ 1",
+        "แบบฝึกหัดท้ายบท",
+        "Exercises",
+        "Practice Problems",
+        "## Exercises",
+        "### 2.1 Problem Set",
+        "4) Exercises",
+        "2. แบบฝึกหัดที่ 1",
+    ],
+)
+def test_exercise_heading_recognizes_pdf_and_markdown_forms(heading: str) -> None:
+    assert source_find._EXERCISE_HEADING_RE.search(f"Intro text\n{heading}\n")
+
+
+@pytest.mark.parametrize("line", ["Reading exercises are helpful", "## Exerciseless", "## Concept Summary"])
+def test_exercise_heading_does_not_match_prose_or_unrelated_headings(line: str) -> None:
+    assert not source_find._EXERCISE_HEADING_RE.search(line)
+
+
+def test_prg_continuation_accepts_legacy_plan_and_retains_uncommitted_chunks_after_exhaustion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unit = "PRG-T00-C03"
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(tmp_path))
+    index = tmp_path / "_index"
+    index.mkdir()
+    (index / f"plan_{unit}.json").write_text(
+        json.dumps({"summary": {"includeAnswerKeys": False}, "selectedPages": [{"page": 1}]}), encoding="utf-8"
+    )
+    found = {
+        "unitCode": unit,
+        "coreMatches": [
+            {"relPath": "prg/exercism-javascript/fixture.md", "pages": [{"page": 1}, {"page": 2}, {"page": 3}]}
+        ],
+    }
+
+    def plan(**kwargs):
+        return source_find.build_extraction_plan(found, budget_items=1, **kwargs)
+
+    first = plan()
+    assert first["track"] == "prg"
+    assert first["selectedPages"][0]["page"] == 1
+    assert plan()["selectedPages"][0]["page"] == 2
+    last = plan()
+    assert last["selectedPages"][0]["page"] == 3
+    assert last["continuation"]["exhausted"]
+    exhausted = plan()
+    assert exhausted["selectedPages"] == []
+    assert exhausted["summary"]["skippedPlannedPages"] == 3
+    assert exhausted["continuation"] == last["continuation"]
+    assert plan(refresh=True)["selectedPages"][0]["page"] == 1
+
+
+def test_changed_card_schema_replans_ledger_and_continuation_pages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(tmp_path))
+    schema_file = tmp_path / "schema.json"
+    schema = json.loads(Path(ledger.SCHEMA_PATH).read_text(encoding="utf-8"))
+    schema_file.write_text(json.dumps(schema), encoding="utf-8")
+    monkeypatch.setattr(ledger, "SCHEMA_PATH", str(schema_file))
+    rel_path = "SmartMathPro/fixture.pdf"
+    found = {"unitCode": UNIT, "coreMatches": [{"relPath": rel_path, "pages": [{"page": 1}, {"page": 2}]}]}
+    first = source_find.build_extraction_plan(found, budget_items=1)
+    ledger.record_extraction(
+        UNIT, rel_path, 1, run_id="test", cards_produced=[], file_hash=first["selectedPages"][0]["fileHash"]
+    )
+    assert source_find.build_extraction_plan(found, budget_items=1)["summary"]["skippedLedgerPages"] == 1
+
+    schema["properties"]["skill"]["maxLength"] -= 1
+    schema_file.write_text(json.dumps(schema), encoding="utf-8")
+    changed = source_find.build_extraction_plan(found)
+    assert [page["page"] for page in changed["selectedPages"]] == [1, 2]
+    assert changed["summary"]["skippedLedgerPages"] == 0
+    assert changed["summary"]["skippedPlannedPages"] == 0

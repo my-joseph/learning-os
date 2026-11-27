@@ -130,7 +130,9 @@ _ITEM_MARKER_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 _EXERCISE_HEADING_RE = re.compile(
-    r"^\s*(?:chapter\s+)?(?:exercises?|practice problems?|problem set|แบบฝึกหัด)\b",
+    r"^[^\S\n]*(?:#{1,6}[^\S\n]+)?"
+    r"(?:\d+(?:\.\d+)*(?:[.):]|[–-])?[^\S\n]+)?"
+    r"(?:chapter[^\S\n]+)?(?:แบบฝึกหัด|(?:exercises?|practice problems?|problem set)\b)",
     re.IGNORECASE | re.MULTILINE,
 )
 _MD_HEADING_RE = re.compile(r"^#{1,6}\s+")
@@ -1182,8 +1184,8 @@ def _resolve_candidate_hash(
     return digest
 
 
-def _continuation_page_key(page: dict[str, Any]) -> tuple[str, int, str]:
-    return (page["relPath"], page["page"], page["fileHash"])
+def _continuation_page_key(page: dict[str, Any], fingerprint: str) -> tuple[str, int, str, str]:
+    return (page["relPath"], page["page"], page["fileHash"], fingerprint)
 
 
 def _load_plan_continuation(plan_file: str, *, include_answer_keys: bool) -> dict[str, Any]:
@@ -1194,7 +1196,8 @@ def _load_plan_continuation(plan_file: str, *, include_answer_keys: bool) -> dic
         return {}
     if not isinstance(previous, dict) or previous.get("summary", {}).get("includeAnswerKeys") != include_answer_keys:
         return {}
-    return previous.get("continuation") or {}
+    continuation = previous.get("continuation")
+    return continuation if isinstance(continuation, dict) else {}
 
 
 def build_extraction_plan(
@@ -1233,12 +1236,16 @@ def build_extraction_plan(
     idx_dir = index_dir(sources_dir=sdir)
     plan_file = os.path.join(idx_dir, f"plan_{unit_code}.json")
     prior = {} if refresh else _load_plan_continuation(plan_file, include_answer_keys=include_answer_keys)
-    prior_pages = {tuple(key) for key in prior.get("plannedPages", [])}
+    fingerprint = card_schema_fingerprint(unit_code)
+    prior_pages = {
+        tuple(key)
+        for key in prior.get("plannedPages", [])
+        if isinstance(key, list) and len(key) == 4 and key[3] == fingerprint
+    }
 
     registry_priorities = load_registry_priorities(registry_path=registry_path)
     backlog_ranks = load_backlog_ranks(backlog_path=backlog_path, unit_code=unit_code)
     ledger = load_ledger(sources_dir=sdir)
-    fingerprint = card_schema_fingerprint(unit_code)
 
     skipped_scope_pages = sum(len(m.get("pages") or []) for m in (find_result.get("scopeMatches") or []))
     skipped_no_auto = set(find_result.get("skippedNoAutomation") or [])
@@ -1295,7 +1302,7 @@ def build_extraction_plan(
                 skipped_ledger_pages += 1
                 continue
 
-            if (rel_path, pnum, file_hash) in prior_pages:
+            if (rel_path, pnum, file_hash, fingerprint) in prior_pages:
                 skipped_planned_pages += 1
                 continue
 
@@ -1355,7 +1362,7 @@ def build_extraction_plan(
         return (-fam_rank_val, -float(top["score"]), fam)
 
     family_order = sorted(by_family.keys(), key=_family_sort_key)
-    stop_family = prior.get("stopAfter", {}).get("family")
+    stop_family = prior.get("stopAfter", {}).get("family") if prior_pages else None
     if stop_family in family_order:
         next_idx = family_order.index(stop_family) + 1
         family_order = family_order[next_idx:] + family_order[:next_idx]
@@ -1423,11 +1430,16 @@ def build_extraction_plan(
 
     os.makedirs(idx_dir, exist_ok=True)
     continuation = None
-    if selected and len(selected) < total_candidates and (cumulative_items == budget_items or prior):
-        last = selected[-1]
+    has_unplanned_pages = len(selected) < total_candidates
+    stopped_at_item_cap = bool(selected) and has_unplanned_pages and cumulative_items == budget_items
+    if prior_pages or stopped_at_item_cap:
+        stop_after = prior.get("stopAfter")
+        if selected:
+            stop_after = {key: selected[-1][key] for key in ("family", "relPath", "page")}
         continuation = {
-            "stopAfter": {key: last[key] for key in ("family", "relPath", "page")},
-            "plannedPages": sorted(prior_pages | {_continuation_page_key(page) for page in selected}),
+            "stopAfter": stop_after,
+            "plannedPages": sorted(prior_pages | {_continuation_page_key(page, fingerprint) for page in selected}),
+            "exhausted": not has_unplanned_pages,
         }
 
     plan: dict[str, Any] = {
@@ -1573,8 +1585,10 @@ def format_plan_report(plan: dict[str, Any]) -> str:
 
     if s.get("skippedPlannedPages"):
         lines.append(f"Continued past {s['skippedPlannedPages']} previously planned page(s)")
-    if plan.get("continuation"):
-        stop = plan["continuation"]["stopAfter"]
+    continuation = plan.get("continuation") or {}
+    if continuation.get("exhausted"):
+        lines.append("Continuation exhausted. Use --refresh to restart planning.")
+    elif stop := continuation.get("stopAfter"):
         lines.append(f"Next --plan continues after {stop['relPath']} page/chunk {stop['page']}")
     diagnostics = plan.get("diagnostics", {})
     retry = diagnostics.get("ocrRetry", [])
