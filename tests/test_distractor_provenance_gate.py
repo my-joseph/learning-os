@@ -123,6 +123,7 @@ def _valid_choice_problem(**overrides) -> dict:
         "verificationLevel": "partial",
         "steps": [
             {"latex": "(1 + i)^2 = 2i", "explain": "Square the base first.", "eq": ["(1 + I)**2", "2*I"]},
+            {"latex": "(1 + i)^n = (2i)^m", "explain": "Rewrite the power with $n = 2m$."},
             {"latex": "2^{m} = 256", "explain": "Match the magnitude so $m = 8$.", "eq": ["2**8", "256"]},
             {"latex": "n = 16", "explain": "Double the exponent of the squared base.", "eq": ["(1 + I)**16", "256"]},
         ],

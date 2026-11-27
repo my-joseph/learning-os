@@ -54,6 +54,8 @@ from quality_rules import (
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 DEFAULT_DATA_ROOT = "drills/data"
+L2_MIN_REAL_STEPS = 4
+L2_STEP_FLOOR_BASELINE_PATH = Path("tests/data/l2_step_floor_baseline.json")
 
 # Match the Studio's unescaped $ delimiters. FormattedText renders each line separately.
 _STEP_INLINE_MATH_RE = re.compile(r"(?<!\\)\$(?:\\\$|[^$\r\n])+?(?<!\\)\$")
@@ -1498,6 +1500,129 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
                 break
 
 
+def count_real_steps(prob: Dict[str, Any]) -> int:
+    """Count non-empty derivation steps (dict entries with non-empty ``latex`` and ``explain``)."""
+    steps = prob.get("steps")
+    if not isinstance(steps, list):
+        return 0
+    return sum(
+        1
+        for st in steps
+        if isinstance(st, dict)
+        and isinstance(st.get("latex"), str)
+        and bool(st["latex"].strip())
+        and isinstance(st.get("explain"), str)
+        and bool(st["explain"].strip())
+    )
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def load_l2_step_floor_baseline(repo_root: Optional[Path] = None) -> Dict[str, List[str]]:
+    """Load the shrink-only grandfathered L2 short-step baseline ``{drillId: [QID, ...]}``."""
+    root = repo_root or _repo_root()
+    path = root / L2_STEP_FLOOR_BASELINE_PATH
+    if not path.is_file():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        return {}
+    return {str(drill_id): [str(qid) for qid in qids] for drill_id, qids in raw.items() if isinstance(qids, list)}
+
+
+def validate_l2_step_floor(
+    prob: Dict[str, Any],
+    *,
+    drill_id: Optional[str] = None,
+    baseline: Optional[Dict[str, List[str]]] = None,
+) -> None:
+    """Enforce the L2 step floor (``>= 4`` real steps, matching ``demand_level``).
+
+    Existing canonical drills recorded in ``tests/data/l2_step_floor_baseline.json``
+    may be grandfathered only when both ``drill_id`` and ``baseline`` are supplied
+    (e.g. re-checking a saved drill). New drafts and ingests pass neither.
+    """
+    if prob.get("level") != 2:
+        return
+    pid = str(prob.get("id") or "?")
+    n_steps = count_real_steps(prob)
+    if n_steps >= L2_MIN_REAL_STEPS:
+        return
+    if drill_id and baseline and pid in baseline.get(drill_id, ()):
+        return
+    raise AiContractError(
+        f"[{pid}] L2 problem has {n_steps} real step(s); new L2 problems need at least "
+        f"{L2_MIN_REAL_STEPS} real steps (matching demand_level, rules/07 §4). "
+        f"Expand the derivation into discrete steps or relabel to L1."
+    )
+
+
+def collect_short_l2_problems(repo_root: Path) -> Tuple[Dict[str, List[Tuple[str, int]]], int]:
+    """Return ``({drillId: [(qid, real_step_count), ...]}, total_l2_count)`` for canonical math drills."""
+    from code_engine.sandbox import assert_safe_contained_path
+
+    data_root = repo_root / "drills" / "data"
+    short: Dict[str, List[Tuple[str, int]]] = {}
+    total_l2 = 0
+    if not data_root.is_dir():
+        return short, total_l2
+    for scope in sorted(data_root.iterdir()):
+        if not scope.is_dir() or not scope.name.startswith("MTH-"):
+            continue
+        for path in sorted(scope.glob("*.json")):
+            drill_file = assert_safe_contained_path(path, data_root, suffixes=(".json",))
+            drill = json.loads(drill_file.read_text(encoding="utf-8"))
+            did = str(drill.get("drillId") or path.stem)
+            items: List[Tuple[str, int]] = []
+            for idx, prob in enumerate(drill.get("problems") or [], 1):
+                if not isinstance(prob, dict) or prob.get("level") != 2:
+                    continue
+                total_l2 += 1
+                n_steps = count_real_steps(prob)
+                if n_steps < L2_MIN_REAL_STEPS:
+                    qid = str(prob.get("id") or f"Q{idx:02d}")
+                    items.append((qid, n_steps))
+            if items:
+                short[did] = sorted(items)
+    return short, total_l2
+
+
+def check_l2_step_floor_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
+    """Check canonical math drills against the shrink-only L2 step-floor baseline (zero-leak)."""
+    root = repo_root or _repo_root()
+    baseline_file = root / L2_STEP_FLOOR_BASELINE_PATH
+    baseline = json.loads(baseline_file.read_text(encoding="utf-8"))
+    expected = {(str(drill), str(qid)) for drill, qids in baseline.items() for qid in qids}
+    short_by_drill, total_l2 = collect_short_l2_problems(root)
+    actual = {(drill, qid): n_steps for drill, entries in short_by_drill.items() for qid, n_steps in entries}
+    new = actual.keys() - expected
+    stale = expected - actual.keys()
+    passed = not (new or stale)
+    lines = [
+        f"{'PASS' if passed else 'FAIL'} L2 step floor gate "
+        f"(minimum {L2_MIN_REAL_STEPS} real steps per L2 problem; {len(actual)}/{total_l2} short)."
+    ]
+    for drill, qid in sorted(actual.keys()):
+        n_steps = actual[(drill, qid)]
+        status = "FAIL New short L2 problem" if (drill, qid) in new else "Baseline short L2 problem"
+        lines.append(f"{status}: {drill} {qid} ({n_steps} real steps, need >= {L2_MIN_REAL_STEPS}).")
+    if new:
+        lines.append(
+            "Expand new L2 problems to >= 4 real steps or relabel to L1. Adding baseline entries is forbidden."
+        )
+    for drill, qid in sorted(stale):
+        lines.append(
+            f"FAIL Stale baseline entry: {drill} {qid} now meets the L2 step floor or no longer exists. "
+            f'Delete "{qid}" under {drill} in {L2_STEP_FLOOR_BASELINE_PATH}.'
+        )
+    if stale:
+        lines.append("Remove any drill key left with an empty list.")
+    lines.append(f"Baseline: {len(baseline)} drill(s), {len(expected)} problem(s).")
+    return passed, "\n".join(lines)
+
+
 def _run_problem_gates(
     prob: Dict[str, Any],
     archetypes: List[Dict[str, Any]],
@@ -1506,6 +1631,9 @@ def _run_problem_gates(
     *,
     errors: Optional[List[str]] = None,
     prepare_for_ingest: Optional[Callable[[Dict[str, Any]], None]] = None,
+    enforce_l2_step_floor: bool = True,
+    drill_id: Optional[str] = None,
+    l2_baseline: Optional[Dict[str, List[str]]] = None,
 ) -> None:
     """Run vault/review and figure/verification gates in order.
 
@@ -1528,6 +1656,8 @@ def _run_problem_gates(
         autofill_problem_figure(prob, archetypes)
         require_figure_if_declared(prob, archetypes)
         validate_ai_problem_contract(prob)
+        if enforce_l2_step_floor:
+            validate_l2_step_floor(prob, drill_id=drill_id, baseline=l2_baseline)
         verify_problem(prob, rules=rules)
     except Exception as exc:  # noqa: BLE001 - checks report each gate failure
         if errors is None:
@@ -1545,12 +1675,13 @@ def check_ai_drill(
     eligible_units: Optional[Iterable[str]] = None,
     *,
     check_step_math: bool = True,
+    allow_l2_baseline: bool = False,
 ) -> List[str]:
     """Run every ingest gate on a draft WITHOUT saving it or touching the vault.
 
     Returns all problems' errors at once (empty list = ready to ingest), so a draft
     can be fixed in one pass instead of one error per run. The CLI disables
-    ``check_step_math`` when rechecking a saved drill.
+    ``check_step_math`` and enables ``allow_l2_baseline`` when rechecking a saved drill.
     """
     unit_code = drill_doc.get("unitCode")
     if not unit_code:
@@ -1560,6 +1691,8 @@ def check_ai_drill(
         return ["Drill document has no 'problems'."]
 
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir, eligible_units=eligible_units)
+    drill_id = str(drill_doc.get("drillId") or "").strip() or None
+    l2_baseline = load_l2_step_floor_baseline() if (allow_l2_baseline and drill_id) else None
     errors: List[str] = []
     checked: List[Dict[str, Any]] = []
     for idx, original in enumerate(problems, 1):
@@ -1568,7 +1701,16 @@ def check_ai_drill(
         ingest_core.set_problem_defaults(prob, idx)
         if check_step_math:
             errors.extend(_step_math_errors(prob))
-        _run_problem_gates(prob, vault_archs, unit_code, rules or QUALITY_RULES, errors=errors)
+        _run_problem_gates(
+            prob,
+            vault_archs,
+            unit_code,
+            rules or QUALITY_RULES,
+            errors=errors,
+            enforce_l2_step_floor=True,
+            drill_id=drill_id if allow_l2_baseline else None,
+            l2_baseline=l2_baseline,
+        )
     try:
         check_gate_g3_set(checked, rules=rules or QUALITY_RULES)
     except QualityError as exc:
@@ -1745,7 +1887,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         default=None,
         help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
     )
+    parser.add_argument(
+        "--l2-step-gate",
+        action="store_true",
+        help="Check canonical math drills against the shrink-only L2 step-floor baseline (>= 4 real steps).",
+    )
     args = parser.parse_args(argv)
+
+    if args.l2_step_gate:
+        root = Path.cwd() if (Path.cwd() / L2_STEP_FLOOR_BASELINE_PATH).is_file() else _repo_root()
+        passed, report = check_l2_step_floor_gate(root)
+        print(report)
+        return 0 if passed else 1
 
     if args.list_vault:
         archs = load_scope_archetypes(args.unit)
@@ -1775,7 +1928,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 Path(os.environ.get("DRILLS_DATA_DIR", DEFAULT_DATA_ROOT)).resolve(),
             )
             is_saved = any(input_path.is_relative_to(root) for root in data_roots)
-            problems_found = check_ai_drill(drill_data, check_step_math=not is_saved)
+            problems_found = check_ai_drill(drill_data, check_step_math=not is_saved, allow_l2_baseline=is_saved)
             fig_warnings = check_ai_drill_warnings(drill_data)
             resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
             if args.originality is False:

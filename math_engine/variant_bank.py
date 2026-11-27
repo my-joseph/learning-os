@@ -416,7 +416,14 @@ def check_variant_bank(
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
 
-        _run_problem_gates(prob, vault_archs, unit_code, active_rules, errors=errors)
+        _run_problem_gates(
+            prob,
+            vault_archs,
+            unit_code,
+            active_rules,
+            errors=errors,
+            enforce_l2_step_floor=False,
+        )
         errors.extend(check_variant_uniqueness(prob, drill_items + accepted))
         # Include failed variants when checking later entries for duplicates.
         accepted.append((pid, prob))
