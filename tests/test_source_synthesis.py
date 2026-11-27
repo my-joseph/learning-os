@@ -1249,7 +1249,7 @@ def test_source_gap_structured_matching_distinct_ambiguous_unmatched(
             id="CARD-AMBIGUOUS",
             level=3,
             reasoningMove="multi-relation",
-            skill="Expand complex binomials and rationalize complex quotients in standard form",
+            skill="Expand complex binomials and divide complex numbers by rationalizing with the denominator conjugate",
             difficultyDriver="Combines FOIL expansion, denominator conjugate, and modulus check",
             traps=[
                 {
