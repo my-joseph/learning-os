@@ -923,14 +923,26 @@ async function runTests() {
       };
       assert.equal(qDrillJson.problems[0].hasVariants, false, "quarantined variant must not enable Similar");
 
-      // Unlock Similar via check-answer, then verify mode=example returns 404 and open-next returns exhausted
-      await checkAnswerPOST(
-        new NextRequest("http://127.0.0.1:3000/api/check-answer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ drillId: qDrillId, problemId: "Q01", answer: "5" }),
-        })
-      );
+      // Seed two wrong attempts so both Similar "+" and worked example unlock, then verify neither serves quarantined variants
+      writeProgress({
+        drillId: qDrillId,
+        problems: [
+          {
+            id: "Q01",
+            state: {
+              userInput: "5",
+              score: 0,
+              divergedStep: null,
+              mistakes: [],
+              lastCheck: { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+              attempts: [
+                { input: "5", ts: "2026-11-27T10:00:00Z", verdict: "incorrect" },
+                { input: "6", ts: "2026-11-27T10:05:00Z", verdict: "incorrect" },
+              ],
+            },
+          },
+        ],
+      });
       const qExRes = await variantGET(
         new NextRequest(`http://127.0.0.1:3000/api/variant?drillId=${qDrillId}&qid=Q01&mode=example`)
       );

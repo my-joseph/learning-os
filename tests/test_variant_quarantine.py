@@ -97,8 +97,9 @@ def test_quarantined_variants_do_not_count_toward_coverage_gate_or_drill_review(
         unit,
         str(variants_dir),
     )
-    assert missed[0]["availableVariantCount"] == 0
-    assert missed[0]["unattemptedVariantIds"] == []
+    assert missed[0]["availableAtLevel"] == 0
+    assert missed[0]["unattemptedAtLevel"] == 0
+    assert missed[0]["totalForArchetype"] == 0
 
 
 def test_reverify_lists_passing_and_failing_and_apply_unquarantines_only_passing(
