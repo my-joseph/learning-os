@@ -27,11 +27,13 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_quality_contrac
 ```bash
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --list-vault
 .venv/bin/python -m scripts.vault_report <UNIT> --log
+.venv/bin/python -m scripts.vault_report <UNIT> --usage
 ```
 
-`vault_report` shows, from evidence only, which levels each archetype has **earned** in ingested drills and where it **failed** (issue-log `level` records), and flags `FAILING@Ln` and `UNPROVEN`. `--log` puts `FAILING` into the issue log for the next batch; the report counts those `(vault)` records at the archetype's base level.
+`vault_report` shows, from evidence only, which levels each archetype has **earned** in ingested drills and where it **failed** (issue-log `level` records), and flags `FAILING@Ln` and `UNPROVEN`. `--log` puts `FAILING` into the issue log for the next batch; the report counts those `(vault)` records at the archetype's base level. `--usage` shows current vs. historical drill/variant coverage per archetype and lists `UNUSED` and `HIST-ONLY` archetypes first.
 
 - **An archetype is a skill, not a level.** Its `level` is the base level (the skill used directly). Build a problem on it at any level from the base upward: L1 direct, L2 reverse or translate, L3 diagnose or a real case to rule out, L4 a model from two or more relations plus a check. The gates (blind solve for L3+) decide whether the level was earned.
+- **Prefer unused archetypes and unserved levels:** unless a weak-spot focus or brief names specific archetypes, pick `UNUSED` and `HIST-ONLY` archetypes (and levels not yet served in current drills) from `vault_report <UNIT> --usage` before repeating already-served `(archetypeKey, level)` pairs.
 - Choose by evidence: prefer an archetype that has already earned the level you need; trying a new level is fine; avoid an archetype at a level where it is `FAILING` unless its `levelNote` says how to earn it. Read every `levelNote`.
 - Unit scope with too few archetypes for the brief, or none at all: add archetypes for that unit first (next bullet), writing them to `math_engine/reasoning_vault/<UNIT>.json` with `unitCode` set, then continue. Never borrow another unit's archetypes for a unit drill.
 - New unit, or a unit without archetypes: first check `docs/backlog.md` for engine gaps in that topic and fix or report them. Build the vault from the unit's OpenStax section per `rules/07` §4 "Curriculum Baseline": one L1–L2 archetype per learning objective first, then L3+ archetypes that go beyond the book. Cite the section in each archetype's `source`; never copy or paraphrase OpenStax exercises.
