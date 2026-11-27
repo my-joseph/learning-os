@@ -209,6 +209,17 @@ def validate_universal_checks(checks: Any) -> list[str]:
     return errors
 
 
+def _validate_source_cards(archetype: dict[str, Any], label: str) -> list[str]:
+    if "sourceCards" not in archetype:
+        return []
+    ids = archetype["sourceCards"]
+    if not isinstance(ids, list) or any(not isinstance(cid, str) or not cid.strip() for cid in ids):
+        return [f"{label}: 'sourceCards' must be a list of non-empty card IDs."]
+    if len({cid.strip() for cid in ids}) != len(ids):
+        return [f"{label}: 'sourceCards' contains duplicate card IDs."]
+    return []
+
+
 def validate_quality_checks(
     archetype: dict[str, Any],
     *,
@@ -217,16 +228,16 @@ def validate_quality_checks(
 ) -> list[str]:
     """Validate an archetype's `qualityChecks` list, returning a list of error strings."""
     key = archetype.get("archetypeKey", "<unknown>")
+    errors = _validate_source_cards(archetype, str(key))
     checks = archetype.get("qualityChecks")
     if not isinstance(checks, list) or not checks:
-        return [f"Archetype '{key}' must have a non-empty 'qualityChecks' list."]
+        return errors + [f"Archetype '{key}' must have a non-empty 'qualityChecks' list."]
 
     active_seen = seen_ids if seen_ids is not None else set()
     active_universal = universal_ids
     if active_universal is None and UNIVERSAL_CHECKS_PATH.exists():
         active_universal = {c["id"] for c in load_universal() if isinstance(c, dict) and "id" in c}
 
-    errors: list[str] = []
     for idx, entry in enumerate(checks):
         errors.extend(
             _validate_check_entry(
@@ -305,6 +316,7 @@ def validate_math_archetype(
     warnings_list: list[str] = []
     key = archetype.get("archetypeKey")
     label = prefix or (str(key).strip() if isinstance(key, str) and key.strip() else "<unknown>")
+    errors.extend(_validate_source_cards(archetype, label))
 
     if not isinstance(key, str) or not key.strip():
         errors.append(f"{label}: 'archetypeKey' must be a non-empty string.")

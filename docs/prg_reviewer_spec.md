@@ -155,3 +155,5 @@ problem as correct only on a pass.
 ## Beyond v1 (implemented)
 
 Studio UI for reviews is now live in `practice-studio/` (`CodeDashboard.tsx`, with separate `/math` and `/code` workspaces), and multi-milestone project labs use the same rubric per milestone via `code_engine.review_run`, `scripts.review_record`, `review-code`, and `code_engine.lab_ingest`.
+
+Vault archetypes derived from source cards may record the contributing card IDs in `sourceCards`. The vault checker validates this optional list.

@@ -680,3 +680,21 @@ def test_u01_chain_archetype_covers_prompt_example_and_bare_operations(
     # Out-of-scope operation is not falsely covered
     out_of_scope = _math_card(reasoningMove="chain", level=2, operations=["multiply", "square root"])
     assert not source_gap._archetype_covers_chain_card(out_of_scope, arch)
+
+
+def test_source_cards_link_is_validated_and_resolves_without_fuzzy_similarity() -> None:
+    card = _math_card()
+    arch = _valid_math_archetype(
+        name="Unrelated feature",
+        coreConcept="Unrelated feature",
+        cognitiveTraps=["unrelated-feature-trap"],
+        sourceCards=[card["id"]],
+    )
+    assert qc.validate_math_archetype(arch)[0] == []
+    matches, unmatched = source_gap._match_cards_to_archetypes(UNIT, [card], [arch], is_prg=False)
+    assert not unmatched
+    assert matches[0]["matches"][0]["reason"] == "explicit sourceCards reference"
+
+    arch["sourceCards"] = [card["id"], card["id"]]
+    assert any("sourceCards" in error for error in qc.validate_math_archetype(arch)[0])
+    assert any("sourceCards" in error for error in qc.validate_quality_checks(arch))

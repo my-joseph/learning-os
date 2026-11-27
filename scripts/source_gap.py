@@ -1456,6 +1456,12 @@ def _match_cards_to_archetypes(
     matched_cards: list[dict[str, Any]] = []
     unmatched_cards: list[dict[str, Any]] = []
 
+    source_links: dict[str, set[str]] = {}
+    for arch in archetypes:
+        key = str(arch.get("archetypeKey") or "")
+        for cid in arch.get("sourceCards") or []:
+            source_links.setdefault(cid.strip(), set()).add(key)
+
     for card in cards:
         c_traps = _card_trap_entries(card)
         c_qcs = _card_qc_entries(card) if is_prg else []
@@ -1519,6 +1525,18 @@ def _match_cards_to_archetypes(
                 summary["operations"] = card_ops
         if card.get("carriedFrom"):
             summary["carriedFrom"] = card["carriedFrom"]
+
+        linked = source_links.get(card["id"], set())
+        if linked:
+            hits = [
+                {
+                    "archetypeKey": key,
+                    "score": 1.0,
+                    "reason": "explicit sourceCards reference",
+                    "scoreBreakdown": {"trap": 0.0, "skill": 0.0, "compatibility": 0.0},
+                }
+                for key in sorted(linked)
+            ]
 
         if hits:
             matched_cards.append({**summary, "matches": hits})
