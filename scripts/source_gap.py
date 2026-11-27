@@ -40,11 +40,12 @@ from typing import Any, Iterable
 
 from code_engine.ai_drill_ingest import load_scope_archetypes as load_code_scope_archetypes
 from math_engine.ai_drill_ingest import load_scope_archetypes as load_math_scope_archetypes
-from math_engine.bridge import MIN_BRIDGE_UNITS
+from math_engine.bridge import MIN_BRIDGE_UNITS, load_bridge_vault
 from math_engine.source_cores import (
     PRG_ARCHETYPE_KINDS,
     REASONING_MOVES,
     CoreCardError,
+    card_targets_unit,
     cores_path,
     is_prg_card,
     is_prg_unit,
@@ -1256,11 +1257,7 @@ def _score_skill_overlap(
 
 
 def _card_effective_unit(card: dict[str, Any], report_unit_code: str) -> str:
-    later = str(card.get("laterUnit") or "").strip()
-    if later == report_unit_code:
-        return report_unit_code
-    units = card.get("units")
-    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == report_unit_code for u in units):
+    if card.get("carriedFrom") or card_targets_unit(card, report_unit_code):
         return report_unit_code
     return str(card.get("unitCode") or report_unit_code).strip()
 
@@ -1664,9 +1661,7 @@ def _build_prg_gap_report(
         if carried:
             carried_count += 1
         later = card.get("laterUnit")
-        raw_units = card.get("units")
-        in_units = isinstance(raw_units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in raw_units)
-        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not (carried and in_units):
+        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not carried:
             later_by_unit[later.strip()].append(card)
         else:
             current_cards.append(card)
@@ -1873,9 +1868,7 @@ def build_gap_report(
         if carried:
             carried_count += 1
         later = card.get("laterUnit")
-        raw_units = card.get("units")
-        in_units = isinstance(raw_units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in raw_units)
-        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not (carried and in_units):
+        if isinstance(later, str) and later.strip() and later.strip() != unit_code and not carried:
             later_by_unit[later.strip()].append(card)
         else:
             current_cards.append(card)
@@ -2005,6 +1998,7 @@ def build_gap_report(
     else:
         eligible_set = set()
 
+    bridge_archetypes = load_bridge_vault(vault_dir).get("archetypes", [])
     bridge_candidates: list[dict[str, Any]] = []
     for pair, items in sorted(bridge_by_pair.items()):
         missing_units = [u for u in pair if u not in eligible_set]
@@ -2014,6 +2008,9 @@ def build_gap_report(
                 "units": list(pair),
                 "eligible": is_eligible,
                 "missingUnits": missing_units,
+                "vaultArchetypes": sorted(
+                    arch["archetypeKey"] for arch in bridge_archetypes if set(arch.get("unitCodes") or []) == set(pair)
+                ),
                 "cards": [
                     {
                         "id": c["id"],
@@ -2308,6 +2305,8 @@ def format_gap_report(report: dict[str, Any]) -> str:
         pair_label = " + ".join(grp["units"])
         status = "ELIGIBLE" if grp["eligible"] else f"not eligible — needs {', '.join(grp['missingUnits'])}"
         lines.append(f"  {pair_label} [{status}] ({len(grp['cards'])} card(s)):")
+        if grp.get("vaultArchetypes"):
+            lines.append(f"    Vault archetypes for these units: {', '.join(grp['vaultArchetypes'])}")
         for c in grp["cards"]:
             lines.append(f"    - [{c['id']}] L{c['level']} {c['reasoningMove']} — {c['skill']}")
 

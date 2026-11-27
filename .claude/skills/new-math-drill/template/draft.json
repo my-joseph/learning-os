@@ -121,8 +121,16 @@
           ]
         },
         {
-          "latex": "x = 8",
+          "latex": "x = \\frac{32}{4}",
           "explain": "Divide both sides by the coefficient of $x$.",
+          "eq": [
+            "32 / 4",
+            "8"
+          ]
+        },
+        {
+          "latex": "x = 8",
+          "explain": "Simplify the quotient to find $x$.",
           "val": "8"
         }
       ],

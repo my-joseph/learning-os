@@ -37,9 +37,11 @@ from math_engine.ai_drill_ingest import (
     AiContractError,
     _run_problem_gates,
     check_distractor_provenance,
+    load_l2_step_floor_baseline,
     load_scope_archetypes,
     normalize_prompt_numbers,
     story_text,
+    validate_l2_step_floor,
     validate_review,
 )
 from math_engine.ai_drill_ingest import autofill_problem_figure as autofill_problem_figure
@@ -137,7 +139,6 @@ def save_bank(unit_code: str, bank_doc: Dict[str, Any], variants_dir: Optional[s
 
 
 QUARANTINED_STATUS = "quarantined"
-L2_MIN_REAL_STEPS = 4
 
 
 def is_quarantined_variant(variant: Any, bank_doc: Optional[Dict[str, Any]] = None) -> bool:
@@ -156,21 +157,6 @@ def active_variant_document(bank_doc: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(variants, list)
         else [],
     }
-
-
-def _count_real_steps(prob: Dict[str, Any]) -> int:
-    steps = prob.get("steps")
-    if not isinstance(steps, list):
-        return 0
-    return sum(
-        1
-        for st in steps
-        if isinstance(st, dict)
-        and isinstance(st.get("latex"), str)
-        and bool(st["latex"].strip())
-        and isinstance(st.get("explain"), str)
-        and bool(st["explain"].strip())
-    )
 
 
 def find_variant(
@@ -395,6 +381,8 @@ def check_variant_bank(
     rules: Optional[Dict[str, Any]] = None,
     check_originality: bool = False,
     sources_dir: Optional[str] = None,
+    *,
+    allow_l2_baseline: bool = True,
 ) -> List[str]:
     """Run every single-problem ingest gate + variant uniqueness checks on ``bank_doc``."""
     errors: List[str] = []
@@ -416,6 +404,7 @@ def check_variant_bank(
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
     active_rules = rules or QUALITY_RULES
+    l2_baseline = load_l2_step_floor_baseline() if allow_l2_baseline else None
 
     seen_ids: set[str] = set()
     accepted: List[Tuple[str, Dict[str, Any]]] = []
@@ -463,7 +452,16 @@ def check_variant_bank(
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
 
-        _run_problem_gates(prob, vault_archs, unit_code, active_rules, errors=errors)
+        _run_problem_gates(
+            prob,
+            vault_archs,
+            unit_code,
+            active_rules,
+            errors=errors,
+            enforce_l2_step_floor=True,
+            bank_unit=unit_code if allow_l2_baseline else None,
+            l2_baseline=l2_baseline,
+        )
         errors.extend(check_variant_uniqueness(prob, drill_items + accepted))
         # Include failed variants when checking later entries for duplicates.
         accepted.append((pid, prob))
@@ -573,6 +571,11 @@ def add_variants(
             try:
                 validate_review(prepared)
             except AiContractError as exc:
+                errs.append(str(exc))
+        try:
+            validate_l2_step_floor(prepared)
+        except AiContractError as exc:
+            if str(exc) not in errs:
                 errs.append(str(exc))
     if errs:
         raise VariantBankError("Variant bank gates failed:\n" + "\n".join(f"  - {e}" for e in errs))
@@ -772,10 +775,6 @@ def reverify_quarantined_variants(
                 validate_review(prob)
             except AiContractError as exc:
                 item_errors.append(str(exc))
-        if prob.get("level") == 2 and _count_real_steps(prob) < L2_MIN_REAL_STEPS:
-            item_errors.append(
-                f"[{vid}] L2 variant has {_count_real_steps(prob)} real step(s); need >= {L2_MIN_REAL_STEPS} real steps."
-            )
         item_errors.extend(check_variant_uniqueness(prob, drill_items + checked_peer_items))
 
         if run_orig:

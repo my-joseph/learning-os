@@ -47,6 +47,7 @@ from math_engine.source_cores import (
     index_dir,
     is_prg_unit,
     is_thai_exam_family,
+    load_core_cards,
     load_registry_families,
     resolve_sources_dir,
 )
@@ -1389,6 +1390,11 @@ def build_extraction_plan(
     os.makedirs(idx_dir, exist_ok=True)
     plan_file = os.path.join(idx_dir, f"plan_{unit_code}.json")
 
+    carried_cards = [
+        {"id": card["id"], "carriedFrom": card["carriedFrom"]}
+        for card in load_core_cards(unit_code, sources_dir=sdir, validate=False)
+        if card.get("carriedFrom")
+    ]
     plan: dict[str, Any] = {
         "unitCode": unit_code,
         "track": "prg" if is_prg_unit(unit_code) else "math",
@@ -1411,10 +1417,12 @@ def build_extraction_plan(
             "selectedPageCount": len(selected),
             "selectedEstimatedItems": cumulative_items,
             "batchCount": len(batches),
+            "carriedCardsCount": len(carried_cards),
             "pagesByFamily": pages_by_family,
             "candidatesByFamily": dict(sorted(candidates_by_family.items())),
         },
         "unregisteredSources": list(find_result.get("unregisteredSources") or []),
+        "carriedCards": carried_cards,
         "diagnostics": find_result.get(
             "diagnostics",
             {
@@ -1528,6 +1536,10 @@ def format_plan_report(plan: dict[str, Any]) -> str:
         f"in {s['batchCount']} batch(es)",
     ]
 
+    if plan.get("carriedCards"):
+        lines.append(f"Carried source cards: {len(plan['carriedCards'])}")
+        for card in plan["carriedCards"]:
+            lines.append(f"  - {card['id']} from {card['carriedFrom']}")
     diagnostics = plan.get("diagnostics", {})
     retry = diagnostics.get("ocrRetry", [])
     lines.append(
