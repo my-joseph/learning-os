@@ -36,6 +36,7 @@ ALLOWED_USE_MODES: tuple[str, ...] = ("scope", "cores", "reuse", "no-automation"
 
 REASONING_MOVES: tuple[str, ...] = (
     "direct",
+    "chain",
     "reverse",
     "translate",
     "diagnose",
@@ -162,7 +163,7 @@ _REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "format",
     "representation",
 )
-_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units"))
+_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units", "operations"))
 
 _PRG_REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "id",
@@ -729,6 +730,133 @@ def get_unit_terms(unit_code: str, path: str | None = None) -> list[str]:
     return merged
 
 
+_OP_STOPWORDS: frozenset[str] = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "by",
+        "of",
+        "via",
+        "to",
+        "in",
+        "on",
+        "for",
+        "with",
+        "from",
+        "into",
+        "using",
+        "and",
+        "or",
+    }
+)
+
+_OP_TOKEN_ALIASES: dict[str, str] = {
+    "multiplication": "multiply",
+    "multiplying": "multiply",
+    "multiplied": "multiply",
+    "product": "multiply",
+    "products": "multiply",
+    "division": "divide",
+    "dividing": "divide",
+    "divided": "divide",
+    "quotient": "divide",
+    "quotients": "divide",
+    "addition": "add",
+    "adding": "add",
+    "added": "add",
+    "subtraction": "subtract",
+    "subtracting": "subtract",
+    "subtracted": "subtract",
+    "expanding": "expand",
+    "expansion": "expand",
+    "expanded": "expand",
+    "simplifying": "simplify",
+    "simplification": "simplify",
+    "simplified": "simplify",
+    "factoring": "factor",
+    "factorization": "factor",
+    "factorisation": "factor",
+    "factorize": "factor",
+    "factorise": "factor",
+    "factored": "factor",
+    "squaring": "square",
+    "squared": "square",
+    "conjugation": "conjugate",
+    "conjugating": "conjugate",
+    "conjugated": "conjugate",
+    "rationalization": "rationalize",
+    "rationalisation": "rationalize",
+    "rationalizing": "rationalize",
+    "rationalising": "rationalize",
+    "rationalized": "rationalize",
+    "rationalised": "rationalize",
+    "rationalise": "rationalize",
+    "completing": "complete",
+    "completed": "complete",
+    "substituting": "substitute",
+    "substitution": "substitute",
+    "substituted": "substitute",
+    "distributing": "distribute",
+    "distribution": "distribute",
+    "distributed": "distribute",
+    "combining": "combine",
+    "combination": "combine",
+    "combined": "combine",
+    "evaluating": "evaluate",
+    "evaluation": "evaluate",
+    "evaluated": "evaluate",
+    "solving": "solve",
+    "solved": "solve",
+    "isolating": "isolate",
+    "isolation": "isolate",
+    "isolated": "isolate",
+    "rearranging": "rearrange",
+    "rearrangement": "rearrange",
+    "rearranged": "rearrange",
+    "reducing": "reduce",
+    "reduction": "reduce",
+    "reduced": "reduce",
+    "cancelling": "cancel",
+    "canceling": "cancel",
+    "cancellation": "cancel",
+    "cancelled": "cancel",
+    "canceled": "cancel",
+    "inverting": "invert",
+    "inversion": "invert",
+    "inverted": "invert",
+    "converting": "convert",
+    "conversion": "convert",
+    "converted": "convert",
+}
+
+
+def _lemmatize_op_token(token: str) -> str:
+    if token in _OP_TOKEN_ALIASES:
+        return _OP_TOKEN_ALIASES[token]
+    stem = token
+    if len(stem) >= 5 and stem.endswith("ies"):
+        stem = stem[:-3] + "y"
+    elif len(stem) >= 4 and stem.endswith("s") and not stem.endswith(("ss", "us", "is")):
+        stem = stem[:-1]
+    elif len(stem) >= 6 and stem.endswith("ing"):
+        stem = stem[:-3]
+    elif len(stem) >= 5 and stem.endswith("ed"):
+        stem = stem[:-2]
+    return _OP_TOKEN_ALIASES.get(stem, stem)
+
+
+def normalize_operation(op: str) -> str:
+    """Normalize a math sub-skill operation name for exact equality and set comparison."""
+    raw_tokens = re.findall(r"[a-z0-9]+", (op or "").lower())
+    if not raw_tokens:
+        return (op or "").strip().lower()
+    kept = [_lemmatize_op_token(tok) for tok in raw_tokens if tok not in _OP_STOPWORDS]
+    if not kept:
+        kept = [_lemmatize_op_token(tok) for tok in raw_tokens]
+    return " ".join(kept)
+
+
 def _normalize_digit_run(token: str) -> str:
     if "." in token:
         whole, frac = token.split(".", 1)
@@ -772,6 +900,10 @@ def _content_string_fields(card: dict[str, Any]) -> list[tuple[str, str]]:
         val = card.get(key)
         if isinstance(val, str):
             fields.append((key, val))
+    if isinstance(card.get("operations"), list):
+        for idx, op in enumerate(card["operations"]):
+            if isinstance(op, str):
+                fields.append((f"operations[{idx}]", op))
     for idx, trap in enumerate(card.get("traps") or []):
         if isinstance(trap, dict):
             for sub in ("tag", "description"):
@@ -1191,10 +1323,33 @@ def validate_core_card(
     if "reasoningMove" in card and card["reasoningMove"] not in REASONING_MOVES:
         errors.append(f"reasoningMove: must be one of {list(REASONING_MOVES)}, got {card['reasoningMove']!r}.")
 
+    if "operations" in card:
+        ops = card["operations"]
+        if not isinstance(ops, list) or len(ops) < 2:
+            errors.append("operations: must be a list of at least 2 ordered sub-skill names.")
+        else:
+            seen_ops: set[str] = set()
+            for idx, op in enumerate(ops):
+                if not isinstance(op, str) or not op.strip():
+                    errors.append(f"operations[{idx}]: must be a non-empty string.")
+                else:
+                    norm_op = normalize_operation(op)
+                    if norm_op in seen_ops:
+                        errors.append(
+                            f"operations[{idx}]: duplicate operation {op!r} after normalisation ({norm_op!r})."
+                        )
+                    seen_ops.add(norm_op)
+    elif card.get("reasoningMove") == "chain":
+        errors.append(
+            "operations: required when reasoningMove is 'chain' (list of at least 2 ordered sub-skill names)."
+        )
+
     if "level" in card:
         lvl = card["level"]
         if not _is_int(lvl) or not (1 <= lvl <= 5):
             errors.append(f"level: must be an integer 1..5, got {lvl!r}.")
+        elif card.get("reasoningMove") == "chain" and lvl != 2:
+            errors.append(f"level: reasoningMove 'chain' must have level 2, got {lvl!r}.")
 
     if "representation" in card and card["representation"] not in REPRESENTATIONS:
         errors.append(f"representation: must be one of {list(REPRESENTATIONS)}, got {card['representation']!r}.")

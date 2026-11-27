@@ -58,11 +58,11 @@ For each batch `k = 1, 2, ...` in `sources/_index/plan_<UNIT>.json`:
    .venv/bin/python -m scripts.source_gap <UNIT> --novelty sources/_cores/_batches/<UNIT>-batch-<k>.jsonl
    ```
 4. **Saturation & budget stop rule:**
-   - Stop early if **two consecutive batches** each add **`< 2` new cores** (fuzzy duplicates on `skill` + `reasoningMove` + `traps` for math, or `skill` + `concept` + `bugPattern` + `archetypeKind` + `traps`/`qualityCheckIdeas` for PRG).
+   - Stop early if **two consecutive batches** each add **`< 2` new cores** (fuzzy duplicates on `skill` + `reasoningMove` + `traps` for math, with `chain` cards and cards whose `operations` set strictly contains or differs from another card's kept distinct rather than collapsed by inherited sub-skill traps; or `skill` + `concept` + `bugPattern` + `archetypeKind` + `traps`/`qualityCheckIdeas` for PRG).
    - Otherwise stop when all planned batches (bounded by `--budget-pages` / `--budget-items`) are complete.
 
 Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
-- **Math cards (`schema.json`):** abstract `skill`, `reasoningMove`, `difficultyDriver`, `level`, `traps`, `format`, `representation`, optional `notes`. Zero source wording and zero source numbers; every string ≤ 200 chars.
+- **Math cards (`schema.json`):** abstract `skill`, `reasoningMove` (`direct`, `chain`, `reverse`, `translate`, `diagnose`, `multi-relation`, `case-check`, `generalise`, `model`), optional `operations` (ordered sequence of ≥ 2 distinct taught sub-skill names after normalisation; **required** when `reasoningMove` is `chain`), `difficultyDriver`, `level`, `traps`, `format`, `representation`, optional `notes`. Use `chain` (strictly `level` = 2) for a given expression with an obvious method chaining ≥ 2 different taught operations in sequence, excluding any `rules/06` §2.3 L3 trigger on a given expression (a check that rejects a candidate such as extraneous root, domain, or ± case → `case-check`; find-the-flaw → `diagnose`; choosing among taught methods; or `generalise` — if any applies, it is not `chain`). Reserve `multi-relation`/`model` (L3+) for problems where the solver must combine relations into an equation the prompt does not state. Zero source wording and zero source numbers; every string ≤ 200 chars.
 - **PRG cards (`prg_schema.json`):** abstract `language`, `archetypeKind` (`implement` | `predict-output` | `find-the-bug` | `refactor` | `project-milestone`), `skill`, `concept`, `bugPattern`, optional `smell`, `testsCatch`, `difficultyDriver`, `level`, `traps`, `qualityCheckIdeas` (`QC-*` style), `sourceRef`, optional `notes`, and optional `reuse` (`{license, attribution, adaptedIdea?}`) **only** on `REUSE` families. Zero copied source code, identifiers, test names, string literals, or wording; every string ≤ 200 chars.
 - Never extract from `openstax` (`scope`) or `NO-AUTOMATION` families.
 - If an item goes deeper than `<UNIT>`'s scope, keep its core card with `"laterUnit": "<TARGET_UNIT>"` using a **real unit/chapter code from `id_map.json`** (or `"UNMAPPED:<label>"`; remap older files with `.venv/bin/python -m scripts.source_cores_retag <file> [--apply]`).
@@ -75,13 +75,13 @@ Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
 ```
 
 Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward cards from other units' files marked `carriedFrom`) against the reasoning vault:
-- **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):** matched vs unmatched candidate archetypes, new trap tags, missing reasoning moves & levels, exam formats seen, deferred `laterUnit` cards, and `Bridge candidates` (`ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`).
+- **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):** matched vs unmatched candidate archetypes, uncovered `chain` cards (and L2 cards with ≥ 2 `operations`, warning `"no L2 chain archetype"` when the unit vault has none), new trap tags, missing reasoning moves & levels, exam formats seen, deferred `laterUnit` cards, and `Bridge candidates` (`ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`).
 - **PRG (`code_engine/reasoning_vault/<CHAPTER>.json`):** matched vs unmatched candidate archetypes, new `cognitiveTraps`, new bug patterns / smells, new `QC-*` `qualityCheckIdeas` not yet in the vault, missing PRG archetype kinds (`implement`, `predict-output`, `find-the-bug`, `refactor`, `project-milestone`) and levels, languages/concepts, and deferred `laterUnit` cards.
 
 ## 5. Update the Reasoning Vault (with reviewer subagent)
 
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):**
-  - Add new archetypes for genuine unmatched cores; extend existing archetypes' `cognitiveTraps`, `levelNote`s, and `usedContexts` (preserving figure decisions per `rules/03` §3.1).
+  - Add new archetypes for genuine unmatched cores (including L2 chain archetypes declaring an optional `operations` array of ≥ 2 sub-skills, validated by `code_engine.quality_checks --check-vaults`); extend existing archetypes' `cognitiveTraps`, `levelNote`s, and `usedContexts` (preserving figure decisions per `rules/03` §3.1).
   - Add eligible bridge archetypes to `math_engine/reasoning_vault/MTH-BRIDGE.json` when `source_gap` shows eligible pairs (`scripts.bridge_scope`).
   - Cite provenance: `"source": "OpenStax <Book> §x.y; cores: <families>"`.
 - **PRG (`code_engine/reasoning_vault/<CHAPTER>.json`):**
