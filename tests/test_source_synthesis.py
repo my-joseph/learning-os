@@ -1244,12 +1244,12 @@ def test_source_gap_structured_matching_distinct_ambiguous_unmatched(
                 }
             ],
         ),
-        # 2. Ambiguous card spanning two archetypes (plus a 3rd trap to verify <=2 cap)
+        # 2. The skill explicitly names both archetypes’ techniques. The third trap alone should not match.
         _sample_card(
             id="CARD-AMBIGUOUS",
             level=3,
             reasoningMove="multi-relation",
-            skill="Expand complex binomials and rationalize complex quotients in standard form",
+            skill="Expand complex binomials and divide complex numbers by rationalizing with the denominator conjugate",
             difficultyDriver="Combines FOIL expansion, denominator conjugate, and modulus check",
             traps=[
                 {
@@ -1659,3 +1659,41 @@ def test_prg_source_links_keep_matches_and_report_missing_wrong_unit_and_mismatc
     reversed_report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path))
     assert reversed_report["unmatchedCards"] == report["unmatchedCards"]
     assert reversed_report["newTraps"] == report["newTraps"]
+
+
+@pytest.mark.parametrize("is_prg", [False, True], ids=["math", "prg"])
+@pytest.mark.parametrize(("skill", "trap_factor"), [(0.0, 0.0), (0.06, 0.5), (0.12, 1.0), (0.20, 1.0)])
+def test_trap_weight_requires_skill_overlap(
+    monkeypatch: pytest.MonkeyPatch, is_prg: bool, skill: float, trap_factor: float
+) -> None:
+    card = _sample_prg_card() if is_prg else _sample_card()
+    arch = {"archetypeKey": "arch", "archetypeKind": "refactor"}
+    monkeypatch.setattr(source_gap, "_score_trap_overlap", lambda *a, **kw: (1.0, ["trap"], [], []))
+    monkeypatch.setattr(source_gap, "_score_skill_overlap", lambda *a, **kw: (skill, []))
+    monkeypatch.setattr(source_gap, "_compatibility_score", lambda *a, **kw: (1.0, ""))
+    match = source_gap.score_card_against_archetype(card, arch, unit_code=card["unitCode"], is_prg=is_prg)
+    compatibility_factor = 1.0 if trap_factor else 0.0
+    expected = round(
+        source_gap._TRAP_WEIGHT * trap_factor
+        + source_gap._SKILL_WEIGHT * skill
+        + source_gap._COMPAT_WEIGHT * compatibility_factor,
+        3,
+    )
+    assert match["score"] == expected
+
+
+def test_prg_fuzzy_duplicates_require_same_level_and_unit_routing_in_both_directions() -> None:
+    card = _sample_prg_card(units=["PRG-T00-C03-U01", "PRG-T00-C03-U02"])
+    reorder = {**card, "units": list(reversed(card["units"]))}
+    assert source_gap.cards_are_fuzzy_duplicate(card, reorder) == source_gap.cards_are_fuzzy_duplicate(reorder, card)
+    assert source_gap.cards_are_fuzzy_duplicate(card, reorder)[0]
+
+    for change in (
+        {"level": 4},
+        {"unitCode": "PRG-T00-C03-U03"},
+        {"laterUnit": "PRG-T00-C03-U02"},
+        {"units": ["PRG-T00-C03-U01", "PRG-T00-C03-U03"]},
+    ):
+        other = {**card, **change}
+        assert not source_gap.cards_are_fuzzy_duplicate(card, other)[0]
+        assert not source_gap.cards_are_fuzzy_duplicate(other, card)[0]

@@ -710,3 +710,25 @@ def test_explicit_chain_link_reports_a_level_and_operations_mismatch() -> None:
     assert link["score"] < 1
     assert "level differs: card L2, archetype L1" in link["compatibilityWarnings"]
     assert "chain requires an L2 archetype with matching operations" in link["compatibilityWarnings"]
+
+
+def test_fuzzy_duplicate_requires_same_level_and_routing() -> None:
+    original = _math_card()
+    for change in ({"level": 3}, {"laterUnit": "MTH-T02-C01-U02"}, {"unitCode": "MTH-T02-C01-U02"}):
+        other = {**original, **change}
+        assert not source_gap.cards_are_fuzzy_duplicate(original, other)[0]
+        assert not source_gap.cards_are_fuzzy_duplicate(other, original)[0]
+
+
+def test_fuzzy_duplicate_is_symmetric_with_missing_traps() -> None:
+    original = _math_card()
+    other = _math_card(traps=[])
+    assert source_gap.cards_are_fuzzy_duplicate(original, other) == source_gap.cards_are_fuzzy_duplicate(
+        other, original
+    )
+
+
+def test_shared_trap_cannot_duplicate_a_distinct_skill() -> None:
+    original = _math_card(skill="Factor")
+    other = _math_card(skill="Sum")
+    assert not source_gap.cards_are_fuzzy_duplicate(original, other)[0]
