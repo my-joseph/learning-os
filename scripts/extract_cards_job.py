@@ -268,8 +268,11 @@ def build_worker_prompt(
             f"4. **Length limit:** EVERY string field (top-level and nested) MUST be <= {MAX_FIELD_LENGTH} characters.",
             "5. **Allowed enums & move boundary (`chain` vs `multi-relation`/`model`):**",
             f"   - `reasoningMove`: {list(REASONING_MOVES)}",
-            "   - **`chain` (L2, requires `operations` with >= 2 distinct ordered sub-skills):** given expression, "
-            "method obvious, >= 2 different taught operations executed in sequence. Original example: "
+            "   - **`chain` (strictly L2, `level` = 2, requires `operations` with >= 2 distinct ordered sub-skills):** "
+            "given expression, method obvious, >= 2 different taught operations executed in sequence. Excludes any "
+            "`rules/06` §2.3 L3 trigger on a given expression — a check that rejects a candidate (extraneous root, "
+            "domain, ± case -> `case-check`), find-the-flaw (`diagnose`), choosing among taught methods, or "
+            "`generalise`: if any applies, it is NOT `chain`. Original example: "
             '`{"skill": "Expand a product of binomials then simplify the quotient via conjugate rationalization", '
             '"reasoningMove": "chain", "operations": ["complex-multiply", "complex-divide"], "level": 2}`.',
             "   - **`multi-relation` / `model` (L3+):** the solver must combine relations into an equation the prompt "

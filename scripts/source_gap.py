@@ -49,6 +49,7 @@ from math_engine.source_cores import (
     is_prg_card,
     is_prg_unit,
     load_core_cards,
+    normalize_operation,
     validate_core_card,
 )
 from scripts.bridge_scope import eligible_units as load_eligible_units
@@ -480,43 +481,8 @@ def _norm_skill_str(text: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
 
 
-_OP_TOKEN_ALIASES: dict[str, str] = {
-    "multiplication": "multiply",
-    "multiplying": "multiply",
-    "multiplied": "multiply",
-    "product": "multiply",
-    "division": "divide",
-    "dividing": "divide",
-    "divided": "divide",
-    "quotient": "divide",
-    "addition": "add",
-    "adding": "add",
-    "added": "add",
-    "subtraction": "subtract",
-    "subtracting": "subtract",
-    "subtracted": "subtract",
-    "expanding": "expand",
-    "expansion": "expand",
-    "expanded": "expand",
-    "simplifying": "simplify",
-    "simplification": "simplify",
-    "simplified": "simplify",
-    "factoring": "factor",
-    "factorization": "factor",
-    "factorisation": "factor",
-    "squaring": "square",
-    "squared": "square",
-    "powers": "power",
-    "conjugation": "conjugate",
-    "rationalization": "rationalize",
-    "rationalisation": "rationalize",
-    "rationalizing": "rationalize",
-    "rationalising": "rationalize",
-}
-
-
 def _normalize_operation(op: str) -> str:
-    return " ".join(re.findall(r"[a-z0-9]+", (op or "").lower()))
+    return normalize_operation(op)
 
 
 def _card_operations_list(card: dict[str, Any]) -> list[str]:
@@ -527,14 +493,14 @@ def _card_operations_list(card: dict[str, Any]) -> list[str]:
 
 
 def _card_operations_set(card: dict[str, Any]) -> set[str]:
-    return {norm for op in _card_operations_list(card) if (norm := _normalize_operation(op))}
+    return {norm for op in _card_operations_list(card) if (norm := normalize_operation(op))}
 
 
 def _archetype_operations_set(arch: dict[str, Any]) -> set[str]:
     raw = arch.get("operations")
     if not isinstance(raw, list):
         return set()
-    return {norm for op in raw if isinstance(op, str) and (norm := _normalize_operation(op))}
+    return {norm for op in raw if isinstance(op, str) and (norm := normalize_operation(op))}
 
 
 def _is_chain_card(card: dict[str, Any]) -> bool:
@@ -545,60 +511,23 @@ def _is_chain_card(card: dict[str, Any]) -> bool:
     return lvl == 2 and len(_card_operations_set(card)) >= 2
 
 
-def _op_tokens(op: str) -> set[str]:
-    words = re.findall(r"[a-z0-9]+", (op or "").lower())
-    out: set[str] = set()
-    for w in words:
-        if w in _STOPWORDS:
-            continue
-        out.add(_OP_TOKEN_ALIASES.get(w, _light_stem(w)))
-    return out
+def _is_l2_chain_archetype(arch: dict[str, Any]) -> bool:
+    return arch.get("level") == 2 and len(_archetype_operations_set(arch)) >= 2
 
 
 def _op_matches(op_c: str, op_a: str) -> bool:
-    if op_c == op_a:
-        return True
-    tc = _op_tokens(op_c)
-    ta = _op_tokens(op_a)
-    if not tc or not ta:
-        return False
-    return tc <= ta or ta <= tc or _dice_similarity(tc, ta) >= 0.6
-
-
-def _operations_covered(card_ops: set[str], arch_ops: set[str]) -> bool:
-    if len(arch_ops) < len(card_ops):
-        return False
-    c_list = sorted(card_ops)
-    a_list = sorted(arch_ops)
-    used: set[int] = set()
-
-    def _dfs(idx: int) -> bool:
-        if idx == len(c_list):
-            return True
-        c_op = c_list[idx]
-        for j, a_op in enumerate(a_list):
-            if j not in used and _op_matches(c_op, a_op):
-                used.add(j)
-                if _dfs(idx + 1):
-                    return True
-                used.remove(j)
-        return False
-
-    return _dfs(0)
+    norm_c = normalize_operation(op_c)
+    norm_a = normalize_operation(op_a)
+    return bool(norm_c) and norm_c == norm_a
 
 
 def _archetype_covers_chain_card(card: dict[str, Any], arch: dict[str, Any]) -> bool:
-    arch_ops = _archetype_operations_set(arch)
-    if len(arch_ops) < 2:
-        return False
-    a_lvl = arch.get("level")
-    c_lvl = card.get("level")
-    if isinstance(a_lvl, int) and isinstance(c_lvl, int) and a_lvl > c_lvl:
+    if not _is_l2_chain_archetype(arch):
         return False
     card_ops = _card_operations_set(card)
     if not card_ops:
         return True
-    return _operations_covered(card_ops, arch_ops)
+    return card_ops <= _archetype_operations_set(arch)
 
 
 def _card_trap_tags(card: dict[str, Any]) -> set[str]:
@@ -1112,7 +1041,7 @@ def _infer_vault_moves(archetypes: list[dict[str, Any]]) -> set[str]:
         lvl = arch.get("level")
         if isinstance(lvl, int) and lvl <= 2:
             moves.add("direct")
-        if len(_archetype_operations_set(arch)) >= 2:
+        if _is_l2_chain_archetype(arch):
             moves.add("chain")
         blob = " ".join(
             _flatten_text(arch.get(k))
@@ -1856,13 +1785,12 @@ def build_gap_report(
 
     # Chain-card coverage (chain move or L2 cards with >= 2 operations)
     chain_cards = [c for c in current_cards if _is_chain_card(c)]
-    vault_chain_archetypes = [a for a in archetypes if len(_archetype_operations_set(a)) >= 2]
-    vault_l2_chain_archetypes = [a for a in vault_chain_archetypes if a.get("level") == 2]
+    vault_l2_chain_archetypes = [a for a in archetypes if _is_l2_chain_archetype(a)]
     covered_chain_cards: list[dict[str, Any]] = []
     uncovered_chain_cards: list[dict[str, Any]] = []
     for card in chain_cards:
         covering = [
-            str(a.get("archetypeKey") or "") for a in vault_chain_archetypes if _archetype_covers_chain_card(card, a)
+            str(a.get("archetypeKey") or "") for a in vault_l2_chain_archetypes if _archetype_covers_chain_card(card, a)
         ]
         chain_entry: dict[str, Any] = {
             "id": card["id"],
@@ -1987,7 +1915,7 @@ def build_gap_report(
         "unmatchedCards": unmatched_cards,
         "chainCards": {
             "totalChainCards": len(chain_cards),
-            "vaultChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_chain_archetypes],
+            "vaultChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_l2_chain_archetypes],
             "vaultL2ChainArchetypes": [str(a.get("archetypeKey") or "") for a in vault_l2_chain_archetypes],
             "hasL2ChainArchetype": bool(vault_l2_chain_archetypes),
             "coveredCards": covered_chain_cards,

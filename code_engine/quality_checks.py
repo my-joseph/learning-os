@@ -20,6 +20,7 @@ from code_engine.lint_check import LintToolsMissingError, get_lint_binaries, lin
 from math_engine import figure_builder
 from math_engine.bridge import BRIDGE_SCOPE, validate_bridge_vault
 from math_engine.figure_autofill import figure_decision_missing
+from math_engine.source_cores import normalize_operation
 
 CODE_ENGINE_DIR = Path(__file__).resolve().parent
 UNIVERSAL_CHECKS_PATH = CODE_ENGINE_DIR / "quality_checks.json"
@@ -359,8 +360,22 @@ def validate_math_archetype(
 
     if "operations" in archetype:
         ops = archetype["operations"]
-        if not isinstance(ops, list) or not ops or not all(isinstance(item, str) and item.strip() for item in ops):
-            errors.append(f"{label}: 'operations' must be a non-empty list of non-empty strings when present.")
+        if not isinstance(ops, list) or len(ops) < 2:
+            errors.append(
+                f"{label}: 'operations' must be a list of at least 2 distinct non-empty strings when present."
+            )
+        else:
+            seen_ops: set[str] = set()
+            for idx, item in enumerate(ops):
+                if not isinstance(item, str) or not item.strip():
+                    errors.append(f"{label}.operations[{idx}]: must be a non-empty string.")
+                else:
+                    norm_op = normalize_operation(item)
+                    if norm_op in seen_ops:
+                        errors.append(
+                            f"{label}.operations[{idx}]: duplicate operation {item!r} after normalisation ({norm_op!r})."
+                        )
+                    seen_ops.add(norm_op)
 
     for rec in ("unitCode", "source"):
         val = archetype.get(rec)

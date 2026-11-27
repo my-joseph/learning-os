@@ -170,6 +170,9 @@
     "required": ["reasoningMove"]
   },
   "then": {
-    "required": ["operations"]
+    "required": ["operations"],
+    "properties": {
+      "level": { "const": 2 }
+    }
   }
 }
