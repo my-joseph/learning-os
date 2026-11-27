@@ -36,9 +36,11 @@ from code_engine.sandbox import JSON_SUFFIXES, assert_safe_contained_path
 from math_engine.ai_drill_ingest import (
     AiContractError,
     _run_problem_gates,
+    load_l2_step_floor_baseline,
     load_scope_archetypes,
     normalize_prompt_numbers,
     story_text,
+    validate_l2_step_floor,
     validate_review,
 )
 from math_engine.ai_drill_ingest import autofill_problem_figure as autofill_problem_figure
@@ -351,6 +353,8 @@ def check_variant_bank(
     rules: Optional[Dict[str, Any]] = None,
     check_originality: bool = False,
     sources_dir: Optional[str] = None,
+    *,
+    allow_l2_baseline: bool = True,
 ) -> List[str]:
     """Run every single-problem ingest gate + variant uniqueness checks on ``bank_doc``."""
     errors: List[str] = []
@@ -372,6 +376,7 @@ def check_variant_bank(
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
     active_rules = rules or QUALITY_RULES
+    l2_baseline = load_l2_step_floor_baseline() if allow_l2_baseline else None
 
     seen_ids: set[str] = set()
     accepted: List[Tuple[str, Dict[str, Any]]] = []
@@ -422,7 +427,9 @@ def check_variant_bank(
             unit_code,
             active_rules,
             errors=errors,
-            enforce_l2_step_floor=False,
+            enforce_l2_step_floor=True,
+            bank_unit=unit_code if allow_l2_baseline else None,
+            l2_baseline=l2_baseline,
         )
         errors.extend(check_variant_uniqueness(prob, drill_items + accepted))
         # Include failed variants when checking later entries for duplicates.
@@ -524,6 +531,11 @@ def add_variants(
             try:
                 validate_review(prepared)
             except AiContractError as exc:
+                errs.append(str(exc))
+        try:
+            validate_l2_step_floor(prepared)
+        except AiContractError as exc:
+            if str(exc) not in errs:
                 errs.append(str(exc))
     if errs:
         raise VariantBankError("Variant bank gates failed:\n" + "\n".join(f"  - {e}" for e in errs))

@@ -725,6 +725,12 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
             f"[{pid}] Labelled L{level} but the blind solver's tags ({shape}) give L{got}.{floor} "
             f"Redesign it once to add real demand; else drop the problem and log it with scripts.issues (06 §2.3)."
         )
+    if got > level:
+        shape = ", ".join(f"{t}={bs[t]}" for t in (*BLIND_SOLVE_TAGS, "reverse", "steps"))
+        raise AiContractError(
+            f"[{pid}] Labelled L{level} but the blind solver's tags ({shape}) give L{got} (under-labelled). "
+            f"Label it L{got} (and satisfy L{got} gates) or simplify it to match L{level} (06 §2.3)."
+        )
 
 
 def _extract_braced_arg(s: str, start_idx: int) -> Optional[Tuple[str, int]]:
@@ -1395,8 +1401,20 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
 
     validate_context_check(prob)  # before the blind-solve gate, so a bad story is reported even if the level fails too
     level = prob.get("level")
-    if isinstance(level, int) and level >= 3:
-        validate_blind_solve(prob)
+    if isinstance(level, int):
+        if level >= 3 or prob.get("blindSolve") is not None:
+            validate_blind_solve(prob)
+        form = str(prob.get("form") or "").strip().lower()
+        if level == 1 and form == "reverse":
+            raise AiContractError(
+                f"[{pid}] Labelled L1 but form='reverse' demands at least L2 (under-labelled; 06 §2.3). "
+                f"Label it L2 (with >= {L2_MIN_REAL_STEPS} real steps) or make it a direct L1 problem."
+            )
+        if level < 3 and form == "diagnose":
+            raise AiContractError(
+                f"[{pid}] Labelled L{level} but form='diagnose' demands at least L3 (under-labelled; 06 §2.3). "
+                f"Label it L3 with a passing blindSolve or rewrite it for L{level}."
+            )
 
 
 CONTEXT_CHECK_VERDICTS = ("ok", "fail")
@@ -1500,62 +1518,100 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
                 break
 
 
+def _normalize_step_latex(latex: Any) -> str:
+    """Normalise a step's LaTeX for anti-padding comparison (strip formatting macros and whitespace)."""
+    if not isinstance(latex, str):
+        return ""
+    s = latex.strip().replace("$", "").replace("\u2212", "-")
+    for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad", r"\qquad", r"\displaystyle"):
+        s = s.replace(macro, "")
+    return re.sub(r"\s+", "", s)
+
+
 def count_real_steps(prob: Dict[str, Any]) -> int:
-    """Count non-empty derivation steps (dict entries with non-empty ``latex`` and ``explain``)."""
+    """Count distinct real derivation steps in ``prob['steps']``.
+
+    A step counts only when:
+    - both ``latex`` and ``explain`` are non-empty strings;
+    - its normalised ``latex`` differs from the previous counted step (rejects repeated padding); and
+    - its normalised ``latex`` is not a pure restatement of the given ``display`` or prompt expression.
+    """
     steps = prob.get("steps")
     if not isinstance(steps, list):
         return 0
-    return sum(
-        1
-        for st in steps
-        if isinstance(st, dict)
-        and isinstance(st.get("latex"), str)
-        and bool(st["latex"].strip())
-        and isinstance(st.get("explain"), str)
-        and bool(st["explain"].strip())
-    )
+    given_norm = _normalize_step_latex(prob.get("display") or "")
+    prompt_maths = {_normalize_step_latex(m) for m in _INLINE_MATH_RE.findall(str(prob.get("prompt") or ""))}
+    given_set = {x for x in ({given_norm} | prompt_maths) if x}
+
+    prev: Optional[str] = None
+    count = 0
+    for st in steps:
+        if not isinstance(st, dict):
+            continue
+        lx, ex = st.get("latex"), st.get("explain")
+        if not (isinstance(lx, str) and lx.strip() and isinstance(ex, str) and ex.strip()):
+            continue
+        norm = _normalize_step_latex(lx)
+        if not norm or norm == prev or norm in given_set:
+            continue
+        prev = norm
+        count += 1
+    return count
 
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def load_l2_step_floor_baseline(repo_root: Optional[Path] = None) -> Dict[str, List[str]]:
-    """Load the shrink-only grandfathered L2 short-step baseline ``{drillId: [QID, ...]}``."""
+def load_l2_step_floor_baseline(repo_root: Optional[Path] = None) -> Dict[str, Dict[str, List[str]]]:
+    """Load the shrink-only grandfathered L2 short-step baseline ``{"drills": {...}, "variants": {...}}``."""
     root = repo_root or _repo_root()
     path = root / L2_STEP_FLOOR_BASELINE_PATH
     if not path.is_file():
-        return {}
+        return {"drills": {}, "variants": {}}
     raw = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
-        return {}
-    return {str(drill_id): [str(qid) for qid in qids] for drill_id, qids in raw.items() if isinstance(qids, list)}
+        return {"drills": {}, "variants": {}}
+    if "drills" in raw or "variants" in raw:
+        drills_raw = raw.get("drills") if isinstance(raw.get("drills"), dict) else {}
+        variants_raw = raw.get("variants") if isinstance(raw.get("variants"), dict) else {}
+    else:
+        drills_raw = raw
+        variants_raw = {}
+    return {
+        "drills": {str(k): [str(x) for x in v] for k, v in drills_raw.items() if isinstance(v, list)},
+        "variants": {str(k): [str(x) for x in v] for k, v in variants_raw.items() if isinstance(v, list)},
+    }
 
 
 def validate_l2_step_floor(
     prob: Dict[str, Any],
     *,
     drill_id: Optional[str] = None,
-    baseline: Optional[Dict[str, List[str]]] = None,
+    bank_unit: Optional[str] = None,
+    baseline: Optional[Dict[str, Dict[str, List[str]]]] = None,
 ) -> None:
     """Enforce the L2 step floor (``>= 4`` real steps, matching ``demand_level``).
 
-    Existing canonical drills recorded in ``tests/data/l2_step_floor_baseline.json``
-    may be grandfathered only when both ``drill_id`` and ``baseline`` are supplied
-    (e.g. re-checking a saved drill). New drafts and ingests pass neither.
+    Existing canonical drills and variant banks recorded in ``tests/data/l2_step_floor_baseline.json``
+    may be grandfathered only when both ``baseline`` and ``drill_id``/``bank_unit`` are supplied.
+    New drafts, drill ingests, and newly added variants pass neither.
     """
     if prob.get("level") != 2:
         return
-    pid = str(prob.get("id") or "?")
+    pid = str(prob.get("variantId") or prob.get("id") or "?")
     n_steps = count_real_steps(prob)
     if n_steps >= L2_MIN_REAL_STEPS:
         return
-    if drill_id and baseline and pid in baseline.get(drill_id, ()):
-        return
+    if baseline:
+        if drill_id and pid in baseline.get("drills", {}).get(drill_id, ()):
+            return
+        if bank_unit and pid in baseline.get("variants", {}).get(bank_unit, ()):
+            return
     raise AiContractError(
         f"[{pid}] L2 problem has {n_steps} real step(s); new L2 problems need at least "
-        f"{L2_MIN_REAL_STEPS} real steps (matching demand_level, rules/07 §4). "
-        f"Expand the derivation into discrete steps or relabel to L1."
+        f"{L2_MIN_REAL_STEPS} real steps (matching demand_level, rules/07 §4; repeated or restated steps do not count). "
+        f"Expand the derivation into discrete transformations or relabel to L1."
     )
 
 
@@ -1589,37 +1645,84 @@ def collect_short_l2_problems(repo_root: Path) -> Tuple[Dict[str, List[Tuple[str
     return short, total_l2
 
 
+def collect_short_l2_variants(repo_root: Path) -> Tuple[Dict[str, List[Tuple[str, int]]], int]:
+    """Return ``({unitCode: [(variantId, real_step_count), ...]}, total_l2_variants)`` for math variant banks."""
+    from code_engine.sandbox import assert_safe_contained_path
+
+    variants_root = repo_root / "drills" / "variants"
+    short: Dict[str, List[Tuple[str, int]]] = {}
+    total_l2 = 0
+    if not variants_root.is_dir():
+        return short, total_l2
+    for path in sorted(variants_root.glob("MTH-*.json")):
+        bank_file = assert_safe_contained_path(path, variants_root, suffixes=(".json",))
+        bank = json.loads(bank_file.read_text(encoding="utf-8"))
+        uc = str(bank.get("unitCode") or path.stem)
+        items: List[Tuple[str, int]] = []
+        for idx, var in enumerate(bank.get("variants") or [], 1):
+            if not isinstance(var, dict) or var.get("level") != 2:
+                continue
+            total_l2 += 1
+            n_steps = count_real_steps(var)
+            if n_steps < L2_MIN_REAL_STEPS:
+                vid = str(var.get("variantId") or var.get("id") or f"V{idx:02d}")
+                items.append((vid, n_steps))
+        if items:
+            short[uc] = sorted(items)
+    return short, total_l2
+
+
 def check_l2_step_floor_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
-    """Check canonical math drills against the shrink-only L2 step-floor baseline (zero-leak)."""
+    """Check canonical math drills and variant banks against the shrink-only L2 step-floor baseline (zero-leak)."""
     root = repo_root or _repo_root()
-    baseline_file = root / L2_STEP_FLOOR_BASELINE_PATH
-    baseline = json.loads(baseline_file.read_text(encoding="utf-8"))
-    expected = {(str(drill), str(qid)) for drill, qids in baseline.items() for qid in qids}
-    short_by_drill, total_l2 = collect_short_l2_problems(root)
-    actual = {(drill, qid): n_steps for drill, entries in short_by_drill.items() for qid, n_steps in entries}
-    new = actual.keys() - expected
-    stale = expected - actual.keys()
-    passed = not (new or stale)
+    baseline = load_l2_step_floor_baseline(root)
+    drills_base = baseline["drills"]
+    variants_base = baseline["variants"]
+
+    expected_drills = {(drill, qid) for drill, qids in drills_base.items() for qid in qids}
+    short_by_drill, total_l2_drills = collect_short_l2_problems(root)
+    actual_drills = {(drill, qid): n_steps for drill, entries in short_by_drill.items() for qid, n_steps in entries}
+    new_drills = actual_drills.keys() - expected_drills
+    stale_drills = expected_drills - actual_drills.keys()
+
+    expected_vars = {(bank, vid) for bank, vids in variants_base.items() for vid in vids}
+    short_by_bank, total_l2_vars = collect_short_l2_variants(root)
+    actual_vars = {(bank, vid): n_steps for bank, entries in short_by_bank.items() for vid, n_steps in entries}
+    new_vars = actual_vars.keys() - expected_vars
+    stale_vars = expected_vars - actual_vars.keys()
+
+    passed = not (new_drills or stale_drills or new_vars or stale_vars)
     lines = [
         f"{'PASS' if passed else 'FAIL'} L2 step floor gate "
-        f"(minimum {L2_MIN_REAL_STEPS} real steps per L2 problem; {len(actual)}/{total_l2} short)."
+        f"(minimum {L2_MIN_REAL_STEPS} real steps per L2 item; "
+        f"drills {len(actual_drills)}/{total_l2_drills} short, variants {len(actual_vars)}/{total_l2_vars} short)."
     ]
-    for drill, qid in sorted(actual.keys()):
-        n_steps = actual[(drill, qid)]
-        status = "FAIL New short L2 problem" if (drill, qid) in new else "Baseline short L2 problem"
+    for drill, qid in sorted(actual_drills.keys()):
+        n_steps = actual_drills[(drill, qid)]
+        status = "FAIL New short L2 problem" if (drill, qid) in new_drills else "Baseline short L2 problem"
         lines.append(f"{status}: {drill} {qid} ({n_steps} real steps, need >= {L2_MIN_REAL_STEPS}).")
-    if new:
+    for bank, vid in sorted(actual_vars.keys()):
+        n_steps = actual_vars[(bank, vid)]
+        status = "FAIL New short L2 variant" if (bank, vid) in new_vars else "Baseline short L2 variant"
+        lines.append(f"{status}: {bank} {vid} ({n_steps} real steps, need >= {L2_MIN_REAL_STEPS}).")
+    if new_drills or new_vars:
+        lines.append("Expand new L2 items to >= 4 real steps or relabel to L1. Adding baseline entries is forbidden.")
+    for drill, qid in sorted(stale_drills):
         lines.append(
-            "Expand new L2 problems to >= 4 real steps or relabel to L1. Adding baseline entries is forbidden."
+            f"FAIL Stale drill baseline entry: {drill} {qid} now meets the L2 step floor or no longer exists. "
+            f'Delete "{qid}" under drills.{drill} in {L2_STEP_FLOOR_BASELINE_PATH}.'
         )
-    for drill, qid in sorted(stale):
+    for bank, vid in sorted(stale_vars):
         lines.append(
-            f"FAIL Stale baseline entry: {drill} {qid} now meets the L2 step floor or no longer exists. "
-            f'Delete "{qid}" under {drill} in {L2_STEP_FLOOR_BASELINE_PATH}.'
+            f"FAIL Stale variant baseline entry: {bank} {vid} now meets the L2 step floor or no longer exists. "
+            f'Delete "{vid}" under variants.{bank} in {L2_STEP_FLOOR_BASELINE_PATH}.'
         )
-    if stale:
-        lines.append("Remove any drill key left with an empty list.")
-    lines.append(f"Baseline: {len(baseline)} drill(s), {len(expected)} problem(s).")
+    if stale_drills or stale_vars:
+        lines.append("Remove any drill or bank key left with an empty list.")
+    lines.append(
+        f"Baseline: {len(drills_base)} drill(s), {len(expected_drills)} problem(s); "
+        f"{len(variants_base)} bank(s), {len(expected_vars)} variant(s)."
+    )
     return passed, "\n".join(lines)
 
 
@@ -1633,7 +1736,8 @@ def _run_problem_gates(
     prepare_for_ingest: Optional[Callable[[Dict[str, Any]], None]] = None,
     enforce_l2_step_floor: bool = True,
     drill_id: Optional[str] = None,
-    l2_baseline: Optional[Dict[str, List[str]]] = None,
+    bank_unit: Optional[str] = None,
+    l2_baseline: Optional[Dict[str, Dict[str, List[str]]]] = None,
 ) -> None:
     """Run vault/review and figure/verification gates in order.
 
@@ -1657,7 +1761,7 @@ def _run_problem_gates(
         require_figure_if_declared(prob, archetypes)
         validate_ai_problem_contract(prob)
         if enforce_l2_step_floor:
-            validate_l2_step_floor(prob, drill_id=drill_id, baseline=l2_baseline)
+            validate_l2_step_floor(prob, drill_id=drill_id, bank_unit=bank_unit, baseline=l2_baseline)
         verify_problem(prob, rules=rules)
     except Exception as exc:  # noqa: BLE001 - checks report each gate failure
         if errors is None:
