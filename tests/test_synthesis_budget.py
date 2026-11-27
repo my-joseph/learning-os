@@ -392,6 +392,43 @@ def test_plan_budget_caps_pages_and_items(tmp_path: Path, monkeypatch: pytest.Mo
     assert item_plan["summary"]["selectedEstimatedItems"] == 12
     assert [p["itemAllowance"] for p in item_plan["selectedPages"]] == [5, 5, 2]
 
+    first_pages = {(p["relPath"], p["page"]) for p in item_plan["selectedPages"]}
+    stop = item_plan["continuation"]["stopAfter"]
+    assert (stop["relPath"], stop["page"]) == (
+        item_plan["selectedPages"][-1]["relPath"],
+        item_plan["selectedPages"][-1]["page"],
+    )
+    next_plan = source_find.build_extraction_plan(
+        find_res2,
+        budget_items=12,
+        sources_dir=str(sdir2_src),
+        registry_path=str(reg2),
+        backlog_path=str(backlog2),
+    )
+    next_pages = {(p["relPath"], p["page"]) for p in next_plan["selectedPages"]}
+    assert len(next_pages) == 3 and first_pages.isdisjoint(next_pages)
+    assert next_plan["summary"]["skippedPlannedPages"] == 3
+
+    reset = source_find.build_extraction_plan(
+        find_res2,
+        budget_items=12,
+        sources_dir=str(sdir2_src),
+        refresh=True,
+        registry_path=str(reg2),
+        backlog_path=str(backlog2),
+    )
+    assert {(p["relPath"], p["page"]) for p in reset["selectedPages"]} == first_pages
+
+
+def test_exercise_heading_and_numbered_items_raise_rank() -> None:
+    plain = {"hits": 2, "charLen": 600, "estimatedItems": 1}
+    exercise = {**plain, "estimatedItems": 4, "exerciseHeading": True}
+    args = {"registry_priorities": {}, "backlog_ranks": {}}
+    first_score, _ = source_find._score_candidate_page("fixture.pdf", "fixture", plain, **args)
+    exercise_score, breakdown = source_find._score_candidate_page("fixture.pdf", "fixture", exercise, **args)
+    assert exercise_score > first_score
+    assert breakdown["exerciseBoost"] > 0
+
 
 # ---------------------------------------------------------------------------
 # 3. Extraction ledger: incremental skip, hash-change refresh, --refresh flag

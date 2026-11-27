@@ -128,6 +128,10 @@ _ITEM_MARKER_RE = re.compile(
     r"|^\s*def\s+test_",
     re.IGNORECASE | re.MULTILINE,
 )
+_EXERCISE_HEADING_RE = re.compile(
+    r"^\s*(?:chapter\s+)?(?:exercises?|practice problems?|problem set|แบบฝึกหัด)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
 _MD_HEADING_RE = re.compile(r"^#{1,6}\s+")
 _ANSWER_DIR_RE = re.compile(r"^(?:answers?|solutions?|เฉลย)$", re.IGNORECASE)
 _PROBLEM_DIR_RE = re.compile(r"^(?:questions?|problems?|โจทย์)$", re.IGNORECASE)
@@ -963,6 +967,7 @@ def find_sources(
                     "terms": term_counts,
                     "charLen": len(text.strip()),
                     "estimatedItems": estimate_page_items(text),
+                    "exerciseHeading": bool(_EXERCISE_HEADING_RE.search(text)),
                     "textSource": text_source,
                     "textQuality": quality,
                 }
@@ -1108,7 +1113,9 @@ def _score_candidate_page(
     density_score = round(min(density * 10.0, 50.0) + min(distinct_terms * 5.0, 25.0) + min(hits * 1.5, 25.0), 2)
 
     thai_boost = THAI_EXAM_BOOST if is_thai_exam_family(rel_path) else 0.0
-    total_score = round(base_priority + backlog_bonus + density_score + thai_boost, 2)
+    exercise_boost = 15.0 if page_entry.get("exerciseHeading") else 0.0
+    exercise_boost += 3.0 * min(5, max(0, int(page_entry.get("estimatedItems") or 1) - 1))
+    total_score = round(base_priority + backlog_bonus + density_score + thai_boost + exercise_boost, 2)
 
     breakdown = {
         "familyPriority": base_priority,
@@ -1117,6 +1124,7 @@ def _score_candidate_page(
         "termDensity": round(density, 4),
         "densityScore": density_score,
         "thaiExamBoost": thai_boost,
+        "exerciseBoost": exercise_boost,
     }
     return total_score, breakdown
 
@@ -1145,6 +1153,21 @@ def _resolve_candidate_hash(
                 digest = hashlib.sha256(rel_path.encode("utf-8")).hexdigest()
     hash_cache[rel_path] = digest
     return digest
+
+
+def _continuation_page_key(page: dict[str, Any]) -> tuple[str, int, str]:
+    return (page["relPath"], page["page"], page["fileHash"])
+
+
+def _load_plan_continuation(plan_file: str, *, include_answer_keys: bool) -> dict[str, Any]:
+    try:
+        with open(plan_file, encoding="utf-8") as fh:
+            previous = json.load(fh)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(previous, dict) or previous.get("summary", {}).get("includeAnswerKeys") != include_answer_keys:
+        return {}
+    return previous.get("continuation") or {}
 
 
 def build_extraction_plan(
@@ -1181,6 +1204,9 @@ def build_extraction_plan(
     unit_code = str(find_result["unitCode"])
     sdir = resolve_sources_dir(sources_dir=sources_dir or find_result.get("sourcesDir"))
     idx_dir = index_dir(sources_dir=sdir)
+    plan_file = os.path.join(idx_dir, f"plan_{unit_code}.json")
+    prior = {} if refresh else _load_plan_continuation(plan_file, include_answer_keys=include_answer_keys)
+    prior_pages = {tuple(key) for key in prior.get("plannedPages", [])}
 
     registry_priorities = load_registry_priorities(registry_path=registry_path)
     backlog_ranks = load_backlog_ranks(backlog_path=backlog_path, unit_code=unit_code)
@@ -1189,6 +1215,7 @@ def build_extraction_plan(
     skipped_scope_pages = sum(len(m.get("pages") or []) for m in (find_result.get("scopeMatches") or []))
     skipped_no_auto = set(find_result.get("skippedNoAutomation") or [])
     skipped_ledger_pages = 0
+    skipped_planned_pages = 0
     hash_cache: dict[str, str] = {}
 
     by_family: dict[str, list[dict[str, Any]]] = {}
@@ -1237,6 +1264,10 @@ def build_extraction_plan(
                 current_file_hash=file_hash,
             ):
                 skipped_ledger_pages += 1
+                continue
+
+            if (rel_path, pnum, file_hash) in prior_pages:
+                skipped_planned_pages += 1
                 continue
 
             score, breakdown = _score_candidate_page(
@@ -1295,6 +1326,10 @@ def build_extraction_plan(
         return (-fam_rank_val, -float(top["score"]), fam)
 
     family_order = sorted(by_family.keys(), key=_family_sort_key)
+    stop_family = prior.get("stopAfter", {}).get("family")
+    if stop_family in family_order:
+        next_idx = family_order.index(stop_family) + 1
+        family_order = family_order[next_idx:] + family_order[:next_idx]
 
     # Round-robin selection across families for diversity
     cursors = {fam: 0 for fam in family_order}
@@ -1358,7 +1393,13 @@ def build_extraction_plan(
     total_candidates = sum(candidates_by_family.values())
 
     os.makedirs(idx_dir, exist_ok=True)
-    plan_file = os.path.join(idx_dir, f"plan_{unit_code}.json")
+    continuation = None
+    if selected and len(selected) < total_candidates and (cumulative_items == budget_items or prior):
+        last = selected[-1]
+        continuation = {
+            "stopAfter": {key: last[key] for key in ("family", "relPath", "page")},
+            "plannedPages": sorted(prior_pages | {_continuation_page_key(page) for page in selected}),
+        }
 
     plan: dict[str, Any] = {
         "unitCode": unit_code,
@@ -1375,6 +1416,7 @@ def build_extraction_plan(
         "summary": {
             "totalCandidates": total_candidates,
             "skippedLedgerPages": skipped_ledger_pages,
+            "skippedPlannedPages": skipped_planned_pages,
             "skippedScopePages": skipped_scope_pages,
             "skippedAnswerKeyPages": skipped_answer_key_pages,
             "includeAnswerKeys": include_answer_keys,
@@ -1386,6 +1428,7 @@ def build_extraction_plan(
             "candidatesByFamily": dict(sorted(candidates_by_family.items())),
         },
         "unregisteredSources": list(find_result.get("unregisteredSources") or []),
+        "continuation": continuation,
         "selectedPages": selected,
         "batches": batches,
     }
@@ -1489,6 +1532,12 @@ def format_plan_report(plan: dict[str, Any]) -> str:
         f"Selected: {s['selectedPageCount']} page(s), ~{s['selectedEstimatedItems']} item(s) "
         f"in {s['batchCount']} batch(es)",
     ]
+
+    if s.get("skippedPlannedPages"):
+        lines.append(f"Continued past {s['skippedPlannedPages']} previously planned page(s)")
+    if plan.get("continuation"):
+        stop = plan["continuation"]["stopAfter"]
+        lines.append(f"Next --plan continues after {stop['relPath']} page/chunk {stop['page']}")
 
     skipped_no_auto = s.get("skippedNoAutomationFamilies") or []
     if skipped_no_auto:
