@@ -30,6 +30,7 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
   - Always skips **`scope`-only** and **`no-automation`** families.
   - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` only when both the source file hash and the card-schema fingerprint match. Replans legacy entries without a fingerprint. Pass `--refresh` to include already recorded pages.
   - Bump `CARD_RULES_VERSION` in `math_engine/source_cores/ledger.py` for extraction-relevant changes confined to `validate_core_card`. Schema structure and worker prompt template changes are tracked automatically.
+- When an item cap leaves pages, rerun `--plan` manually to continue after the saved stop point. `--refresh` restarts planning and includes ledger pages. Finish any planned batches you intend to extract before replacing the plan. Schema or extraction prompt changes make those pages eligible again.
 - The plan lists carried card IDs, including cards deferred to the unit’s chapter.
 - Review the plan summary (selected pages/chunks per family, skipped ledger/scope/no-automation counts, and batch count). If `selectedPageCount == 0` and carried-forward cards exist, proceed directly to step 4.
 
