@@ -7,7 +7,8 @@ Joins aggregate signals from:
 - unit issues (`issues/log.jsonl` filtered to scope across all kinds)
 
 Strictly aggregate-only and zero-leak: never outputs prompts, answers, worked steps,
-learner inputs, or personal notes. Supports `--no-progress` for offline/audit runs.
+learner inputs, personal notes, or drill, question, and issue locators. Supports
+`--no-progress` for offline/audit runs.
 
 Usage:
     python -m scripts.authoring_signals <UNIT|CHAPTER> [--json] [--no-progress]
@@ -20,29 +21,32 @@ import json
 import os
 import re
 from collections import Counter, defaultdict
+from datetime import date
 from typing import Any
 
 from scripts import drill_quality, issues, weak_spots
 
+_SCOPE_CODE = re.compile(r"(?:MTH|PRG|PHY)-(?:T\d+-C\d+(?:-U\d+)?|BRIDGE)")
+_SIGNAL_KEY = re.compile(r"(?!(?:DRL|LAB|VAR)-|Q\d+$)[A-Za-z0-9][A-Za-z0-9_-]*", re.IGNORECASE)
 
-def _scope_match(value: str, scope: str) -> bool:
-    return value == scope or value.startswith(scope + "-U") or value.startswith(scope + "-")
+
+def _signal_key(value: Any) -> bool:
+    return isinstance(value, str) and _SIGNAL_KEY.fullmatch(value) is not None
+
+
+def _signal_date(value: Any) -> str:
+    try:
+        return date.fromisoformat(str(value)[:10]).isoformat()
+    except ValueError:
+        return ""
 
 
 def _recent_mistakes_summary(
-    scope: str,
+    scoped: list[weak_spots.Item],
     *,
-    data_root: str = "drills/data",
-    progress_dir: str | None = None,
     limit: int = 8,
 ) -> list[dict[str, Any]]:
     """Rank recurring mistake/trap tags in ``scope`` (aggregate counts + archetypes only; no inputs/notes)."""
-    items = weak_spots.load_items(data_root, progress_dir)
-    scoped = [
-        it
-        for it in items
-        if it.unit == scope or any(weak_spots._unit_matches_scope(u, scope) for u in weak_spots._item_units(it))
-    ]
     counts: Counter[str] = Counter()
     last_ts: dict[str, str] = {}
     archetypes: dict[str, set[str]] = defaultdict(set)
@@ -51,14 +55,13 @@ def _recent_mistakes_summary(
         tags = list(it.matched)
         if it.skipped and "concept-gap" not in tags:
             tags.append("concept-gap")
-        for tag in dict.fromkeys(t for t in tags if isinstance(t, str) and t.strip()):
+        for tag in dict.fromkeys(t for t in tags if _signal_key(t)):
             counts[tag] += 1
             if it.ts and it.ts > last_ts.get(tag, ""):
                 last_ts[tag] = it.ts
-            if it.archetype:
+            if it.archetype and _signal_key(it.archetype):
                 archetypes[tag].add(it.archetype)
 
-    ranked = sorted(counts.items(), key=lambda kv: (-kv[1], last_ts.get(kv[0], "")), reverse=False)
     # Secondary sort: most recent timestamp first when counts tie.
     ranked = sorted(
         counts.items(), key=lambda kv: (-kv[1], -(int(re.sub(r"\D", "", last_ts.get(kv[0], ""))[:14] or 0)))
@@ -67,36 +70,33 @@ def _recent_mistakes_summary(
         {
             "tag": tag,
             "count": int(cnt),
-            "last": (last_ts.get(tag) or "")[:10],
+            "last": _signal_date(last_ts.get(tag)),
             "archetypes": sorted(archetypes.get(tag) or ()),
         }
         for tag, cnt in ranked[:limit]
     ]
 
 
-def _unit_issues_summary(scope: str, *, issue_log: str | None = None, limit: int = 5) -> dict[str, Any]:
-    """Summarize unit-scoped issue-log entries across all kinds (IDs, kinds, actions only; no text)."""
-    records = issues.issues(issue_log)
-    scope_re = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(scope)}(?:$|[^A-Za-z0-9]|-U\d+)")
-    matched = [r for r in records if scope_re.search(str(r.get("where") or ""))]
-    open_records = [r for r in matched if not r.get("resolved")]
-    by_kind = Counter(str(r.get("kind") or "other") for r in matched)
-    open_by_kind = Counter(str(r.get("kind") or "other") for r in open_records)
-    recent_open = [
-        {
-            "id": str(r.get("id") or ""),
-            "kind": str(r.get("kind") or ""),
-            "action": str(r.get("action") or ""),
-            "where": str(r.get("where") or ""),
-        }
-        for r in open_records[-limit:]
-    ]
+def _unit_issues_summary(scope: str, *, issue_log: str | None = None) -> dict[str, Any]:
+    """Count issues in scope. Read locators only to assign each record to its scope."""
+    by_kind: Counter[str] = Counter()
+    open_by_kind: Counter[str] = Counter()
+    for record in issues.issues(issue_log):
+        ref = issues.parse_where_reference(str(record.get("where") or ""))
+        if not any(
+            _SCOPE_CODE.fullmatch(unit) and weak_spots._unit_matches_scope(unit, scope) for unit in ref["scopes"]
+        ):
+            continue
+        raw_kind = record.get("kind")
+        kind = raw_kind if raw_kind in issues.KINDS else "other"
+        by_kind[kind] += 1
+        if not record.get("resolved"):
+            open_by_kind[kind] += 1
     return {
-        "total": len(matched),
-        "openCount": len(open_records),
+        "total": sum(by_kind.values()),
+        "openCount": sum(open_by_kind.values()),
         "byKind": dict(sorted(by_kind.items())),
         "openByKind": dict(sorted(open_by_kind.items())),
-        "recentOpen": recent_open,
     }
 
 
@@ -133,6 +133,8 @@ def collect_authoring_signals(
     issue_log: str | None = None,
 ) -> dict[str, Any]:
     """Collect read-only, zero-leak aggregate feedback signals for ``scope``."""
+    if not _SCOPE_CODE.fullmatch(scope):
+        raise ValueError("Expected a unit or chapter code.")
     resolved_data = data_root or os.environ.get("DRILLS_DATA_DIR", "drills/data")
     unit_issues = _unit_issues_summary(scope, issue_log=issue_log)
 
@@ -162,37 +164,38 @@ def collect_authoring_signals(
 
     # 1. weak_spots aggregates
     ws_raw = weak_spots.report_json(scope, data_root=resolved_data, progress_dir=progress_dir)
-    ws_units = ws_raw.get("units") or []
+    ws_units = [u for u in ws_raw.get("units") or [] if _SCOPE_CODE.fullmatch(str(u.get("unitCode") or ""))]
     open_traps: list[dict[str, Any]] = []
     level_advice_map: dict[str, str] = {}
-    skipped_archs: list[str] = []
     mastery_caps: list[dict[str, Any]] = []
     for u in ws_units:
         uc = str(u.get("unitCode") or "")
         for t in u.get("open") or []:
+            if not _signal_key(t.get("id")):
+                continue
             open_traps.append(
                 {
                     "unit": uc,
-                    "id": str(t.get("id") or ""),
+                    "tag": t["id"],
                     "matches": int(t.get("matches") or 0),
                     "drills": int(t.get("drills") or 0),
-                    "last": str(t.get("last") or ""),
+                    "last": _signal_date(t.get("last")),
                 }
             )
         for lv_str, adv in (u.get("levels") or {}).items():
-            if isinstance(adv, dict) and adv.get("move"):
+            if (
+                re.fullmatch(r"[1-5]", str(lv_str))
+                and isinstance(adv, dict)
+                and adv.get("move") in ("up", "down", "stay")
+            ):
                 key = f"{uc}@L{lv_str}" if len(ws_units) > 1 else f"L{lv_str}"
                 level_advice_map[key] = str(adv["move"])
-        for sk in u.get("skipped") or []:
-            if isinstance(sk, str) and sk not in skipped_archs:
-                skipped_archs.append(sk)
         cap = u.get("masteryCap")
         if isinstance(cap, dict) and cap.get("capped"):
             mastery_caps.append(
                 {
                     "unit": uc,
-                    "cappedAt": cap.get("cappedAt"),
-                    "reason": str(cap.get("reason") or ""),
+                    "cappedAt": 2,
                 }
             )
 
@@ -219,8 +222,10 @@ def collect_authoring_signals(
 
     level_clean_rates: dict[str, dict[str, Any]] = {}
     for lv, stats in sorted((dq_raw.get("levels") or {}).items()):
+        if not re.fullmatch(r"L[1-5]", lv):
+            continue
         rate = stats.get("firstTryCleanRate")
-        level_clean_rates[f"L{lv}"] = {
+        level_clean_rates[lv] = {
             "items": int(stats.get("items") or 0),
             "attempts": int(stats.get("attempts") or 0),
             "firstTryCleanRate": round(float(rate), 3) if rate is not None else None,
@@ -230,13 +235,27 @@ def collect_authoring_signals(
     # Keep only structured aggregate flag fields (never raw prose or answers).
     dq_flags: list[dict[str, Any]] = []
     for f in dq_raw.get("flags") or []:
-        if not isinstance(f, dict):
+        if not isinstance(f, dict) or f.get("type") not in drill_quality._FLAG_ORDER:
             continue
-        slim = {k: f[k] for k in ("type", "archetype", "level", "missing", "recommendation", "items") if k in f}
+        slim = {"type": f["type"]}
+        if _signal_key(f.get("archetype")):
+            slim["archetype"] = f["archetype"]
+        if type(f.get("level")) is int and 1 <= f["level"] <= 5:
+            slim["level"] = f["level"]
+        if isinstance(f.get("missing"), list):
+            slim["missing"] = [lv for lv in f["missing"] if isinstance(lv, str) and re.fullmatch(r"L[1-5]", lv)]
+        if type(f.get("items")) is int:
+            slim["items"] = f["items"]
         dq_flags.append(slim)
 
     # 3. recent mistakes aggregates
-    recent_mistakes = _recent_mistakes_summary(scope, data_root=resolved_data, progress_dir=progress_dir)
+    scoped_items = [
+        item
+        for item in weak_spots.load_items(resolved_data, progress_dir)
+        if item.unit == scope or any(weak_spots._unit_matches_scope(u, scope) for u in weak_spots._item_units(item))
+    ]
+    recent_mistakes = _recent_mistakes_summary(scoped_items)
+    skipped_archs = {item.archetype for item in scoped_items if item.skipped and _signal_key(item.archetype)}
 
     summary = {
         "scope": scope,
@@ -270,7 +289,7 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
     else:
         ws = summary["weakSpots"]
         if ws["openTraps"]:
-            traps_txt = ", ".join(f"{t['id']} ({t['matches']}x/{t['drills']}d)" for t in ws["openTraps"])
+            traps_txt = ", ".join(f"{t['tag']} ({t['matches']}x/{t['drills']}d)" for t in ws["openTraps"])
             lines.append(f"  Weak spots (open): {traps_txt}")
         else:
             lines.append("  Weak spots (open): none")
@@ -278,7 +297,7 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
             lvl_txt = ", ".join(f"{k}={v}" for k, v in sorted(ws["levelAdvice"].items()))
             lines.append(f"  Level advice: {lvl_txt}")
         if ws["masteryCaps"]:
-            cap_txt = "; ".join(f"{c['unit']} capped@{c['cappedAt']} ({c['reason']})" for c in ws["masteryCaps"])
+            cap_txt = ", ".join(f"{c['unit']} capped at {c['cappedAt']}" for c in ws["masteryCaps"])
             lines.append(f"  Mastery cap: {cap_txt}")
         if ws["skippedArchetypes"]:
             lines.append(f"  Skipped archetypes: {', '.join(ws['skippedArchetypes'])}")
@@ -292,7 +311,10 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
             lines.append(f"  Drill quality clean rates: {', '.join(rate_bits)}")
         if dq["flags"]:
             flag_bits = [
-                f"{f.get('type')}({f.get('archetype') or ('L' + str(f.get('level')))})" for f in dq["flags"][:8]
+                f"{f['type']}({f.get('archetype') or 'L' + str(f['level'])})"
+                if "archetype" in f or "level" in f
+                else f["type"]
+                for f in dq["flags"][:8]
             ]
             lines.append(f"  Drill quality flags ({len(dq['flags'])}): {', '.join(flag_bits)}")
         else:
@@ -309,9 +331,6 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
     if iss["total"]:
         kind_bits = ", ".join(f"{k}:{n}" for k, n in iss["byKind"].items())
         lines.append(f"  Unit issues: {iss['openCount']} open / {iss['total']} total ({kind_bits})")
-        if iss["recentOpen"]:
-            open_bits = ", ".join(f"[{r['id']}] {r['kind']} {r['where']}" for r in iss["recentOpen"])
-            lines.append(f"    Open: {open_bits}")
     else:
         lines.append("  Unit issues: none")
     lines.append(f"  {summary['signalsUsedLine']}")
@@ -330,6 +349,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--progress-dir", default=None, help="Override progress directory.")
     parser.add_argument("--issue-log", default=None, help="Override issue log path.")
     args = parser.parse_args(argv)
+    if not _SCOPE_CODE.fullmatch(args.scope):
+        parser.error("expected a unit or chapter code")
 
     summary = collect_authoring_signals(
         args.scope,

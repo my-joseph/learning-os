@@ -143,7 +143,7 @@ def test_authoring_signals_aggregates_all_sources_with_zero_leak(
     )
     assert summary["progressRead"] is True
     assert summary["weakSpots"]["openTrapCount"] == 1
-    assert summary["weakSpots"]["openTraps"][0]["id"] == "t99-dropped-sign"
+    assert summary["weakSpots"]["openTraps"][0]["tag"] == "t99-dropped-sign"
     assert summary["drillQuality"]["attempts"] == 2
     assert any(f["type"] == "archetype_never_drilled" for f in summary["drillQuality"]["flags"])
     assert summary["recentMistakes"][0]["tag"] == "t99-dropped-sign"
@@ -207,3 +207,79 @@ def test_authoring_signals_no_progress_mode_skips_progress_dir(
     parsed = json.loads(capsys.readouterr().out)
     assert parsed["progressRead"] is False
     assert parsed["issues"]["openCount"] == 1
+
+
+def test_cli_outputs_only_allowed_aggregates(tmp_path, monkeypatch, capsys):
+    _, data_root, progress_dir, issue_log = _seed_fixture(tmp_path)
+    unit = "MTH-T99-C01-U01"
+    drill_id = f"DRL-{unit}-01"
+    drill_file = data_root / unit / f"{drill_id}.json"
+    drill = json.loads(drill_file.read_text())
+    drill["problems"].append({"id": "Q73", "level": 2, "answerPlain": "SECRET_SKIP_ANSWER"})
+    drill_file.write_text(json.dumps(drill))
+    progress_file = progress_dir / f"{drill_id}.json"
+    progress = json.loads(progress_file.read_text())
+    progress["problems"]["Q73"] = {"skipped": True, "revisitNote": "SECRET_SKIP_NOTE"}
+    progress_file.write_text(json.dumps(progress))
+    locator = f"some/private/drills/data/{unit}/{drill_id}.json/Q73"
+    issues.add_issue("level", "batch", "gate", locator, "SECRET_ISSUE_NOTE", path=str(issue_log))
+    issue_ids = [record["id"] for record in issues.issues(str(issue_log))]
+
+    original_report = authoring_signals.drill_quality.build_report
+
+    def report_with_private_fields(*args, **kwargs):
+        report = original_report(*args, **kwargs)
+        report["flags"].append(
+            {
+                "type": "untouched",
+                "archetype": "Q73",
+                "level": 2,
+                "missing": ["L3", "Q73"],
+                "items": [locator],
+                "recommendation": "SECRET_RECOMMENDATION",
+                "note": "SECRET_FLAG_NOTE",
+            }
+        )
+        return report
+
+    monkeypatch.setattr(authoring_signals.drill_quality, "build_report", report_with_private_fields)
+    args = [unit, "--data-root", str(data_root), "--progress-dir", str(progress_dir), "--issue-log", str(issue_log)]
+    assert authoring_signals.main(args) == 0
+    text = capsys.readouterr().out
+    assert authoring_signals.main([*args, "--json"]) == 0
+    dumped = capsys.readouterr().out
+    for forbidden in ("Q01", "Q02", "Q73", "SECRET_", "where", drill_id, locator, *issue_ids):
+        assert forbidden not in text
+        assert forbidden not in dumped
+
+    data = json.loads(dumped)
+    assert set(data) == {
+        "scope",
+        "progressRead",
+        "weakSpots",
+        "drillQuality",
+        "recentMistakes",
+        "issues",
+        "signalsUsedLine",
+    }
+    assert set(data["weakSpots"]) == {
+        "unitCount",
+        "openTrapCount",
+        "openTraps",
+        "levelAdvice",
+        "skippedArchetypes",
+        "masteryCaps",
+    }
+    assert data["weakSpots"]["skippedArchetypes"] == []
+    assert all(set(trap) == {"unit", "tag", "matches", "drills", "last"} for trap in data["weakSpots"]["openTraps"])
+    assert all(set(cap) == {"unit", "cappedAt"} for cap in data["weakSpots"]["masteryCaps"])
+    quality = data["drillQuality"]
+    assert set(quality) == {"drills", "attempts", "levelCleanRates", "flags"}
+    assert all(
+        set(rate) == {"items", "attempts", "firstTryCleanRate", "skips"} for rate in quality["levelCleanRates"].values()
+    )
+    assert all(set(flag) <= {"type", "archetype", "level", "missing", "items"} for flag in quality["flags"])
+    assert quality["flags"][-1] == {"type": "untouched", "level": 2, "missing": ["L3"]}
+    assert all(set(row) == {"tag", "count", "last", "archetypes"} for row in data["recentMistakes"])
+    assert any(row["tag"] == "concept-gap" for row in data["recentMistakes"])
+    assert data["issues"] == {"total": 2, "openCount": 2, "byKind": {"level": 2}, "openByKind": {"level": 2}}
