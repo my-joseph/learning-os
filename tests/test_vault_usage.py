@@ -204,10 +204,15 @@ def test_usage_report_on_real_repo_surfaces_active_and_retired_units() -> None:
     rep_u01 = vr.usage_report("MTH-T02-C01-U01", repo_root=str(ROOT))
     assert rep_u01["archetypeCount"] == 15
     assert rep_u01["activeCount"] == 12
-    assert "t02-c01-u01-mixed-operations-chain" in rep_u01["unusedKeys"]
+    chain = next(row for row in rep_u01["rows"] if row["key"] == "t02-c01-u01-mixed-operations-chain")
+    shallow = rep_u01["historyNotice"] == "history unavailable (shallow clone)"
+    assert chain["status"] == ("unknown" if shallow else "unused")
 
     rep_retired = vr.usage_report("MTH-T02-C02-U05", repo_root=str(ROOT))
-    if rep_retired["historyNotice"] == "history unavailable (shallow clone)":
-        return  # The synthetic shallow/full tests above cover both modes in CI.
-    assert rep_retired["historyNotice"] is None
-    assert sum(bool(row["historicalDrillLevels"]) for row in rep_retired["rows"]) >= 2
+    assert rep_retired["activeCount"] == 0
+    if shallow:
+        assert rep_retired["historyNotice"] == "history unavailable (shallow clone)"
+        assert rep_retired["unknownCount"] == rep_retired["archetypeCount"]
+    else:
+        assert rep_retired["historyNotice"] is None
+        assert rep_retired["historicalOnlyCount"] >= 2

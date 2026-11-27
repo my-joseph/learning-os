@@ -178,7 +178,10 @@ def test_originality_summary_counts_skipped_drills_and_variant_banks(
     )
     (variants_dir / "MTH-T99-C01-U02.json").write_text(
         json.dumps(
-            {"unitCode": "MTH-T99-C01-U02", "variants": [{"variantId": "V3"}, {"variantId": "V4"}, {"variantId": "V5"}]}
+            {
+                "unitCode": "MTH-T99-C01-U02",
+                "variants": [{"variantId": "V3"}, {"variantId": "V4"}, {"variantId": "V5", "status": "quarantined"}],
+            }
         ),
         encoding="utf-8",
     )
@@ -208,10 +211,13 @@ def test_originality_summary_counts_skipped_drills_and_variant_banks(
     assert summary["variantBanks"]["total"] == 2
     assert summary["variantBanks"]["checked"] == 1
     assert summary["variantBanks"]["skipped"] == 1
-    assert summary["variantBanks"]["variantsSkipped"] == 3
+    assert summary["variantBanks"]["variantsSkipped"] == 2
+    assert summary["variantBanks"]["variantsChecked"] == 2
+    assert summary["variantBanks"]["variantsQuarantined"] == 1
     text = ai_drill_ingest.format_originality_summary(summary)
     assert "Drills: 1/2 checked, 1/2 skipped" in text
-    assert "Variant banks: 1/2 checked, 1/2 skipped (3/5 variants skipped)" in text
+    assert "Variant banks: 1/2 checked, 1/2 skipped (2/5 variants skipped)" in text
+    assert "quarantine: 1 variant(s)" in text
     assert "no cached located source pages" in text
 
     # CLI --originality-summary --json runs cleanly with missing sources dir.
@@ -310,6 +316,7 @@ def test_orphaned_variant_banks_listing_is_read_only_and_matches_repo(
     repo_report = variant_bank.find_orphaned_variant_banks(ROOT)
     assert repo_report["bankCount"] == 3
     assert repo_report["variantCount"] == 33
+    assert repo_report["quarantinedVariantCount"] == 33
     by_unit = {b["unitCode"]: b["variantCount"] for b in repo_report["orphanedBanks"]}
     assert by_unit == {
         "MTH-T02-C02-U05": 6,
@@ -318,6 +325,7 @@ def test_orphaned_variant_banks_listing_is_read_only_and_matches_repo(
     }
     for entry in repo_report["orphanedBanks"]:
         assert (ROOT / entry["path"]).is_file()
+        assert entry["quarantinedVariantCount"] == entry["variantCount"]
 
     # Coverage gate output includes the read-only orphan summary without failing.
     passed, gate_report = variant_bank.check_coverage_gate(ROOT)

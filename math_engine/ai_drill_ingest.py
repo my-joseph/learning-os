@@ -2020,6 +2020,7 @@ def summarize_originality_skips(
 ) -> Dict[str, Any]:
     """Read-only summary of how many canonical math drills and variant banks skip originality and why."""
     from code_engine.sandbox import assert_safe_contained_path
+    from math_engine.variant_bank import active_variant_document
 
     root = repo_root or Path(__file__).resolve().parents[1]
     sdir = resolve_sources_dir(sources_dir=sources_dir)
@@ -2049,8 +2050,10 @@ def summarize_originality_skips(
 
     banks_total = 0
     banks_skipped = 0
+    banks_quarantined = 0
     variants_total = 0
     variants_skipped = 0
+    variants_quarantined = 0
     bank_reasons: Dict[str, int] = {}
     skipped_banks: List[Dict[str, Any]] = []
     if vroot.is_dir():
@@ -2058,10 +2061,16 @@ def summarize_originality_skips(
             bank_file = assert_safe_contained_path(path, vroot, suffixes=(".json",))
             doc = json.loads(bank_file.read_text(encoding="utf-8"))
             uc = str(doc.get("unitCode") or path.stem)
-            n_vars = len([v for v in (doc.get("variants") or []) if isinstance(v, dict)])
+            stored = sum(isinstance(v, dict) for v in (doc.get("variants") or []))
+            active_doc = active_variant_document(doc)
+            n_vars = len(active_doc["variants"])
             banks_total += 1
-            variants_total += n_vars
-            reason = _originality_skip_reason(doc, unit_code=uc, sources_dir=sdir)
+            variants_total += stored
+            variants_quarantined += stored - n_vars
+            if stored and not n_vars:
+                banks_quarantined += 1
+                continue
+            reason = _originality_skip_reason(active_doc, unit_code=uc, sources_dir=sdir)
             if reason:
                 banks_skipped += 1
                 variants_skipped += n_vars
@@ -2081,11 +2090,13 @@ def summarize_originality_skips(
         },
         "variantBanks": {
             "total": banks_total,
-            "checked": banks_total - banks_skipped,
+            "checked": banks_total - banks_skipped - banks_quarantined,
             "skipped": banks_skipped,
+            "fullyQuarantined": banks_quarantined,
             "variantsTotal": variants_total,
-            "variantsChecked": variants_total - variants_skipped,
+            "variantsChecked": variants_total - variants_skipped - variants_quarantined,
             "variantsSkipped": variants_skipped,
+            "variantsQuarantined": variants_quarantined,
             "skipReasons": bank_reasons,
             "skippedBanks": skipped_banks,
         },
@@ -2105,6 +2116,9 @@ def format_originality_summary(summary: Dict[str, Any]) -> str:
     lines.append(
         f"  Variant banks: {b['checked']}/{b['total']} checked, {b['skipped']}/{b['total']} skipped "
         f"({b['variantsSkipped']}/{b['variantsTotal']} variants skipped)"
+    )
+    lines.append(
+        f"    - quarantine: {b['variantsQuarantined']} variant(s), {b['fullyQuarantined']} fully quarantined bank(s)"
     )
     for reason, count in sorted(b["skipReasons"].items()):
         lines.append(f"    - skipped ({count}): {reason}")

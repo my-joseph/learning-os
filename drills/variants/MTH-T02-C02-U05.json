@@ -1080,7 +1080,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|direct|Let f(x)=x^# and g(x)=#f(x-#)+#. Find g(#)."
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|direct|Let f(x)=x^# and g(x)=#f(x-#)+#. Find g(#).",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C02-U05-t02-c02-u05-read-and-apply-transformation-02",
@@ -2161,7 +2164,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|direct|Let f(x)=x^# and g(x)=#f(x-#)+#. Find g(#)."
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|direct|Let f(x)=x^# and g(x)=#f(x-#)+#. Find g(#).",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C02-U05-t02-c02-u05-read-and-apply-transformation-03",
@@ -3262,7 +3268,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|diagnose|A student expands the transformed rule $g(x) = #(x - #)^# + #$: Line #: $#(x - #)^# + #$ Line #: $#(x + #)^# + #$ Line #: $#(x^# + #x + #) + #$ Line #: $#x^# + #x + #$ Which line is the first one that is wrong?"
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|diagnose|A student expands the transformed rule $g(x) = #(x - #)^# + #$: Line #: $#(x - #)^# + #$ Line #: $#(x + #)^# + #$ Line #: $#(x^# + #x + #) + #$ Line #: $#x^# + #x + #$ Which line is the first one that is wrong?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-01",
@@ -4325,7 +4334,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|reverse|Let f(x)=x^#. Its graph is horizontally stretched by #, shifted right #, vertically stretched by #, and shifted up #. Write the transformed rule."
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|reverse|Let f(x)=x^#. Its graph is horizontally stretched by #, shifted right #, vertically stretched by #, and shifted up #. Write the transformed rule.",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-02",
@@ -5388,7 +5400,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|reverse|Let f(x)=x^#. Its graph is horizontally stretched by #, shifted right #, vertically stretched by #, and shifted up #. Write the transformed rule."
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|reverse|Let f(x)=x^#. Its graph is horizontally stretched by #, shifted right #, vertically stretched by #, and shifted up #. Write the transformed rule.",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     },
     {
       "variantId": "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-03",
@@ -6497,7 +6512,10 @@
           }
         ]
       },
-      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|diagnose|A student expands the transformed rule $g(x) = #\\left(\\frac{x - #}{#}\\right)^# + #$: Line #: $#\\left(\\frac{x - #}{#}\\right)^# + #$ Line #: $\\frac{#(x - #)^#}{#} + #$ Line #: $\\frac{#(x^# + #x + #)}{#} + #$ Line #: $\\frac{#x^#}{#} + \\frac{#x}{#} + \\frac{#}{#} + #$ Line #: $\\frac{#x^#}{#} + \\frac{#x}{#} + \\frac{#}{#}$ What is the number of the first wrong line?"
+      "fingerprint": "t02-c02-u05-inside-shift-sign-trap|diagnose|A student expands the transformed rule $g(x) = #\\left(\\frac{x - #}{#}\\right)^# + #$: Line #: $#\\left(\\frac{x - #}{#}\\right)^# + #$ Line #: $\\frac{#(x - #)^#}{#} + #$ Line #: $\\frac{#(x^# + #x + #)}{#} + #$ Line #: $\\frac{#x^#}{#} + \\frac{#x}{#} + \\frac{#}{#} + #$ Line #: $\\frac{#x^#}{#} + \\frac{#x}{#} + \\frac{#}{#}$ What is the number of the first wrong line?",
+      "status": "quarantined",
+      "quarantineReason": "pre-distractor-provenance gate; parent drill retired in #338",
+      "since": "2026-11-27"
     }
   ]
 }

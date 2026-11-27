@@ -15,6 +15,7 @@ import os
 from collections import Counter, defaultdict
 from typing import Any
 
+from math_engine.variant_bank import is_quarantined_variant
 from progress_store import cycle_evidence, find_repo_root, is_timestamp_in_cycle, progress_root, score_problem
 from scripts.weak_spots import _collect_matched_traps, _is_prg
 
@@ -170,7 +171,11 @@ def build_report(scope: str, *, repo_root: str | None = None) -> dict[str, Any]:
             if not _scope_match(unit, scope):
                 continue
             for variant in bank.get("variants", []):
-                if variant.get("sourceArchetype"):
+                if (
+                    isinstance(variant, dict)
+                    and not is_quarantined_variant(variant, bank)
+                    and variant.get("sourceArchetype")
+                ):
                     similar_keys.add(str(variant["sourceArchetype"]))
 
     arch_levels: dict[str, dict[int, dict[str, Any]]] = defaultdict(lambda: defaultdict(_empty_stats))

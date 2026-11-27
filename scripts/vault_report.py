@@ -32,6 +32,7 @@ from pathlib import Path
 from code_engine import ai_drill_ingest as code_ingest
 from ingest_core import archetype_owner, load_scope_archetypes
 from math_engine import ai_drill_ingest as math_ingest
+from math_engine.variant_bank import active_variant_document, count_quarantined_variants
 from quality_rules import BLIND_SOLVE_TAGS, demand_level
 from scripts import issues
 
@@ -213,11 +214,18 @@ def unit_report(
                 "flags": flags,
             }
         )
-    return {"unit": scope, "rows": rows, "scopeFailures": scope_failures}
+    quarantined_count = 0 if is_prg else count_quarantined_variants(scope)
+    return {"unit": scope, "rows": rows, "scopeFailures": scope_failures, "quarantinedVariants": quarantined_count}
 
 
 def format_report(rep: dict) -> str:
     lines = [f"{rep['unit']}: {len(rep['rows'])} archetypes (earned/failed counts by level)"]
+    q_count = int(rep.get("quarantinedVariants") or 0)
+    if q_count > 0:
+        lines.append(
+            f"  Quarantined variants: {q_count} (skipped by Studio & coverage gate; "
+            f"run python -m math_engine.variant_bank --reverify {rep['unit']})"
+        )
     for r in sorted(rep["rows"], key=lambda r: (r["unit"], r["level"] or 0, r["key"])):
         earned = ", ".join(f"L{lv}x{n}" for lv, n in r["earned"].items()) or "none"
         failed = ", ".join(f"L{lv}x{n}" for lv, n in r["failed"].items())
@@ -287,11 +295,9 @@ def _current_usage_evidence(
                     bank = json.load(f)
             except (OSError, ValueError):
                 continue
-            if not isinstance(bank, dict) or bank.get("status") == "quarantined":
+            if not isinstance(bank, dict):
                 continue
-            for var in bank.get("variants") or []:
-                if not isinstance(var, dict) or var.get("status") == "quarantined":
-                    continue
+            for var in active_variant_document(bank)["variants"]:
                 key = var.get("archetypeKey") or var.get("sourceArchetype")
                 lvl = var.get("level")
                 if isinstance(key, str) and key.strip() and isinstance(lvl, int):

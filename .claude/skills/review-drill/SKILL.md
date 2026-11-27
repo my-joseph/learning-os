@@ -15,7 +15,7 @@ Run every command from the repo root with `.venv/bin/python`. This skill is stri
 .venv/bin/python -m scripts.drill_review <DRILL_ID> --json
 ```
 
-`scripts/drill_review.py` honours `PROGRESS_DIR` and `LEARNINGOS_PILOT` via `progress_store.py`.
+`scripts/drill_review.py` honours `PROGRESS_DIR` and `LEARNINGOS_PILOT` via `progress_store.py`, and skips quarantined variants (`status: "quarantined"`) when checking Similar retry availability.
 - `mistakes` includes checker-added tags from the current cycle and any learner-selected tags.
 - If the drill ID is missing or not found, say so plainly in Thai and stop.
 - If the ID is a programming drill or lab (`DRL-PRG-*` or `LAB-*`), refuse clearly in Thai and tell the learner to use `review-code` (`"ตรวจโค้ด <DRILL_ID> <QID>"` or `"ตรวจโค้ด <LAB_ID> M1"`) instead, then stop.
