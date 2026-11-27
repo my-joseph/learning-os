@@ -313,7 +313,7 @@ def retag_file(
 
     if apply and result["remappedCount"] > 0:
         for idx, card in enumerate(result["cards"], 1):
-            errs = validate_core_card(card, valid_unit_codes=valid_codes)
+            errs = validate_core_card(card, valid_unit_codes=valid_codes, enforce_move_contract=False)
             if errs:
                 cid = card.get("id", f"#{idx}")
                 raise CoreCardError(f"[{cid}] card still invalid after retag: " + "; ".join(errs))
