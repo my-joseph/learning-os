@@ -59,6 +59,7 @@ MATCH_THRESHOLD = 0.34
 PRG_MATCH_THRESHOLD = 0.28
 RUNNER_UP_THRESHOLD = 0.58
 _TRAP_WEIGHT = 0.48
+_FULL_TRAP_SKILL_OVERLAP = 0.12
 _SKILL_WEIGHT = 0.37
 _COMPAT_WEIGHT = 0.15
 
@@ -1379,7 +1380,7 @@ def _score_card_with_features(
     skill_score, matched_terms = _score_skill_overlap(c_skill, a_skill, idf, default_idf)
     compat_score, compat_note = _compatibility_score(card, arch, unit_code, is_prg=is_prg)
 
-    effective_trap_score = trap_score if is_prg else trap_score * min(1.0, skill_score / 0.12)
+    effective_trap_score = trap_score * min(1.0, skill_score / _FULL_TRAP_SKILL_OVERLAP)
     evidence = max(effective_trap_score, skill_score)
     compat_gate = min(1.0, evidence / 0.25) if evidence > 0 else 0.0
     total_score = (
