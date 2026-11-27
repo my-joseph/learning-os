@@ -210,6 +210,7 @@ def validate_universal_checks(checks: Any) -> list[str]:
 
 
 def _validate_source_cards(archetype: dict[str, Any], label: str) -> list[str]:
+    # The source JSONL files are gitignored and may be absent in CI. source_gap checks local references.
     if "sourceCards" not in archetype:
         return []
     ids = archetype["sourceCards"]
