@@ -285,7 +285,9 @@ def build_worker_prompt(
             "multi-relation, model, and generalise start at L3. Generalise requires an argument, and any card "
             "labelled L5 requires an invented strategy. A case-check must rule out a candidate.",
             "   - Diagnose must ask the learner to find the first wrong step in given work. Use `flawForm` "
-            "to describe the type of given work and the mistake in abstract terms without reproducing any steps.",
+            "as an object with two descriptions: `step` names the flawed transformation in the given work, "
+            "and `error` explains what makes that transformation wrong. Use at least two words in each. "
+            "Do not reproduce any source steps or add `flawForm` to other moves.",
             f"   - `format.kind`: {list(FORMAT_KINDS)}",
             f"   - `representation`: {list(REPRESENTATIONS)}",
             "6. **Scope & provenance:**",

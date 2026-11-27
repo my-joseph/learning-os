@@ -101,11 +101,14 @@
       }
     },
     "flawForm": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200,
-      "pattern": "\\S",
-      "description": "Source-free description of the given work and its wrong step. Required when reasoningMove is diagnose."
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step", "error"],
+      "description": "Source-free description of the flawed step in given work and what makes it wrong. Only for diagnose.",
+      "properties": {
+        "step": { "type": "string", "maxLength": 200, "pattern": "\\S+\\s+\\S+" },
+        "error": { "type": "string", "maxLength": 200, "pattern": "\\S+\\s+\\S+" }
+      }
     },
     "difficultyDriver": {
       "type": "string",
@@ -197,7 +200,8 @@
     },
     {
       "if": { "properties": { "reasoningMove": { "const": "diagnose" } }, "required": ["reasoningMove"] },
-      "then": { "required": ["flawForm"] }
+      "then": { "required": ["flawForm"] },
+      "else": { "not": { "required": ["flawForm"] } }
     }
   ]
 }

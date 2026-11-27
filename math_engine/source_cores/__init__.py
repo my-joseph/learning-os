@@ -910,10 +910,13 @@ def _walk_strings(obj: Any, prefix: str = "") -> Iterable[tuple[str, str]]:
 
 def _content_string_fields(card: dict[str, Any]) -> list[tuple[str, str]]:
     fields: list[tuple[str, str]] = []
-    for key in ("skill", "difficultyDriver", "notes", "flawForm"):
+    for key in ("skill", "difficultyDriver", "notes"):
         val = card.get(key)
         if isinstance(val, str):
             fields.append((key, val))
+    flaw = card.get("flawForm")
+    if isinstance(flaw, dict):
+        fields.extend((f"flawForm.{key}", value) for key, value in flaw.items() if isinstance(value, str))
     if isinstance(card.get("operations"), list):
         for idx, op in enumerate(card["operations"]):
             if isinstance(op, str):
@@ -1361,10 +1364,17 @@ def validate_core_card(
         )
 
     move = card.get("reasoningMove")
-    if (enforce_move_contract and move == "diagnose") or "flawForm" in card:
-        flaw_form = card.get("flawForm")
-        if not isinstance(flaw_form, str) or not flaw_form.strip():
-            errors.append("flawForm: describe the given work and its wrong step for a diagnose card.")
+    if enforce_move_contract:
+        if move == "diagnose":
+            flaw = card.get("flawForm")
+            if not isinstance(flaw, dict) or flaw.keys() != {"step", "error"}:
+                errors.append("flawForm: diagnose requires an object with 'step' and 'error'.")
+            else:
+                for key, value in flaw.items():
+                    if not isinstance(value, str) or len(value.split()) < 2:
+                        errors.append(f"flawForm.{key}: provide a description of at least two words.")
+        elif "flawForm" in card:
+            errors.append("flawForm: only allowed when reasoningMove is 'diagnose'.")
 
     if "level" in card:
         lvl = card["level"]

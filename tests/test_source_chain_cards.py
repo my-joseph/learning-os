@@ -703,5 +703,31 @@ def test_math_card_move_level_bounds(move: str, level: int) -> None:
 def test_diagnose_card_requires_abstract_flaw_form() -> None:
     card = _math_card(reasoningMove="diagnose", level=3)
     assert any(error.startswith("flawForm:") for error in source_cores.validate_core_card(card))
-    card["flawForm"] = "Given a quotient derivation, identify where conjugation changes the denominator incorrectly."
+    card["flawForm"] = "Wrong"
+    assert any(error.startswith("flawForm:") for error in source_cores.validate_core_card(card))
+    card["flawForm"] = {"step": "Rationalizing the denominator", "error": "Sign"}
+    assert any(error.startswith("flawForm.error:") for error in source_cores.validate_core_card(card))
+    card["flawForm"]["error"] = "Subtracts the squared imaginary coefficient instead of adding it."
     assert source_cores.validate_core_card(card) == []
+    assert any(
+        error.startswith("flawForm:") for error in source_cores.validate_core_card({**card, "reasoningMove": "model"})
+    )
+
+
+@pytest.mark.parametrize(("move", "level"), [("model", 4), ("model", 5), ("case-check", 4)])
+def test_math_card_accepts_higher_levels_for_eligible_moves(move: str, level: int) -> None:
+    assert source_cores.validate_core_card(_math_card(reasoningMove=move, level=level)) == []
+
+
+def test_load_core_cards_accepts_legacy_bounds_and_missing_flaw_form(tmp_path: Path) -> None:
+    legacy = [
+        _math_card(reasoningMove="case-check", level=2),
+        _math_card(id="CORE-LEGACY-DIAGNOSE", reasoningMove="diagnose", level=3),
+    ]
+    path = Path(source_cores.cores_path(UNIT, sources_dir=str(tmp_path)))
+    path.parent.mkdir()
+    path.write_text("".join(json.dumps(card) + "\n" for card in legacy), encoding="utf-8")
+    for card in legacy:
+        assert source_cores.validate_core_card(card)
+        assert source_cores.validate_core_card(card, enforce_move_contract=False) == []
+    assert source_cores.load_core_cards(UNIT, sources_dir=str(tmp_path)) == legacy
