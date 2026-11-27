@@ -50,7 +50,7 @@ from math_engine.ai_drill_ingest import validate_ai_problem_contract as validate
 from math_engine.answer_check import check_answer
 from math_engine.figure_autofill import collect_figure_title_warnings
 from math_engine.fmt import LEVEL_LABELS
-from math_engine.source_cores import resolve_sources_dir
+from math_engine.source_cores import index_dir, resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
 from math_engine.verify import verify_problem as verify_problem
 from progress_store import find_repo_root, strip_progress
@@ -108,8 +108,10 @@ def save_bank(unit_code: str, bank_doc: Dict[str, Any], variants_dir: Optional[s
         "unitCode": unit_code,
         "variants": copy.deepcopy(bank_doc.get("variants") or []),
     }
+    if is_quarantined_variant(None, bank_doc):
+        clean_doc.update({key: bank_doc[key] for key in ("status", "quarantineReason", "since") if key in bank_doc})
     for var in clean_doc["variants"]:
-        if isinstance(var, dict):
+        if isinstance(var, dict) and not is_quarantined_variant(var, clean_doc):
             var.pop("state", None)
             var.pop("variantsSeen", None)
             var.pop("variantsAttempted", None)
@@ -143,6 +145,17 @@ def is_quarantined_variant(variant: Any, bank_doc: Optional[Dict[str, Any]] = No
     if isinstance(bank_doc, dict) and bank_doc.get("status") == QUARANTINED_STATUS:
         return True
     return isinstance(variant, dict) and variant.get("status") == QUARANTINED_STATUS
+
+
+def active_variant_document(bank_doc: Dict[str, Any]) -> Dict[str, Any]:
+    """Project a bank to the variants eligible for ordinary quality checks."""
+    variants = bank_doc.get("variants")
+    return {
+        "unitCode": bank_doc.get("unitCode"),
+        "variants": [v for v in variants if isinstance(v, dict) and not is_quarantined_variant(v, bank_doc)]
+        if isinstance(variants, list)
+        else [],
+    }
 
 
 def _count_real_steps(prob: Dict[str, Any]) -> int:
@@ -456,8 +469,10 @@ def check_variant_bank(
         accepted.append((pid, prob))
 
     if check_originality:
-        orig_errors, _ = check_document_originality(bank_doc, unit_code=unit_code, sources_dir=sources_dir)
-        errors.extend(orig_errors)
+        active_doc = active_variant_document(bank_doc)
+        if active_doc["variants"]:
+            orig_errors, _ = check_document_originality(active_doc, unit_code=unit_code, sources_dir=sources_dir)
+            errors.extend(orig_errors)
 
     return errors
 
@@ -533,6 +548,13 @@ def add_variants(
     if os.path.exists(path):
         existing_doc = load_bank(path, variants_dir=variants_dir)
         combined_variants = copy.deepcopy(existing_doc.get("variants") or [])
+        if is_quarantined_variant(None, existing_doc):
+            for variant in combined_variants:
+                if isinstance(variant, dict):
+                    variant["status"] = QUARANTINED_STATUS
+                    for key in ("quarantineReason", "since"):
+                        if key in existing_doc:
+                            variant.setdefault(key, existing_doc[key])
     else:
         combined_variants = []
 
@@ -666,6 +688,8 @@ def reverify_quarantined_variants(
     """Run all current gates (distractor provenance, L2 step floor, review, answer check, originality)
     on quarantined variants in ``unit_code``. When ``apply=True``, un-quarantines only variants that pass.
     """
+    if apply and not check_originality:
+        raise VariantBankError("--reverify --apply requires originality and cannot use --no-originality.")
     path = bank_path(unit_code, variants_dir=variants_dir)
     if not os.path.isfile(path):
         return {
@@ -679,6 +703,10 @@ def reverify_quarantined_variants(
         }
     doc = load_bank(path, variants_dir=variants_dir)
     variants = doc.get("variants") or []
+    id_counts = Counter(v["variantId"] for v in variants if isinstance(v, dict) and isinstance(v.get("variantId"), str))
+    duplicates = sorted(vid for vid, count in id_counts.items() if count > 1)
+    if duplicates:
+        raise VariantBankError(f"Duplicate variantId in bank: {', '.join(duplicates)}.")
     bank_level_quarantined = doc.get("status") == QUARANTINED_STATUS
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
@@ -696,8 +724,14 @@ def reverify_quarantined_variants(
     if check_originality:
         if not os.path.isdir(resolved_sources):
             orig_notice = f"Originality gate skipped: sources directory not found ({resolved_sources})."
+        elif not Path(index_dir(resolved_sources), f"located_{unit_code}.json").is_file():
+            orig_notice = f"Originality gate skipped: located_{unit_code}.json is missing from the source index."
         else:
             run_orig = True
+        if apply and orig_notice:
+            raise VariantBankError(orig_notice)
+    else:
+        orig_notice = "Originality gate skipped: disabled by --no-originality."
 
     passing: List[Dict[str, Any]] = []
     failing: List[Dict[str, Any]] = []
@@ -752,6 +786,8 @@ def reverify_quarantined_variants(
             )
             if o_note and not orig_notice:
                 orig_notice = o_note
+            if apply and o_note:
+                raise VariantBankError(o_note)
             item_errors.extend(o_errs)
 
         dedup_errs = list(dict.fromkeys(item_errors))
@@ -787,7 +823,7 @@ def reverify_quarantined_variants(
                 v.pop("since", None)
                 unquarantined.append(vid)
             elif bank_level_quarantined:
-                v.setdefault("status", QUARANTINED_STATUS)
+                v["status"] = QUARANTINED_STATUS
                 if doc.get("quarantineReason"):
                     v.setdefault("quarantineReason", doc["quarantineReason"])
                 if doc.get("since"):
@@ -811,8 +847,9 @@ def format_reverify_report(report: Dict[str, Any]) -> str:
     total = report["quarantinedTotal"]
     if total == 0:
         return f"Reverify {unit}: 0 quarantined variant(s)."
+    gate_label = "checked gates" if report.get("originalityNotice") else "current gates"
     lines = [
-        f"Reverify {unit}: {len(report['passing'])}/{total} quarantined variant(s) pass current gates, "
+        f"Reverify {unit}: {len(report['passing'])}/{total} quarantined variant(s) pass {gate_label}, "
         f"{len(report['failing'])} failing."
     ]
     if report.get("originalityNotice"):
@@ -970,6 +1007,7 @@ def check_variant_bank_report(
     rules: Optional[Dict[str, Any]] = None,
     check_originality: bool = True,
     sources_dir: Optional[str] = None,
+    originality_unit: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Run all variant bank gates and return structured errors, warnings, and originality skip status."""
     errors = check_variant_bank(
@@ -979,11 +1017,20 @@ def check_variant_bank_report(
         rules=rules,
         check_originality=False,
     )
-    warnings = check_variant_bank_warnings(bank_doc, vault_dir=vault_dir)
-    variants = [v for v in (bank_doc.get("variants") or []) if isinstance(v, dict)]
-    n = len(variants)
-    unit_code = str(bank_doc.get("unitCode") or "")
-    if not check_originality:
+    doc = bank_doc if isinstance(bank_doc, dict) else {}
+    warnings = check_variant_bank_warnings(doc, vault_dir=vault_dir)
+    active_doc = active_variant_document(doc)
+    n = len(active_doc["variants"])
+    raw_variants = doc.get("variants")
+    quarantined = (
+        sum(isinstance(v, dict) and is_quarantined_variant(v, doc) for v in raw_variants)
+        if isinstance(raw_variants, list)
+        else 0
+    )
+    unit_code = str(doc.get("unitCode") or "")
+    if not n:
+        orig = {"status": "not-applicable", "checkedVariants": 0, "skippedVariants": 0, "reason": None, "errors": []}
+    elif not check_originality:
         orig = {
             "status": "skipped",
             "checkedVariants": 0,
@@ -1003,8 +1050,8 @@ def check_variant_bank_report(
             }
         else:
             orig_errors, orig_notice = check_document_originality(
-                bank_doc,
-                unit_code=unit_code,
+                active_doc,
+                unit_code=originality_unit or unit_code,
                 sources_dir=resolved_sources,
             )
             if orig_notice:
@@ -1027,6 +1074,7 @@ def check_variant_bank_report(
     return {
         "unitCode": unit_code,
         "variantCount": n,
+        "quarantinedCount": quarantined,
         "errors": errors,
         "warnings": warnings,
         "originality": orig,
@@ -1061,15 +1109,18 @@ def find_orphaned_variant_banks(
 
     orphaned: List[Dict[str, Any]] = []
     total_variants = 0
+    total_quarantined = 0
     if vroot.is_dir():
         for path in sorted(vroot.glob("MTH-*.json")):
             bank_file = assert_safe_contained_path(path, vroot, suffixes=JSON_SUFFIXES)
             doc = json.loads(bank_file.read_text(encoding="utf-8"))
             unit_code = str(doc.get("unitCode") or path.stem)
             variants = [v for v in (doc.get("variants") or []) if isinstance(v, dict)]
+            active = active_variant_document(doc)["variants"]
+            quarantined = len(variants) - len(active)
             bank_pairs = {
                 (str(v.get("archetypeKey")).strip(), v.get("level"))
-                for v in variants
+                for v in active
                 if isinstance(v.get("archetypeKey"), str)
                 and str(v.get("archetypeKey")).strip()
                 and isinstance(v.get("level"), int)
@@ -1082,15 +1133,18 @@ def find_orphaned_variant_banks(
                         "unitCode": unit_code,
                         "path": rel_path,
                         "variantCount": len(variants),
+                        "quarantinedVariantCount": quarantined,
                         "archetypeKeys": arch_keys,
                         "reason": "no matching active drill pair",
                     }
                 )
                 total_variants += len(variants)
+                total_quarantined += quarantined
 
     return {
         "bankCount": len(orphaned),
         "variantCount": total_variants,
+        "quarantinedVariantCount": total_quarantined,
         "orphanedBanks": orphaned,
     }
 
@@ -1102,11 +1156,13 @@ def format_orphaned_banks_report(report: Dict[str, Any]) -> str:
         return "Orphaned variant banks (read-only): 0 bank(s), 0 variant(s)."
     lines = [
         f"Orphaned variant banks (read-only; no files deleted): "
-        f"{report['bankCount']} bank(s), {report['variantCount']} variant(s)."
+        f"{report['bankCount']} bank(s), {report['variantCount']} variant(s) "
+        f"({report['quarantinedVariantCount']} quarantined)."
     ]
     for entry in banks:
         lines.append(
-            f"  ORPHAN {entry['unitCode']}: {entry['variantCount']} variant(s) ({entry['path']}) — {entry['reason']}"
+            f"  ORPHAN {entry['unitCode']}: {entry['variantCount']} variant(s), "
+            f"{entry['quarantinedVariantCount']} quarantined ({entry['path']}) — {entry['reason']}"
         )
     return "\n".join(lines)
 
@@ -1343,7 +1399,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 sources_dir=args.sources_dir,
                 apply=args.apply,
             )
-        except (OSError, ValueError) as exc:
+        except (OSError, ValueError, VariantBankError) as exc:
             print(f"FAIL Could not reverify quarantined variants for '{args.reverify}': {exc}")
             return 1
         if args.json:
@@ -1388,39 +1444,37 @@ def main(argv: Optional[List[str]] = None) -> int:
         except ValueError as exc:
             print(f"FAIL Invalid JSON in '{args.check}': {exc}")
             return 1
-        errs = check_variant_bank(doc)
-        resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
-        orig_skip_reason: Optional[str] = None
-        if args.originality is False:
-            orig_skip_reason = "disabled by --no-originality"
-        elif not os.path.isdir(resolved_sources):
-            orig_skip_reason = f"sources directory not found ({resolved_sources})"
-            print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
-        else:
-            orig_errors, orig_notice = check_document_originality(
-                doc,
-                unit_code=args.unit or doc.get("unitCode"),
-                sources_dir=resolved_sources,
+        report = check_variant_bank_report(
+            doc,
+            check_originality=args.originality is not False,
+            sources_dir=args.sources_dir,
+            originality_unit=args.unit,
+        )
+        errs = report["errors"]
+        originality = report["originality"]
+        if originality["status"] == "skipped" and args.originality is not False:
+            reason = originality["reason"]
+            print(
+                f"NOTE: {reason}"
+                if reason.startswith("Originality gate skipped")
+                else f"NOTE: Originality gate skipped: {reason}."
             )
-            if orig_notice:
-                orig_skip_reason = orig_notice
-                print(f"NOTE: {orig_notice}")
-            errs.extend(orig_errors)
-        for warn in check_variant_bank_warnings(doc):
+        for warn in report["warnings"]:
             print(f"WARNING: {warn}")
         for line in errs:
             print(f"  FAIL {line}")
-        n = len(doc.get("variants") or [])
-        orig_tail = (
-            f"originality skipped ({n}/{n} variants skipped: {orig_skip_reason})"
-            if orig_skip_reason
-            else f"originality checked (0/{n} variants skipped)"
-        )
+        n = report["variantCount"]
+        counts = f"{n} checked, {report['quarantinedCount']} quarantined skipped"
+        if originality["status"] == "skipped":
+            orig_tail = f"originality skipped ({n}/{n} variants skipped: {originality['reason']})"
+        elif originality["status"] == "checked":
+            orig_tail = f"originality checked (0/{n} variants skipped)"
+        else:
+            orig_tail = "no eligible variants for originality"
         if errs:
-            print(f"\n{len(errs)} error(s) across {n} variant(s); {orig_tail}.")
+            print(f"\n{len(errs)} error(s) in {report['unitCode']} ({counts}); {orig_tail}.")
             return 1
-        gate_label = "checked gates" if orig_skip_reason else "every gate"
-        print(f"OK: all {n} variants in {doc.get('unitCode')} pass {gate_label}; {orig_tail}.")
+        print(f"OK: {report['unitCode']} ({counts}); {orig_tail}.")
         return 0
 
     if args.add:

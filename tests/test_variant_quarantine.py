@@ -151,13 +151,26 @@ def test_reverify_lists_passing_and_failing_and_apply_unquarantines_only_passing
     assert rep["applied"] is False
     assert variant_bank.count_quarantined_variants(unit, variants_dir=str(variants_dir)) == 2
 
+    sources = tmp_path / "sources"
+    index = sources / "_index"
+    index.mkdir(parents=True)
+    (index / "pdf_example.json").write_text(
+        json.dumps(
+            {"relPath": "demo/example.pdf", "pages": [{"page": 1, "text": "Evaluate the length of a rectangle."}]}
+        ),
+        encoding="utf-8",
+    )
+    (index / f"located_{unit}.json").write_text(
+        json.dumps({"matches": [{"relPath": "demo/example.pdf", "cacheFile": "pdf_example.json", "pages": [1]}]}),
+        encoding="utf-8",
+    )
     # Apply un-quarantines ONLY the passing variant and leaves the failing one quarantined.
     rep_apply = variant_bank.reverify_quarantined_variants(
         unit,
         variants_dir=str(variants_dir),
         data_root=str(empty_data),
         vault_dir=str(TEMPLATE_DIR),
-        check_originality=False,
+        sources_dir=str(sources),
         apply=True,
     )
     assert rep_apply["applied"] is True
@@ -173,8 +186,77 @@ def test_reverify_lists_passing_and_failing_and_apply_unquarantines_only_passing
     rc = variant_bank.main(["--reverify", unit, "--no-originality"])
     assert rc == 0
     out = capsys.readouterr().out
-    assert f"Reverify {unit}: 0/1 quarantined variant(s) pass current gates, 1 failing." in out
+    assert f"Reverify {unit}: 0/1 quarantined variant(s) pass checked gates, 1 failing." in out
     assert bad_v["variantId"] in out
+
+
+def test_reverify_fails_closed_without_originality_or_with_duplicate_ids(tmp_path, monkeypatch, capsys):
+    tpl = json.loads((TEMPLATE_DIR / "draft.json").read_text(encoding="utf-8"))
+    unit = tpl["unitCode"]
+    active = tpl["problems"][0]
+    active.update(variantId=f"VAR-{unit}-{active['archetypeKey']}-01", sourceArchetype=active["archetypeKey"])
+    quarantined = {**active, "status": "quarantined"}
+    bank = tmp_path / f"{unit}.json"
+    doc = {"unitCode": unit, "variants": [quarantined]}
+    bank.write_text(json.dumps(doc), encoding="utf-8")
+    before = bank.read_bytes()
+    monkeypatch.setenv("VARIANTS_DIR", str(tmp_path))
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(TEMPLATE_DIR))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(tmp_path / "no-drills"))
+    sources = tmp_path / "sources"
+    args = ["--reverify", unit, "--sources-dir", str(sources)]
+    assert variant_bank.main([*args, "--apply", "--no-originality"]) == 1
+    assert "cannot use --no-originality" in capsys.readouterr().out
+    assert variant_bank.main([*args, "--apply"]) == 1
+    assert "sources directory not found" in capsys.readouterr().out
+    index = sources / "_index"
+    index.mkdir(parents=True)
+    assert variant_bank.main([*args, "--apply"]) == 1
+    assert f"located_{unit}.json is missing" in capsys.readouterr().out
+    (index / f"located_{unit}.json").write_text('{"matches": []}', encoding="utf-8")
+    assert variant_bank.main([*args, "--apply"]) == 1
+    assert "no cached located source pages" in capsys.readouterr().out
+    assert bank.read_bytes() == before
+
+    doc["variants"].append(active)
+    bank.write_text(json.dumps(doc), encoding="utf-8")
+    before = bank.read_bytes()
+    assert variant_bank.main(args) == 1
+    assert "Duplicate variantId" in capsys.readouterr().out
+    assert bank.read_bytes() == before
+
+
+def test_ordinary_variant_checks_only_send_active_variants_to_originality(tmp_path, monkeypatch, capsys):
+    tpl = json.loads((TEMPLATE_DIR / "draft.json").read_text(encoding="utf-8"))
+    unit = tpl["unitCode"]
+    active, quarantined = tpl["problems"][:2]
+    for variant in (active, quarantined):
+        key = variant["archetypeKey"]
+        variant.update(variantId=f"VAR-{unit}-{key}-01", sourceArchetype=key)
+    quarantined["status"] = "quarantined"
+    doc = {"unitCode": unit, "variants": [active, quarantined]}
+    bank = tmp_path / f"{unit}.json"
+    bank.write_text(json.dumps(doc), encoding="utf-8")
+
+    seen = []
+
+    def originality(checked, **kwargs):
+        seen.append([v["variantId"] for v in checked["variants"]])
+        return [], None
+
+    monkeypatch.setattr(variant_bank, "check_document_originality", originality)
+    monkeypatch.setenv("REASONING_VAULT_DIR", str(TEMPLATE_DIR))
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(tmp_path / "no-drills"))
+    assert variant_bank.check_variant_bank(doc, check_originality=True) == []
+    assert variant_bank.main(["--check", str(bank), "--sources-dir", str(tmp_path)]) == 0
+    assert "1 checked, 1 quarantined skipped" in capsys.readouterr().out
+    assert seen == [[active["variantId"]], [active["variantId"]]]
+
+    doc["status"] = "quarantined"
+    bank.write_text(json.dumps(doc), encoding="utf-8")
+    assert variant_bank.main(["--check", str(bank), "--sources-dir", str(tmp_path)]) == 0
+    assert "0 checked, 2 quarantined skipped" in capsys.readouterr().out
+    assert len(seen) == 2
 
 
 def test_add_variants_library_call_prints_distractor_provenance_warnings(

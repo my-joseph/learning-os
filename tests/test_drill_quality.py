@@ -79,6 +79,23 @@ def test_flags_quality_patterns_and_reports_level_metrics(tmp_path, monkeypatch)
     assert format_report(report).count("powers@L1 — 2 expected trap(s)") == 1
 
 
+def test_quarantined_variants_do_not_raise_similar_never_opened(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "empty-progress"))
+    unit = "MTH-T02-C01-U01"
+    vault = tmp_path / f"math_engine/reasoning_vault/{unit}.json"
+    _write(vault, {"unitCode": unit, "archetypes": [{"archetypeKey": "powers", "level": 1}]})
+    bank = tmp_path / f"drills/variants/{unit}.json"
+    variant = {"sourceArchetype": "powers"}
+    for doc in (
+        {"unitCode": unit, "variants": [{**variant, "status": "quarantined"}]},
+        {"unitCode": unit, "variants": [variant], "status": "quarantined"},
+    ):
+        _write(bank, doc)
+        report = build_report(unit, repo_root=str(tmp_path))
+        assert report["similarNeverOpened"] == []
+        assert "similar_never_opened" not in {flag["type"] for flag in report["flags"]}
+
+
 def test_partially_attempted_problem_is_not_untouched(tmp_path, monkeypatch):
     monkeypatch.setenv("PROGRESS_DIR", str(tmp_path / "progress"))
     _write(
