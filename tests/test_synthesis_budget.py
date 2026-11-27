@@ -603,6 +603,7 @@ def test_source_gap_novelty_fuzzy_duplicates_and_saturation(
             "CORE-EX-02",
             skill="Determine parameter bounds from quadratic discriminant condition",
             move="case-check",
+            level=3,
             traps=[{"tag": "t02-c01-u02-discriminant-sign-error-trap", "description": "Sign error in -4ac"}],
         ),
     ]
@@ -622,6 +623,7 @@ def test_source_gap_novelty_fuzzy_duplicates_and_saturation(
             "CORE-B1-02",
             skill="Find unknown parameter using quadratic discriminant constraint",
             move="case-check",
+            level=3,
             traps=[{"tag": "discriminant-sign-trap", "description": "Wrong sign on 4ac"}],
         ),
         # 3. Truly NEW core: different reasoningMove ("reverse") even on completing-the-square

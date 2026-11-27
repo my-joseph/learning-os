@@ -682,6 +682,87 @@ def test_u01_chain_archetype_covers_prompt_example_and_bare_operations(
     assert not source_gap._archetype_covers_chain_card(out_of_scope, arch)
 
 
+def test_source_cards_link_is_validated_and_resolves_without_fuzzy_similarity() -> None:
+    card = _math_card()
+    arch = _valid_math_archetype(
+        name="Unrelated feature",
+        coreConcept="Unrelated feature",
+        cognitiveTraps=["unrelated-feature-trap"],
+        sourceCards=[card["id"]],
+    )
+    assert qc.validate_math_archetype(arch)[0] == []
+    matches, unmatched = source_gap._match_cards_to_archetypes(UNIT, [card], [arch], is_prg=False)
+    assert not unmatched
+    assert matches[0]["matches"][0]["reason"].startswith("explicit sourceCards reference")
+
+    arch["sourceCards"] = [card["id"], card["id"]]
+    assert any("sourceCards" in error for error in qc.validate_math_archetype(arch)[0])
+    assert any("sourceCards" in error for error in qc.validate_quality_checks(arch))
+
+
+def test_explicit_chain_link_reports_a_level_and_operations_mismatch() -> None:
+    card = _math_card(reasoningMove="chain", level=2, operations=["multiply", "divide"])
+    arch = _valid_math_archetype(level=1, sourceCards=[card["id"]])
+    matches, unmatched = source_gap._match_cards_to_archetypes(UNIT, [card], [arch], is_prg=False)
+    assert not unmatched
+    link = matches[0]["matches"][0]
+    assert link["sourceCardLink"]
+    assert link["score"] < 1
+    assert "level differs: card L2, archetype L1" in link["compatibilityWarnings"]
+    assert "chain requires an L2 archetype with matching operations" in link["compatibilityWarnings"]
+
+
+@pytest.mark.parametrize(
+    ("move", "level"),
+    [
+        ("direct", 3),
+        ("translate", 1),
+        ("reverse", 1),
+        ("case-check", 2),
+        ("diagnose", 2),
+        ("multi-relation", 2),
+        ("model", 2),
+        ("generalise", 2),
+    ],
+)
+def test_math_card_move_level_bounds(move: str, level: int) -> None:
+    errors = source_cores.validate_core_card(_math_card(reasoningMove=move, level=level))
+    assert any(error.startswith("level:") for error in errors)
+
+
+def test_diagnose_card_requires_abstract_flaw_form() -> None:
+    card = _math_card(reasoningMove="diagnose", level=3)
+    assert any(error.startswith("flawForm:") for error in source_cores.validate_core_card(card))
+    card["flawForm"] = "Wrong"
+    assert any(error.startswith("flawForm:") for error in source_cores.validate_core_card(card))
+    card["flawForm"] = {"step": "Rationalizing the denominator", "error": "Sign"}
+    assert any(error.startswith("flawForm.error:") for error in source_cores.validate_core_card(card))
+    card["flawForm"]["error"] = "Subtracts the squared imaginary coefficient instead of adding it."
+    assert source_cores.validate_core_card(card) == []
+    assert any(
+        error.startswith("flawForm:") for error in source_cores.validate_core_card({**card, "reasoningMove": "model"})
+    )
+
+
+@pytest.mark.parametrize(("move", "level"), [("model", 4), ("model", 5), ("case-check", 4)])
+def test_math_card_accepts_higher_levels_for_eligible_moves(move: str, level: int) -> None:
+    assert source_cores.validate_core_card(_math_card(reasoningMove=move, level=level)) == []
+
+
+def test_load_core_cards_accepts_legacy_bounds_and_missing_flaw_form(tmp_path: Path) -> None:
+    legacy = [
+        _math_card(reasoningMove="case-check", level=2),
+        _math_card(id="CORE-LEGACY-DIAGNOSE", reasoningMove="diagnose", level=3),
+    ]
+    path = Path(source_cores.cores_path(UNIT, sources_dir=str(tmp_path)))
+    path.parent.mkdir()
+    path.write_text("".join(json.dumps(card) + "\n" for card in legacy), encoding="utf-8")
+    for card in legacy:
+        assert source_cores.validate_core_card(card)
+        assert source_cores.validate_core_card(card, enforce_move_contract=False) == []
+    assert source_cores.load_core_cards(UNIT, sources_dir=str(tmp_path)) == legacy
+
+
 def test_fuzzy_duplicate_requires_same_level_and_routing() -> None:
     original = _math_card()
     for change in ({"level": 3}, {"laterUnit": "MTH-T02-C01-U02"}, {"unitCode": "MTH-T02-C01-U02"}):

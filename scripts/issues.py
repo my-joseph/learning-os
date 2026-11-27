@@ -49,6 +49,99 @@ IMPACTS = ("low", "med", "high")
 TARGET_AREAS = ("engine", "pipeline", "studio", "content", "ci", "docs")
 TARGET_PREFIXES = ("skill", "model", "job", "gate")
 _PREFIXED_TARGET_RE = re.compile(r"^(skill|model|job|gate):[A-Za-z0-9][A-Za-z0-9_./-]*$")
+_DRILL_FILE_PATH_RE = re.compile(r"(?:^|.*?/)drills/data/(?:MTH|PRG|PHY)-[^/]+/(DRL-[A-Za-z0-9-]+)\.json(?:/(.+))?$")
+_VARIANT_FILE_PATH_RE = re.compile(r"(?:^|.*?/)drills/variants/((?:MTH|PRG|PHY)-[A-Za-z0-9-]+)\.json(?:/(.+))?$")
+_VAULT_FILE_PATH_RE = re.compile(
+    r"(?:^|.*?/)(?:math_engine|code_engine)/reasoning_vault/((?:MTH|PRG|PHY)-[A-Za-z0-9-]+)\.json(?:/(.+))?$"
+)
+_LAB_FILE_PATH_RE = re.compile(r"(?:^|.*?/)labs/(LAB-[A-Za-z0-9-]+)(?:/(.+))?$")
+_SCOPE_CODE_RE = re.compile(
+    r"(?<![A-Za-z0-9-])((?:MTH|PRG|PHY)-(?:T\d+-C\d+(?:-U\d+)?|BRIDGE|[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*))"
+)
+_DRILL_ID_RE = re.compile(r"\b(DRL-(?:MTH|PRG|PHY)-[A-Za-z0-9-]+)\b")
+_QID_RANGE_RE = re.compile(r"\bQ(\d{1,2})\s*[-–]\s*Q?(\d{1,2})\b")
+_QID_SINGLE_RE = re.compile(r"\bQ(\d{1,2})\b")
+_LEVEL_SUFFIX_RE = re.compile(r"@L(\d+)\b")
+
+
+def canonicalize_where(where: str, kind: str | None = None) -> str:
+    """Normalise repository file paths in ``where`` into canonical drill ID / scope / archetype forms.
+
+    Non-path identifiers (commands, module names, already-canonical `<SCOPE>/<archetypeKey>@L<n>`,
+    or `<DRILL_ID>/<QID>`) are preserved verbatim after trimming whitespace.
+    """
+    _ = kind  # reserved for kind-specific rules without breaking callers
+    cleaned = re.sub(r"\s+", " ", str(where or "").strip())
+    if not cleaned:
+        return ""
+    # Normalise Windows separators and leading "./" on path-like values.
+    candidate = cleaned.replace("\\", "/")
+    if candidate.startswith("./"):
+        candidate = candidate[2:]
+
+    for pattern in (_DRILL_FILE_PATH_RE, _VARIANT_FILE_PATH_RE, _VAULT_FILE_PATH_RE, _LAB_FILE_PATH_RE):
+        m = pattern.match(candidate)
+        if m:
+            head = m.group(1)
+            tail = (m.group(2) or "").strip("/")
+            return f"{head}/{tail}" if tail else head
+    return cleaned
+
+
+def _expand_qids(text: str) -> list[str]:
+    qids: list[str] = []
+    seen: set[str] = set()
+
+    def _add(num: int) -> None:
+        tok = f"Q{num:02d}"
+        if tok not in seen:
+            seen.add(tok)
+            qids.append(tok)
+
+    for m in _QID_RANGE_RE.finditer(text):
+        lo, hi = int(m.group(1)), int(m.group(2))
+        if 1 <= lo <= hi <= 99:
+            for n in range(lo, hi + 1):
+                _add(n)
+    for m in _QID_SINGLE_RE.finditer(text):
+        _add(int(m.group(1)))
+    return qids
+
+
+def parse_where_reference(where: str) -> dict[str, object]:
+    """Parse canonical or legacy ``where`` values into structured scope/drill/QID/level tokens."""
+    canon = canonicalize_where(where)
+    drills = list(dict.fromkeys(_DRILL_ID_RE.findall(canon)))
+    scopes = list(dict.fromkeys(_SCOPE_CODE_RE.findall(canon)))
+    for did in drills:
+        m = re.match(r"^DRL-((?:MTH|PRG|PHY)-.+)-\d+$", did)
+        if m and m.group(1) not in scopes:
+            scopes.append(m.group(1))
+
+    level_match = _LEVEL_SUFFIX_RE.search(canon)
+    explicit_level = int(level_match.group(1)) if level_match else None
+
+    # Associate QIDs per drill when multiple drills appear in one `where` string.
+    drill_qids: list[tuple[str, str]] = []
+    if len(drills) == 1:
+        for qid in _expand_qids(canon):
+            drill_qids.append((drills[0], qid))
+    elif len(drills) > 1:
+        matches = list(_DRILL_ID_RE.finditer(canon))
+        for idx, dm in enumerate(matches):
+            seg_end = matches[idx + 1].start() if idx + 1 < len(matches) else len(canon)
+            seg = canon[dm.end() : seg_end]
+            for qid in _expand_qids(seg):
+                drill_qids.append((dm.group(1), qid))
+
+    return {
+        "canonical": canon,
+        "scopes": scopes,
+        "drills": drills,
+        "qids": _expand_qids(canon),
+        "drillQids": drill_qids,
+        "level": explicit_level,
+    }
 
 
 def validate_target(target: str | None) -> str | None:
@@ -144,7 +237,7 @@ def add_issue(
     norm_target = validate_target(target)
     if pilot_mode():
         source = "pilot"
-    where_s = where.strip()
+    where_s = canonicalize_where(where, kind=kind)
     what_s = what.strip()
     if not where_s or not what_s:
         raise ValueError("where and what must not be empty")
