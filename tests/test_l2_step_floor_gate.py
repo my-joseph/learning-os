@@ -63,9 +63,9 @@ def _template_draft() -> dict:
 def test_repository_l2_step_floor_gate() -> None:
     passed, report = ai_drill_ingest.check_l2_step_floor_gate(ROOT)
     assert passed, report
-    assert "drills 12/51 short" in report
-    assert "variants 41/147 short" in report
-    assert "Baseline: 10 drill(s), 12 problem(s); 10 bank(s), 41 variant(s)." in report
+    assert "drills 13/51 short" in report
+    assert "variants 43/147 short" in report
+    assert "Baseline: 11 drill(s), 13 problem(s); 11 bank(s), 43 variant(s)." in report
     # Zero-leak: report lists drill/variant IDs only, never prompt/step LaTeX.
     assert "DRL-MTH-T01-C04-01 Q04" in report
     assert "$" not in report
@@ -108,6 +108,78 @@ def test_new_draft_and_ingest_reject_short_l2_and_step_padding(tmp_path: Path) -
     assert any("L2 problem has 3 real step(s)" in e for e in errs_restate), errs_restate
 
 
+def test_count_real_steps_rejects_padding_and_canonical_equivalents() -> None:
+    def _prob(steps: list[str], *, display: str = "4x + 7 = 39", prompt: str = "Solve $4x + 7 = 39$.") -> dict:
+        return {
+            "display": display,
+            "prompt": prompt,
+            "steps": [{"latex": lx, "explain": f"Transform step {i}."} for i, lx in enumerate(steps, 1)],
+        }
+
+    # Genuine simplification steps (arithmetic unevaluated) all count as distinct real steps.
+    genuine = _prob(["4x = 39 - 7", "4x = 32", r"x = \frac{32}{4}", "x = 8"])
+    assert ai_drill_ingest.count_real_steps(genuine) == 4
+
+    # 1. Non-adjacent repeat (A, B, A, C -> only A, B, C count).
+    non_adjacent = _prob(["4x = 39 - 7", "4x = 32", "4x = 39 - 7", "x = 8"])
+    assert ai_drill_ingest.count_real_steps(non_adjacent) == 3
+
+    # 2. Leading "=" padding (expression and repeated step).
+    leading_eq = _prob(["4x + 7", "= 4x + 7", "4x = 32", "= 4x = 32", "x = 8"], display="", prompt="Simplify $4x + 7$.")
+    assert ai_drill_ingest.count_real_steps(leading_eq) == 2  # "4x = 32" and "x = 8" only
+
+    # 3. Extra braces padding (both SymPy-parsed and string-fallback LaTeX).
+    extra_braces = _prob(["4x = 39 - 7", "4x = 32", "{4x} = {32}", "{32 = 4x}", "4{x} + {7} = {39}", "{}", "x = 8"])
+    assert ai_drill_ingest.count_real_steps(extra_braces) == 3
+    fallback_braces = _prob(
+        [r"f'(x) = 2x", r"= {f'(x)} = {2x}", r"2x = f'(x)", r"f'(3) = 6"],
+        display=r"f(x) = x^2",
+        prompt="",
+    )
+    assert ai_drill_ingest.count_real_steps(fallback_braces) == 2
+
+    # 4. Flipped LHS/RHS of an equation (both against given and against earlier steps).
+    flipped = _prob(["39 = 4x + 7", "4x = 39 - 7", "4x = 32", "32 = 4x", "x = 8", "8 = x"])
+    assert ai_drill_ingest.count_real_steps(flipped) == 3
+
+    # 5. Commutatively reordered terms / factors (Add and Mul, plus combined flip + reorder).
+    reordered = _prob(
+        [
+            "7 + 4x = 39",
+            "39 = 7 + 4x",
+            "4x = 39 - 7",
+            "4x = -7 + 39",
+            "x \\cdot 4 = 32",
+            "32 = 4x",
+            "x = 8",
+        ]
+    )
+    assert ai_drill_ingest.count_real_steps(reordered) == 3
+
+    # Check end-to-end draft rejection for non-adjacent + canonical padding on Q02.
+    draft = _template_draft()
+    draft["problems"][1]["steps"] = [
+        {"latex": "7 + 4x = 39", "explain": "Reorder the given left-hand side."},
+        {"latex": "4x = 39 - 7", "explain": "Subtract $7$ from both sides.", "eq": "4*x - (39 - 7)"},
+        {"latex": "32 = {4x}", "explain": "Simplify $39 - 7$ to $32$.", "eq": "4*x - 32"},
+        {"latex": "4x = -7 + 39", "explain": "Repeat an earlier non-adjacent step."},
+        {"latex": "x = 8", "explain": "Divide both sides by $4$.", "val": "8"},
+    ]
+    errs = ai_drill_ingest.check_ai_drill(draft, vault_dir=str(TEMPLATE_DIR))
+    assert any("L2 problem has 3 real step(s)" in e for e in errs), errs
+
+
+def test_count_real_steps_keeps_radical_evaluation_distinct() -> None:
+    problem = {
+        "display": r"x = \sqrt{4}",
+        "steps": [
+            {"latex": r"\sqrt{4} = x", "explain": "Restate the given equation."},
+            {"latex": "x = 2", "explain": "Evaluate the radical."},
+        ],
+    }
+    assert ai_drill_ingest.count_real_steps(problem) == 1
+
+
 def test_under_labelling_bypass_rejected_at_all_levels() -> None:
     draft = _template_draft()
 
@@ -131,17 +203,46 @@ def test_under_labelling_bypass_rejected_at_all_levels() -> None:
     errs_bs = ai_drill_ingest.check_ai_drill(under_bs, vault_dir=str(TEMPLATE_DIR))
     assert any("under-labelled" in e and "give L2" in e for e in errs_bs), errs_bs
 
-    # 2. Short L2 reverse item labelled L1 WITHOUT blindSolve (form="reverse") rejected.
+    # 2. L1 item WITHOUT blindSolve using form="reverse" on an L1 archetype is rejected.
     under_form = copy.deepcopy(draft)
-    p2 = under_form["problems"][1]
+    p2 = under_form["problems"][0]
+    p2.pop("blindSolve", None)
     p2["level"] = 1
     p2["form"] = "reverse"
-    p2["steps"] = p2["steps"][:3]
-    p2["steps"][-1]["val"] = "8"
     errs_form = ai_drill_ingest.check_ai_drill(under_form, vault_dir=str(TEMPLATE_DIR))
     assert any("under-labelled" in e and "form='reverse'" in e for e in errs_form), errs_form
 
-    # 3. L2 problem with blindSolve giving L3 rejected as under-labelled.
+    # 3. Item WITHOUT blindSolve carrying verify.flaw below L3 is rejected (both L1 and L2, even with form="direct").
+    for low_idx, low_level in ((0, 1), (1, 2)):
+        under_flaw = copy.deepcopy(draft)
+        pf = under_flaw["problems"][low_idx]
+        pf.pop("blindSolve", None)
+        pf["level"] = low_level
+        pf["form"] = "direct"
+        pf["verify"] = {**pf.get("verify", {}), "flaw": {"values": ["1", "2", "3", "4"]}}
+        errs_flaw = ai_drill_ingest.check_ai_drill(under_flaw, vault_dir=str(TEMPLATE_DIR))
+        assert any("verify.flaw" in e and "at least L3" in e for e in errs_flaw), errs_flaw
+
+    # 4. Item WITHOUT blindSolve labelled below its archetype's base level (arch["level"]) is rejected (L1<L2 and L2<L3).
+    under_arch_l1 = copy.deepcopy(draft)
+    pa1 = under_arch_l1["problems"][1]  # tpl-two-step-linear has arch["level"] == 2
+    pa1.pop("blindSolve", None)
+    pa1["level"] = 1
+    pa1["form"] = "direct"
+    errs_arch_l1 = ai_drill_ingest.check_ai_drill(under_arch_l1, vault_dir=str(TEMPLATE_DIR))
+    assert any("below archetype 'tpl-two-step-linear' base level L2" in e for e in errs_arch_l1), errs_arch_l1
+
+    under_arch_l2 = copy.deepcopy(draft)
+    pa2 = under_arch_l2["problems"][1]  # clean number problem reassigned to L3 archetype
+    pa2.pop("blindSolve", None)
+    pa2["archetypeKey"] = "tpl-distribution-diagnose"
+    pa2["commonTrapTag"] = "tpl-partial-distribution-trap"
+    pa2["level"] = 2
+    pa2["form"] = "direct"
+    errs_arch_l2 = ai_drill_ingest.check_ai_drill(under_arch_l2, vault_dir=str(TEMPLATE_DIR))
+    assert any("below archetype 'tpl-distribution-diagnose' base level L3" in e for e in errs_arch_l2), errs_arch_l2
+
+    # 5. L2 problem with blindSolve giving L3 rejected as under-labelled.
     under_l2 = copy.deepcopy(draft)
     p3 = under_l2["problems"][1]
     p3["blindSolve"] = {
@@ -248,3 +349,41 @@ def test_check_ai_drill_grandfathers_saved_baseline_only_when_allowed() -> None:
     )
     assert errs_saved == []
     assert os.path.isfile(ROOT / ai_drill_ingest.L2_STEP_FLOOR_BASELINE_PATH)
+
+
+@pytest.mark.parametrize(
+    ("raw_text", "expected_snippet"),
+    [
+        (
+            json.dumps({"drills": {EXISTING_DRILL: ["Q02", "Q02"]}, "variants": {UNIT: [EXISTING_VARIANT]}}),
+            "Duplicate baseline ID: drills",
+        ),
+        (
+            json.dumps({"drills": {EXISTING_DRILL: ["Q02"]}, "variants": {UNIT: [EXISTING_VARIANT, EXISTING_VARIANT]}}),
+            "Duplicate baseline ID: variants",
+        ),
+        (json.dumps(["not", "a", "dict"]), "top-level value must be an object"),
+        (json.dumps({"drills": {}, "variants": {}, "extra": {}}), "unknown top-level key"),
+        (json.dumps({"drills": "bad", "variants": {}}), "'drills' must be an object"),
+        (json.dumps({"drills": {EXISTING_DRILL: "Q02"}, "variants": {}}), "must be a non-empty list"),
+        (json.dumps({"drills": {EXISTING_DRILL: []}, "variants": {}}), "must be a non-empty list"),
+        (json.dumps({"drills": {EXISTING_DRILL: [""]}, "variants": {}}), "Malformed baseline ID"),
+        (json.dumps({"drills": {EXISTING_DRILL: [123]}, "variants": {}}), "Malformed baseline ID"),
+        ('{"drills": {}, "drills": {}, "variants": {}}', "Duplicate baseline key"),
+        (
+            f'{{"drills": {{"{EXISTING_DRILL}": ["Q02"], "{EXISTING_DRILL}": ["Q03"]}}}}',
+            "Duplicate baseline key",
+        ),
+        ("{invalid json", "Malformed baseline JSON"),
+    ],
+)
+def test_l2_step_floor_gate_rejects_duplicate_ids_and_malformed_baseline(
+    synthetic_repo: Path,
+    raw_text: str,
+    expected_snippet: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (synthetic_repo / ai_drill_ingest.L2_STEP_FLOOR_BASELINE_PATH).write_text(raw_text, encoding="utf-8")
+    assert ai_drill_ingest.main(["--l2-step-gate"]) == 1
+    report = capsys.readouterr().out
+    assert expected_snippet in report

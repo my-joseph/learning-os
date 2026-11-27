@@ -124,7 +124,8 @@ def _valid_choice_problem(**overrides) -> dict:
         "steps": [
             {"latex": "(1 + i)^2 = 2i", "explain": "Square the base first.", "eq": ["(1 + I)**2", "2*I"]},
             {"latex": "(1 + i)^n = (2i)^m", "explain": "Rewrite the power with $n = 2m$."},
-            {"latex": "2^{m} = 256", "explain": "Match the magnitude so $m = 8$.", "eq": ["2**8", "256"]},
+            {"latex": "2^{m} = 256", "explain": "Match the magnitudes."},
+            {"latex": "m = 8", "explain": "Express $256$ as a power of $2$.", "eq": ["2**8", "256"]},
             {"latex": "n = 16", "explain": "Double the exponent of the squared base.", "eq": ["(1 + I)**16", "256"]},
         ],
         "review": {"verdict": "pass", "note": "All distractor provenances and trapTags verified."},

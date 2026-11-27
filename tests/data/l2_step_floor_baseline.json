@@ -16,6 +16,9 @@
     "DRL-MTH-T02-C01-U01-05": [
       "Q01"
     ],
+    "DRL-MTH-T02-C02-U03-01": [
+      "Q02"
+    ],
     "DRL-MTH-T02-C02-U06-01": [
       "Q04"
     ],
@@ -53,12 +56,16 @@
       "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-01",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-02",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-03",
+      "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-02",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-01",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-02",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-powers-of-i-cycle-03",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-01",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-02",
       "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-03"
+    ],
+    "MTH-T02-C02-U03": [
+      "VAR-MTH-T02-C02-U03-t02-c02-u03-average-rate-change-02"
     ],
     "MTH-T02-C02-U05": [
       "VAR-MTH-T02-C02-U05-t02-c02-u05-combine-transformations-01",

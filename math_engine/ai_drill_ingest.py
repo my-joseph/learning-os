@@ -15,16 +15,22 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
+import sympy as sp
+
 import ingest_core
 from ingest_core import archetype_owner as archetype_owner
 from math_engine.answer_check import (
     CHECKERS,
+    WHITELIST_CONSTANTS,
+    WHITELIST_FUNCS,
+    SafeParseError,
     _intervals_equal,
     _split_items,
     check_answer,
     is_equal,
     is_omission_trap,
     parse_interval,
+    safe_parse,
     to_expr,
 )
 from math_engine.answer_spec_registry import validate_answer_spec
@@ -1401,7 +1407,7 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
 
     validate_context_check(prob)  # before the blind-solve gate, so a bad story is reported even if the level fails too
     level = prob.get("level")
-    if isinstance(level, int):
+    if isinstance(level, int) and not isinstance(level, bool):
         if level >= 3 or prob.get("blindSolve") is not None:
             validate_blind_solve(prob)
         form = str(prob.get("form") or "").strip().lower()
@@ -1414,6 +1420,18 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
             raise AiContractError(
                 f"[{pid}] Labelled L{level} but form='diagnose' demands at least L3 (under-labelled; 06 §2.3). "
                 f"Label it L3 with a passing blindSolve or rewrite it for L{level}."
+            )
+        verify_obj = prob.get("verify")
+        if level < 3 and isinstance(verify_obj, dict) and verify_obj.get("flaw") is not None:
+            raise AiContractError(
+                f"[{pid}] Labelled L{level} but verify.flaw (find-the-flaw / diagnose form) demands at least L3 "
+                f"(under-labelled; 06 §2.3). Label it L3 with a passing blindSolve or remove verify.flaw."
+            )
+        arch_level = arch.get("level")
+        if level < 3 and isinstance(arch_level, int) and not isinstance(arch_level, bool) and level < arch_level:
+            raise AiContractError(
+                f"[{pid}] Labelled L{level} is below archetype '{key}' base level L{arch_level} "
+                f"(under-labelled; 06 §2.3). Raise level to at least L{arch_level} or use a lower-level archetype."
             )
 
 
@@ -1518,32 +1536,132 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
                 break
 
 
+_STEP_LATEX_FUNC_RE = re.compile(r"\\(sin|cos|tan|ln|log|exp|pi)\b")
+_STEP_LEADING_EQ_RE = re.compile(r"^\s*=+\s*")
+_STEP_SINGLE_EQ_RE = re.compile(r"(?<![<>!=\\])=(?!=)")
+# Preserve function calls as written so evaluating a radical or a trig function still counts as a step.
+_STEP_UNEVALUATED_FUNCS = {name: sp.Function(name) for name in WHITELIST_FUNCS}
+_STEP_KNOWN_SYMBOLS = _STEP_UNEVALUATED_FUNCS.keys() | WHITELIST_CONSTANTS.keys()
+
+
+def _canonical_sympy_expr(expr: Any) -> str:
+    """Canonicalize an unevaluated SymPy expression up to Add/Mul commutativity and associativity.
+
+    Arithmetic stays unevaluated so genuine simplification steps (e.g. ``39 - 7`` -> ``32`` or
+    ``32 / 4`` -> ``8``) remain distinct, while commutative reorderings (``4x + 7`` vs ``7 + 4x``,
+    ``4 * x`` vs ``x * 4``, ``a - b`` vs ``-b + a``) map to the same canonical key.
+    """
+    if isinstance(expr, (sp.Add, sp.Mul)):
+        kind = type(expr)
+        flat: List[str] = []
+        stack = list(expr.args)
+        while stack:
+            item = stack.pop()
+            if isinstance(item, kind):
+                stack.extend(item.args)
+            else:
+                flat.append(_canonical_sympy_expr(item))
+        return f"{kind.__name__}({','.join(sorted(flat))})"
+    if getattr(expr, "args", ()):
+        return f"{type(expr).__name__}(" + ",".join(_canonical_sympy_expr(a) for a in expr.args) + ")"
+    return sp.srepr(expr)
+
+
+def _parse_step_side_canonical(raw_side: str) -> Optional[str]:
+    """Parse one side of a step via ``answer_check.safe_parse(..., evaluate=False)`` into a canonical key."""
+    s = raw_side.strip()
+    if not s or "\\" in s:
+        return None
+    tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)
+    if any("_" in t for t in tokens):
+        return None
+    variables = sorted({t for t in tokens if t not in _STEP_KNOWN_SYMBOLS})
+    try:
+        expr = safe_parse(s, variables=variables, evaluate=False, allowed_funcs=_STEP_UNEVALUATED_FUNCS)
+    except SafeParseError:
+        return None
+    return _canonical_sympy_expr(expr)
+
+
 def _normalize_step_latex(latex: Any) -> str:
-    """Normalise a step's LaTeX for anti-padding comparison (strip formatting macros and whitespace)."""
+    """Return a canonical anti-padding key for a step's LaTeX.
+
+    Strips leading ``=``, formatting macros, extra braces, and whitespace. When the expression (or
+    both sides of a single ``=`` equation) parses via ``answer_check.safe_parse(..., evaluate=False)``,
+    returns a canonical math form that treats commutative reordering and LHS/RHS equation flips as
+    identical while keeping real simplification steps distinct. Falls back to string normalisation
+    when parsing fails.
+    """
     if not isinstance(latex, str):
         return ""
     s = latex.strip().replace("$", "").replace("\u2212", "-")
-    for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad", r"\qquad", r"\displaystyle"):
+    for macro in (
+        r"\left",
+        r"\right",
+        r"\,",
+        r"\;",
+        r"\:",
+        r"\!",
+        r"\quad",
+        r"\qquad",
+        r"\displaystyle",
+        r"\textstyle",
+    ):
         s = s.replace(macro, "")
-    return re.sub(r"\s+", "", s)
+    cand = _normalize_sympy_candidate(s)
+    cand = _STEP_LATEX_FUNC_RE.sub(r"\1", cand)
+    cand = _STEP_LEADING_EQ_RE.sub("", cand).strip()
+    while cand.startswith("{"):
+        group = _extract_braced_arg(cand, 0)
+        if group is None or group[1] != len(cand):
+            break
+        cand = _STEP_LEADING_EQ_RE.sub("", group[0]).strip()
+    if not cand:
+        return ""
+
+    eq_parts = _STEP_SINGLE_EQ_RE.split(cand)
+    if len(eq_parts) == 2:
+        lhs = _parse_step_side_canonical(eq_parts[0])
+        rhs = _parse_step_side_canonical(eq_parts[1])
+        if lhs is not None and rhs is not None:
+            left_k, right_k = sorted((lhs, rhs))
+            return f"eq:{left_k}={right_k}"
+    elif len(eq_parts) == 1:
+        parsed = _parse_step_side_canonical(eq_parts[0])
+        if parsed is not None:
+            return f"expr:{parsed}"
+
+    # String fallback when SymPy parsing fails: drop braces and whitespace (and sort sides of a single '=').
+    fallback = re.sub(r"\s+", "", cand.replace("{", "").replace("}", ""))
+    if not fallback:
+        return ""
+    fb_parts = _STEP_SINGLE_EQ_RE.split(fallback)
+    if len(fb_parts) == 2 and all(fb_parts):
+        fallback = "=".join(sorted(fb_parts))
+    return f"str:{fallback}"
 
 
 def count_real_steps(prob: Dict[str, Any]) -> int:
     """Count distinct real derivation steps in ``prob['steps']``.
 
     A step counts only when:
-    - both ``latex`` and ``explain`` are non-empty strings;
-    - its normalised ``latex`` differs from the previous counted step (rejects repeated padding); and
-    - its normalised ``latex`` is not a pure restatement of the given ``display`` or prompt expression.
+    - both ``latex`` and ``explain`` are non-empty strings; and
+    - its canonical ``latex`` key has not already been seen in the given ``display``/prompt
+      expressions or any earlier counted step (rejects adjacent and non-adjacent repeats,
+      leading ``=``, extra braces, commutative reorderings, and LHS/RHS equation flips).
     """
     steps = prob.get("steps")
     if not isinstance(steps, list):
         return 0
+    seen: Set[str] = set()
     given_norm = _normalize_step_latex(prob.get("display") or "")
-    prompt_maths = {_normalize_step_latex(m) for m in _INLINE_MATH_RE.findall(str(prob.get("prompt") or ""))}
-    given_set = {x for x in ({given_norm} | prompt_maths) if x}
+    if given_norm:
+        seen.add(given_norm)
+    for match in _INLINE_MATH_RE.findall(str(prob.get("prompt") or "")):
+        norm_match = _normalize_step_latex(match)
+        if norm_match:
+            seen.add(norm_match)
 
-    prev: Optional[str] = None
     count = 0
     for st in steps:
         if not isinstance(st, dict):
@@ -1552,9 +1670,9 @@ def count_real_steps(prob: Dict[str, Any]) -> int:
         if not (isinstance(lx, str) and lx.strip() and isinstance(ex, str) and ex.strip()):
             continue
         norm = _normalize_step_latex(lx)
-        if not norm or norm == prev or norm in given_set:
+        if not norm or norm in seen:
             continue
-        prev = norm
+        seen.add(norm)
         count += 1
     return count
 
@@ -1563,25 +1681,51 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def _unique_baseline_object(pairs: List[Tuple[str, Any]]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise AiContractError(f"Duplicate baseline key: {key!r}.")
+        result[key] = value
+    return result
+
+
 def load_l2_step_floor_baseline(repo_root: Optional[Path] = None) -> Dict[str, Dict[str, List[str]]]:
-    """Load the shrink-only grandfathered L2 short-step baseline ``{"drills": {...}, "variants": {...}}``."""
-    root = repo_root or _repo_root()
-    path = root / L2_STEP_FLOOR_BASELINE_PATH
+    """Load the shrink-only baseline and reject malformed entries or duplicate IDs."""
+    path = (repo_root or _repo_root()) / L2_STEP_FLOOR_BASELINE_PATH
     if not path.is_file():
         return {"drills": {}, "variants": {}}
-    raw = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_unique_baseline_object)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise AiContractError(f"Malformed baseline JSON in {L2_STEP_FLOOR_BASELINE_PATH}: {exc}") from exc
+
     if not isinstance(raw, dict):
-        return {"drills": {}, "variants": {}}
-    if "drills" in raw or "variants" in raw:
-        drills_raw = raw.get("drills") if isinstance(raw.get("drills"), dict) else {}
-        variants_raw = raw.get("variants") if isinstance(raw.get("variants"), dict) else {}
-    else:
-        drills_raw = raw
-        variants_raw = {}
-    return {
-        "drills": {str(k): [str(x) for x in v] for k, v in drills_raw.items() if isinstance(v, list)},
-        "variants": {str(k): [str(x) for x in v] for k, v in variants_raw.items() if isinstance(v, list)},
-    }
+        raise AiContractError("Malformed baseline: top-level value must be an object.")
+
+    allowed_sections = ("drills", "variants")
+    unknown_keys = sorted(raw.keys() - set(allowed_sections))
+    if unknown_keys:
+        raise AiContractError(f"Malformed baseline: unknown top-level key(s) {unknown_keys}.")
+
+    baseline: Dict[str, Dict[str, List[str]]] = {}
+    for section in allowed_sections:
+        entries = raw.get(section, {})
+        if not isinstance(entries, dict):
+            raise AiContractError(f"Malformed baseline entry: '{section}' must be an object mapping IDs to lists.")
+        for container_id, id_list in entries.items():
+            if not container_id or container_id != container_id.strip():
+                raise AiContractError(f"Malformed baseline key under '{section}'.")
+            if not isinstance(id_list, list) or not id_list:
+                raise AiContractError(
+                    f"Malformed baseline entry: {section}.{container_id} must be a non-empty list of IDs."
+                )
+            if any(not isinstance(item, str) or not item or item != item.strip() for item in id_list):
+                raise AiContractError(f"Malformed baseline ID under {section}.{container_id}.")
+            if len(set(id_list)) != len(id_list):
+                raise AiContractError(f"Duplicate baseline ID: {section}.{container_id}.")
+        baseline[section] = entries
+    return baseline
 
 
 def validate_l2_step_floor(
@@ -1675,7 +1819,10 @@ def collect_short_l2_variants(repo_root: Path) -> Tuple[Dict[str, List[Tuple[str
 def check_l2_step_floor_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
     """Check canonical math drills and variant banks against the shrink-only L2 step-floor baseline (zero-leak)."""
     root = repo_root or _repo_root()
-    baseline = load_l2_step_floor_baseline(root)
+    try:
+        baseline = load_l2_step_floor_baseline(root)
+    except AiContractError as exc:
+        return False, f"FAIL L2 step floor gate: invalid {L2_STEP_FLOOR_BASELINE_PATH}. {exc}"
     drills_base = baseline["drills"]
     variants_base = baseline["variants"]
 
