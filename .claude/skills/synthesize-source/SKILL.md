@@ -75,6 +75,8 @@ Mandatory card invariants (enforced by `validate_core_card` during `--commit`):
 .venv/bin/python -m scripts.source_gap <UNIT>
 ```
 
+For progress-free audits, pass `--no-progress` on the gap report. Bridge candidate eligibility remains unassessed.
+
 Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward cards from other units' files marked `carriedFrom`) against the reasoning vault:
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):** matched vs unmatched candidate archetypes, uncovered `chain` cards (and L2 cards with ≥ 2 `operations`, warning `"no L2 chain archetype"` when the unit vault has none), new trap tags, missing reasoning moves & levels, exam formats seen, deferred `laterUnit` cards, and `Bridge candidates` (`ELIGIBLE` vs `not eligible` via `scripts.bridge_scope`).
 - **PRG (`code_engine/reasoning_vault/<CHAPTER>.json`):** matched vs unmatched candidate archetypes, new `cognitiveTraps`, new bug patterns / smells, new `QC-*` `qualityCheckIdeas` not yet in the vault, missing PRG archetype kinds (`implement`, `predict-output`, `find-the-bug`, `refactor`, `project-milestone`) and levels, languages/concepts, and deferred `laterUnit` cards.
@@ -132,8 +134,6 @@ Rejections (8-word shingle overlap, normalised text similarity ≥ 0.6, math num
 ## Self-review
 
 After the run, compare the outcome against this skill's goal. For each friction (unclear step, missing tool, gate miss, rework, reviewer catch, or learner correction), log `.venv/bin/python -m scripts.issues propose --target skill:synthesize-source --evidence "<what happened>" --proposal "<concrete change>"` (or `.venv/bin/python -m scripts.issues add --kind <kind> --severity batch --source author --where <where> --what "<what>" --target skill:synthesize-source`). If the fix is a small, scoped edit to this `SKILL.md`, make it in the same PR.
-
-For progress-free audits, pass `--no-progress` on the gap report. Bridge candidate eligibility remains unassessed.
 
 Fuzzy novelty checks compare cards at the same level and in the same unit scope, including any deferred or cross-unit targets.
 

@@ -1244,7 +1244,7 @@ def build_self_review(
     )
 
     if no_progress:
-        dq_sig = {"unitsChecked": 0, "tooEasy": [], "tooHard": []}
+        dq_sig = {"unitsChecked": None, "tooEasy": [], "tooHard": []}
         skipped.append("drill-quality: skipped (--no-progress)")
     else:
         dq_sig, dq_props, dq_skip = collect_drill_quality_signals(repo_root=root)
@@ -1307,7 +1307,7 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
     iss = sigs.get("issues", {})
     usg = sigs.get("usage", {})
     gh = sigs.get("gitGh", {})
-    dq = sigs.get("drillQuality", {})
+    drill_units = sigs.get("drillQuality", {}).get("unitsChecked", 0)
     dr = sigs.get("docRefs", {})
     lines.append(
         "Sources: "
@@ -1316,7 +1316,7 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
         f"{len(usg.get('reopenedBranches', []))} reopened), "
         f"prs={gh.get('prsScanned', 0)} ({len(gh.get('reviewFixPrs', []))} review-fix, "
         f"{len(gh.get('followupFixPrs', []))} <=48h fix), "
-        f"drill_units={dq.get('unitsChecked', 0)}, "
+        f"drill_units={'skipped' if drill_units is None else drill_units}, "
         f"doc_refs_broken={dr.get('count', 0)}"
     )
     if report.get("skipped"):

@@ -835,4 +835,6 @@ def test_self_review_no_progress_skips_collector(tmp_path: Path, monkeypatch: py
         no_progress=True,
     )
     assert "drill-quality: skipped (--no-progress)" in report["skipped"]
+    assert report["signals"]["drillQuality"]["unitsChecked"] is None
+    assert "drill_units=skipped" in sr.format_self_review(report)
     assert all(proposal["category"] != "drill-quality" for proposal in report["proposals"])
