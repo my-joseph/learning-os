@@ -21,6 +21,12 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 
 - Studio Generate button and **C08** `/api/generate-drill` route: approved and removed in Phase 2 (2026-11-26).
 - Math and PRG template engines, template generators, and template-only scripts/tests removed and `rules/06` renamed to `rules/06_quality_contract.md` in Phase 3 (2026-11-26); drills and Similar variants are AI-only.
+- Similar "+" (#366, 2026-11-26): one main tab plus a muted "+" button (no inviting colour); "+" unlocks after the main question is answered once and opens the next bank variant in ladder order as a new tab, with no cap until the bank is exhausted. Similar tabs have every main-question action (Skip, self-score, notes, steps after an attempt). Reset starts a new cycle: only variants opened in the current cycle show as tabs; "+" prefers never-served variants, then wraps.
+- Similar coverage gate (#369): CI blocks a math drill whose `(archetypeKey, level)` pairs have fewer than 3 variants; `tests/data/variant_coverage_baseline.json` may only shrink. Filling the six baseline drills is NOT requested yet.
+- Engine clean-up (#371 split math answer checker, #373 unify PRG test/lint/tsc runners, #374 shared ingest/vault core in root `ingest_core.py`): behaviour-preserving, done.
+- What I get wrong list (#372) replaces Weak spots: plain names, Practise per row, collapsed before an answer (zero-leak issue `0852fe` closed).
+- Review & Sync (#375) is one card: shadcn/Recharts donut with the score, a score-based headline, an outcome line and a next-review line, and Back (to the drill) / Sync buttons.
+- Playground (#365, #370, #376): `/playground` + `/playground/[id]` gather visual experiments (Lever, Pulley, Collisions, Disk method, Cube, Shapes, UI components) in one card language; every figure plays a calm demo loop when idle and glides back to defaults on hover/focus.
 
 ### Working style
 
@@ -28,12 +34,14 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 - Report promptly when a job finishes. Track background worker jobs to completion.
 - Ask only about learner-owned decisions; proceed on routine implementation choices.
 - The learner's Claude quota is low. The lead plans, writes bounded specs, reviews, and delivers; delegate implementation to workers when appropriate.
+- Name work by what it does in plain words (Thai in reports), never by codes such as "PR C", "Phase 2.1" or "D2".
+- UI PRs that change visuals wait for the learner's explicit "merge"; give them a preview URL and screenshots. Non-visual PRs the learner already approved (refactors, gates, docs) may be merged by the lead after green CI.
 - Docs grow with code: when behavior, commands, paths, schemas, routes, or workflows change, update affected skills, rules, docs, and `CLAUDE.md` in the same PR. Include `Docs updated:` in the PR body. Consider `self_review` proposals, but act on them only when the lead agrees; explain disagreements.
 
 ### Models and workers
 
 - Use `tools/agents/run-worker.sh`, the `dispatch-worker` skill, and `.claude/skills/dispatch-worker/common.md`.
-- Route simple, high-volume, documentation, and read-only audit work to Luna (`gpt-6-luna`, Codex quota); everyday coding to Hydrogen (`gemini-4-hydrogen-high`); hard cross-cutting work to Neon (`gemini-4-neon-high`); independent review, blind-solve, skill trials, or parallel work to Argon (`gemini-4-argon-high`). Neon, Hydrogen and Argon share one `agy` quota pool (since 2026-11-24); Luna and Sol use the Codex pool.
+- Default to the Codex pool: Sol (`gpt-6.2-sol`) for UI and most coding, Luna (`gpt-6-luna`) for simple, high-volume, documentation and read-only audit work. Use the `agy` pool when Codex is out or for a second parallel job: Hydrogen (`gemini-4-hydrogen-high`) for everyday coding, Neon (`gemini-4-neon-high`) for hard cross-cutting work, Carbon (`gemini-4-carbon-high`) as another agy option. Argon is retired (learner 2026-11-25). Neon, Hydrogen and Carbon share one `agy` quota pool; Sol and Luna share the Codex pool. Always pass a fallback chain in `MODELS` that crosses pools.
 - The learner switches the `agy` account themselves between jobs and will tell the agent which account is active. Do not change or check-and-block on a specific account; if an `agy` run fails on login or quota, report it and fall back per the routing above.
 - Keep each job to one concern, put file paths and line evidence first, name acceptance criteria and tests, and merge `origin/main` with a merge (never rebase) before clean-environment checks.
 - Run no more than two workers in parallel and allow no more than two revision rounds per job. After that, stop and report.
@@ -54,19 +62,32 @@ For any Studio UI work, also read [design principles](design/principles.md) and 
 - Keep behaviour identical (zero-leak, progress/reset flows, keyboard/focus, 44 px targets, reduced motion); existing Studio tests must pass; each UI PR includes before/after screenshots (desktop + phone width) for the learner.
 - Use the [design tokens](design/system.md) and [component catalog](design/components.md). Follow the learner's 2026-11-25 extend-before-create decision and get approval for new colours.
 
+### Design decisions (2026-11-24 → 2026-11-26)
+
+- Extend before create: shared components with variants (size, tone, state); a learner tweak becomes a variant or token change. New roles start from shadcn/ui; custom code only when shadcn has nothing (say so in the PR).
+- State changes (hover, focus, selected) change colour/background only — never layout. Exception: the current sidebar tree row uses weight 500.
+- Typography roles: Geist for reading/UI and small numbers; Roboto Slab only for page titles and large numerals; Geist Mono for code and curriculum IDs. No curriculum ID above page titles; IDs live in the sidebar hover card and the row "…" menu.
+- Prose (prompts, steps, explanations) renders through the Typeset CSS (`practice-studio/src/styles/typeset.css`); KaTeX keeps its own size. Code blocks are the shadcn Code Block (language label, Copy, line numbers, Wrap; Terminal variant for run output).
+- Charts: shadcn Chart with Recharts only — never hand-drawn SVG charts (learner 2026-11-26). Load chart routes lazily.
+- External libraries: shadcn-ecosystem registries, headless and domain libraries only; learner approval per library; one library per role; wrap and catalog it in [components](design/components.md).
+- Visual direction: interactive figures use the vendored Isometric engine (one visual language); Matter.js may compute physics but Isometric draws. Both are EXPERIMENTAL: they appear only in the Playground — never in drills, unit pages or other screens until the learner polishes them and says start. Every new figure needs cited subject research, a pure tested logic module, correct units (force in N), and a demo loop.
+
 ### ON HOLD — do not start without the learner
 
-- The Similar “+” button refactor and PRG Similar/variant bank remain on hold.
-- **A10**: fix the case where a Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behavior); waits for the Similar “+” refactor.
+Learner 2026-11-26: everything below is an optional extra and is not needed now.
+
+
+- PRG Similar/variant bank (PRG has no Similar yet).
+- Filling the six drills in the Similar coverage baseline.
+- Worked Example can serve the same variant as an unopened Similar tab (including single-variant bank behaviour); the "+" refactor is done, so this is unblocked but not started.
 - Retire/rebuild `DRL-PRG-T00-C03-02` and `LAB-PRG-T01-C04-02` (issues `a96ca5`, `7b2db0`, `f8bd76`).
 - Due-review tree and drill review mode, Question-jump shortcut, Example redesign, and learning-feature Phases 3–5.
-- Engine clean-up (unify PRG runners, split math answer checker, shared ingest core) (`pilot/improve-engine-2026-11-21/roadmap.md`): wait for learner approval.
 - Scheduled/automatic jobs: wait until the system is stable.
-- Ideas noted, not started: Skills Status mastery overview page; Skip-reason prompt; Review & Sync page “back to drill” button; slow `npm run dev`; flaky sync (partly in `fix/sync-stamps-persist`).
+- Ideas noted, not started: Skills Status mastery overview page; Skip-reason prompt; slow `npm run dev`; flaky sync; tooltip/popover fade-out on close; left- vs centre-aligned display math; Isometric SVG export for Notion; decorative shape accents (patch in `pilot/research/`).
 
 ## Current state and how to refresh it
 
-- The **What I get wrong list** is implemented and awaiting visual review. The disclosure stays closed next to an unanswered problem (issue `0852fe`).
+- As of 2026-11-27 no PR or worker job is open; everything listed under Completed is merged. Refresh with the commands below before choosing work.
 
 The following snapshot came from the learner-decision digest dated 2026-11-21. Treat it as historical context; refresh live state before choosing work.
 
@@ -75,6 +96,10 @@ The following snapshot came from the learner-decision digest dated 2026-11-21. T
 - Issues named for batch handling: `python -m scripts.issues list`; digest called out `56deb3` (eight existing MTH problems flagged by the distractor gate). Other ON HOLD issue IDs are listed above.
 - Learner study snapshot in the digest: MTH-T02-C01, Complex Numbers U01 at mastery 2 with next review 2026-11-26; Quadratic U02 drill 01 ready; PRG-T00 next.
 - Refresh open PRs with `gh pr list`; issue state with `python -m scripts.issues list`; ranked signals with `python -m scripts.self_review`; local worktrees with `git worktree list`.
+
+## Multi-agent hosts (e.g. OpenBot)
+
+When several agents share one chat or app: exactly one agent is the lead (named by the learner); all others are workers and must not merge, dispatch other agents, or start work on their own. Each worker job runs in its own git worktree and branch (use `tools/agents/run-worker.sh`, or an equivalent per-agent workspace) — never two agents editing the same checkout. No agent reads or prints `.env`. Agents that cannot read `.claude/skills/` follow the skill files by reading them explicitly. Claude's private memory is not visible to other agents; this file is the shared source of learner decisions.
 
 ## Interim lead rules
 
