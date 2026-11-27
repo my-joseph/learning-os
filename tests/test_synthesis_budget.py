@@ -471,7 +471,7 @@ def test_ledger_skip_hash_change_and_refresh_flag(
     assert all(p["relPath"] == "SmartMathPro/smp.pdf" for p in plan_changed["selectedPages"])
 
 
-def test_ledger_replans_legacy_entries_and_prompt_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_ledger_replans_legacy_entries_and_rule_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     sdir, registry, backlog = _setup_multi_family_sources(
         tmp_path, monkeypatch, smp_pages=2, thai_pages=0, mg_pages=0, im_pages=0, items_per_page=1
     )
@@ -490,10 +490,59 @@ def test_ledger_replans_legacy_entries_and_prompt_changes(tmp_path: Path, monkey
     assert legacy["summary"]["selectedPageCount"] == 1
     assert legacy["summary"]["skippedLedgerPages"] == 1
 
-    monkeypatch.setattr(ledger, "EXTRACTION_PROMPT_VERSION", "test-version")
+    monkeypatch.setattr(ledger, "CARD_RULES_VERSION", "test-version")
     changed = source_find.build_extraction_plan(found, registry_path=str(registry), backlog_path=str(backlog))
     assert changed["summary"]["selectedPageCount"] == 2
     assert changed["summary"]["skippedLedgerPages"] == 0
+
+
+def test_prg_ledger_fingerprint_tracks_schema_structure_and_prompt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unit = "prg-T00-C03"
+    source_path = "prg/javascript-algorithms/fixture.js"
+    schema_path = tmp_path / "prg_schema.json"
+    schema = json.loads(Path(ledger.PRG_SCHEMA_PATH).read_text(encoding="utf-8"))
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    prompt_path = tmp_path / "extract_cards_job.py"
+    prompt_path.write_bytes(ledger.EXTRACTION_PROMPT_PATH.read_bytes())
+    monkeypatch.setattr(ledger, "PRG_SCHEMA_PATH", str(schema_path))
+    monkeypatch.setattr(ledger, "EXTRACTION_PROMPT_PATH", prompt_path)
+    monkeypatch.setenv("LEARNINGOS_SOURCES_DIR", str(tmp_path / "sources"))
+    found = {
+        "unitCode": unit,
+        "coreMatches": [{"relPath": source_path, "fileHash": "fixture-hash", "pages": [{"page": 1}]}],
+    }
+
+    def selected_count() -> int:
+        return source_find.build_extraction_plan(found)["summary"]["selectedPageCount"]
+
+    entry = ledger.record_extraction(unit, source_path, 1, run_id="test", cards_produced=[], file_hash="fixture-hash")
+    assert selected_count() == 0
+    stored = ledger.load_ledger()
+    stored["entries"][ledger.ledger_key(unit, source_path, 1)].pop("schemaFingerprint")
+    ledger.save_ledger(stored)
+    assert selected_count() == 1
+    stored["entries"][ledger.ledger_key(unit, source_path, 1)] = entry
+    ledger.save_ledger(stored)
+
+    schema["title"] = "Reworded heading"
+    schema["properties"]["skill"]["description"] = "Reworded annotation"
+    schema_path.write_text(json.dumps(schema, sort_keys=True, indent=4), encoding="utf-8")
+    assert selected_count() == 0
+
+    schema["properties"]["skill"]["maxLength"] -= 1
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    assert selected_count() == 1
+    schema["properties"]["skill"]["maxLength"] += 1
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    assert selected_count() == 0
+
+    prompt = prompt_path.read_text(encoding="utf-8")
+    changed_prompt = prompt.replace("Read ONLY", "Read exclusively", 1)
+    assert changed_prompt != prompt
+    prompt_path.write_text(changed_prompt, encoding="utf-8")
+    assert selected_count() == 1
 
 
 # ---------------------------------------------------------------------------

@@ -8,6 +8,7 @@ which core cards it produced, and the source file's SHA-256 content hash. Stored
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -17,19 +18,61 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-from math_engine.source_cores import PRG_SCHEMA_PATH, SCHEMA_PATH, resolve_sources_dir
+from math_engine.source_cores import PRG_SCHEMA_PATH, REPO_ROOT, SCHEMA_PATH, is_prg_unit, resolve_sources_dir
 
 LEDGER_FILENAME = "_ledger.json"
 LEDGER_VERSION = 1
-# Bump when the extraction instructions in scripts/extract_cards_job.py change.
-EXTRACTION_PROMPT_VERSION = "1"
+# Bump for extraction-relevant changes to validate_core_card alone.
+CARD_RULES_VERSION = "1"
+EXTRACTION_PROMPT_PATH = Path(REPO_ROOT) / "scripts" / "extract_cards_job.py"
+
+_SCHEMA_DOC_KEYS = {"$schema", "$id", "title", "description", "$comment", "examples"}
+_SCHEMA_MAP_KEYS = {"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"}
+_SCHEMA_LIST_KEYS = {"allOf", "anyOf", "oneOf", "prefixItems"}
+_SCHEMA_CHILD_KEYS = {
+    "additionalProperties",
+    "unevaluatedProperties",
+    "propertyNames",
+    "items",
+    "contains",
+    "unevaluatedItems",
+    "not",
+    "if",
+    "then",
+    "else",
+    "additionalItems",
+    "contentSchema",
+}
+
+
+def _structural_schema(schema: Any) -> Any:
+    """Skip annotations at schema nodes while preserving property names and literal values."""
+    if not isinstance(schema, dict):
+        return schema
+    result = {}
+    for key, value in schema.items():
+        if key in _SCHEMA_DOC_KEYS:
+            continue
+        if key in _SCHEMA_MAP_KEYS:
+            value = {name: _structural_schema(child) for name, child in value.items()}
+        elif key in _SCHEMA_LIST_KEYS or (key == "items" and isinstance(value, list)):
+            value = [_structural_schema(child) for child in value]
+        elif key in _SCHEMA_CHILD_KEYS:
+            value = _structural_schema(value)
+        result[key] = value
+    return result
 
 
 def card_schema_fingerprint(unit_code: str) -> str:
-    """Hash the schema for this unit and the extraction prompt version."""
-    schema_path = PRG_SCHEMA_PATH if unit_code.strip().startswith("PRG-") else SCHEMA_PATH
-    version = EXTRACTION_PROMPT_VERSION.encode("utf-8")
-    return hashlib.sha256(version + bytes(1) + Path(schema_path).read_bytes()).hexdigest()
+    """Hash the active schema structure, prompt template, and validator rules version."""
+    schema_path = PRG_SCHEMA_PATH if is_prg_unit(unit_code) else SCHEMA_PATH
+    schema = _structural_schema(json.loads(Path(schema_path).read_text(encoding="utf-8")))
+    prompt_module = ast.parse(EXTRACTION_PROMPT_PATH.read_text(encoding="utf-8"))
+    template = next(
+        node for node in prompt_module.body if isinstance(node, ast.FunctionDef) and node.name == "build_worker_prompt"
+    )
+    payload = json.dumps([schema, ast.dump(template), CARD_RULES_VERSION], sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def ledger_path(sources_dir: str | None = None) -> str:
