@@ -154,6 +154,51 @@ def test_usage_report_separates_active_historical_only_and_unused(
     assert no_hist["historicalOnlyCount"] == 0
     assert no_hist["unusedCount"] == 2
 
+    shallow = tmp_path / "shallow"
+    _git(tmp_path, "clone", "--depth=1", tmp_path.as_uri(), str(shallow))
+    monkeypatch.chdir(shallow)
+    shallow_args = ["MTH-T99-C01-U01", "--usage", "--vault-dir", "vault", "--variants-dir", str(variants_dir)]
+    assert vr.main(shallow_args) == 0
+    out = capsys.readouterr().out
+    assert "history unavailable (shallow clone)" in out
+    assert "UNKNOWN" in out and "UNUSED" not in out
+    assert vr.main([*shallow_args, "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["historyNotice"] == "history unavailable (shallow clone)"
+    assert report["activeCount"] == 1 and report["unknownCount"] == 2
+    assert report["unusedCount"] == report["historicalOnlyCount"] == 0
+
+
+def test_only_active_variants_provide_usage_evidence(tmp_path: Path) -> None:
+    unit = "MTH-T99-C01-U01"
+    (tmp_path / f"{unit}.json").write_text(
+        json.dumps(
+            {
+                "unitCode": unit,
+                "archetypes": [{"archetypeKey": key, "unitCode": unit, "level": 1} for key in ("live", "legacy")],
+            }
+        ),
+        encoding="utf-8",
+    )
+    variants_dir = tmp_path / "variants"
+    variants_dir.mkdir()
+    (variants_dir / f"{unit}.json").write_text(
+        json.dumps(
+            {
+                "unitCode": unit,
+                "variants": [
+                    {"archetypeKey": "live", "level": 1},
+                    {"archetypeKey": "legacy", "level": 1, "status": "quarantined"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = vr.usage_report(unit, str(tmp_path), str(tmp_path / "no-drills"), str(variants_dir), include_history=False)
+    assert report["activeCount"] == report["everUsedCount"] == 1
+    assert report["unusedKeys"] == ["legacy"]
+    assert report["missingBaseLevelKeys"] == ["legacy"]
+
 
 def test_usage_report_on_real_repo_surfaces_active_and_retired_units() -> None:
     rep_u01 = vr.usage_report("MTH-T02-C01-U01", repo_root=str(ROOT))
@@ -162,5 +207,7 @@ def test_usage_report_on_real_repo_surfaces_active_and_retired_units() -> None:
     assert "t02-c01-u01-mixed-operations-chain" in rep_u01["unusedKeys"]
 
     rep_retired = vr.usage_report("MTH-T02-C02-U05", repo_root=str(ROOT))
-    assert rep_retired["activeCount"] == 0
-    assert rep_retired["historicalOnlyCount"] >= 2
+    if rep_retired["historyNotice"] == "history unavailable (shallow clone)":
+        return  # The synthetic shallow/full tests above cover both modes in CI.
+    assert rep_retired["historyNotice"] is None
+    assert sum(bool(row["historicalDrillLevels"]) for row in rep_retired["rows"]) >= 2

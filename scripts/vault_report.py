@@ -299,22 +299,30 @@ def _current_usage_evidence(
     return drill_levels, variant_levels
 
 
-def _historical_deleted_drill_usage(repo_root: str | None = None) -> dict[str, Counter]:
-    """Read-only git-history scan of deleted canonical drill files under ``drills/data/``."""
+def _historical_deleted_drill_usage(repo_root: str | None = None) -> tuple[dict[str, Counter], str | None]:
+    """Read deleted drills from Git and explain why history was unavailable, if needed."""
     cwd = repo_root or os.getcwd()
     try:
+        shallow = subprocess.run(
+            ["git", "rev-parse", "--is-shallow-repository"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        if shallow.stdout.strip() == "true":
+            return {}, "history unavailable (shallow clone)"
         proc = subprocess.run(
             ["git", "log", "--diff-filter=D", "--name-only", "--pretty=format:COMMIT:%H", "--", "drills/data/"],
             cwd=cwd,
             capture_output=True,
             text=True,
-            check=False,
+            check=True,
             timeout=20,
         )
     except (OSError, subprocess.SubprocessError):
-        return {}
-    if proc.returncode != 0:
-        return {}
+        return {}, "history unavailable (Git history could not be read)"
 
     deleted_paths: list[tuple[str, str]] = []
     seen_paths: set[str] = set()
@@ -356,7 +364,7 @@ def _historical_deleted_drill_usage(repo_root: str | None = None) -> dict[str, C
             lvl = prob.get("level")
             if isinstance(key, str) and key.strip() and isinstance(lvl, int):
                 hist[key.strip()][lvl] += 1
-    return hist
+    return hist, None
 
 
 def usage_report(
@@ -368,7 +376,7 @@ def usage_report(
     include_history: bool = True,
     repo_root: str | None = None,
     current_evidence: tuple[dict[str, Counter], dict[str, Counter]] | None = None,
-    historical_evidence: dict[str, Counter] | None = None,
+    historical_evidence: tuple[dict[str, Counter], str | None] | None = None,
 ) -> dict:
     """Compute read-only archetype and level usage for ``scope`` (current drills/variants vs git history)."""
     is_prg = scope.startswith("PRG-")
@@ -381,15 +389,19 @@ def usage_report(
     else:
         drill_levels, variant_levels = current_evidence
 
-    if historical_evidence is None:
-        hist_levels = _historical_deleted_drill_usage(repo_root=repo_root) if include_history else {}
+    if not include_history:
+        hist_levels, history_notice = {}, "history disabled (--no-history)"
+    elif historical_evidence is None:
+        hist_levels, history_notice = _historical_deleted_drill_usage(repo_root=repo_root)
     else:
-        hist_levels = historical_evidence
+        hist_levels, history_notice = historical_evidence
+    history_unavailable = include_history and history_notice is not None
 
     rows = []
     active_count = 0
     hist_only_count = 0
     unused_count = 0
+    unknown_count = 0
     unused_keys: list[str] = []
     missing_base_keys: list[str] = []
 
@@ -399,17 +411,20 @@ def usage_report(
         cur_d = dict(sorted(drill_levels.get(key, Counter()).items()))
         cur_v = dict(sorted(variant_levels.get(key, Counter()).items())) if not is_prg else {}
         hist_d = dict(sorted(hist_levels.get(key, Counter()).items()))
-        if cur_d:
+        if cur_d or cur_v:
             status = "active"
             active_count += 1
         elif hist_d:
             status = "historical-only"
             hist_only_count += 1
+        elif history_unavailable:
+            status = "unknown"
+            unknown_count += 1
         else:
             status = "unused"
             unused_count += 1
             unused_keys.append(key)
-        missing_base = isinstance(base, int) and not cur_d.get(base)
+        missing_base = isinstance(base, int) and not (cur_d.get(base) or cur_v.get(base))
         if missing_base:
             missing_base_keys.append(key)
         rows.append(
@@ -433,6 +448,8 @@ def usage_report(
         "activeCount": active_count,
         "historicalOnlyCount": hist_only_count,
         "unusedCount": unused_count,
+        "unknownCount": unknown_count,
+        "historyNotice": history_notice,
         "everUsedCount": ever_used,
         "activeShare": round(active_count / total, 4) if total else 0.0,
         "everUsedShare": round(ever_used / total, 4) if total else 0.0,
@@ -453,12 +470,21 @@ def format_usage_report(rep: dict) -> str:
         f"{rep['unit']} usage: {act}/{total} active ({pct_act}), {ever}/{total} ever-used ({pct_ever}), "
         f"{rep['unusedCount']} unused, {rep['historicalOnlyCount']} historical-only"
     ]
-    order = {"unused": 0, "historical-only": 1, "active": 2}
+    if rep["historyNotice"]:
+        lines.append(f"  {rep['historyNotice']}")
+    if rep["unknownCount"]:
+        lines[0] = (
+            f"{rep['unit']} usage: {act}/{total} active ({pct_act}), "
+            f"{rep['unknownCount']} without current usage evidence"
+        )
+    order = {"unused": 0, "unknown": 0, "historical-only": 1, "active": 2}
     for r in sorted(rep["rows"], key=lambda x: (order.get(x["status"], 9), x["unit"], x["baseLevel"] or 0, x["key"])):
         d_str = ", ".join(f"L{lv}x{n}" for lv, n in r["currentDrillLevels"].items()) or "none"
         v_str = ", ".join(f"L{lv}x{n}" for lv, n in r["currentVariantLevels"].items())
         h_str = ", ".join(f"L{lv}x{n}" for lv, n in r["historicalDrillLevels"].items())
-        tag = {"unused": "UNUSED", "historical-only": "HIST-ONLY", "active": "ACTIVE"}[r["status"]]
+        tag = {"unused": "UNUSED", "unknown": "UNKNOWN", "historical-only": "HIST-ONLY", "active": "ACTIVE"}[
+            r["status"]
+        ]
         parts = [f"drills {d_str}"]
         if v_str:
             parts.append(f"variants {v_str}")
@@ -498,7 +524,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.usage:
         cur_ev = _current_usage_evidence(args.data_root, variants_dir=args.variants_dir)
-        hist_ev = {} if args.no_history else _historical_deleted_drill_usage(str(Path.cwd()))
+        hist_ev = None if args.no_history else _historical_deleted_drill_usage(str(Path.cwd()))
         reports = [
             usage_report(
                 scope,
