@@ -45,6 +45,18 @@ REASONING_MOVES: tuple[str, ...] = (
     "generalise",
     "model",
 )
+# A primary move can coexist with other demand triggers (rules/06 §2.3).
+MOVE_LEVEL_BOUNDS = {
+    "direct": (1, 2),
+    "chain": (2, 2),
+    "reverse": (2, 5),
+    "translate": (2, 5),
+    "diagnose": (3, 5),
+    "multi-relation": (3, 5),
+    "case-check": (3, 5),
+    "generalise": (3, 5),
+    "model": (3, 5),
+}
 FORMAT_KINDS: tuple[str, ...] = ("choice", "numeric", "expression", "proof-lite")
 REPRESENTATIONS: tuple[str, ...] = ("symbolic", "graph/plane", "table", "verbal")
 
@@ -163,7 +175,9 @@ _REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "format",
     "representation",
 )
-_ALLOWED_TOP_KEYS: frozenset[str] = frozenset((*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units", "operations"))
+_ALLOWED_TOP_KEYS: frozenset[str] = frozenset(
+    (*_REQUIRED_TOP_KEYS, "laterUnit", "notes", "units", "operations", "flawForm")
+)
 
 _PRG_REQUIRED_TOP_KEYS: tuple[str, ...] = (
     "id",
@@ -900,6 +914,9 @@ def _content_string_fields(card: dict[str, Any]) -> list[tuple[str, str]]:
         val = card.get(key)
         if isinstance(val, str):
             fields.append((key, val))
+    flaw = card.get("flawForm")
+    if isinstance(flaw, dict):
+        fields.extend((f"flawForm.{key}", value) for key, value in flaw.items() if isinstance(value, str))
     if isinstance(card.get("operations"), list):
         for idx, op in enumerate(card["operations"]):
             if isinstance(op, str):
@@ -1280,10 +1297,12 @@ def validate_core_card(
     source_item_text: str | None = None,
     valid_unit_codes: Iterable[str] | None = None,
     registry_path: str | None = None,
+    enforce_move_contract: bool = True,
 ) -> list[str]:
     """Validate a core card against ``schema.json`` (Math) or ``prg_schema.json`` (PRG) and source-free invariants.
 
-    Returns a list of error strings (empty list means valid).
+    Returns a list of error strings (empty list means valid). Stored cards can be read
+    with the legacy move contract while new writes use the current contract.
     """
     if not isinstance(card, dict):
         return ["Card must be a JSON object."]
@@ -1344,12 +1363,28 @@ def validate_core_card(
             "operations: required when reasoningMove is 'chain' (list of at least 2 ordered sub-skill names)."
         )
 
+    move = card.get("reasoningMove")
+    if enforce_move_contract:
+        if move == "diagnose":
+            flaw = card.get("flawForm")
+            if not isinstance(flaw, dict) or flaw.keys() != {"step", "error"}:
+                errors.append("flawForm: diagnose requires an object with 'step' and 'error'.")
+            else:
+                for key, value in flaw.items():
+                    if not isinstance(value, str) or len(value.split()) < 2:
+                        errors.append(f"flawForm.{key}: provide a description of at least two words.")
+        elif "flawForm" in card:
+            errors.append("flawForm: only allowed when reasoningMove is 'diagnose'.")
+
     if "level" in card:
         lvl = card["level"]
         if not _is_int(lvl) or not (1 <= lvl <= 5):
             errors.append(f"level: must be an integer 1..5, got {lvl!r}.")
-        elif card.get("reasoningMove") == "chain" and lvl != 2:
-            errors.append(f"level: reasoningMove 'chain' must have level 2, got {lvl!r}.")
+        elif isinstance(move, str) and move in MOVE_LEVEL_BOUNDS and (enforce_move_contract or move == "chain"):
+            minimum, maximum = MOVE_LEVEL_BOUNDS[move]
+            if not minimum <= lvl <= maximum:
+                allowed = str(minimum) if minimum == maximum else f"{minimum}..{maximum}"
+                errors.append(f"level: reasoningMove {move!r} must have level {allowed}, got {lvl!r}.")
 
     if "representation" in card and card["representation"] not in REPRESENTATIONS:
         errors.append(f"representation: must be one of {list(REPRESENTATIONS)}, got {card['representation']!r}.")
@@ -1418,14 +1453,20 @@ def _iter_jsonl_cards(path: str) -> Iterable[tuple[int, dict[str, Any]]]:
             yield line_no, card
 
 
-def _card_targets_unit(card: dict[str, Any], unit_code: str) -> bool:
+def card_targets_unit(card: dict[str, Any], unit_code: str, known_codes: set[str] | None = None) -> bool:
+    """Check explicit unit routing and expand registered chapter targets to their child units."""
     later = card.get("laterUnit")
-    if isinstance(later, str) and later.strip() == unit_code:
-        return True
+    if isinstance(later, str):
+        target = later.strip()
+        if target == unit_code:
+            return True
+        chapter, separator, _ = unit_code.rpartition("-U")
+        if separator and target == chapter:
+            registered = load_valid_unit_codes() if known_codes is None else known_codes
+            if target in registered and unit_code in registered:
+                return True
     units = card.get("units")
-    if isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units):
-        return True
-    return False
+    return isinstance(units, list) and any(isinstance(u, str) and u.strip() == unit_code for u in units)
 
 
 def load_core_cards(
@@ -1440,7 +1481,8 @@ def load_core_cards(
     """Load core cards for ``unit_code`` from ``sources/_cores/<unit_code>.jsonl``.
 
     When ``include_carried`` is True (default), also scans other ``sources/_cores/*.jsonl``
-    files for cards whose ``laterUnit == unit_code`` or whose ``units`` contains ``unit_code``,
+    files for cards whose ``laterUnit`` names the unit or its registered chapter, or whose
+    ``units`` contains ``unit_code``,
     deduplicating by ``id`` and annotating carried-forward cards with ``carriedFrom``.
     """
     cards: list[dict[str, Any]] = []
@@ -1450,7 +1492,9 @@ def load_core_cards(
     if os.path.exists(path):
         for line_no, card in _iter_jsonl_cards(path):
             if validate:
-                errs = validate_core_card(card, valid_unit_codes=valid_unit_codes, registry_path=registry_path)
+                errs = validate_core_card(
+                    card, valid_unit_codes=valid_unit_codes, registry_path=registry_path, enforce_move_contract=False
+                )
                 if errs:
                     raise CoreCardError(f"{path}:{line_no}: invalid core card: " + "; ".join(errs))
             cid = card.get("id")
@@ -1461,6 +1505,7 @@ def load_core_cards(
             cards.append(card)
 
     if include_carried:
+        known_codes = set(load_valid_unit_codes() if valid_unit_codes is None else valid_unit_codes)
         cores_dir = os.path.dirname(path)
         if os.path.isdir(cores_dir):
             for fname in sorted(os.listdir(cores_dir)):
@@ -1473,13 +1518,18 @@ def load_core_cards(
                 if not os.path.isfile(other_path):
                     continue
                 for line_no, card in _iter_jsonl_cards(other_path):
-                    if not _card_targets_unit(card, unit_code):
+                    if not card_targets_unit(card, unit_code, known_codes):
                         continue
                     cid = card.get("id")
                     if isinstance(cid, str) and cid in seen_ids:
                         continue
                     if validate:
-                        errs = validate_core_card(card, valid_unit_codes=valid_unit_codes, registry_path=registry_path)
+                        errs = validate_core_card(
+                            card,
+                            valid_unit_codes=valid_unit_codes,
+                            registry_path=registry_path,
+                            enforce_move_contract=False,
+                        )
                         if errs:
                             raise CoreCardError(f"{other_path}:{line_no}: invalid core card: " + "; ".join(errs))
                     if isinstance(cid, str):
