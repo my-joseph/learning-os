@@ -12,6 +12,10 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 
 ## Open gaps
 
+### Quarantined legacy variant banks (retired in PR #338)
+
+- `drills/variants/MTH-T02-C02-U05.json` (**6** variants), `MTH-T02-C03-U03.json` (**12** variants), and `MTH-T02-C04-U05.json` (**15** variants) — **33** variants total — were written before the distractor-provenance gate (parent drills retired in PR #338) and are marked `"status": "quarantined"` (`since: 2026-11-27`). Studio and all Python selectors skip them, and `--coverage-gate` does not count them. When starting or re-drilling these units, run `python -m math_engine.variant_bank --reverify <UNIT>` (with `--apply` only for variants that pass every current gate) or author fresh Similar variants to replace them.
+
 ### Before T02-C06 to C09 (trigonometry)
 
 - Answer and trusted functions: `sec`, `csc`, `cot`, `arcsin`/`asin`, `arccos`/`acos`, `arctan`/`atan` are not in `WHITELIST_FUNCS` or `TRUSTED_INTERNAL_FUNCS`. Problems must be written with `sin`, `cos`, `tan` until then.

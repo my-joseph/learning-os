@@ -133,9 +133,37 @@ def save_bank(unit_code: str, bank_doc: Dict[str, Any], variants_dir: Optional[s
     return path
 
 
+QUARANTINED_STATUS = "quarantined"
+L2_MIN_REAL_STEPS = 4
+
+
+def is_quarantined_variant(variant: Any, bank_doc: Optional[Dict[str, Any]] = None) -> bool:
+    """True when ``variant`` (or its enclosing ``bank_doc``) is quarantined and must not be served."""
+    if isinstance(bank_doc, dict) and bank_doc.get("status") == QUARANTINED_STATUS:
+        return True
+    return isinstance(variant, dict) and variant.get("status") == QUARANTINED_STATUS
+
+
+def _count_real_steps(prob: Dict[str, Any]) -> int:
+    steps = prob.get("steps")
+    if not isinstance(steps, list):
+        return 0
+    return sum(
+        1
+        for st in steps
+        if isinstance(st, dict)
+        and isinstance(st.get("latex"), str)
+        and bool(st["latex"].strip())
+        and isinstance(st.get("explain"), str)
+        and bool(st["explain"].strip())
+    )
+
+
 def find_variant(
     variant_id: str,
     variants_dir: Optional[str] = None,
+    *,
+    include_quarantined: bool = False,
 ) -> Optional[Tuple[Dict[str, Any], Dict[str, Any]]]:
     """Locate ``(bank_doc, variant)`` for ``variant_id`` under ``variants_dir``."""
     if not isinstance(variant_id, str) or not variant_id.strip():
@@ -162,6 +190,8 @@ def find_variant(
             continue
         for var in doc.get("variants") or []:
             if isinstance(var, dict) and var.get("variantId") == variant_id:
+                if not include_quarantined and is_quarantined_variant(var, doc):
+                    return None
                 return doc, var
     return None
 
@@ -407,6 +437,9 @@ def check_variant_bank(
                 errors.append(f"[{vid}] Duplicate variantId '{original['variantId']}' in bank.")
             seen_ids.add(original["variantId"])
 
+        if is_quarantined_variant(original, bank_doc):
+            continue
+
         # 2026-11-19 rule: choice problems omit plainText
         if (original.get("answerSpec") or {}).get("type") == "choice" and "plainText" in original:
             errors.append(f"[{vid}] Choice variant must omit 'plainText' (2026-11-19 rule).")
@@ -558,7 +591,12 @@ def _candidate_bank_codes_for_scope(codes: Iterable[str], variants_dir: Optional
     return ordered
 
 
-def _load_scope_variants(codes: Iterable[str], variants_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+def _load_scope_variants(
+    codes: Iterable[str],
+    variants_dir: Optional[str] = None,
+    *,
+    include_quarantined: bool = False,
+) -> List[Dict[str, Any]]:
     """Load unique bank variants across all candidate bank files for ``codes``."""
     variants: List[Dict[str, Any]] = []
     seen_ids: set[str] = set()
@@ -573,6 +611,8 @@ def _load_scope_variants(codes: Iterable[str], variants_dir: Optional[str] = Non
         for var in doc.get("variants") or []:
             if not isinstance(var, dict):
                 continue
+            if not include_quarantined and is_quarantined_variant(var, doc):
+                continue
             vid = str(var.get("variantId") or "")
             if vid:
                 if vid in seen_ids:
@@ -580,6 +620,211 @@ def _load_scope_variants(codes: Iterable[str], variants_dir: Optional[str] = Non
                 seen_ids.add(vid)
             variants.append(var)
     return variants
+
+
+def count_quarantined_variants(scope: str, variants_dir: Optional[str] = None) -> int:
+    """Count quarantined variants stored across candidate bank files for ``scope``."""
+    if not isinstance(scope, str) or not scope.strip() or scope.startswith("PRG-"):
+        return 0
+    seen_ids: set[str] = set()
+    count = 0
+    for code in _candidate_bank_codes_for_scope([scope], variants_dir=variants_dir):
+        path = bank_path(code, variants_dir=variants_dir)
+        if not os.path.isfile(path):
+            continue
+        try:
+            doc = load_bank(path, variants_dir=variants_dir)
+        except (OSError, ValueError):
+            continue
+        for idx, var in enumerate(doc.get("variants") or []):
+            if not isinstance(var, dict):
+                continue
+            if not is_quarantined_variant(var, doc):
+                continue
+            vid = str(var.get("variantId") or f"{code}#{idx}")
+            if vid in seen_ids:
+                continue
+            seen_ids.add(vid)
+            count += 1
+    return count
+
+
+def reverify_quarantined_variants(
+    unit_code: str,
+    *,
+    variants_dir: Optional[str] = None,
+    data_root: Optional[str] = None,
+    vault_dir: Optional[str] = None,
+    rules: Optional[Dict[str, Any]] = None,
+    check_originality: bool = True,
+    sources_dir: Optional[str] = None,
+    apply: bool = False,
+) -> Dict[str, Any]:
+    """Run all current gates (distractor provenance, L2 step floor, review, answer check, originality)
+    on quarantined variants in ``unit_code``. When ``apply=True``, un-quarantines only variants that pass.
+    """
+    path = bank_path(unit_code, variants_dir=variants_dir)
+    if not os.path.isfile(path):
+        return {
+            "unitCode": unit_code,
+            "quarantinedTotal": 0,
+            "passing": [],
+            "failing": [],
+            "unquarantined": [],
+            "originalityNotice": None,
+            "applied": False,
+        }
+    doc = load_bank(path, variants_dir=variants_dir)
+    variants = doc.get("variants") or []
+    bank_level_quarantined = doc.get("status") == QUARANTINED_STATUS
+    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
+    drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
+    active_rules = rules or QUALITY_RULES
+
+    active_items: List[Tuple[str, Dict[str, Any]]] = [
+        (str(v.get("variantId") or f"active#{i}"), v)
+        for i, v in enumerate(variants, 1)
+        if isinstance(v, dict) and not is_quarantined_variant(v, doc)
+    ]
+
+    resolved_sources = resolve_sources_dir(sources_dir=sources_dir) if check_originality else ""
+    orig_notice: Optional[str] = None
+    run_orig = False
+    if check_originality:
+        if not os.path.isdir(resolved_sources):
+            orig_notice = f"Originality gate skipped: sources directory not found ({resolved_sources})."
+        else:
+            run_orig = True
+
+    passing: List[Dict[str, Any]] = []
+    failing: List[Dict[str, Any]] = []
+    passed_ids: set[str] = set()
+    checked_peer_items: List[Tuple[str, Dict[str, Any]]] = list(active_items)
+
+    for idx, original in enumerate(variants, 1):
+        if not isinstance(original, dict) or not is_quarantined_variant(original, doc):
+            continue
+        vid = str(original.get("variantId") or f"#{idx}")
+        item_errors: List[str] = []
+
+        for forbidden in ("state", "variantsSeen", "variantsAttempted", "sessionSummary"):
+            if forbidden in original:
+                item_errors.append(f"[{vid}] Variant must hold content only (found learner state key '{forbidden}').")
+
+        arch_key = original.get("archetypeKey")
+        src_arch = original.get("sourceArchetype")
+        if not isinstance(arch_key, str) or not arch_key.strip():
+            item_errors.append(f"[{vid}] Variant must specify 'archetypeKey'.")
+        if not isinstance(src_arch, str) or not src_arch.strip():
+            item_errors.append(f"[{vid}] Variant must specify 'sourceArchetype'.")
+        elif isinstance(arch_key, str) and src_arch != arch_key:
+            item_errors.append(f"[{vid}] 'sourceArchetype' ('{src_arch}') must match 'archetypeKey' ('{arch_key}').")
+        if isinstance(arch_key, str) and arch_key.strip():
+            vid_err = validate_variant_id(original.get("variantId"), unit_code, arch_key)
+            if vid_err:
+                item_errors.append(f"[{vid}] {vid_err}")
+        if (original.get("answerSpec") or {}).get("type") == "choice" and "plainText" in original:
+            item_errors.append(f"[{vid}] Choice variant must omit 'plainText' (2026-11-19 rule).")
+
+        prob = copy.deepcopy(original)
+        prob["id"] = vid
+        prob.setdefault("verificationLevel", "partial")
+        _run_problem_gates(prob, vault_archs, unit_code, active_rules, errors=item_errors)
+        if "review" not in prob:
+            try:
+                validate_review(prob)
+            except AiContractError as exc:
+                item_errors.append(str(exc))
+        if prob.get("level") == 2 and _count_real_steps(prob) < L2_MIN_REAL_STEPS:
+            item_errors.append(
+                f"[{vid}] L2 variant has {_count_real_steps(prob)} real step(s); need >= {L2_MIN_REAL_STEPS} real steps."
+            )
+        item_errors.extend(check_variant_uniqueness(prob, drill_items + checked_peer_items))
+
+        if run_orig:
+            o_errs, o_note = check_document_originality(
+                {"unitCode": unit_code, "variants": [prob]},
+                unit_code=unit_code,
+                sources_dir=resolved_sources,
+            )
+            if o_note and not orig_notice:
+                orig_notice = o_note
+            item_errors.extend(o_errs)
+
+        dedup_errs = list(dict.fromkeys(item_errors))
+        entry = {
+            "variantId": vid,
+            "archetypeKey": arch_key,
+            "level": original.get("level"),
+            "quarantineReason": original.get("quarantineReason") or doc.get("quarantineReason"),
+            "since": original.get("since") or doc.get("since"),
+            "errors": dedup_errs,
+        }
+        if dedup_errs:
+            failing.append(entry)
+        else:
+            passing.append(entry)
+            passed_ids.add(vid)
+            checked_peer_items.append((vid, prob))
+
+    unquarantined: List[str] = []
+    if apply and passed_ids:
+        updated = copy.deepcopy(doc)
+        if bank_level_quarantined:
+            updated.pop("status", None)
+            updated.pop("quarantineReason", None)
+            updated.pop("since", None)
+        for v in updated.get("variants") or []:
+            if not isinstance(v, dict):
+                continue
+            vid = str(v.get("variantId") or "")
+            if vid in passed_ids:
+                v.pop("status", None)
+                v.pop("quarantineReason", None)
+                v.pop("since", None)
+                unquarantined.append(vid)
+            elif bank_level_quarantined:
+                v.setdefault("status", QUARANTINED_STATUS)
+                if doc.get("quarantineReason"):
+                    v.setdefault("quarantineReason", doc["quarantineReason"])
+                if doc.get("since"):
+                    v.setdefault("since", doc["since"])
+        save_bank(unit_code, updated, variants_dir=variants_dir)
+
+    return {
+        "unitCode": unit_code,
+        "quarantinedTotal": len(passing) + len(failing),
+        "passing": passing,
+        "failing": failing,
+        "unquarantined": unquarantined,
+        "originalityNotice": orig_notice,
+        "applied": bool(apply and unquarantined),
+    }
+
+
+def format_reverify_report(report: Dict[str, Any]) -> str:
+    """Format ``reverify_quarantined_variants`` output (zero-leak: IDs and gate statuses only)."""
+    unit = report["unitCode"]
+    total = report["quarantinedTotal"]
+    if total == 0:
+        return f"Reverify {unit}: 0 quarantined variant(s)."
+    lines = [
+        f"Reverify {unit}: {len(report['passing'])}/{total} quarantined variant(s) pass current gates, "
+        f"{len(report['failing'])} failing."
+    ]
+    if report.get("originalityNotice"):
+        lines.append(f"NOTE: {report['originalityNotice']}")
+    for item in report["passing"]:
+        tag = "UNQUARANTINED" if item["variantId"] in report.get("unquarantined", []) else "PASS"
+        lines.append(f"  {tag} {item['variantId']} ({item['archetypeKey']} @ L{item['level']})")
+    for item in report["failing"]:
+        lines.append(
+            f"  FAIL {item['variantId']} ({item['archetypeKey']} @ L{item['level']}): "
+            f"{len(item['errors'])} gate error(s)"
+        )
+        for err in item["errors"]:
+            lines.append(f"       - {err}")
+    return "\n".join(lines)
 
 
 def _summarize_coverage(
@@ -856,6 +1101,16 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Check all math drills against the shrink-only Similar coverage baseline.",
     )
+    group.add_argument(
+        "--reverify",
+        metavar="UNIT",
+        help="Run current gates on quarantined variants in UNIT and list which pass (add --apply to un-quarantine passing ones).",
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="With --reverify: un-quarantine variants that pass every current gate and save the bank.",
+    )
     parser.add_argument("--unit", help="Unit code override (optional with --add).")
     parser.add_argument(
         "--min-variants",
@@ -863,7 +1118,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_MIN_VARIANTS,
         help=f"Minimum variants per (archetypeKey, level) for --coverage (default: {DEFAULT_MIN_VARIANTS}).",
     )
-    parser.add_argument("--json", action="store_true", help="With --coverage: print structured JSON output.")
+    parser.add_argument("--json", action="store_true", help="With --coverage or --reverify: print structured JSON output.")
     parser.add_argument(
         "--originality",
         action=argparse.BooleanOptionalAction,
@@ -890,6 +1145,23 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
         print(report)
         return 0 if passed else 1
+
+    if args.reverify:
+        try:
+            report = reverify_quarantined_variants(
+                args.reverify,
+                check_originality=args.originality is not False,
+                sources_dir=args.sources_dir,
+                apply=args.apply,
+            )
+        except (OSError, ValueError) as exc:
+            print(f"FAIL Could not reverify quarantined variants for '{args.reverify}': {exc}")
+            return 1
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            print(format_reverify_report(report))
+        return 0
 
     if args.coverage:
         try:
