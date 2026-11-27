@@ -100,6 +100,16 @@
         "maxLength": 200
       }
     },
+    "flawForm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step", "error"],
+      "description": "Source-free description of the flawed step in given work and what makes it wrong. Only for diagnose.",
+      "properties": {
+        "step": { "type": "string", "maxLength": 200, "pattern": "\\S+\\s+\\S+" },
+        "error": { "type": "string", "maxLength": 200, "pattern": "\\S+\\s+\\S+" }
+      }
+    },
     "difficultyDriver": {
       "type": "string",
       "minLength": 1,
@@ -174,5 +184,24 @@
     "properties": {
       "level": { "const": 2 }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "reasoningMove": { "const": "direct" } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "maximum": 2 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "enum": ["translate", "reverse"] } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "minimum": 2 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "enum": ["case-check", "diagnose", "model", "multi-relation", "generalise"] } }, "required": ["reasoningMove"] },
+      "then": { "properties": { "level": { "minimum": 3 } } }
+    },
+    {
+      "if": { "properties": { "reasoningMove": { "const": "diagnose" } }, "required": ["reasoningMove"] },
+      "then": { "required": ["flawForm"] },
+      "else": { "not": { "required": ["flawForm"] } }
+    }
+  ]
 }

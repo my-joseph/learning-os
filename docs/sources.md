@@ -53,6 +53,8 @@ Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api 
 
 Plans list carried card IDs before new extraction. A registered chapter in `laterUnit` routes the card to every registered child unit. Gap reports also list existing bridge archetypes for each exact set of bridge candidate units.
 
+Math card levels follow the reasoning move. Direct computation is L1–L2 and chain is L2. Translate and reverse start at L2. Case-check, diagnose, multi-relation, model, and generalise start at L3. Diagnose cards require `flawForm`, an object with source-free `step` and `error` descriptions of the flawed transformation and why it is wrong. Only diagnose cards may use this field. Stored legacy cards remain readable and can be retagged without applying the new move bounds. New extraction batches must meet the current rules.
+
 Fuzzy card deduplication requires matching levels and unit scope, including deferred and cross-unit targets. Shared traps only support a match when the skills overlap. Math and PRG vault matching discount trap evidence when skill overlap is below 0.12.
 
 Each extraction plan reports scanned source-family count, empty and garbled pages or chunks before OCR, and a PDF OCR retry list under `diagnostics`. The retry list omits scope-only sources and keeps pages without reliable OCR. Text output previews up to ten entries.

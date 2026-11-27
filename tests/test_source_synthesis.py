@@ -821,6 +821,8 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
         ),
         _sample_card(
             id="FX-OVERRIDE",
+            reasoningMove="case-check",
+            level=2,
             laterUnit="MTH-T99-BOGUS",
             skill="Abstract task overridden explicitly",
             notes="Uses explicit override map",
@@ -851,7 +853,7 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert "UNMAPPED:MTH-T99-UNKNOWN: 1" in dry_out
     assert jsonl_path.read_bytes() == orig_bytes
 
-    # Apply rewrites file atomically and every card passes validate_core_card
+    # Apply rewrites file atomically without changing the legacy move or level.
     rc_apply = source_cores_retag.main(
         [str(jsonl_path), "--apply", "--id-map", str(id_map_file), "--overrides", str(overrides_file)]
     )
@@ -868,8 +870,10 @@ def test_later_unit_validation_and_retag_on_fixtures(tmp_path: Path, capsys: pyt
     assert by_id["FX-POLY"]["laterUnit"] == "MTH-T02-C04-U05"
     assert by_id["FX-OVERRIDE"]["laterUnit"] == "MTH-T02-C09-U08"
     assert by_id["FX-UNMAPPED"]["laterUnit"] == "UNMAPPED:MTH-T99-UNKNOWN"
+    assert by_id["FX-OVERRIDE"]["reasoningMove"] == "case-check"
+    assert by_id["FX-OVERRIDE"]["level"] == 2
     for card in rewritten:
-        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes) == []
+        assert source_cores.validate_core_card(card, valid_unit_codes=valid_codes, enforce_move_contract=False) == []
 
 
 def test_source_find_warns_on_unregistered_folders(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
