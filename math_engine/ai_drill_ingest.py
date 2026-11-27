@@ -39,8 +39,8 @@ from math_engine.figure_autofill import (
 )
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.latex_guard import find_bare_words
-from math_engine.source_cores import resolve_sources_dir
-from math_engine.source_cores.originality import check_document_originality
+from math_engine.source_cores import index_dir, resolve_sources_dir
+from math_engine.source_cores.originality import check_document_originality, load_located_source_pages
 from math_engine.verify import verify_problem
 from progress_store import strip_progress as strip_progress
 from quality_rules import (
@@ -1579,6 +1579,216 @@ def check_ai_drill(
     return list(dict.fromkeys(errors))
 
 
+def _originality_skip_reason(
+    doc: Dict[str, Any],
+    *,
+    unit_code: str,
+    sources_dir: str,
+) -> Optional[str]:
+    """Return a skip reason when originality cannot run for ``doc`` under ``sources_dir``, else None."""
+    if not os.path.isdir(sources_dir):
+        return f"sources directory not found ({sources_dir})"
+    pages = load_located_source_pages(unit_code, sources_dir=sources_dir)
+    if unit_code == BRIDGE_SCOPE or not pages:
+        raw_items = doc.get("problems") or doc.get("variants") or []
+        seen_u: Set[str] = set()
+        for prob in raw_items:
+            if not isinstance(prob, dict):
+                continue
+            for candidate in [*(prob.get("unitCodes") or []), *(prob.get("references") or [])]:
+                if (
+                    isinstance(candidate, str)
+                    and "-U" in candidate
+                    and candidate not in seen_u
+                    and candidate != unit_code
+                ):
+                    seen_u.add(candidate)
+                    if load_located_source_pages(candidate, sources_dir=sources_dir):
+                        return None
+    if not pages:
+        return f"no cached located source pages for {unit_code} under {index_dir(sources_dir)}"
+    return None
+
+
+def _generic_skip_reason(reason: str) -> str:
+    if reason.startswith("no cached located source pages"):
+        return "no cached located source pages under sources/_index"
+    if reason.startswith("sources directory not found"):
+        return "sources directory not found"
+    return reason
+
+
+def summarize_originality_skips(
+    repo_root: Optional[Path] = None,
+    *,
+    sources_dir: Optional[str] = None,
+    data_root: Optional[str] = None,
+    variants_dir: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Read-only summary of how many canonical math drills and variant banks skip originality and why."""
+    from code_engine.sandbox import assert_safe_contained_path
+
+    root = repo_root or Path(__file__).resolve().parents[1]
+    sdir = resolve_sources_dir(sources_dir=sources_dir)
+    droot = Path(data_root) if data_root else (root / DEFAULT_DATA_ROOT)
+    vroot = Path(variants_dir) if variants_dir else (root / "drills" / "variants")
+
+    drills_total = 0
+    drills_skipped = 0
+    drill_reasons: Dict[str, int] = {}
+    skipped_drills: List[Dict[str, str]] = []
+    if droot.is_dir():
+        for scope in sorted(droot.iterdir()):
+            if not scope.is_dir() or not scope.name.startswith("MTH-"):
+                continue
+            for path in sorted(scope.glob("*.json")):
+                drill_file = assert_safe_contained_path(path, droot, suffixes=(".json",))
+                doc = json.loads(drill_file.read_text(encoding="utf-8"))
+                did = str(doc.get("drillId") or path.stem)
+                uc = str(doc.get("unitCode") or scope.name)
+                drills_total += 1
+                reason = _originality_skip_reason(doc, unit_code=uc, sources_dir=sdir)
+                if reason:
+                    drills_skipped += 1
+                    bucket = _generic_skip_reason(reason)
+                    drill_reasons[bucket] = drill_reasons.get(bucket, 0) + 1
+                    skipped_drills.append({"drillId": did, "unitCode": uc, "reason": reason})
+
+    banks_total = 0
+    banks_skipped = 0
+    variants_total = 0
+    variants_skipped = 0
+    bank_reasons: Dict[str, int] = {}
+    skipped_banks: List[Dict[str, Any]] = []
+    if vroot.is_dir():
+        for path in sorted(vroot.glob("MTH-*.json")):
+            bank_file = assert_safe_contained_path(path, vroot, suffixes=(".json",))
+            doc = json.loads(bank_file.read_text(encoding="utf-8"))
+            uc = str(doc.get("unitCode") or path.stem)
+            n_vars = len([v for v in (doc.get("variants") or []) if isinstance(v, dict)])
+            banks_total += 1
+            variants_total += n_vars
+            reason = _originality_skip_reason(doc, unit_code=uc, sources_dir=sdir)
+            if reason:
+                banks_skipped += 1
+                variants_skipped += n_vars
+                bucket = _generic_skip_reason(reason)
+                bank_reasons[bucket] = bank_reasons.get(bucket, 0) + 1
+                skipped_banks.append({"unitCode": uc, "variantCount": n_vars, "reason": reason})
+
+    return {
+        "sourcesDir": sdir,
+        "sourcesDirExists": os.path.isdir(sdir),
+        "drills": {
+            "total": drills_total,
+            "checked": drills_total - drills_skipped,
+            "skipped": drills_skipped,
+            "skipReasons": drill_reasons,
+            "skippedIds": [d["drillId"] for d in skipped_drills],
+        },
+        "variantBanks": {
+            "total": banks_total,
+            "checked": banks_total - banks_skipped,
+            "skipped": banks_skipped,
+            "variantsTotal": variants_total,
+            "variantsChecked": variants_total - variants_skipped,
+            "variantsSkipped": variants_skipped,
+            "skipReasons": bank_reasons,
+            "skippedBanks": skipped_banks,
+        },
+    }
+
+
+def format_originality_summary(summary: Dict[str, Any]) -> str:
+    """Format ``summarize_originality_skips`` output as a concise read-only gate summary."""
+    d = summary["drills"]
+    b = summary["variantBanks"]
+    lines = [
+        f"Originality gate summary (sources: {summary['sourcesDir']})",
+        f"  Drills: {d['checked']}/{d['total']} checked, {d['skipped']}/{d['total']} skipped",
+    ]
+    for reason, count in sorted(d["skipReasons"].items()):
+        lines.append(f"    - skipped ({count}): {reason}")
+    lines.append(
+        f"  Variant banks: {b['checked']}/{b['total']} checked, {b['skipped']}/{b['total']} skipped "
+        f"({b['variantsSkipped']}/{b['variantsTotal']} variants skipped)"
+    )
+    for reason, count in sorted(b["skipReasons"].items()):
+        lines.append(f"    - skipped ({count}): {reason}")
+    return "\n".join(lines)
+
+
+def check_ai_drill_report(
+    drill_doc: Dict[str, Any],
+    rules: Optional[Dict[str, Any]] = None,
+    vault_dir: Optional[str] = None,
+    check_originality: bool = True,
+    sources_dir: Optional[str] = None,
+    eligible_units: Optional[Iterable[str]] = None,
+    *,
+    check_step_math: bool = True,
+) -> Dict[str, Any]:
+    """Run all gates and return structured errors, warnings, and originality skip status."""
+    errors = check_ai_drill(
+        drill_doc,
+        rules=rules,
+        vault_dir=vault_dir,
+        check_originality=False,
+        eligible_units=eligible_units,
+        check_step_math=check_step_math,
+    )
+    warnings = check_ai_drill_warnings(drill_doc, vault_dir=vault_dir, eligible_units=eligible_units)
+    n_probs = len(drill_doc.get("problems") or [])
+    unit_code = drill_doc.get("unitCode") or ""
+    if not check_originality:
+        orig = {
+            "status": "skipped",
+            "checkedDrills": 0,
+            "skippedDrills": 1,
+            "reason": "disabled by --no-originality",
+            "errors": [],
+        }
+    else:
+        resolved_sources = resolve_sources_dir(sources_dir=sources_dir)
+        if not os.path.isdir(resolved_sources):
+            orig = {
+                "status": "skipped",
+                "checkedDrills": 0,
+                "skippedDrills": 1,
+                "reason": f"sources directory not found ({resolved_sources})",
+                "errors": [],
+            }
+        else:
+            orig_errors, orig_notice = check_document_originality(
+                drill_doc,
+                unit_code=unit_code,
+                sources_dir=resolved_sources,
+            )
+            if orig_notice:
+                orig = {
+                    "status": "skipped",
+                    "checkedDrills": 0,
+                    "skippedDrills": 1,
+                    "reason": orig_notice,
+                    "errors": orig_errors,
+                }
+            else:
+                orig = {
+                    "status": "checked",
+                    "checkedDrills": 1,
+                    "skippedDrills": 0,
+                    "reason": None,
+                    "errors": orig_errors,
+                }
+            errors = list(dict.fromkeys([*errors, *orig_errors]))
+    return {
+        "problemCount": n_probs,
+        "errors": errors,
+        "warnings": warnings,
+        "originality": orig,
+    }
+
+
 def check_ai_drill_warnings(
     drill_doc: Dict[str, Any],
     vault_dir: Optional[str] = None,
@@ -1713,8 +1923,12 @@ def ingest_ai_drill(
     )
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
-    for fig_warn in collect_figure_title_warnings(problems):
-        print(f"WARNING: {fig_warn}")
+    prov_warnings: List[str] = []
+    for prob in problems:
+        _, p_warns = check_distractor_provenance(prob, vault_archs)
+        prov_warnings.extend(p_warns)
+    for warn in list(dict.fromkeys([*collect_figure_title_warnings(problems), *prov_warnings])):
+        print(f"WARNING: {warn}")
     if warn_coverage:
         from math_engine.variant_bank import format_coverage_warning
 
@@ -1745,7 +1959,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         default=None,
         help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
     )
+    parser.add_argument(
+        "--originality-summary",
+        action="store_true",
+        help="Read-only summary of how many math drills and variant banks skip the originality gate and why.",
+    )
+    parser.add_argument("--json", action="store_true", help="With --originality-summary: print structured JSON output.")
     args = parser.parse_args(argv)
+
+    if args.originality_summary:
+        summary = summarize_originality_skips(sources_dir=args.sources_dir)
+        if args.json:
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+        else:
+            print(format_originality_summary(summary))
+        return 0
 
     if args.list_vault:
         archs = load_scope_archetypes(args.unit)
@@ -1778,9 +2006,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             problems_found = check_ai_drill(drill_data, check_step_math=not is_saved)
             fig_warnings = check_ai_drill_warnings(drill_data)
             resolved_sources = resolve_sources_dir(sources_dir=args.sources_dir)
+            orig_skip_reason: Optional[str] = None
             if args.originality is False:
-                pass
+                orig_skip_reason = "disabled by --no-originality"
             elif not os.path.isdir(resolved_sources):
+                orig_skip_reason = f"sources directory not found ({resolved_sources})"
                 print(f"NOTE: Originality gate skipped (sources directory not found: {resolved_sources}).")
             else:
                 orig_errors, orig_notice = check_document_originality(
@@ -1789,6 +2019,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     sources_dir=resolved_sources,
                 )
                 if orig_notice:
+                    orig_skip_reason = orig_notice
                     print(f"NOTE: {orig_notice}")
                 problems_found.extend(orig_errors)
             for warn in fig_warnings:
@@ -1796,10 +2027,18 @@ def main(argv: Optional[List[str]] = None) -> int:
             for line in problems_found:
                 print(f"  FAIL {line}")
             n = len(drill_data.get("problems") or [])
+            orig_tail = (
+                f"originality skipped (1/1 drill skipped: {orig_skip_reason})"
+                if orig_skip_reason
+                else "originality checked (0/1 drill skipped)"
+            )
             print(
-                f"\n{len(problems_found)} error(s) across {n} problem(s)."
+                f"\n{len(problems_found)} error(s) across {n} problem(s); {orig_tail}."
                 if problems_found
-                else f"OK: all {n} problems pass every gate (nothing saved)."
+                else (
+                    f"OK: all {n} problems pass {'checked gates' if orig_skip_reason else 'every gate'} "
+                    f"(nothing saved); {orig_tail}."
+                )
             )
             return 1 if problems_found else 0
         saved = ingest_ai_drill(drill_data, warn_coverage=False)
