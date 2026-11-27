@@ -85,6 +85,8 @@ Read-only report comparing `sources/_cores/<UNIT>.jsonl` (plus carried-forward c
 
 ## 5. Update the Reasoning Vault (with reviewer subagent)
 
+Record contributing card IDs in the archetype’s optional `sourceCards` list when adding or extending an archetype. The gap report preserves explicit matches and flags incompatible, missing, or misrouted links.
+
 - **MTH/PHY (`math_engine/reasoning_vault/<UNIT>.json`):**
   - Add new archetypes for genuine unmatched cores (including L2 chain archetypes declaring an optional `operations` array of ≥ 2 sub-skills, validated by `code_engine.quality_checks --check-vaults`); extend existing archetypes' `cognitiveTraps`, `levelNote`s, and `usedContexts` (preserving figure decisions per `rules/03` §3.1).
   - Add eligible bridge archetypes to `math_engine/reasoning_vault/MTH-BRIDGE.json` when `source_gap` shows eligible pairs (`scripts.bridge_scope`).
