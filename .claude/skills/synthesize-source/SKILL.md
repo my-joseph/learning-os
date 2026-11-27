@@ -28,7 +28,8 @@ Goal: turn local raw material (`sources/`, gitignored) into original, verified r
 - Writes a bounded extraction plan `sources/_index/plan_<UNIT>.json` (defaults: **30 pages/chunks / 40 items** per unit run, split into batches of **10**):
   - Ranked by **(a)** family priority (`docs/sources.md` / `SOURCE_FAMILIES` + `docs/source_backlog.md` rank), **(b)** term-hit density, **(c)** Thai-exam relevance boost (math), and **(d)** round-robin diversity across families so one source cannot fill the budget.
   - Always skips **`scope`-only** and **`no-automation`** families.
-  - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` unless the source file's SHA-256 hash changed or `--refresh` is passed.
+  - Excludes `(unit, file, page)` entries already recorded in `sources/_cores/_ledger.json` only when both the source file hash and the card-schema fingerprint match. Replans legacy entries without a fingerprint. Pass `--refresh` to include already recorded pages.
+  - Bump `CARD_RULES_VERSION` in `math_engine/source_cores/ledger.py` for extraction-relevant changes confined to `validate_core_card`. Schema structure and worker prompt template changes are tracked automatically.
 - Review the plan summary (selected pages/chunks per family, skipped ledger/scope/no-automation counts, and batch count). If `selectedPageCount == 0` and carried-forward cards exist, proceed directly to step 4.
 
 ## 3. Extract source-free core cards in bounded worker batches (`extract_cards_job` + `run-worker.sh`)

@@ -52,6 +52,7 @@ from math_engine.source_cores import (
 )
 from math_engine.source_cores import DOCS_SOURCES_PATH as DOCS_SOURCES_PATH
 from math_engine.source_cores.ledger import (
+    card_schema_fingerprint,
     compute_file_hash,
     compute_relpath_hash,
     is_page_extracted,
@@ -1194,7 +1195,7 @@ def build_extraction_plan(
     (d) round-robin diversity across families so one family cannot fill the budget.
 
     Scope-only (OpenStax) and ``NO-AUTOMATION`` families are always skipped. Pages already
-    present in ``sources/_cores/_ledger.json`` with an unchanged file hash are excluded unless
+    present in ``sources/_cores/_ledger.json`` with matching file and card-schema fingerprints are excluded unless
     ``refresh=True``.
     """
     if budget_pages < 0:
@@ -1211,6 +1212,7 @@ def build_extraction_plan(
     registry_priorities = load_registry_priorities(registry_path=registry_path)
     backlog_ranks = load_backlog_ranks(backlog_path=backlog_path, unit_code=unit_code)
     ledger = load_ledger(sources_dir=sdir)
+    fingerprint = card_schema_fingerprint(unit_code)
 
     skipped_scope_pages = sum(len(m.get("pages") or []) for m in (find_result.get("scopeMatches") or []))
     skipped_no_auto = set(find_result.get("skippedNoAutomation") or [])
@@ -1261,6 +1263,7 @@ def build_extraction_plan(
                 rel_path,
                 pnum,
                 current_file_hash=file_hash,
+                current_schema_fingerprint=fingerprint,
             ):
                 skipped_ledger_pages += 1
                 continue
