@@ -106,3 +106,44 @@ def test_ocr_tesseract_failure_keeps_page_rendered_for_visual_fallback(tmp_path,
     assert calls == 2
     assert list(tmp_path.glob("ocr_*.png"))
     assert "WARNING: OCR fallback unavailable" in capsys.readouterr().err
+
+
+def test_plan_diagnostics_count_nonmatching_pages_and_only_retry_unresolved_ocr(tmp_path, monkeypatch) -> None:
+    pdf = tmp_path / "SmartMathPro" / "fixture.pdf"
+    pdf.parent.mkdir()
+    pdf.write_bytes(b"%PDF test fixture")
+    pages = [
+        {"page": 1, "text": ""},
+        {"page": 2, "text": "ข้อ 1 ที' 2 + 3 = 5 และมุม A&B; ข้อ 2 นี' 4 = 6"},
+        {"page": 3, "text": "Quadratic expressions can be factored."},
+    ]
+    monkeypatch.setattr(
+        source_find,
+        "_load_or_extract_pdf",
+        lambda *args, **kwargs: (
+            "fixture.json",
+            {
+                "pages": pages,
+                "fileHash": "test-hash",
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        source_find,
+        "_ocr_page",
+        lambda _path, page, *_args, **_kwargs: (
+            {"ocrUnavailable": True, "needsImage": True}
+            if page == 1
+            else {"text": "Recovered text without the requested term.", "needsImage": False}
+        ),
+    )
+
+    found = source_find.find_sources("MTH-T02-C01-U02", terms=["quadratic"], sources_dir=str(tmp_path))
+    plan = source_find.build_extraction_plan(found, sources_dir=str(tmp_path))
+    assert plan["diagnostics"] == {
+        "emptyPages": 1,
+        "garbledPages": 1,
+        "sourceFamilyCount": 1,
+        "ocrRetry": [{"relPath": "SmartMathPro/fixture.pdf", "page": 1, "originalQuality": "empty"}],
+    }
+    assert "OCR retry: 1 page(s)" in source_find.format_plan_report(plan)
