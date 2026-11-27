@@ -1623,6 +1623,48 @@ def test_source_gap_prg_trap_aliases_and_threshold(tmp_path: Path) -> None:
     assert "circular-import-deadlock" in new_trap_tags
 
 
+def test_prg_source_links_keep_matches_and_report_missing_wrong_unit_and_mismatched_links(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unit = "PRG-T00-C03-U01"
+    foreign_unit = "PRG-T00-C03-U02"
+    card = _sample_prg_card(id="CORE-LINKED")
+    foreign = _sample_prg_card(id="CORE-WRONG-UNIT", unitCode=foreign_unit)
+    unmatched = [
+        _sample_prg_card(id=cid, traps=[{"tag": tag, "description": cid}])
+        for cid, tag in [("CORE-Z", "a-new"), ("CORE-Y", "z-new"), ("CORE-A", "a-new")]
+    ]
+    arch = {
+        "archetypeKey": "linked-arch",
+        "unitCode": unit,
+        "level": 1,
+        "archetypeKind": "refactor",
+        "sourceCards": [card["id"], foreign["id"], "CORE-MISSING"],
+    }
+    monkeypatch.setattr(source_gap, "load_code_scope_archetypes", lambda *args, **kwargs: [arch])
+    source_cores.save_core_cards(foreign_unit, [foreign], sources_dir=str(tmp_path))
+    source_cores.save_core_cards(unit, [card, *unmatched], sources_dir=str(tmp_path))
+
+    report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path))
+    hit = report["matchedCards"][0]["matches"][0]
+    assert hit["sourceCardLink"]
+    assert hit["scoreBreakdown"]["compatibility"] < 1
+    warnings = {warning["cardId"]: warning["issues"] for warning in report["sourceCardWarnings"]}
+    assert "archetype kind differs from find-the-bug" in warnings[card["id"]]
+    assert "level differs: card L3, archetype L1" in warnings[card["id"]]
+    assert "not found" in warnings["CORE-MISSING"][0]
+    assert "outside archetype unit" in warnings[foreign["id"]][0]
+    assert "WARNING: sourceCards linked-arch" in source_gap.format_gap_report(report)
+    assert [item["id"] for item in report["unmatchedCards"]] == ["CORE-A", "CORE-Y", "CORE-Z"]
+    assert [item["tag"] for item in report["newTraps"]] == ["a-new", "mutation-breaks-narrowing", "z-new"]
+    assert report["newTraps"][0]["cardIds"] == ["CORE-A", "CORE-Z"]
+
+    source_cores.save_core_cards(unit, [*reversed(unmatched), card], sources_dir=str(tmp_path))
+    reversed_report = source_gap.build_gap_report(unit, sources_dir=str(tmp_path))
+    assert reversed_report["unmatchedCards"] == report["unmatchedCards"]
+    assert reversed_report["newTraps"] == report["newTraps"]
+
+
 @pytest.mark.parametrize("is_prg", [False, True], ids=["math", "prg"])
 @pytest.mark.parametrize(("skill", "trap_factor"), [(0.0, 0.0), (0.06, 0.5), (0.12, 1.0), (0.20, 1.0)])
 def test_trap_weight_requires_skill_overlap(

@@ -682,6 +682,36 @@ def test_u01_chain_archetype_covers_prompt_example_and_bare_operations(
     assert not source_gap._archetype_covers_chain_card(out_of_scope, arch)
 
 
+def test_source_cards_link_is_validated_and_resolves_without_fuzzy_similarity() -> None:
+    card = _math_card()
+    arch = _valid_math_archetype(
+        name="Unrelated feature",
+        coreConcept="Unrelated feature",
+        cognitiveTraps=["unrelated-feature-trap"],
+        sourceCards=[card["id"]],
+    )
+    assert qc.validate_math_archetype(arch)[0] == []
+    matches, unmatched = source_gap._match_cards_to_archetypes(UNIT, [card], [arch], is_prg=False)
+    assert not unmatched
+    assert matches[0]["matches"][0]["reason"].startswith("explicit sourceCards reference")
+
+    arch["sourceCards"] = [card["id"], card["id"]]
+    assert any("sourceCards" in error for error in qc.validate_math_archetype(arch)[0])
+    assert any("sourceCards" in error for error in qc.validate_quality_checks(arch))
+
+
+def test_explicit_chain_link_reports_a_level_and_operations_mismatch() -> None:
+    card = _math_card(reasoningMove="chain", level=2, operations=["multiply", "divide"])
+    arch = _valid_math_archetype(level=1, sourceCards=[card["id"]])
+    matches, unmatched = source_gap._match_cards_to_archetypes(UNIT, [card], [arch], is_prg=False)
+    assert not unmatched
+    link = matches[0]["matches"][0]
+    assert link["sourceCardLink"]
+    assert link["score"] < 1
+    assert "level differs: card L2, archetype L1" in link["compatibilityWarnings"]
+    assert "chain requires an L2 archetype with matching operations" in link["compatibilityWarnings"]
+
+
 @pytest.mark.parametrize(
     ("move", "level"),
     [
