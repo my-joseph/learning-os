@@ -1841,6 +1841,7 @@ def build_gap_report(
     eligible_units: Iterable[str] | None = None,
     data_root: str | None = None,
     progress_dir: str | None = None,
+    no_progress: bool = False,
     valid_unit_codes: Iterable[str] | None = None,
     registry_path: str | None = None,
 ) -> dict[str, Any]:
@@ -1991,7 +1992,9 @@ def build_gap_report(
             if len(pair) >= MIN_BRIDGE_UNITS:
                 bridge_by_pair[pair].append(card)
 
-    if eligible_units is not None:
+    if no_progress:
+        eligible_set = None
+    elif eligible_units is not None:
         eligible_set = {u.strip() for u in eligible_units if isinstance(u, str) and u.strip()}
     elif bridge_by_pair:
         eligible_set = load_eligible_units(data_root=data_root, progress_dir=progress_dir)
@@ -2001,8 +2004,8 @@ def build_gap_report(
     bridge_archetypes = load_bridge_vault(vault_dir).get("archetypes", [])
     bridge_candidates: list[dict[str, Any]] = []
     for pair, items in sorted(bridge_by_pair.items()):
-        missing_units = [u for u in pair if u not in eligible_set]
-        is_eligible = len(eligible_set) >= MIN_BRIDGE_UNITS and not missing_units
+        missing_units = [u for u in pair if u not in eligible_set] if eligible_set is not None else []
+        is_eligible = None if eligible_set is None else len(eligible_set) >= MIN_BRIDGE_UNITS and not missing_units
         bridge_candidates.append(
             {
                 "units": list(pair),
@@ -2303,7 +2306,12 @@ def format_gap_report(report: dict[str, Any]) -> str:
         lines.append("  (none)")
     for grp in bridges:
         pair_label = " + ".join(grp["units"])
-        status = "ELIGIBLE" if grp["eligible"] else f"not eligible — needs {', '.join(grp['missingUnits'])}"
+        if grp["eligible"] is None:
+            status = "eligibility skipped (--no-progress)"
+        elif grp["eligible"]:
+            status = "ELIGIBLE"
+        else:
+            status = f"not eligible — needs {', '.join(grp['missingUnits'])}"
         lines.append(f"  {pair_label} [{status}] ({len(grp['cards'])} card(s)):")
         if grp.get("vaultArchetypes"):
             lines.append(f"    Vault archetypes for these units: {', '.join(grp['vaultArchetypes'])}")
@@ -2336,6 +2344,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Override reasoning vault directory (default: math_engine/reasoning_vault or code_engine/reasoning_vault).",
     )
     parser.add_argument("--data-root", default=None, help="Override drills/data directory for bridge eligibility.")
+    parser.add_argument("--no-progress", action="store_true", help="Skip progress-based bridge eligibility.")
     parser.add_argument("--progress-dir", default=None, help="Override progress directory for bridge eligibility.")
     parser.add_argument("--json", action="store_true", help="Print structured JSON output.")
     return parser
@@ -2362,6 +2371,7 @@ def main(argv: list[str] | None = None) -> int:
             vault_dir=args.vault_dir,
             data_root=args.data_root,
             progress_dir=args.progress_dir,
+            no_progress=args.no_progress,
         )
     except (CoreCardError, FileNotFoundError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
