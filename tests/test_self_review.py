@@ -743,6 +743,72 @@ def test_compare_metrics_math_and_insufficient_data(tmp_path: Path) -> None:
     assert fix_metrics["revisionRate"]["after"] == 0.5
 
 
+def test_format_self_review_handles_none_comparison_values(tmp_path: Path) -> None:
+    # End-to-end: one group only appears before compare_at (after=None), another only after (before=None).
+    usage_file = tmp_path / "agent-usage.jsonl"
+    _write_jsonl(
+        usage_file,
+        [
+            {
+                "ts": "2026-11-10T10:00:00Z",
+                "model": "legacy-model",
+                "branch": "content/old-drill",
+                "outcome": "rc=1",
+                "total_tokens": 1000,
+                "duration_seconds": 120,
+            },
+            {
+                "ts": "2026-11-26T10:00:00Z",
+                "model": "new-model",
+                "branch": "fix/new-bug",
+                "outcome": "rc=0",
+                "total_tokens": 500,
+                "duration_seconds": 60,
+            },
+        ],
+    )
+    report = sr.build_self_review(
+        repo_root=str(tmp_path),
+        issues_path=str(tmp_path / "missing-issues.jsonl"),
+        usage_path=str(usage_file),
+        compare_at="2026-11-25",
+        use_gh=False,
+    )
+    rendered = sr.format_self_review(report)
+    assert "model:legacy-model | failure rate | 100.0% | n/a | n/a (insufficient data)" in rendered
+    assert "model:legacy-model | avg tokens/run | 1000.0 | n/a | n/a (insufficient data)" in rendered
+    assert "model:new-model | failure rate | n/a | 0.0% | n/a (insufficient data)" in rendered
+    assert "model:new-model | avg minutes/run | n/a | 1.0 | n/a (insufficient data)" in rendered
+    assert " | None | " not in rendered
+
+    # Synthetic comparison with both sides None (including followupFixPrs).
+    synthetic = {
+        "proposals": [],
+        "signals": {},
+        "comparison": {
+            "compareAt": "2026-11-25",
+            "usage": {
+                "job:docs": {
+                    "runs": {"before": 0, "after": 0, "deltaPercent": None},
+                    "avgTokensPerRun": {"before": None, "after": None, "deltaPercent": None},
+                    "avgMinutesPerRun": {"before": None, "after": None, "deltaPercent": None},
+                    "revisionRate": {"before": None, "after": None, "deltaPercent": None},
+                    "fallbackRate": {"before": 0.25, "after": None, "deltaPercent": None},
+                    "failureRate": {"before": None, "after": 0.5, "deltaPercent": None},
+                    "insufficientData": True,
+                }
+            },
+            "followupFixPrs": {"before": None, "after": None, "deltaPercent": None},
+        },
+    }
+    syn_text = sr.format_self_review(synthetic)
+    assert "job:docs | fallback rate | 25.0% | n/a | n/a (insufficient data)" in syn_text
+    assert "job:docs | failure rate | n/a | 50.0% | n/a (insufficient data)" in syn_text
+    assert "job:docs | revision rate | n/a | n/a | n/a (insufficient data)" in syn_text
+    assert "PR follow-up fix PRs (within 48h) | n/a | n/a | n/a" in syn_text
+    assert "None" not in syn_text
+
+
 def test_every_skill_has_self_review_step() -> None:
     repo_root = Path(__file__).resolve().parent.parent
     skills_dir = repo_root / ".claude" / "skills"

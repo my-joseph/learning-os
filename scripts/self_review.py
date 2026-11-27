@@ -1285,6 +1285,12 @@ def build_self_review(
     }
 
 
+def _format_compare_value(value: Any, *, is_rate: bool = False) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.1%}" if is_rate else str(value)
+
+
 def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
     """Format ranked improvement proposals as concise human-readable text."""
     since_label = f" (since {report['since']})" if report.get("since") else ""
@@ -1328,12 +1334,9 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
             delta_text = (
                 "n/a" if delta is None else f"{'↑' if delta > 0 else '↓' if delta < 0 else '→'} {abs(delta):.1f}%"
             )
-            if metric in {"revisionRate", "fallbackRate", "failureRate"} and item.get("before") is not None:
-                b = f"{item['before']:.1%}"
-                a = f"{item['after']:.1%}"
-            else:
-                b = str(item.get("before", "n/a"))
-                a = str(item.get("after", "n/a"))
+            is_rate = metric in {"revisionRate", "fallbackRate", "failureRate"}
+            b = _format_compare_value(item.get("before"), is_rate=is_rate)
+            a = _format_compare_value(item.get("after"), is_rate=is_rate)
             suffix = " (insufficient data)" if metrics.get("insufficientData") else ""
             lines.append(f"{group} | {label} | {b} | {a} | {delta_text}{suffix}")
     pr_metrics = comparison.get("followupFixPrs", {})
@@ -1341,9 +1344,9 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
     pr_delta_text = (
         "n/a" if pr_delta is None else f"{'↑' if pr_delta > 0 else '↓' if pr_delta < 0 else '→'} {abs(pr_delta):.1f}%"
     )
-    lines.append(
-        f"PR follow-up fix PRs (within 48h) | {pr_metrics.get('before', 0)} | {pr_metrics.get('after', 0)} | {pr_delta_text}"
-    )
+    pr_before = _format_compare_value(pr_metrics.get("before", 0))
+    pr_after = _format_compare_value(pr_metrics.get("after", 0))
+    lines.append(f"PR follow-up fix PRs (within 48h) | {pr_before} | {pr_after} | {pr_delta_text}")
 
     if not proposals:
         lines.append("\nNo improvement proposals found.")
