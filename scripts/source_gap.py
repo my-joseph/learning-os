@@ -59,6 +59,7 @@ MATCH_THRESHOLD = 0.34
 PRG_MATCH_THRESHOLD = 0.28
 RUNNER_UP_THRESHOLD = 0.58
 _TRAP_WEIGHT = 0.48
+_FULL_TRAP_SKILL_OVERLAP = 0.12
 _SKILL_WEIGHT = 0.37
 _COMPAT_WEIGHT = 0.15
 
@@ -651,11 +652,23 @@ def _trap_similarity(traps_a: set[str], traps_b: set[str]) -> float:
     return max(exact, fuzzy)
 
 
+def _dedup_scope(card: dict[str, Any]) -> tuple[str, str, frozenset[str]]:
+    """Identify the source unit and any deferred or cross-unit routing."""
+    return (
+        str(card.get("unitCode") or "").strip(),
+        str(card.get("laterUnit") or "").strip(),
+        frozenset(str(unit).strip() for unit in (card.get("units") or [])),
+    )
+
+
 def cards_are_fuzzy_duplicate(
     candidate: dict[str, Any],
     existing: dict[str, Any],
 ) -> tuple[bool, dict[str, Any]]:
     """Return ``(is_duplicate, details)`` comparing two core cards (Math or PRG)."""
+    if candidate.get("level") != existing.get("level") or _dedup_scope(candidate) != _dedup_scope(existing):
+        return (False, {"skillSimilarity": 0.0, "trapSimilarity": 0.0, "reason": "different level or unit scope"})
+
     cand_prg = is_prg_card(candidate)
     ex_prg = is_prg_card(existing)
     if cand_prg != ex_prg:
@@ -747,11 +760,11 @@ def cards_are_fuzzy_duplicate(
     tok_b = _fuzzy_skill_tokens(desc_b)
     union = tok_a | tok_b
     tok_jaccard = (len(tok_a & tok_b) / len(union)) if union else 0.0
-    seq_ratio = difflib.SequenceMatcher(
-        None,
-        _norm_skill_str(desc_a),
-        _norm_skill_str(desc_b),
-    ).ratio()
+    norm_a = _norm_skill_str(desc_a)
+    norm_b = _norm_skill_str(desc_b)
+    seq_ratio = (
+        difflib.SequenceMatcher(None, norm_a, norm_b).ratio() + difflib.SequenceMatcher(None, norm_b, norm_a).ratio()
+    ) / 2
     skill_sim = round(max(tok_jaccard, seq_ratio), 3)
 
     traps_a = _card_trap_tags(candidate)
@@ -785,7 +798,7 @@ def cards_are_fuzzy_duplicate(
                 "duplicateType": "near",
             },
         )
-    if skill_sim >= 0.72 and (not traps_a or traps_a.issubset(traps_b) or trap_sim >= 0.30):
+    if skill_sim >= 0.72 and (not (traps_a or traps_b) or trap_sim >= 0.30):
         return (
             True,
             {
@@ -1367,9 +1380,12 @@ def _score_card_with_features(
     skill_score, matched_terms = _score_skill_overlap(c_skill, a_skill, idf, default_idf)
     compat_score, compat_note = _compatibility_score(card, arch, unit_code, is_prg=is_prg)
 
-    evidence = max(trap_score, skill_score)
+    effective_trap_score = trap_score * min(1.0, skill_score / _FULL_TRAP_SKILL_OVERLAP)
+    evidence = max(effective_trap_score, skill_score)
     compat_gate = min(1.0, evidence / 0.25) if evidence > 0 else 0.0
-    total_score = _TRAP_WEIGHT * trap_score + _SKILL_WEIGHT * skill_score + _COMPAT_WEIGHT * compat_score * compat_gate
+    total_score = (
+        _TRAP_WEIGHT * effective_trap_score + _SKILL_WEIGHT * skill_score + _COMPAT_WEIGHT * compat_score * compat_gate
+    )
 
     reason = _format_match_reason(
         shared_exact_traps=shared_traps,
