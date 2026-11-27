@@ -1617,3 +1617,29 @@ def test_source_gap_prg_trap_aliases_and_threshold(tmp_path: Path) -> None:
     assert "preserve-input" not in new_trap_tags
     assert "custom-vault-declared-alias" not in new_trap_tags
     assert "circular-import-deadlock" in new_trap_tags
+
+
+def test_chapter_deferred_card_is_in_child_plan_and_gap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    origin = "MTH-T02-C01-U01"
+    chapter = "MTH-T02-C02"
+    target = f"{chapter}-U01"
+    other = f"{chapter}-U02"
+    codes = {origin, chapter, target, other, f"{chapter}-U03"}
+    monkeypatch.setattr(source_cores, "load_valid_unit_codes", lambda: dict.fromkeys(codes, ""))
+    card = _sample_card(id="CORE-CHAPTER", unitCode=origin, laterUnit=chapter, units=[target, other])
+    source_cores.save_core_cards(origin, [card], sources_dir=str(tmp_path), valid_unit_codes=codes)
+    plan = source_find.build_extraction_plan({"unitCode": target}, sources_dir=str(tmp_path))
+    assert plan["carriedCards"] == [{"id": card["id"], "carriedFrom": origin}]
+    assert source_cores.load_core_cards(other, sources_dir=str(tmp_path))[0]["id"] == card["id"]
+    assert source_cores.load_core_cards(f"{chapter}-U03", sources_dir=str(tmp_path))[0]["id"] == card["id"]
+    assert not source_cores.load_core_cards("MTH-T02-C02-U99", sources_dir=str(tmp_path))
+
+    (tmp_path / "MTH-BRIDGE.json").write_text(
+        json.dumps({"archetypes": [{"archetypeKey": "bridge-test", "unitCodes": [other, target]}]}),
+        encoding="utf-8",
+    )
+    report = source_gap.build_gap_report(
+        target, sources_dir=str(tmp_path), vault_dir=str(tmp_path), eligible_units=set()
+    )
+    assert report["currentCardsCount"] == 1
+    assert report["bridgeCandidates"][0]["vaultArchetypes"] == ["bridge-test"]

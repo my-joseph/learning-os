@@ -50,3 +50,5 @@ Fetched 2026-11-20 for the PRG-T00-C03 pilot; licences re-verified with `gh api 
   - `sources/_cores/<UNIT>.jsonl` — validated, source-free core cards (≤ 200 chars per field, zero copied wording, numbers, code, identifiers, test names, or strings).
   - `sources/_cores/_ledger.json` — incremental extraction ledger keyed by `(unit, file, page)` with extraction timestamp, run ID, produced card IDs, and source file SHA-256 hash.
 - **Committed summaries:** Only original, source-free archetypes and traps enter `math_engine/reasoning_vault/<UNIT>.json` (`"source": "OpenStax <Book> §x.y; cores: <families>"`; chain archetypes may declare an optional `operations` list) or `code_engine/reasoning_vault/<CHAPTER>.json` (`"source": "docs: <primary doc>; cores: <families>"`).
+
+Plans list carried card IDs before new extraction. A registered chapter in `laterUnit` routes the card to every registered child unit. Gap reports also list existing bridge archetypes for each exact set of bridge candidate units.
