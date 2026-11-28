@@ -31,6 +31,7 @@ import {
   findVariantsForProblem,
   pickExampleVariant,
   pickNextVariantForCycle,
+  similarStateForVariants,
 } from "@/lib/variants";
 import { AttemptRecord, Problem, ProblemState, VariantSessionRecord } from "@/types/drill";
 
@@ -179,10 +180,12 @@ export async function GET(req: NextRequest) {
     if (!similarUnlock(state)) {
       return NextResponse.json({ unlocked: false, tabs: [] });
     }
+    const variants = findVariantsForProblem(doc, problem);
+    const tabs = deriveTabStatuses(state && similarStateForVariants(state, variants));
     return NextResponse.json({
       unlocked: true,
-      tabs: deriveTabStatuses(state),
-      exhausted: !pickNextVariantForCycle(findVariantsForProblem(doc, problem), state),
+      tabs,
+      exhausted: !pickNextVariantForCycle(variants, state, { drillId, problemId: qid }),
       exampleViewedAt:
         state?.exampleViewedAt && isInCycle(state.exampleViewedAt, state.cycleStartedAt)
           ? state.exampleViewedAt
@@ -204,7 +207,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const slots = openedSimilarTokens(state);
+    const variants = findVariantsForProblem(doc, problem);
+    const slots = state ? similarStateForVariants(state, variants).similarSlots ?? [] : [];
     const slotIndex = slots.indexOf(token);
     if (slotIndex < 0) {
       return NextResponse.json(
@@ -214,8 +218,8 @@ export async function GET(req: NextRequest) {
     }
 
     const variantId = state?.variants?.[token]?.variantId;
-    const loadedVar = variantId ? loadVariantFromDisk(variantId) : null;
-    if (!loadedVar) {
+    const variant = variants.find((candidate) => candidate.variantId === variantId);
+    if (!variant) {
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
     }
 
@@ -225,7 +229,7 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json(openedVariantPayload(
       drillId, qid, token, slotIndex + 1, slots.length,
-      loadedVar.variant, served.state, served.record
+      variant, served.state, served.record
     ));
   }
 
@@ -284,7 +288,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const variants = findVariantsForProblem(doc, problem);
+  const variants = findVariantsForProblem(doc, problem, { mode: "example" });
   const picked = pickExampleVariant(variants, collectSeenVariantIds(state));
   if (!picked) {
     return NextResponse.json(
@@ -362,21 +366,23 @@ export async function POST(req: NextRequest) {
 
       const { doc, problem } = loaded;
       const variants = findVariantsForProblem(doc, problem);
-      const picked = pickNextVariantForCycle(variants, state);
+      const parent = { drillId, problemId: qid };
+      const picked = pickNextVariantForCycle(variants, state, parent);
       if (!picked) {
-        return NextResponse.json({ exhausted: true, tabs: deriveTabStatuses(state) });
+        const tabs = deriveTabStatuses(state && similarStateForVariants(state, variants));
+        return NextResponse.json({ exhausted: true, tabs });
       }
 
       const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
       const served = registerServedVariant(drillId, unitCode, qid, String(picked.variantId), "try");
-      const tabs = deriveTabStatuses(served.state);
+      const tabs = deriveTabStatuses(similarStateForVariants(served.state, variants));
       return NextResponse.json({
         ...openedVariantPayload(
           drillId, qid, served.token, tabs.length, tabs.length,
           picked, served.state, served.state.variants![served.token]
         ),
         tabs,
-        exhausted: !pickNextVariantForCycle(variants, served.state),
+        exhausted: !pickNextVariantForCycle(variants, served.state, parent),
       });
     }
 

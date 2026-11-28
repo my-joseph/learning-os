@@ -312,6 +312,7 @@ export interface ResultCardActionPlan {
 export function resultCardActions(params: {
   tab: SimilarTabId;
   hasVariants: boolean;
+  hasWorkedExamples?: boolean;
   canOpenNext?: boolean;
   isReviewSession?: boolean;
   rState: ProblemState;
@@ -324,6 +325,7 @@ export function resultCardActions(params: {
   const {
     tab,
     hasVariants,
+    hasWorkedExamples = hasVariants,
     canOpenNext = false,
     isReviewSession = false,
     rState,
@@ -365,7 +367,7 @@ export function resultCardActions(params: {
       const targetSlot = target?.slot ?? null;
       const origWrongs = countCycleOriginalWrongAttempts(rState);
       const showSeeExample =
-        hasVariants && !exampleViewed && origWrongs >= 2;
+        hasWorkedExamples && !exampleViewed && origWrongs >= 2;
       return {
         ...empty,
         retryLabel: isReviewSession ? "Try again" : "Try again (max 0.5)",
