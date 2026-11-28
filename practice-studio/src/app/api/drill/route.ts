@@ -16,7 +16,7 @@ import { applyProgress, readPendingNotionSync, readProgress } from "@/lib/progre
 import { redactDrill, redactDrillForReview } from "@/lib/redact";
 import type { DrillDocument } from "@/types/drill";
 import { plainTitle } from "@/lib/titleText";
-import { findVariantsForProblem } from "@/lib/variants";
+import { findVariantsForProblem, similarStateForVariants } from "@/lib/variants";
 
 /** Delete exactly one local drill content file; progress, workspaces, and Labs are retained. */
 export async function DELETE(req: NextRequest) {
@@ -85,12 +85,16 @@ export async function GET(req: NextRequest) {
     for (const prob of doc.problems) {
       if (prob && typeof prob === "object") {
         if (isMath) {
-          const variantCount = findVariantsForProblem(
-            doc as unknown as Record<string, unknown>,
-            prob as unknown as Record<string, unknown>,
-            variantBankCache
-          ).length;
-          prob.hasVariants = variantCount > 0;
+          const problem = prob as unknown as Record<string, unknown>;
+          const drill = doc as unknown as Record<string, unknown>;
+          const variants = findVariantsForProblem(drill, problem, { bankCache: variantBankCache });
+          prob.hasVariants = variants.length > 0;
+          prob.hasWorkedExamples = prob.hasVariants || findVariantsForProblem(
+            drill, problem, { mode: "example", bankCache: variantBankCache }
+          ).length > 0;
+          if (prob.state?.variants) {
+            prob.state = similarStateForVariants(prob.state, variants);
+          }
         }
         if (doc.drillId && wsDir && prob.workspaceFile) {
           const mappedRel = remapWorkspaceFileForMode(

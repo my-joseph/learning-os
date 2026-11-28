@@ -392,6 +392,7 @@ export interface Problem {
   hasSetup?: boolean;
   hasHint?: boolean;
   hasVariants?: boolean;
+  hasWorkedExamples?: boolean;
   codeSnippet?: string;
   language?: string;
   codeType?:
