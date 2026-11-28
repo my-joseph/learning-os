@@ -69,17 +69,40 @@ def _bank_parent():
     return _add(_reviewed_parent())["variants"][0]["variantId"]
 
 
+def _write_drill(workspace, *problems):
+    data_root, _, _ = workspace
+    directory = data_root / UNIT
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{DRILL}.json").write_text(
+        json.dumps({"drillId": DRILL, "unitCode": UNIT, "problems": problems}), encoding="utf-8"
+    )
+
+
+def _story_parent():
+    return _reviewed_parent() | {
+        "id": "Q01",
+        "context": "A story for this test.",
+        "contextCheck": {"verdict": "ok", "note": "Parent context fixture."},
+    }
+
+
+def _reviewed_variant():
+    proposed = render_radical_problem(NEW_PARAMETERS)
+    proposed["blindSolve"] = _reviewed_parent()["blindSolve"] | {"answer": proposed["answerPlain"]}
+    proposed["review"] = {"verdict": "pass", "note": "Checked the variant independently."}
+    return proposed
+
+
+def _bank_draft(problem):
+    archetype = problem["archetypeKey"]
+    variant = problem | {"variantId": f"VAR-{UNIT}-{archetype}-99", "sourceArchetype": archetype}
+    return {"unitCode": UNIT, "variants": [variant]}
+
+
 @pytest.mark.parametrize("parent_kind", ["drill", "variant"])
 def test_add_records_own_certificate_and_rechecks_saved_instance(parent_kind, workspace, cached_sources):
     if parent_kind == "drill":
-        data_root, _, _ = workspace
-        directory = data_root / UNIT
-        directory.mkdir(parents=True)
-        parent = _reviewed_parent() | {"id": "Q01"}
-        (directory / f"{DRILL}.json").write_text(
-            json.dumps({"drillId": DRILL, "unitCode": UNIT, "problems": [parent]}),
-            encoding="utf-8",
-        )
+        _write_drill(workspace, _reviewed_parent() | {"id": "Q01"})
         parent_id = f"{DRILL}/Q01"
     else:
         parent_id = _bank_parent()
@@ -165,16 +188,23 @@ def test_context_and_inherited_records_are_ineligible(workspace, cached_sources)
     with pytest.raises(variant_bank.VariantBankError, match="Needs 'review'.*independent blind solve and review"):
         _add(_request(parent_id, NEW_PARAMETERS))
 
-    story = _reviewed_parent() | {
-        "context": "A story for this test.",
-        "contextCheck": {"verdict": "ok", "note": "Parent context fixture."},
-    }
     variant_bank.save_bank(UNIT, {"variants": []})
-    story_id = _add(story)["variants"][0]["variantId"]
+    story_id = _add(_story_parent())["variants"][0]["variantId"]
     with pytest.raises(variant_bank.VariantBankError, match="independent context check and review"):
         _add(_request(story_id, NEW_PARAMETERS))
 
-    plain = render_radical_problem(NEW_PARAMETERS) | {"parentProblem": story_id}
+
+@pytest.mark.parametrize("explicit_parent", [False, True])
+def test_removed_story_requires_full_context_check_and_review(workspace, explicit_parent):
+    story = _story_parent()
+    _write_drill(workspace, story)
+    plain = render_radical_problem(NEW_PARAMETERS)
+    if explicit_parent:
+        plain["parentProblem"] = f"{DRILL}/Q01"
+
+    assert any(
+        "Changed context has no 'contextCheck'" in e for e in variant_bank.check_variant_bank(_bank_draft(plain))
+    )
     with pytest.raises(variant_bank.VariantBankError, match="no 'contextCheck'"):
         _add(plain)
     plain["contextCheck"] = {"verdict": "ok", "note": "Checked the plain wording for remaining assumptions."}
@@ -188,5 +218,65 @@ def test_context_and_inherited_records_are_ineligible(workspace, cached_sources)
         _add(plain)
     plain["blindSolve"] = _reviewed_parent()["blindSolve"] | {"answer": plain["answerPlain"]}
     saved = _add(plain)
-    assert len(saved["variants"]) == 2
+    assert len(saved["variants"]) == 1
     assert "parameterInstance" not in saved["variants"][-1]
+
+
+def test_changed_story_without_parent_needs_fresh_context_check(workspace):
+    story = _story_parent()
+    _write_drill(workspace, story)
+    variant = _reviewed_variant() | {"context": "A different story."}
+    with pytest.raises(variant_bank.VariantBankError, match="Changed context has no 'contextCheck'"):
+        _add(variant)
+    variant["contextCheck"] = story["contextCheck"]
+    assert any(
+        "own independent context check and review" in e for e in variant_bank.check_variant_bank(_bank_draft(variant))
+    )
+    with pytest.raises(variant_bank.VariantBankError, match="own independent context check and review"):
+        _add(variant)
+
+
+@pytest.mark.parametrize("parent_qid", ["Q99", "Q02", "Q03"])
+def test_explicit_parent_must_exist_and_match_pair(workspace, parent_qid):
+    story = _story_parent()
+    _write_drill(
+        workspace,
+        story,
+        story | {"id": "Q02", "level": 4},
+        story | {"id": "Q03", "archetypeKey": "another-archetype"},
+    )
+    variant = _reviewed_variant() | {"parentProblem": f"{DRILL}/{parent_qid}"}
+    with pytest.raises(variant_bank.VariantBankError, match="'parentProblem'.*same archetype and level"):
+        _add(variant)
+
+
+@pytest.mark.parametrize("with_story", [False, True])
+def test_unchanged_context_allowed_with_implicit_parent(workspace, with_story):
+    parent = _story_parent() if with_story else _reviewed_parent() | {"id": "Q01"}
+    _write_drill(workspace, parent)
+    variant = _reviewed_variant()
+    if with_story:
+        variant.update(context=parent["context"], contextCheck=parent["contextCheck"])
+    assert variant_bank.check_variant_bank(_bank_draft(variant)) == []
+    assert len(_add(variant)["variants"]) == 1
+
+
+def test_ambiguous_parent_requires_full_context_check(workspace):
+    plain_parent = render_radical_problem(PARAMETERS | {"b": 7, "c": 3}) | {"id": "Q02"}
+    _write_drill(workspace, _story_parent(), plain_parent)
+    variant = _reviewed_variant()
+    with pytest.raises(variant_bank.VariantBankError, match="Changed context has no 'contextCheck'"):
+        _add(variant)
+    assert len(_add(variant | {"parentProblem": f"{DRILL}/Q02"})["variants"]) == 1
+
+
+def test_stored_legacy_variant_is_grandfathered_but_new_entries_are_checked(workspace):
+    legacy = _bank_draft(_reviewed_variant())
+    variant_bank.save_bank(UNIT, legacy)
+    _write_drill(workspace, _story_parent())
+    assert variant_bank.check_variant_bank(legacy) == []
+
+    new = _reviewed_variant() | {"context": "A different story."}
+    with pytest.raises(variant_bank.VariantBankError, match="Changed context has no 'contextCheck'"):
+        _add(new)
+    assert variant_bank.load_bank(UNIT) == legacy

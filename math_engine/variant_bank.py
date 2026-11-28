@@ -407,6 +407,26 @@ def _full_path_error(message: str) -> str:
     return f"{message} Use the full path with independent blind solve and review, including the context check when applicable."
 
 
+def _validate_variant_context(prob: Dict[str, Any], drill_items: List[Tuple[str, Dict[str, Any]]]) -> None:
+    pair = (prob.get("archetypeKey"), prob.get("level"))
+    candidates = [(label, p) for label, p in drill_items if (p.get("archetypeKey"), p.get("level")) == pair]
+    if "parentProblem" in prob:
+        candidates = [(label, p) for label, p in candidates if label == prob["parentProblem"]]
+        if len(candidates) != 1:
+            raise AiContractError(
+                "'parentProblem' must identify one in-scope drill problem at the same archetype and level."
+            )
+
+    parent_context = (candidates[0][1].get("context") or "") if candidates else ""
+    if len(candidates) <= 1 and (prob.get("context") or "") == parent_context:
+        return
+
+    validate_context_check(prob, changed=True)
+    validate_review(prob)
+    if any(prob[key] == parent.get(key) for _, parent in candidates for key in ("contextCheck", "review")):
+        raise AiContractError("A changed story needs its own independent context check and review.")
+
+
 def check_variant_bank(
     bank_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -416,6 +436,7 @@ def check_variant_bank(
     sources_dir: Optional[str] = None,
     *,
     allow_l2_baseline: bool = True,
+    variants_dir: Optional[str] = None,
 ) -> List[str]:
     """Run every single-problem ingest gate + variant uniqueness checks on ``bank_doc``."""
     errors: List[str] = []
@@ -436,6 +457,13 @@ def check_variant_bank(
 
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
+    try:
+        stored_bank = load_bank(unit_code, variants_dir=variants_dir)
+    except (OSError, ValueError):
+        stored_bank = None
+    stored_variants = stored_bank.get("variants") if isinstance(stored_bank, dict) else None
+    if not isinstance(stored_variants, list):
+        stored_variants = []
     active_rules = rules or QUALITY_RULES
     l2_baseline = load_l2_step_floor_baseline() if allow_l2_baseline else None
 
@@ -503,18 +531,15 @@ def check_variant_bank(
                 prov_errors, prov_warnings = check_distractor_provenance(prob, vault_archs)
                 if prov_errors or prov_warnings:
                     raise AiContractError("; ".join(prov_errors + prov_warnings))
-            elif "parentProblem" in prob:
-                parent = _resolve_parent(prob["parentProblem"], parents)
-                if parent is original:
-                    raise AiContractError("A variant cannot be its own parent.")
-                if (parent.get("context") or "") != (prob.get("context") or ""):
-                    validate_context_check(prob, changed=True)
-                    validate_review(prob)
-                    if any(prob.get(k) == parent.get(k) for k in ("contextCheck", "review")):
-                        raise AiContractError("A changed story needs its own independent context check and review.")
+            elif "parentProblem" in prob or original not in stored_variants:
+                # Keep unchanged legacy entries valid when no parent was recorded.
+                _validate_variant_context(prob, drill_items)
         except AiContractError as exc:
-            errors.append(f"[{pid}] {_full_path_error(str(exc))}" if certified else f"[{pid}] {exc}")
-            continue
+            if certified:
+                errors.append(f"[{pid}] {_full_path_error(str(exc))}")
+                continue
+            message = str(exc)
+            errors.append(message if message.startswith(f"[{pid}]") else f"[{pid}] {message}")
 
         _run_problem_gates(
             prob,
@@ -655,7 +680,9 @@ def add_variants(
 
     candidate_doc = {"unitCode": resolved_unit, "variants": combined_variants}
     strip_progress({"problems": candidate_doc["variants"]})
-    errs = check_variant_bank(candidate_doc, data_root=data_root, vault_dir=vault_dir, rules=rules)
+    errs = check_variant_bank(
+        candidate_doc, data_root=data_root, vault_dir=vault_dir, rules=rules, variants_dir=variants_dir
+    )
     instances = [p for p in newly_added if "parameterInstance" in p]
     for prepared in newly_added:
         if "review" not in prepared and "parameterInstance" not in prepared:

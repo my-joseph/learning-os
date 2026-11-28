@@ -154,6 +154,7 @@ def test_add_variants_appends_next_id_and_rejects_duplicate(tmp_path: Path, monk
 
     # --add appends a new distinct variant and auto-assigns the next variantId.
     fresh = {
+        "parentProblem": "DRL-MTH-T01-C04-01/Q01",
         "level": 1,
         "category": "Fraction Simplification",
         "archetype": "problem-solving",
@@ -363,6 +364,7 @@ def test_add_variants_enforces_validate_review(tmp_path: Path) -> None:
 
     # Prepare a valid fresh variant (adapted from _sample_variant with distinct numbers and answer).
     fresh = {
+        "parentProblem": "DRL-MTH-T01-C04-01/Q01",
         "level": 1,
         "category": "Fraction Simplification",
         "archetype": "problem-solving",

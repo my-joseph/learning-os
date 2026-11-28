@@ -8,7 +8,7 @@ The trial supports one family, `radical-equation-v1`, for the L3 radical-equatio
 
 Authors can use `python -m math_engine.variant_bank --instance-template A B D C` to render a candidate parent problem for the full blind-solve and review workflow. Ingest that parent as a regular drill problem or variant after it passes independently. Keep the template's wording and steps. Use its drill problem locator (`DRL-.../Q...`) or the ID of an active reviewed variant in the destination bank.
 
-In the usual `--add` draft, an instance entry contains only `parameterInstance`. Within it, supply `parent` and a `parameters` object with the four integer values. The bank computes the item and its provenance. Use `--sources-dir` to select the local source cache when needed. The batch is saved only after uniqueness, leak, quality, distractor provenance and originality checks pass. Missing originality data requires the full authoring workflow. For a changed or removed story, set `parentProblem` on the ordinary draft entry and obtain a new independent context verdict and review.
+In the usual `--add` draft, an instance entry contains only `parameterInstance`. Within it, supply `parent` and a `parameters` object with the four integer values. The bank computes the item and its provenance. Use `--sources-dir` to select the local source cache when needed. The batch is saved only after uniqueness, leak, quality, distractor provenance and originality checks pass. Missing originality data requires the full authoring workflow. On an ordinary draft entry, use `parentProblem` to select a drill parent at the exact pair when several match. A new, changed or removed story or an ambiguous parent requires a fresh independent context verdict and review.
 
 ## Measurement
 
