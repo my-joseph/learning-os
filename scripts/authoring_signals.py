@@ -7,7 +7,8 @@ Joins aggregate signals from:
 - unit issues (`issues/log.jsonl` filtered to scope across all kinds)
 
 Strictly aggregate-only and zero-leak: never outputs prompts, answers, worked steps,
-learner inputs, personal notes, or drill, question, and issue locators. Supports
+learner inputs, personal notes, or drill, question, and issue locators. Practice breakdowns require at least three
+distinct items, and recency is bucketed. Supports
 `--no-progress` for offline/audit runs.
 
 Usage:
@@ -21,9 +22,13 @@ import json
 import os
 import re
 from collections import Counter, defaultdict
+from dataclasses import replace
 from datetime import date
+from pathlib import Path
 from typing import Any
 
+from ingest_core import archetype_trap_tags
+from progress_store import find_repo_root
 from scripts import drill_quality, issues, weak_spots
 
 _SCOPE_CODE = re.compile(r"(?:MTH|PRG|PHY)-(?:T\d+-C\d+(?:-U\d+)?|BRIDGE)")
@@ -34,47 +39,140 @@ def _signal_key(value: Any) -> bool:
     return isinstance(value, str) and _SIGNAL_KEY.fullmatch(value) is not None
 
 
-def _signal_date(value: Any) -> str:
+_MIN_ITEMS = 3
+_RECENCY = ("last 7 days", "last 30 days", "older")
+
+
+def _recency_bucket(value: str, today: date) -> str:
     try:
-        return date.fromisoformat(str(value)[:10]).isoformat()
+        age = (today - date.fromisoformat(value[:10])).days
     except ValueError:
         return ""
+    if 0 <= age < 7:
+        return _RECENCY[0]
+    if 7 <= age < 30:
+        return _RECENCY[1]
+    return _RECENCY[2] if age >= 30 else ""
 
 
-def _recent_mistakes_summary(
-    scoped: list[weak_spots.Item],
-    *,
-    limit: int = 8,
-) -> list[dict[str, Any]]:
-    """Rank recurring mistake/trap tags in ``scope`` (aggregate counts + archetypes only; no inputs/notes)."""
-    counts: Counter[str] = Counter()
-    last_ts: dict[str, str] = {}
-    archetypes: dict[str, set[str]] = defaultdict(set)
+def _published_recency(items: list[weak_spots.Item], today: date) -> str:
+    buckets = Counter(_recency_bucket(item.ts, today) for item in items)
+    return next((bucket for bucket in _RECENCY if buckets[bucket] >= _MIN_ITEMS), "")
 
-    for it in scoped:
-        tags = list(it.matched)
-        if it.skipped and "concept-gap" not in tags:
-            tags.append("concept-gap")
-        for tag in dict.fromkeys(t for t in tags if _signal_key(t)):
-            counts[tag] += 1
-            if it.ts and it.ts > last_ts.get(tag, ""):
-                last_ts[tag] = it.ts
-            if it.archetype and _signal_key(it.archetype):
-                archetypes[tag].add(it.archetype)
 
-    # Secondary sort: most recent timestamp first when counts tie.
-    ranked = sorted(
-        counts.items(), key=lambda kv: (-kv[1], -(int(re.sub(r"\D", "", last_ts.get(kv[0], ""))[:14] or 0)))
-    )
-    return [
+def _registered_labels(unit: str, root: str, vault: dict[str, Any]) -> set[str]:
+    labels: set[str] = set()
+    for arch in vault.values():
+        labels.update(tag for tag in archetype_trap_tags(arch) if isinstance(tag, str))
+        if unit.startswith("PRG-"):
+            labels.update(
+                check["id"]
+                for check in arch.get("qualityChecks") or []
+                if isinstance(check, dict) and isinstance(check.get("id"), str)
+            )
+    if unit.startswith("PRG-"):
+        path = Path(root) / "code_engine" / "check_names.json"
+        if path.is_file():
+            labels.update(json.loads(path.read_text(encoding="utf-8")))
+    return labels
+
+
+def _item_tags(item: weak_spots.Item) -> list[str]:
+    return item.signals if item.subject == "PRG" else item.matched
+
+
+def _practice_signals(scope: str, items: list[weak_spots.Item], root: str) -> tuple[dict, list[dict]]:
+    """Build each unit's breakdowns from distinct practiced items in groups of three or more."""
+    today = date.today()
+    units: dict[str, list[weak_spots.Item]] = defaultdict(list)
+    for item in items:
+        if item.unit == scope and scope.endswith("-BRIDGE"):
+            units[scope].append(item)
+        else:
+            for unit in set(weak_spots._item_units(item)):
+                if _SCOPE_CODE.fullmatch(unit) and weak_spots._unit_matches_scope(unit, scope):
+                    units[unit].append(item)
+
+    open_traps = []
+    level_advice = {}
+    mastery_caps = []
+    skip_items: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    tag_items: dict[str, dict[tuple[str, str], weak_spots.Item]] = defaultdict(dict)
+    tag_archetypes: dict[str, dict[str, set[tuple[str, str]]]] = defaultdict(lambda: defaultdict(set))
+    unit_count = 0
+    for unit, unit_items in sorted(units.items()):
+        unique = {(item.drill, item.pid): item for item in unit_items}
+        group_sizes = Counter((item.archetype, item.level) for item in unique.values())
+        eligible = [item for item in unique.values() if group_sizes[item.archetype, item.level] >= _MIN_ITEMS]
+        if not eligible:
+            continue
+        unit_count += 1
+        vault = drill_quality._load_vault(unit, root)
+        labels = _registered_labels(unit, root, vault)
+        hits = defaultdict(list)
+        for item in eligible:
+            key = (item.drill, item.pid)
+            if item.skipped and item.archetype in vault and _signal_key(item.archetype):
+                skip_items[item.archetype].add(key)
+            raw_tags = _item_tags(item)
+            tags = {tag for tag in raw_tags if isinstance(tag, str) and tag in labels}
+            for tag in tags:
+                hits[tag].append(item)
+                if item.archetype in vault and _signal_key(item.archetype):
+                    tag_archetypes[tag][item.archetype].add(key)
+            if any(not isinstance(tag, str) or tag not in labels for tag in raw_tags):
+                tags.add("unrecognized")
+            for tag in tags:
+                tag_items[tag][key] = item
+
+        # Evaluate open status with the same weak-spots logic, using registered
+        # labels and eligible evidence only.
+        recognized = [
+            replace(
+                item,
+                matched=[tag for tag in item.matched if isinstance(tag, str) and tag in labels],
+                signals=[tag for tag in item.signals if isinstance(tag, str) and tag in labels],
+            )
+            for item in eligible
+        ]
+        unit_open = [
+            {
+                "unit": unit,
+                "tag": tag,
+                "matches": len(hits[tag]),
+                "last": _published_recency(hits[tag], today),
+            }
+            for tag, status in sorted(weak_spots.trap_status(recognized).items())
+            if status["open"] and len(hits[tag]) >= _MIN_ITEMS
+        ]
+        open_traps.extend(unit_open)
+        for level, advice in weak_spots.level_advice(eligible).items():
+            if 1 <= level <= 5 and advice["n"] >= _MIN_ITEMS:
+                key = f"L{level}" if unit == scope else f"{unit}@L{level}"
+                level_advice[key] = advice["move"]
+        if weak_spots.mastery_cap(eligible, bool(unit_open)).get("capped"):
+            mastery_caps.append({"unit": unit, "cappedAt": 2})
+
+    recent = [
         {
             "tag": tag,
-            "count": int(cnt),
-            "last": _signal_date(last_ts.get(tag)),
-            "archetypes": sorted(archetypes.get(tag) or ()),
+            "count": len(matched),
+            "last": _published_recency(list(matched.values()), today),
+            "archetypes": sorted(key for key, evidence in tag_archetypes[tag].items() if len(evidence) >= _MIN_ITEMS),
         }
-        for tag, cnt in ranked[:limit]
+        for tag, matched in tag_items.items()
+        if len(matched) >= _MIN_ITEMS
     ]
+    bucket_order = {bucket: rank for rank, bucket in enumerate((*_RECENCY, ""))}
+    recent.sort(key=lambda row: (-row["count"], bucket_order[row["last"]], row["tag"]))
+    return {
+        "unitCount": unit_count,
+        "openTrapCount": len(open_traps),
+        "openTraps": open_traps,
+        "levelAdvice": level_advice,
+        "skippedArchetypes": sorted(key for key, skipped in skip_items.items() if len(skipped) >= _MIN_ITEMS),
+        "masteryCaps": mastery_caps,
+    }, recent[:8]
 
 
 def _unit_issues_summary(scope: str, *, issue_log: str | None = None) -> dict[str, Any]:
@@ -95,8 +193,8 @@ def _unit_issues_summary(scope: str, *, issue_log: str | None = None) -> dict[st
     return {
         "total": sum(by_kind.values()),
         "openCount": sum(open_by_kind.values()),
-        "byKind": dict(sorted(by_kind.items())),
-        "openByKind": dict(sorted(open_by_kind.items())),
+        "byKind": dict(sorted((kind, count) for kind, count in by_kind.items() if count >= _MIN_ITEMS)),
+        "openByKind": dict(sorted((kind, count) for kind, count in open_by_kind.items() if count >= _MIN_ITEMS)),
     }
 
 
@@ -162,42 +260,9 @@ def collect_authoring_signals(
         summary["signalsUsedLine"] = _build_signals_used_line(summary)
         return summary
 
-    # 1. weak_spots aggregates
-    ws_raw = weak_spots.report_json(scope, data_root=resolved_data, progress_dir=progress_dir)
-    ws_units = [u for u in ws_raw.get("units") or [] if _SCOPE_CODE.fullmatch(str(u.get("unitCode") or ""))]
-    open_traps: list[dict[str, Any]] = []
-    level_advice_map: dict[str, str] = {}
-    mastery_caps: list[dict[str, Any]] = []
-    for u in ws_units:
-        uc = str(u.get("unitCode") or "")
-        for t in u.get("open") or []:
-            if not _signal_key(t.get("id")):
-                continue
-            open_traps.append(
-                {
-                    "unit": uc,
-                    "tag": t["id"],
-                    "matches": int(t.get("matches") or 0),
-                    "drills": int(t.get("drills") or 0),
-                    "last": _signal_date(t.get("last")),
-                }
-            )
-        for lv_str, adv in (u.get("levels") or {}).items():
-            if (
-                re.fullmatch(r"[1-5]", str(lv_str))
-                and isinstance(adv, dict)
-                and adv.get("move") in ("up", "down", "stay")
-            ):
-                key = f"{uc}@L{lv_str}" if len(ws_units) > 1 else f"L{lv_str}"
-                level_advice_map[key] = str(adv["move"])
-        cap = u.get("masteryCap")
-        if isinstance(cap, dict) and cap.get("capped"):
-            mastery_caps.append(
-                {
-                    "unit": uc,
-                    "cappedAt": 2,
-                }
-            )
+    root = repo_root or find_repo_root()
+    items = weak_spots.load_items(resolved_data, progress_dir)
+    weak_summary, recent_mistakes = _practice_signals(scope, items, root)
 
     # 2. drill_quality aggregates (respect explicit progress_dir / data_root via env override cleanly)
     prev_prog = os.environ.get("PROGRESS_DIR")
@@ -207,7 +272,7 @@ def collect_authoring_signals(
             os.environ["PROGRESS_DIR"] = progress_dir
         if data_root is not None:
             os.environ["DRILLS_DATA_DIR"] = data_root
-        dq_raw = drill_quality.build_report(scope, repo_root=repo_root)
+        dq_raw = drill_quality.build_report(scope, repo_root=root)
     finally:
         if progress_dir is not None:
             if prev_prog is None:
@@ -220,57 +285,60 @@ def collect_authoring_signals(
             else:
                 os.environ["DRILLS_DATA_DIR"] = prev_data
 
-    level_clean_rates: dict[str, dict[str, Any]] = {}
-    for lv, stats in sorted((dq_raw.get("levels") or {}).items()):
-        if not re.fullmatch(r"L[1-5]", lv):
+    level_clean_rates = {}
+    for lv, stats in sorted(dq_raw["levels"].items()):
+        if not re.fullmatch(r"L[1-5]", lv) or stats["items"] < _MIN_ITEMS:
             continue
-        rate = stats.get("firstTryCleanRate")
+        rate = stats["firstTryCleanRate"]
         level_clean_rates[lv] = {
-            "items": int(stats.get("items") or 0),
-            "attempts": int(stats.get("attempts") or 0),
-            "firstTryCleanRate": round(float(rate), 3) if rate is not None else None,
-            "skips": int(stats.get("skips") or 0),
+            "items": stats["items"],
+            "attempts": stats["attempts"] if stats["attempts"] >= _MIN_ITEMS else None,
+            "firstTryCleanRate": round(rate, 3)
+            if rate is not None and sum(stats["scores"].values()) >= _MIN_ITEMS
+            else None,
+            "skips": stats["skips"] if stats["skips"] >= _MIN_ITEMS else None,
         }
 
-    # Keep only structured aggregate flag fields (never raw prose or answers).
-    dq_flags: list[dict[str, Any]] = []
-    for f in dq_raw.get("flags") or []:
-        if not isinstance(f, dict) or f.get("type") not in drill_quality._FLAG_ORDER:
+    vault = drill_quality._load_vault(scope, root)
+    dq_flags = []
+    for flag in dq_raw["flags"]:
+        kind = flag.get("type")
+        if kind not in drill_quality._FLAG_ORDER:
             continue
-        slim = {"type": f["type"]}
-        if _signal_key(f.get("archetype")):
-            slim["archetype"] = f["archetype"]
-        if type(f.get("level")) is int and 1 <= f["level"] <= 5:
-            slim["level"] = f["level"]
-        if isinstance(f.get("missing"), list):
-            slim["missing"] = [lv for lv in f["missing"] if isinstance(lv, str) and re.fullmatch(r"L[1-5]", lv)]
-        if type(f.get("items")) is int:
-            slim["items"] = f["items"]
+        archetype = flag.get("archetype")
+        if archetype is not None and (not _signal_key(archetype) or archetype not in vault):
+            continue
+        level = flag.get("level")
+        if level is not None and (type(level) is not int or not 1 <= level <= 5):
+            continue
+        level_key = f"L{level}"
+        stats = dq_raw["archetypes"].get(archetype, {})
+        if level is not None:
+            levels = stats.get("levels", {}) if archetype is not None else dq_raw["levels"]
+            stats = levels.get(level_key, {})
+        support = flag.get("items") if kind == "untouched" else stats.get("items", 0)
+        if type(support) is not int or support < _MIN_ITEMS:
+            continue
+        if kind in {"trap_never_triggered", "similar_never_opened"} and sum(stats["scores"].values()) < _MIN_ITEMS:
+            continue
+        slim = {"type": kind}
+        if archetype is not None:
+            slim["archetype"] = archetype
+        if level is not None:
+            slim["level"] = level
+        if kind == "untouched":
+            slim["items"] = support
+        if kind == "level_ladder_gap":
+            slim["missing"] = [lv for lv in flag["missing"] if isinstance(lv, str) and re.fullmatch(r"L[1-5]", lv)]
         dq_flags.append(slim)
-
-    # 3. recent mistakes aggregates
-    scoped_items = [
-        item
-        for item in weak_spots.load_items(resolved_data, progress_dir)
-        if item.unit == scope or any(weak_spots._unit_matches_scope(u, scope) for u in weak_spots._item_units(item))
-    ]
-    recent_mistakes = _recent_mistakes_summary(scoped_items)
-    skipped_archs = {item.archetype for item in scoped_items if item.skipped and _signal_key(item.archetype)}
 
     summary = {
         "scope": scope,
         "progressRead": True,
-        "weakSpots": {
-            "unitCount": len(ws_units),
-            "openTrapCount": len(open_traps),
-            "openTraps": open_traps,
-            "levelAdvice": level_advice_map,
-            "skippedArchetypes": sorted(skipped_archs),
-            "masteryCaps": mastery_caps,
-        },
+        "weakSpots": weak_summary,
         "drillQuality": {
             "drills": int(dq_raw.get("drills") or 0),
-            "attempts": int(dq_raw.get("attempts") or 0),
+            "attempts": sum(row["attempts"] or 0 for row in level_clean_rates.values()),
             "levelCleanRates": level_clean_rates,
             "flags": dq_flags,
         },
@@ -289,7 +357,7 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
     else:
         ws = summary["weakSpots"]
         if ws["openTraps"]:
-            traps_txt = ", ".join(f"{t['tag']} ({t['matches']}x/{t['drills']}d)" for t in ws["openTraps"])
+            traps_txt = ", ".join(f"{t['tag']} ({t['matches']}x)" for t in ws["openTraps"])
             lines.append(f"  Weak spots (open): {traps_txt}")
         else:
             lines.append("  Weak spots (open): none")
@@ -307,7 +375,8 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
             rate_bits = []
             for lv, st in dq["levelCleanRates"].items():
                 pct = f"{st['firstTryCleanRate'] * 100:.0f}%" if st["firstTryCleanRate"] is not None else "n/a"
-                rate_bits.append(f"{lv}={pct} ({st['attempts']} att)")
+                attempts = f" ({st['attempts']} att)" if st["attempts"] is not None else ""
+                rate_bits.append(f"{lv}={pct}{attempts}")
             lines.append(f"  Drill quality clean rates: {', '.join(rate_bits)}")
         if dq["flags"]:
             flag_bits = [
@@ -322,7 +391,7 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
 
         rm = summary["recentMistakes"]
         if rm:
-            rm_bits = [f"{m['tag']} x{m['count']}" for m in rm[:6]]
+            rm_bits = [f"{row['tag']} x{row['count']}" + (f" ({row['last']})" if row["last"] else "") for row in rm[:6]]
             lines.append(f"  Recent mistakes: {', '.join(rm_bits)}")
         else:
             lines.append("  Recent mistakes: none")
@@ -330,7 +399,8 @@ def format_authoring_signals(summary: dict[str, Any]) -> str:
     iss = summary["issues"]
     if iss["total"]:
         kind_bits = ", ".join(f"{k}:{n}" for k, n in iss["byKind"].items())
-        lines.append(f"  Unit issues: {iss['openCount']} open / {iss['total']} total ({kind_bits})")
+        kinds = f" ({kind_bits})" if kind_bits else ""
+        lines.append(f"  Unit issues: {iss['openCount']} open / {iss['total']} total{kinds}")
     else:
         lines.append("  Unit issues: none")
     lines.append(f"  {summary['signalsUsedLine']}")
