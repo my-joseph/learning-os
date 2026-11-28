@@ -133,7 +133,8 @@ _ITEM_MARKER_RE = re.compile(
 _EXERCISE_HEADING_RE = re.compile(
     r"^[^\S\n]*(?:#{1,6}[^\S\n]+)?"
     r"(?:\d+(?:\.\d+)*(?:[.):]|[–-])?[^\S\n]+)?"
-    r"(?:chapter[^\S\n]+)?(?:แบบฝึกหัด|(?:exercises?|practice problems?|problem set)\b)",
+    r"(?:chapter[^\S\n]+(?:(?:\d+|[IVXLCDM]+)[^\S\n]+)?)?"
+    r"(?:แบบฝึกหัด|(?:exercises?|practice problems?|problem set)\b)",
     re.IGNORECASE | re.MULTILINE,
 )
 _MD_HEADING_RE = re.compile(r"^#{1,6}\s+")

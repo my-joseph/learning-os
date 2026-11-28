@@ -441,6 +441,30 @@ def test_originality_cli_and_ingest_variant_wiring(
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "Chapter 3 Practice Problems",
+        "Chapter IV Exercises",
+        "Chapter Exercises",
+        "Practice Problems",
+        "แบบฝึกหัด",
+        "## 3.2 Problem Set",
+        "### Chapter ix แบบฝึกหัด",
+    ],
+)
+def test_source_find_recognizes_exercise_headings(heading: str) -> None:
+    assert source_find._EXERCISE_HEADING_RE.search(heading)
+
+
+@pytest.mark.parametrize(
+    "heading",
+    ["Chapter 3 Summary", "Chapter 3 Extra Practice Problems", "Chapter 3 Practice ProblemsIndex"],
+)
+def test_source_find_rejects_near_miss_exercise_headings(heading: str) -> None:
+    assert not source_find._EXERCISE_HEADING_RE.search(heading)
+
+
 def test_source_find_matching_scope_scans_zip_and_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     sources_dir = tmp_path / "sources"
     mg_pdf = sources_dir / "mathsgenie" / "Grade_8" / "Exam_Questions" / "complex.pdf"
