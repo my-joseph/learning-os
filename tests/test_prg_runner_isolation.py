@@ -732,10 +732,12 @@ def test_b03_layer2_ignores_learner_eslint_config_and_isolates_lint_check_ingest
 
 def test_b04_process_group_kills_sigterm_ignoring_grandchild_and_cleans_up_on_sigterm(tmp_path):
     import os
+    import shutil
     import signal
     import subprocess
 
     from code_engine.sandbox import run_isolated
+    from tests.test_sandbox_sigterm_race import wait_for_pid_absent
 
     # 1. Grandchild ignoring SIGTERM survives leader exit unless process group is swept with SIGKILL
     with create_sandbox_dir(prefix="prg_b04_gc_") as sbx_str:
@@ -754,22 +756,23 @@ def test_b04_process_group_kills_sigterm_ignoring_grandchild_and_cleans_up_on_si
         )
         assert res.returncode == 0
         gc_pid = int(pid_file.read_text(encoding="utf-8").strip())
-        # Give kernel a brief moment to reap SIGKILLed process
-        deadline = time.monotonic() + 2.0
-        alive = True
-        while time.monotonic() < deadline:
-            try:
-                os.kill(gc_pid, 0)
-            except ProcessLookupError:
-                alive = False
-                break
-            time.sleep(0.05)
-        if alive:
-            try:
-                os.kill(gc_pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        assert not alive, f"Grandchild PID {gc_pid} survived after run_isolated returned"
+        gc_state, gc_detail = wait_for_pid_absent(gc_pid, timeout_sec=2.0)
+        try:
+            assert gc_state != "live", (
+                f"Grandchild PID {gc_pid} survived as a LIVE ORPHAN after run_isolated returned "
+                f"(state={gc_state}/{gc_detail})"
+            )
+            assert gc_state != "zombie", (
+                f"Grandchild PID {gc_pid} remained an unreaped ZOMBIE after run_isolated returned "
+                f"(state={gc_state}/{gc_detail})"
+            )
+            assert gc_state == "absent", f"Grandchild PID {gc_pid} unexpected state {(gc_state, gc_detail)}"
+        finally:
+            if gc_state == "live":
+                try:
+                    os.kill(gc_pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
 
     # 2. SIGTERM sent to parent Python process must kill start_new_session child group AND clean temp sandbox dir
     marker_file = tmp_path / "b04_child_info.json"
@@ -782,9 +785,14 @@ with create_sandbox_dir(prefix="prg_b04_sigterm_") as sbx_str:
     work = sbx / "work"
     work.mkdir()
     child_pid_file = work / "child.pid"
+    tmp_pid_file = work / "child.pid.tmp"
     Path({json.dumps(str(marker_file))}).write_text(json.dumps({{"sbx": str(sbx), "pid_file": str(child_pid_file)}}))
     run_isolated(
-        ["/bin/sh", "-c", f"echo $$ > {{str(child_pid_file)}}; trap '' TERM; exec sleep 60"],
+        [
+            "/bin/sh",
+            "-c",
+            f"trap '' TERM; echo $$ > {{str(tmp_pid_file)!r}} && mv {{str(tmp_pid_file)!r}} {{str(child_pid_file)!r}}; exec sleep 60",
+        ],
         cwd=work,
         sandbox_root=sbx,
         timeout_sec=30.0,
@@ -798,37 +806,64 @@ with create_sandbox_dir(prefix="prg_b04_sigterm_") as sbx_str:
     )
     info = None
     child_pid = None
-    wait_until = time.monotonic() + 5.0
-    while time.monotonic() < wait_until:
-        if marker_file.is_file():
-            info = json.loads(marker_file.read_text(encoding="utf-8"))
-            pf = Path(info["pid_file"])
-            if pf.is_file() and pf.read_text(encoding="utf-8").strip():
-                child_pid = int(pf.read_text(encoding="utf-8").strip())
-                break
-        time.sleep(0.05)
-    assert info is not None and child_pid is not None, "Child process did not start in time"
+    try:
+        wait_until = time.monotonic() + 5.0
+        while time.monotonic() < wait_until:
+            if marker_file.is_file():
+                info = json.loads(marker_file.read_text(encoding="utf-8"))
+                pf = Path(info["pid_file"])
+                if pf.is_file() and pf.read_text(encoding="utf-8").strip():
+                    child_pid = int(pf.read_text(encoding="utf-8").strip())
+                    break
+            time.sleep(0.05)
+        assert info is not None and child_pid is not None, "Child process did not start in time"
 
-    # Simulate Studio killProcessTree sending SIGTERM to parent Python process group
-    os.killpg(parent.pid, signal.SIGTERM)
-    parent.wait(timeout=5.0)
+        # Simulate Studio killProcessTree sending SIGTERM to parent Python process group
+        os.killpg(parent.pid, signal.SIGTERM)
+        driver_rc = parent.wait(timeout=5.0)
 
-    deadline = time.monotonic() + 2.0
-    child_alive = True
-    while time.monotonic() < deadline:
-        try:
-            os.kill(child_pid, 0)
-        except ProcessLookupError:
-            child_alive = False
-            break
-        time.sleep(0.05)
-    if child_alive:
-        try:
-            os.kill(child_pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    assert not child_alive, f"start_new_session child PID {child_pid} orphaned when parent got SIGTERM"
-    assert not Path(info["sbx"]).exists(), f"Sandbox temp dir {info['sbx']} leaked when parent got SIGTERM"
+        child_state, child_detail = wait_for_pid_absent(child_pid, timeout_sec=2.0)
+        sbx_exists = Path(info["sbx"]).exists()
+        assert child_state != "live", (
+            f"start_new_session child PID {child_pid} survived as a LIVE ORPHAN when parent got SIGTERM "
+            f"(state={child_state}/{child_detail}, driver_rc={driver_rc}, sbx_exists={sbx_exists})"
+        )
+        assert child_state != "zombie", (
+            f"start_new_session child PID {child_pid} remained an unreaped ZOMBIE when parent got SIGTERM "
+            f"(state={child_state}/{child_detail}, driver_rc={driver_rc}, sbx_exists={sbx_exists})"
+        )
+        assert child_state == "absent", (
+            f"start_new_session child PID {child_pid} had unexpected state {(child_state, child_detail)} "
+            f"(driver_rc={driver_rc}, sbx_exists={sbx_exists})"
+        )
+        assert driver_rc == 128 + signal.SIGTERM, (
+            f"Expected driver exit {128 + signal.SIGTERM} from SIGTERM handler, "
+            f"got {driver_rc} (sbx_exists={sbx_exists})"
+        )
+        assert not sbx_exists, (
+            f"Sandbox temp dir {info['sbx']} leaked when parent got SIGTERM "
+            f"(driver_rc={driver_rc}, child_state={child_state}/{child_detail})"
+        )
+    finally:
+        if parent.poll() is None:
+            try:
+                os.killpg(parent.pid, signal.SIGKILL)
+            except OSError:
+                pass
+            try:
+                parent.wait(timeout=3.0)
+            except subprocess.TimeoutExpired:
+                pass
+        if child_pid is not None:
+            try:
+                os.killpg(child_pid, signal.SIGKILL)
+            except OSError:
+                try:
+                    os.kill(child_pid, signal.SIGKILL)
+                except OSError:
+                    pass
+        if info is not None and Path(info["sbx"]).exists():
+            shutil.rmtree(info["sbx"], ignore_errors=True)
 
 
 def test_b05_fail_closed_when_sandbox_unavailable_and_react_lab_submit(tmp_path, monkeypatch, capsys):
