@@ -180,6 +180,151 @@ def test_count_real_steps_keeps_radical_evaluation_distinct() -> None:
     assert ai_drill_ingest.count_real_steps(problem) == 1
 
 
+@pytest.mark.parametrize(
+    ("earlier", "padding"),
+    [
+        pytest.param("4x = 32", r"\boxed{4x = 32}", id="boxed"),
+        pytest.param("4x = 32", r"\fbox{4x = 32}", id="fbox"),
+        pytest.param("x = (39-7)/4", r"x = \frac{39-7}{4}", id="frac-vs-slash"),
+        pytest.param(r"x = \frac{32}{4}", r"x = \dfrac{32}{4}", id="dfrac"),
+        pytest.param(r"x = \frac{32}{4}", r"x = \tfrac{32}{4}", id="tfrac"),
+        pytest.param("4x = 32", r"\begin{aligned}4x &= 32\end{aligned}", id="aligned"),
+        pytest.param(
+            "4x = 32",
+            r"\begin{aligned}4x &= 32 \\ 32 &= 4x\end{aligned}",
+            id="two-aligned-rows-repeat-one-line",
+        ),
+        pytest.param("4x = 32", r"{\fbox{\begin{aligned}&4x = 32\end{aligned}}}", id="braced-aligned"),
+        pytest.param("4x = 32", r"\left(4x = 32\right)", id="sized-parentheses"),
+        pytest.param("4x = 32", r"\left[4x\right] = 32", id="sized-brackets"),
+        pytest.param("4x = 32", r"\left\{4x\right\} = 32", id="sized-braces"),
+        pytest.param("4x = 32", r"\left.4x\right. = 32", id="invisible-delimiters"),
+        pytest.param("4x = 32", r"\displaystyle \text{so } 4x = 32", id="display-and-text-label"),
+        pytest.param("4x = 32", r"\mathrm{therefore}\;\textbf{so}\;4x = 32", id="styled-labels"),
+        pytest.param("sin(x) = 0", r"\mathrm{sin}(\textbf{x}) = 0", id="styled-math"),
+        pytest.param("4x = 32", "4x = 32.", id="trailing-period"),
+        pytest.param("4x = 32", "4x = 32,", id="trailing-comma"),
+        pytest.param("4x = 32", "4x = 32;", id="trailing-semicolon"),
+        pytest.param("4*x = 32", r"4\cdot x = 32", id="cdot"),
+        pytest.param("4x = 32", r"4\times x = 32", id="times"),
+        pytest.param("4x = 32", "4*x = 32", id="implicit-multiplication"),
+        pytest.param("x = 32/4", r"\boxed{\displaystyle x = \frac{32}{4}}", id="nested-wrappers"),
+        pytest.param("4x = 32", r"\boxed{32 = 4x}", id="boxed-equation-flip"),
+        pytest.param(r"x = \alpha", r"\boxed{\alpha = x.}", id="unsupported-command-fallback"),
+        pytest.param("x = 2, 3", r"\fbox{x = 2, 3;}", id="safe-parse-error-fallback"),
+        pytest.param("4x = 32", r"\mathbf{4x = 32}", id="mathbf"),
+        pytest.param("4x = 32", r"\mathit{4x} = 32", id="mathit"),
+        pytest.param("4x = 32", r"\textit{therefore} 4x = 32", id="textit-label"),
+        pytest.param("sin(x) = 0", r"\operatorname{sin}(x) = 0", id="operatorname"),
+        pytest.param("4x = 32", r"\bigl(4x\bigr) = 32", id="big-delimiter-sides"),
+        pytest.param("4x = 32", r"\Big[4x\Big] = 32", id="Big-delimiters"),
+        pytest.param("4x = 32", r"\bigg(4x\bigg) = 32", id="bigg-delimiters"),
+        pytest.param("4x = 32", r"\Bigg(4x\Bigg) = 32", id="Bigg-delimiters"),
+        pytest.param("4x = 32", r"\Biggl(4x\Biggm.\Biggr) = 32", id="sizing-lrm-and-invisible"),
+        pytest.param("4x = 32", r"\textcolor{red}{4x = 32}", id="textcolor"),
+        pytest.param("4x = 32", r"{\color{red} 4x = 32}", id="color-declaration"),
+        pytest.param("4x = 32", r"\phantom{x = 8}4x = 32", id="phantom"),
+        pytest.param("4x = 32", r"4x\hphantom{+1} = 32", id="hphantom"),
+        pytest.param("4x = 32", r"4x = 32\vphantom{+1}", id="vphantom"),
+        pytest.param("4x = 32", r"4x\ =\ 32", id="backslash-space"),
+        pytest.param("4x = 32", r"\scriptstyle 4x = 32", id="scriptstyle"),
+        pytest.param("4x = 32", r"\scriptscriptstyle 4x = 32", id="scriptscriptstyle"),
+        pytest.param("4x = 32", r"\begin{array}{rcl}4x & = & 32\end{array}", id="array-preamble"),
+        pytest.param(
+            "4x = 32",
+            r"\begin{alignedat*}[t]{2}4x &= 32 \\ 32 &= 4x\end{alignedat*}",
+            id="alignedat-position-and-columns",
+        ),
+        pytest.param("4x = 32", r"\begin{matrix}4x &= 32 \\ 32 &= 4x\end{matrix}", id="other-environment"),
+        pytest.param("4x = 32", r"\mathsf{\mathit{4x} = 32}", id="nested-font-wrappers"),
+        pytest.param("4x = 32", r"\customstyle{4x = 32}\customspace", id="unlisted-wrapper-and-bare-command"),
+        pytest.param("4x = 32", r"4x\hspace*{1em} = 32", id="spacing-length"),
+        pytest.param("4x = 32", r"4x = 32\tag*{1}", id="equation-tag"),
+        pytest.param(r"x = \alpha", r"\textcolor{blue}{\mathbf{\alpha = x}}", id="wrapped-symbol-fallback"),
+        pytest.param("4x = 32", r"\phantom{32 = 4x}", id="invisible-only-row"),
+        pytest.param("z = 2i", r"z = 2\mathrm{i}", id="styled-imaginary-unit"),
+        pytest.param("4x = 32", "4x~=~32", id="tex-tie-spacing"),
+        pytest.param("4x = 32", r"4x\overset{A}{=}32", id="overset-relation"),
+        pytest.param("4x = 32", r"4x\underset{A}{=}32", id="underset-relation"),
+        pytest.param("4x = 32", r"4x\stackrel{A}{=}32", id="stackrel-relation"),
+        pytest.param("4x = 32", r"\underbrace{4x}_{A} = 32", id="underbrace-annotation"),
+        pytest.param("4x = 32", r"4x = \overbrace{32}^{A}", id="overbrace-annotation"),
+        pytest.param("4x = 32", r"\colorbox{red}{4x = 32}", id="colorbox"),
+        pytest.param("4x = 32", r"\fcolorbox{black}{red}{4x = 32}", id="fcolorbox"),
+        pytest.param("4x = 32", r"4x\mspace{5mu} = 32", id="mspace"),
+        pytest.param("4x = 32", "4\u200bx = 32", id="zero-width-space"),
+        pytest.param("4x = 32", "4\u200cx = 32", id="zero-width-non-joiner"),
+        pytest.param("4x = 32", "4\u200dx = 32", id="zero-width-joiner"),
+        pytest.param("4x = 32", "4\u2060x = 32", id="word-joiner"),
+        pytest.param("4x = 32", "4\ufeffx = 32", id="unicode-bom"),
+        # Additional probes exercise composition, script token boundaries, and the string fallback.
+        pytest.param("4x = 32", r"4x\overset{\text{check}}{\underset{B}{=}}32", id="nested-relation-annotations"),
+        pytest.param(r"x \le 3", r"x\underset{\mathrm{bound}}{\le}3", id="annotated-inequality-fallback"),
+        pytest.param(
+            "4x = 32",
+            r"\begin{aligned}32 &\stackrel{\frac{1}{2}}{=} 4x \\ 4x &= 32\end{aligned}",
+            id="annotated-flipped-aligned-row",
+        ),
+        pytest.param("4x = 32", r"\underbrace{\overbrace{4x}^{B}}_{A}=32", id="nested-brace-annotations"),
+        pytest.param("4x = 32", r"\underbrace{4x} _ A =32", id="underbrace-single-token"),
+        pytest.param("4x = 32", r"4x=\overbrace{32} ^ \alpha", id="overbrace-command-token"),
+        pytest.param("4x = 32", "\\bo\u200dxed{4x\u2009=32}", id="unicode-format-inside-command"),
+        pytest.param(r"x = \alpha", "\\colorbox{blue}{x~\u2060=\u202f\\alpha}", id="mixed-spacing-fallback"),
+        pytest.param(r"x = \alpha", r"{\alpha} = {x}", id="fallback-redundant-equation-side-braces"),
+    ],
+)
+def test_presentation_padding_does_not_count(earlier: str, padding: str) -> None:
+    problem = {"steps": [{"latex": latex, "explain": "Show the transformation."} for latex in (earlier, padding)]}
+    assert ai_drill_ingest.count_real_steps(problem) == 1
+
+
+def test_aligned_padding_compares_each_line_with_seen_steps() -> None:
+    problem = {
+        "display": r"\begin{gathered}4x+7=39 \\ x=(39-7)/4\end{gathered}",
+        "prompt": r"Use $\boxed{4x=39-7}$.",
+        "steps": [
+            {"latex": "4x=32", "explain": "Simplify the difference."},
+            {
+                "latex": r"\begin{aligned*}4x+7 &=39 \\ 4x &=39-7 \\ 4x &=32 \\ 4x &=32\end{aligned*}",
+                "explain": "Repeat the equations.",
+            },
+            {"latex": r"\textbf{therefore}", "explain": "Add a label."},
+        ],
+    }
+    assert ai_drill_ingest.count_real_steps(problem) == 1
+
+
+@pytest.mark.parametrize(
+    "lines",
+    [
+        pytest.param((r"x = \frac{32}{4}", "x = 8"), id="fraction-evaluation"),
+        pytest.param(("4x = 39-7", "4x = 32"), id="subtraction-evaluation"),
+        pytest.param(("2(x+3)", "2x+6"), id="expansion"),
+        pytest.param(("4x = 32", r"\boxed{x = 8}"), id="boxed-final-line"),
+        pytest.param(("x = 3", r"\left|x\right| = 3"), id="absolute-value-delimiters"),
+        pytest.param((r"x = \alpha", r"\boxed{x = \beta}"), id="distinct-string-fallback"),
+        pytest.param(("2^5", "32"), id="power-evaluation"),
+        pytest.param(("3x+5x", "8x"), id="combining-like-terms"),
+        pytest.param((r"\overline{z}", "z"), id="conjugate-overline"),
+        pytest.param((r"\overline{z+w}", r"\overline{z}+w"), id="conjugate-group-scope"),
+        pytest.param((r"x_{a+b}", r"x_{a}+b"), id="subscript-group-scope"),
+        pytest.param((r"\underbrace{x}_{A}", r"\underbrace{x}_{A}^{2}"), id="power-after-underbrace"),
+        pytest.param((r"\bar{z}", "z"), id="conjugate-bar"),
+        pytest.param((r"\sqrt{x}", "x"), id="symbolic-radical"),
+        pytest.param((r"x \le 3", r"x \ge 3"), id="inequality-direction"),
+        pytest.param((r"x = 2\cdots", "x = 2*s"), id="ellipsis-command-boundary"),
+        pytest.param(
+            (r"x_{\mathrm{initial}} = 3", r"x_{\mathrm{final}} = 3"),
+            id="math-subscripts",
+        ),
+        pytest.param(("", r"\begin{align}4x &= 32 \\[2pt] x &= 8\end{align}"), id="new-aligned-lines"),
+    ],
+)
+def test_real_transformations_still_count(lines: tuple[str, str]) -> None:
+    problem = {"steps": [{"latex": line, "explain": "Show the transformation."} for line in lines]}
+    assert ai_drill_ingest.count_real_steps(problem) == 2
+
+
 def test_under_labelling_bypass_rejected_at_all_levels() -> None:
     draft = _template_draft()
 
@@ -286,6 +431,29 @@ def test_add_variants_enforces_l2_step_floor_for_new_variants(tmp_path: Path) ->
         vault_dir=str(TEMPLATE_DIR),
     )
     assert len(saved["variants"]) == 1
+
+
+def test_drill_and_variant_gates_report_the_same_unwrapped_count(tmp_path: Path) -> None:
+    draft = _template_draft()
+    item = draft["problems"][1]
+    item["steps"] = item["steps"][:2] + item["steps"][-1:]
+    duplicate = item["steps"][1]["latex"]
+    item["steps"].insert(2, {"latex": rf"\boxed{{{duplicate}}}", "explain": "Repeat the same equation."})
+
+    drill_errors = ai_drill_ingest.check_ai_drill(copy.deepcopy(draft), vault_dir=str(TEMPLATE_DIR))
+    drill_count = [error.split("] ", 1)[1] for error in drill_errors if "L2 problem has" in error]
+    assert len(drill_count) == 1
+    assert drill_count[0].startswith("L2 problem has 3 real step(s)")
+
+    with pytest.raises(variant_bank.VariantBankError) as exc:
+        variant_bank.add_variants(
+            {"unitCode": "MTH-TEMPLATE", "variants": [copy.deepcopy(item)]},
+            variants_dir=str(tmp_path / "variants"),
+            data_root=str(tmp_path / "empty_data"),
+            vault_dir=str(TEMPLATE_DIR),
+        )
+    variant_count = [line.split("] ", 1)[1] for line in str(exc.value).splitlines() if "L2 problem has" in line]
+    assert variant_count == drill_count
 
 
 def test_l2_step_floor_gate_accepts_baseline_and_skips_prg(

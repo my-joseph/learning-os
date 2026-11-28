@@ -11,6 +11,7 @@ import copy
 import json
 import os
 import re
+import unicodedata
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
@@ -44,7 +45,7 @@ from math_engine.figure_autofill import (
     figure_decision_missing,
 )
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
-from math_engine.latex_guard import find_bare_words
+from math_engine.latex_guard import KNOWN_MATH_FUNCTIONS, find_bare_words
 from math_engine.source_cores import index_dir, resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality, load_located_source_pages
 from math_engine.verify import verify_problem
@@ -739,15 +740,16 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         )
 
 
-def _extract_braced_arg(s: str, start_idx: int) -> Optional[Tuple[str, int]]:
-    """Extract content inside `{...}` starting at `start_idx` (where `s[start_idx] == '{'`)."""
-    if start_idx >= len(s) or s[start_idx] != "{":
+def _extract_braced_arg(s: str, start_idx: int, delimiters: str = "{}") -> Optional[Tuple[str, int]]:
+    """Extract a balanced group starting at `start_idx`."""
+    opening, closing = delimiters
+    if start_idx >= len(s) or s[start_idx] != opening:
         return None
     depth = 0
     for idx in range(start_idx, len(s)):
-        if s[idx] == "{":
+        if s[idx] == opening:
             depth += 1
-        elif s[idx] == "}":
+        elif s[idx] == closing:
             depth -= 1
             if depth == 0:
                 return s[start_idx + 1 : idx], idx + 1
@@ -764,6 +766,10 @@ def _normalize_sympy_candidate(raw: str) -> str:
         s = s.replace(macro, repl)
     for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad"):
         s = s.replace(macro, " ")
+    return _normalize_sympy_latex_groups(s)
+
+
+def _normalize_sympy_latex_groups(s: str) -> str:
     # Convert \frac{a}{b} and \dfrac{a}{b}
     for cmd in (r"\dfrac", r"\frac"):
         while cmd in s:
@@ -1536,9 +1542,54 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
                 break
 
 
-_STEP_LATEX_FUNC_RE = re.compile(r"\\(sin|cos|tan|ln|log|exp|pi)\b")
 _STEP_LEADING_EQ_RE = re.compile(r"^\s*=+\s*")
 _STEP_SINGLE_EQ_RE = re.compile(r"(?<![<>!=\\])=(?!=)")
+_STEP_LATEX_TOKEN_RE = re.compile(r"\\(?:[A-Za-z]+|[^\n])|[{}&]")
+_STEP_ARG_SPACE_RE = re.compile(r"\s*")
+_STEP_SIZING_COMMAND_RE = re.compile(r"(?:left|right|(?:big|Big|bigg|Bigg)[lrm]?)")
+_STEP_TEXT_LABEL_RE = re.compile(r"[A-Za-z]{2,}(?:[\s,-]+[A-Za-z]+)*[.!?:;]?")
+_STEP_SCRIPT_PREFIX_RE = re.compile(r"[_^]\s*(?:\{\s*)*$")
+_STEP_SCRIPT_ARG_RE = re.compile(r"\s*([_^])\s*(\\(?:[A-Za-z]+|[^\n])|[^\s}_^])")
+_STEP_ROW_BREAK_RE = re.compile(r"\\\\\*?(?:\s*\[[^\]\n]*\])?")
+_STEP_LAYOUT_PREAMBLES = {"array", "subarray", "tabular", "alignat", "alignedat"}
+_STEP_POSITIONED_LAYOUTS = {"aligned", "gathered", "alignedat", "array", "tabular"}
+_STEP_HIDDEN_ARGUMENTS = {"color", "phantom", "hphantom", "vphantom", "hspace", "mspace", "tag", "label"}
+_STEP_LEADING_ARGUMENTS = dict.fromkeys(("textcolor", "colorbox", "overset", "underset", "stackrel"), 1) | {
+    "fcolorbox": 2,
+}
+_STEP_BRACE_ANNOTATIONS = {"underbrace": "_", "overbrace": "^"}
+_STEP_STARRED_COMMANDS = {"operatorname", "hspace", "tag"}
+_STEP_LATEX_REPLACEMENTS = {
+    **{name: name for name in ("sin", "cos", "tan", "ln", "log", "exp", "pi")},
+    "cdot": "*",
+    "times": "*",
+    "div": "/",
+    "dfrac": r"\frac",
+    "tfrac": r"\frac",
+    "{": "{",
+    "}": "}",
+}
+# These commands encode mathematical notation. Other commands have only their visible arguments compared.
+_STEP_MATH_COMMANDS = frozenset(
+    r"""
+    frac sqrt binom dbinom tbinom over atop choose
+    arcsin arccos arctan sinh cosh tanh cot sec csc lg min max inf sup gcd det dim ker deg arg Pr
+    alpha beta gamma delta epsilon varepsilon zeta eta theta vartheta iota kappa varkappa lambda mu nu xi
+    omicron rho varrho sigma varsigma tau upsilon phi varphi chi psi omega
+    Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega digamma
+    infty partial nabla ell hbar imath jmath Re Im aleph emptyset varnothing
+    pm mp ast star circ bullet oplus ominus otimes odot wedge vee cap cup setminus bmod mod pmod
+    le leq leqslant ge geq geqslant ne neq approx sim simeq cong equiv propto ll gg
+    in ni notin not subset subseteq supset supseteq parallel perp mid nmid colon
+    to mapsto leftarrow rightarrow leftrightarrow Leftarrow Rightarrow Leftrightarrow implies iff
+    sum prod coprod int iint iiint oint lim liminf limsup bigcup bigcap
+    overline bar underline vec hat widehat tilde widetilde dot ddot overrightarrow
+    langle rangle lvert rvert vert lVert rVert Vert lbrace rbrace lceil rceil lfloor rfloor
+    forall exists nexists neg therefore because angle triangle square prime degree
+    dots ldots cdots vdots ddots | % _ # &
+    """.split()
+)
+_STEP_GROUP_DELIMITERS = {"{": "{}", "[": "[]", "(": "()"}
 # Preserve function calls as written so evaluating a radical or a trig function still counts as a step.
 _STEP_UNEVALUATED_FUNCS = {name: sp.Function(name) for name in WHITELIST_FUNCS}
 _STEP_KNOWN_SYMBOLS = _STEP_UNEVALUATED_FUNCS.keys() | WHITELIST_CONSTANTS.keys()
@@ -1583,43 +1634,132 @@ def _parse_step_side_canonical(raw_side: str) -> Optional[str]:
     return _canonical_sympy_expr(expr)
 
 
-def _normalize_step_latex(latex: Any) -> str:
-    """Return a canonical anti-padding key for a step's LaTeX.
+def _strip_step_outer_groups(line: str, delimiters: Dict[str, str]) -> str:
+    """Strip leading equals signs, trailing punctuation, and enclosing groups."""
+    while True:
+        line = _STEP_LEADING_EQ_RE.sub("", line).strip().rstrip(".,;").rstrip()
+        pair = delimiters.get(line[:1])
+        if not pair:
+            return line
+        group = _extract_braced_arg(line, 0, pair)
+        if group is None or group[1] != len(line):
+            return line
+        line = group[0]
 
-    Strips leading ``=``, formatting macros, extra braces, and whitespace. When the expression (or
-    both sides of a single ``=`` equation) parses via ``answer_check.safe_parse(..., evaluate=False)``,
-    returns a canonical math form that treats commutative reordering and LHS/RHS equation flips as
-    identical while keeping real simplification steps distinct. Falls back to string normalisation
-    when parsing fails.
-    """
+
+def _step_latex_group_ends(tokens: List[re.Match[str]]) -> Dict[int, int]:
+    """Index balanced argument groups without treating escaped braces as group boundaries."""
+    openings: List[int] = []
+    ends: Dict[int, int] = {}
+    for token in tokens:
+        if token[0] == "{":
+            openings.append(token.start())
+        elif token[0] == "}" and openings:
+            ends[openings.pop()] = token.end()
+    return ends
+
+
+def _step_environment_body(latex: str, name: str, pos: int, group_ends: Dict[int, int]) -> int:
+    """Skip a layout's optional position and required column specification, when present."""
+    name = name.rstrip("*")
+    if name in _STEP_POSITIONED_LAYOUTS:
+        option = _extract_braced_arg(latex, _STEP_ARG_SPACE_RE.match(latex, pos).end(), "[]")
+        if option:
+            pos = option[1]
+    if name in _STEP_LAYOUT_PREAMBLES:
+        pos = group_ends.get(_STEP_ARG_SPACE_RE.match(latex, pos).end(), pos)
+    return pos
+
+
+def _step_latex_lines(latex: Any) -> Iterable[str]:
+    """Keep mathematical tokens, unwrap presentation arguments, and yield rows for comparison."""
     if not isinstance(latex, str):
-        return ""
-    s = latex.strip().replace("$", "").replace("\u2212", "-")
-    for macro in (
-        r"\left",
-        r"\right",
-        r"\,",
-        r"\;",
-        r"\:",
-        r"\!",
-        r"\quad",
-        r"\qquad",
-        r"\displaystyle",
-        r"\textstyle",
-    ):
-        s = s.replace(macro, "")
-    cand = _normalize_sympy_candidate(s)
-    cand = _STEP_LATEX_FUNC_RE.sub(r"\1", cand)
-    cand = _STEP_LEADING_EQ_RE.sub("", cand).strip()
-    while cand.startswith("{"):
-        group = _extract_braced_arg(cand, 0)
-        if group is None or group[1] != len(cand):
-            break
-        cand = _STEP_LEADING_EQ_RE.sub("", group[0]).strip()
+        return
+    latex = "".join(ch for ch in latex if unicodedata.category(ch) != "Cf")
+    latex = latex.replace("$", "").replace("\u2212", "-").replace("~", " ")
+    tokens = list(_STEP_LATEX_TOKEN_RE.finditer(latex))
+    group_ends = _step_latex_group_ends(tokens)
+    wrapper_closes: Dict[int, int] = {}
+    parts: List[str] = []
+    cursor = 0
+    for token in tokens:
+        if token.start() < cursor:
+            continue
+        parts.append(latex[cursor : token.start()])
+        cursor = token.end()
+        if token.start() in wrapper_closes:
+            cursor = wrapper_closes[token.start()]
+            continue
+        if token[0] == "&":
+            continue
+        command = token[0][1:]
+        if token[0] in {"{", "}"} or command in _STEP_MATH_COMMANDS or command == "\\":
+            parts.append(token[0])
+            continue
+        if command in _STEP_LATEX_REPLACEMENTS:
+            parts.append(_STEP_LATEX_REPLACEMENTS[command])
+            continue
+        if _STEP_SIZING_COMMAND_RE.fullmatch(command):
+            delimiter = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+            cursor = delimiter + 1 if latex[delimiter : delimiter + 1] == "." else cursor
+            continue
+
+        if command in _STEP_STARRED_COMMANDS and latex[cursor : cursor + 1] == "*":
+            cursor += 1
+        arg_start = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+        arg_end = group_ends.get(arg_start)
+        if arg_end is None:
+            continue
+        if command in {"begin", "end"}:
+            name = latex[arg_start + 1 : arg_end - 1]
+            cursor = _step_environment_body(latex, name, arg_end, group_ends) if command == "begin" else arg_end
+            continue
+        if command in _STEP_HIDDEN_ARGUMENTS:
+            cursor = arg_end
+            continue
+        for _ in range(_STEP_LEADING_ARGUMENTS.get(command, 0)):
+            cursor = arg_end
+            arg_start = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+            arg_end = group_ends.get(arg_start)
+            if arg_end is None:
+                break
+        if arg_end is None:
+            continue
+
+        is_text = command == "mathrm" or (command.startswith("text") and command != "textcolor")
+        label = latex[arg_start + 1 : arg_end - 1].strip() if is_text else ""
+        if (
+            label not in KNOWN_MATH_FUNCTIONS
+            and _STEP_TEXT_LABEL_RE.fullmatch(label)
+            and not _STEP_SCRIPT_PREFIX_RE.search("".join(parts))
+        ):
+            cursor = arg_end
+            parts.append(" ")
+        else:
+            cursor = arg_start + 1
+            wrapper_end = arg_end
+            if command in _STEP_BRACE_ANNOTATIONS:
+                annotation = _STEP_SCRIPT_ARG_RE.match(latex, arg_end)
+                if annotation and annotation[1] == _STEP_BRACE_ANNOTATIONS[command]:
+                    wrapper_end = (
+                        group_ends.get(annotation.start(2), arg_end) if annotation[2] == "{" else annotation.end()
+                    )
+            wrapper_closes[arg_end - 1] = wrapper_end
+
+    parts.append(latex[cursor:])
+    line = _strip_step_outer_groups("".join(parts), {"{": "{}"})
+    yield from _STEP_ROW_BREAK_RE.split(line)
+
+
+def _normalize_step_latex(line: str) -> str:
+    """Return a canonical key for one unwrapped row, preserving unevaluated arithmetic."""
+    cand = _normalize_sympy_latex_groups(line)
+    cand = _strip_step_outer_groups(cand, {"{": "{}"})
     if not cand:
         return ""
 
-    eq_parts = _STEP_SINGLE_EQ_RE.split(cand)
+    parse_candidate = _strip_step_outer_groups(cand, _STEP_GROUP_DELIMITERS)
+    eq_parts = _STEP_SINGLE_EQ_RE.split(parse_candidate)
     if len(eq_parts) == 2:
         lhs = _parse_step_side_canonical(eq_parts[0])
         rhs = _parse_step_side_canonical(eq_parts[1])
@@ -1631,14 +1771,13 @@ def _normalize_step_latex(latex: Any) -> str:
         if parsed is not None:
             return f"expr:{parsed}"
 
-    # String fallback when SymPy parsing fails: drop braces and whitespace (and sort sides of a single '=').
-    fallback = re.sub(r"\s+", "", cand.replace("{", "").replace("}", ""))
-    if not fallback:
-        return ""
-    fb_parts = _STEP_SINGLE_EQ_RE.split(fallback)
-    if len(fb_parts) == 2 and all(fb_parts):
-        fallback = "=".join(sorted(fb_parts))
-    return f"str:{fallback}"
+    # Keep internal braces in unparseable math because they determine the scope of commands and scripts.
+    fb_parts = _STEP_SINGLE_EQ_RE.split(cand)
+    if len(fb_parts) == 2:
+        sides = [re.sub(r"\s+", "", _strip_step_outer_groups(side, {"{": "{}"})) for side in fb_parts]
+        if all(sides):
+            return "str:" + "=".join(sorted(sides))
+    return "str:" + re.sub(r"\s+", "", cand)
 
 
 def count_real_steps(prob: Dict[str, Any]) -> int:
@@ -1646,21 +1785,14 @@ def count_real_steps(prob: Dict[str, Any]) -> int:
 
     A step counts only when:
     - both ``latex`` and ``explain`` are non-empty strings; and
-    - its canonical ``latex`` key has not already been seen in the given ``display``/prompt
-      expressions or any earlier counted step (rejects adjacent and non-adjacent repeats,
-      leading ``=``, extra braces, commutative reorderings, and LHS/RHS equation flips).
+    - its canonical row key has not already been seen in the given ``display``/prompt
+      expressions or any earlier counted row, after removing presentation formatting.
     """
     steps = prob.get("steps")
     if not isinstance(steps, list):
         return 0
-    seen: Set[str] = set()
-    given_norm = _normalize_step_latex(prob.get("display") or "")
-    if given_norm:
-        seen.add(given_norm)
-    for match in _INLINE_MATH_RE.findall(str(prob.get("prompt") or "")):
-        norm_match = _normalize_step_latex(match)
-        if norm_match:
-            seen.add(norm_match)
+    givens = [prob.get("display"), *_INLINE_MATH_RE.findall(str(prob.get("prompt") or ""))]
+    seen = {key for given in givens for line in _step_latex_lines(given) if (key := _normalize_step_latex(line))}
 
     count = 0
     for st in steps:
@@ -1669,11 +1801,11 @@ def count_real_steps(prob: Dict[str, Any]) -> int:
         lx, ex = st.get("latex"), st.get("explain")
         if not (isinstance(lx, str) and lx.strip() and isinstance(ex, str) and ex.strip()):
             continue
-        norm = _normalize_step_latex(lx)
-        if not norm or norm in seen:
-            continue
-        seen.add(norm)
-        count += 1
+        for line in _step_latex_lines(lx):
+            key = _normalize_step_latex(line)
+            if key and key not in seen:
+                seen.add(key)
+                count += 1
     return count
 
 
