@@ -139,6 +139,34 @@ def _seed_fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     return repo, data_root, progress_dir, issue_log
 
 
+@pytest.mark.parametrize("scored_items", [1, 2, 3])
+def test_level_clean_rates_require_three_scored_items(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, scored_items: int
+) -> None:
+    repo, data_root, progress_dir, issue_log = _seed_fixture(tmp_path)
+    monkeypatch.setenv("PROGRESS_DIR", str(progress_dir))
+    unit = "MTH-T99-C01-U01"
+    progress_file = progress_dir / f"DRL-{unit}-01.json"
+    progress = json.loads(progress_file.read_text())
+    progress["problems"]["Q01"]["attempts"] *= 4
+    for qid in ("Q02", "Q03")[scored_items - 1 :]:
+        del progress["problems"][qid]
+    progress_file.write_text(json.dumps(progress))
+
+    summary = authoring_signals.collect_authoring_signals(
+        unit, data_root=str(data_root), repo_root=str(repo), issue_log=str(issue_log)
+    )
+    quality = summary["drillQuality"]
+    if scored_items < 3:
+        assert quality["levelCleanRates"] == {}
+        assert quality["attempts"] == 0
+    else:
+        assert quality["levelCleanRates"] == {
+            "L2": {"items": 3, "attempts": 6, "firstTryCleanRate": 0.0, "skips": None}
+        }
+        assert quality["attempts"] == 6
+
+
 def test_authoring_signals_aggregates_all_sources_with_zero_leak(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
