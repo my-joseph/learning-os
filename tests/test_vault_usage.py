@@ -214,10 +214,12 @@ def test_only_active_variants_provide_usage_evidence(tmp_path: Path) -> None:
 def test_usage_report_on_real_repo_surfaces_active_and_retired_units() -> None:
     rep_u01 = vr.usage_report("MTH-T02-C01-U01", repo_root=str(ROOT))
     assert rep_u01["archetypeCount"] == 15
-    assert rep_u01["activeCount"] == 12
+    # Active usage grows as drills are added; it never exceeds the vault.
+    assert 12 <= rep_u01["activeCount"] <= rep_u01["archetypeCount"]
     chain = next(row for row in rep_u01["rows"] if row["key"] == "t02-c01-u01-mixed-operations-chain")
+    # DRL-MTH-T02-C01-U01-06 serves the chain archetype, so it is active from current drills (history not needed).
+    assert chain["status"] == "active"
     shallow = rep_u01["historyNotice"] == "history unavailable (shallow clone)"
-    assert chain["status"] == ("unknown" if shallow else "unused")
 
     rep_retired = vr.usage_report("MTH-T02-C02-U05", repo_root=str(ROOT))
     assert rep_retired["activeCount"] == 0

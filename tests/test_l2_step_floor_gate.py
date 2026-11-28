@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -63,8 +64,9 @@ def _template_draft() -> dict:
 def test_repository_l2_step_floor_gate() -> None:
     passed, report = ai_drill_ingest.check_l2_step_floor_gate(ROOT)
     assert passed, report
-    assert "drills 13/51 short" in report
-    assert "variants 43/147 short" in report
+    # Totals grow as content is added; the grandfathered short counts may only shrink.
+    assert re.search(r"drills 13/\d+ short", report), report
+    assert re.search(r"variants 43/\d+ short", report), report
     assert "Baseline: 11 drill(s), 13 problem(s); 11 bank(s), 43 variant(s)." in report
     # Zero-leak: report lists drill/variant IDs only, never prompt/step LaTeX.
     assert "DRL-MTH-T01-C04-01 Q04" in report
