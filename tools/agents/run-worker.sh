@@ -29,6 +29,9 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
+# Resolve caller-relative paths before the runner changes into the worktree.
+case "$PROMPT_FILE" in /*) ;; *) PROMPT_FILE="$(cd "$(dirname "$PROMPT_FILE")" && pwd)/$(basename "$PROMPT_FILE")" ;; esac
+case "$LOG" in /*) ;; *) LOG="$(cd "$(dirname "$LOG")" && pwd)/$(basename "$LOG")" ;; esac
 # Neon first; GPT Luna (Codex pool) is the quota fallback. Hydrogen and Carbon share Neon's agy pool, so they are
 # useless as fallbacks for Neon. Argon is retired. gpt-* models run through the Codex CLI, everything else through agy.
 # A worker must never start another worker (nested dispatch burns quota and escapes review).

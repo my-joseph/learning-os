@@ -29,6 +29,7 @@ Record sources, pinned SHA, and freshness in `context.md`.
 
 - Read `areas/<area>.md`. As coordinator, delegate bounded read-only assessments through `.claude/skills/dispatch-worker/SKILL.md`, pinned to `AUDIT_SHA`, using isolated worktrees, unique reports, and English output. If already in an isolated read-only worker or doing a focused single-area verification, inspect directly; do not spawn nested worktrees. Use a different model from the original assessor as the independent verifier (Carbon for high-risk areas, Sol otherwise; Argon is retired). Workers must not edit product files.
 - Save `assessment.md` with current state, strengths worth preserving, exact `file:line` evidence, and relevant measurements (size, complexity, duplication, coverage, timings, or per-stage cost). Separate measured facts from hypotheses.
+- Every lane and verification report starts with `Assessor model / Verifier model / AUDIT_SHA`.
 
 ## 4. Verify findings and filter stale or deferred items
 
