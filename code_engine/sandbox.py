@@ -126,8 +126,12 @@ _KNOWN_SINGLE_FILE_NAMES = frozenset(
     }
 )
 
+_TERM_SIGNALS: frozenset[int] = frozenset({signal.SIGTERM, signal.SIGINT}) if os.name == "posix" else frozenset()
 _ACTIVE_LOCK = threading.Lock()
-_ACTIVE_CHILD_PGIDS: set[int] = set()
+_ACTIVE_CHILD_PGIDS: frozenset[int] = frozenset()
+_ACTIVE_CHILDREN: tuple[tuple[int, subprocess.Popen[bytes]], ...] = ()
+_SIGNAL_INSTALL_DEPTH = 0
+_SAVED_SIG_HANDLERS: dict[int, Any] = {}
 _WARN_LOCK = threading.Lock()
 _WARNED_DEGRADATIONS: set[str] = set()
 
@@ -716,7 +720,38 @@ def _make_rlimit_preexec(
     return _apply_limits
 
 
-def _sweep_process_group(pgid: int) -> None:
+def _make_child_preexec(
+    *,
+    cpu_limit_sec: int,
+    max_fsize_bytes: int,
+    nofile_limit: int,
+    restore_sigmask: set[int] | frozenset[int] | None = None,
+):
+    """Build a POSIX `preexec_fn` restoring the child's signal mask before exec and applying rlimits."""
+    if os.name != "posix":
+        return None
+    rlimit_fn = _make_rlimit_preexec(
+        cpu_limit_sec=cpu_limit_sec,
+        max_fsize_bytes=max_fsize_bytes,
+        nofile_limit=nofile_limit,
+    )
+    can_restore_mask = restore_sigmask is not None and hasattr(signal, "pthread_sigmask")
+    if rlimit_fn is None and not can_restore_mask:
+        return None
+    saved_mask = frozenset(restore_sigmask) if restore_sigmask is not None else None
+
+    def _child_setup() -> None:
+        # Restore the pre-block signal mask before exec so children never inherit
+        # SIGTERM/SIGINT blocked from the parent's spawn/registration critical section.
+        if can_restore_mask and saved_mask is not None:
+            signal.pthread_sigmask(signal.SIG_SETMASK, saved_mask)
+        if rlimit_fn is not None:
+            rlimit_fn()
+
+    return _child_setup
+
+
+def _sweep_process_group(pgid: int, *, proc: subprocess.Popen[bytes] | None = None) -> None:
     """Send SIGKILL to `pgid` until no processes remain in the group (ignoring ESRCH)."""
     if os.name != "posix" or pgid <= 0:
         return
@@ -727,6 +762,11 @@ def _sweep_process_group(pgid: int) -> None:
             return
         except OSError:
             return
+        if proc is not None:
+            try:
+                proc.poll()
+            except OSError:
+                pass
         try:
             os.killpg(pgid, 0)
         except ProcessLookupError:
@@ -757,7 +797,7 @@ def _kill_process_group(proc: subprocess.Popen[bytes], *, pgid: int | None = Non
                 pass
         # Always sweep the group with SIGKILL even if the leader already exited,
         # so SIGTERM-ignoring descendants in target_pgid can never survive.
-        _sweep_process_group(target_pgid)
+        _sweep_process_group(target_pgid, proc=proc)
         if proc.poll() is None:
             try:
                 proc.kill()
@@ -775,11 +815,86 @@ def _kill_process_group(proc: subprocess.Popen[bytes], *, pgid: int | None = Non
         pass
 
 
-def _cleanup_all_active_pgids() -> None:
+def _register_active_child(pgid: int, proc: subprocess.Popen[bytes]) -> None:
+    """Register an active child process group (serialized writers, lock-free readers)."""
+    global _ACTIVE_CHILD_PGIDS, _ACTIVE_CHILDREN
     with _ACTIVE_LOCK:
-        pgids = list(_ACTIVE_CHILD_PGIDS)
-    for pgid in pgids:
-        _sweep_process_group(pgid)
+        _ACTIVE_CHILD_PGIDS = _ACTIVE_CHILD_PGIDS | {pgid}
+        _ACTIVE_CHILDREN = (*_ACTIVE_CHILDREN, (pgid, proc))
+
+
+def _unregister_active_child(pgid: int, proc: subprocess.Popen[bytes]) -> None:
+    """Unregister a finished child process group without locking signal-handler readers."""
+    global _ACTIVE_CHILD_PGIDS, _ACTIVE_CHILDREN
+    with _ACTIVE_LOCK:
+        remaining = tuple((p, pr) for p, pr in _ACTIVE_CHILDREN if not (p == pgid and pr is proc))
+        _ACTIVE_CHILDREN = remaining
+        remaining_pgids = {p for p, _ in remaining}
+        if pgid not in remaining_pgids:
+            _ACTIVE_CHILD_PGIDS = _ACTIVE_CHILD_PGIDS - {pgid}
+
+
+def _cleanup_all_active_pgids() -> None:
+    """Sweep all active child process groups without acquiring `_ACTIVE_LOCK`.
+
+    Copy-on-write snapshots guarantee a POSIX signal handler or `atexit` hook can
+    never deadlock by re-entering a held lock on the main thread.
+    """
+    children = _ACTIVE_CHILDREN
+    pgids = _ACTIVE_CHILD_PGIDS
+    proc_by_pgid: dict[int, subprocess.Popen[bytes]] = {}
+    for pgid, proc in children:
+        proc_by_pgid[pgid] = proc
+    for pgid in pgids | proc_by_pgid.keys():
+        _sweep_process_group(pgid, proc=proc_by_pgid.get(pgid))
+
+
+def _handle_termination_signal(signum: int, _frame: Any) -> None:
+    _cleanup_all_active_pgids()
+    raise SystemExit(128 + signum)
+
+
+def _acquire_termination_handlers() -> bool:
+    """Install SIGTERM/SIGINT handlers on the main thread (ref-counted for nesting).
+
+    Non-main-thread policy: CPython forbids `signal.signal()` off the main thread, so
+    worker threads do not alter process signal handlers or masks; they still register
+    their `start_new_session` children for lock-free sweeps and reap them in `finally`.
+    """
+    global _SIGNAL_INSTALL_DEPTH
+    if os.name != "posix" or threading.current_thread() is not threading.main_thread():
+        return False
+    if _SIGNAL_INSTALL_DEPTH == 0:
+        saved: dict[int, Any] = {}
+        try:
+            for sig in (signal.SIGTERM, signal.SIGINT):
+                saved[sig] = signal.signal(sig, _handle_termination_signal)
+        except (ValueError, OSError):
+            for sig, prev in saved.items():
+                try:
+                    signal.signal(sig, prev)
+                except (ValueError, OSError):
+                    pass
+            return False
+        _SAVED_SIG_HANDLERS.clear()
+        _SAVED_SIG_HANDLERS.update(saved)
+    _SIGNAL_INSTALL_DEPTH += 1
+    return True
+
+
+def _release_termination_handlers() -> None:
+    """Release a termination handler reference and restore prior handlers at depth 0."""
+    global _SIGNAL_INSTALL_DEPTH
+    if _SIGNAL_INSTALL_DEPTH <= 0:
+        return
+    _SIGNAL_INSTALL_DEPTH -= 1
+    if _SIGNAL_INSTALL_DEPTH == 0:
+        for sig, prev in list(_SAVED_SIG_HANDLERS.items()):
+            try:
+                signal.signal(sig, prev)
+            except (ValueError, OSError):
+                pass
+        _SAVED_SIG_HANDLERS.clear()
 
 
 atexit.register(_cleanup_all_active_pgids)
@@ -908,43 +1023,13 @@ def run_isolated(
     )
 
     eff_cpu = cpu_limit_sec if cpu_limit_sec is not None else max(int(math.ceil(timeout_sec * 2)), 10)
-    preexec = _make_rlimit_preexec(
-        cpu_limit_sec=eff_cpu,
-        max_fsize_bytes=max_fsize_bytes,
-        nofile_limit=nofile_limit,
-    )
-    if preexec is not None:
+    is_posix = os.name == "posix"
+    if _resource is not None and is_posix:
         modes.append("rlimit")
 
-    proc = subprocess.Popen(
-        final_cmd,
-        cwd=str(cwd_path),
-        env=env,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        start_new_session=(os.name == "posix"),
-        preexec_fn=preexec,
-    )
-    pgid = proc.pid
-    with _ACTIVE_LOCK:
-        _ACTIVE_CHILD_PGIDS.add(pgid)
-
-    prev_sigterm = None
-    prev_sigint = None
-    installed_signals = False
-    if os.name == "posix" and threading.current_thread() is threading.main_thread():
-
-        def _handle_termination_signal(signum: int, _frame: Any) -> None:
-            _cleanup_all_active_pgids()
-            raise SystemExit(128 + signum)
-
-        try:
-            prev_sigterm = signal.signal(signal.SIGTERM, _handle_termination_signal)
-            prev_sigint = signal.signal(signal.SIGINT, _handle_termination_signal)
-            installed_signals = True
-        except (ValueError, OSError):
-            installed_signals = False
+    is_main_thread = threading.current_thread() is threading.main_thread()
+    can_mask_signals = is_posix and is_main_thread and hasattr(signal, "pthread_sigmask")
+    can_install_signals = is_posix and is_main_thread
 
     stdout_buf = bytearray()
     stderr_buf = bytearray()
@@ -974,14 +1059,57 @@ def run_isolated(
             except OSError:
                 pass
 
-    t_out = threading.Thread(target=_drain, args=(proc.stdout, stdout_buf), daemon=True)
-    t_err = threading.Thread(target=_drain, args=(proc.stderr, stderr_buf), daemon=True)
-    t_out.start()
-    t_err.start()
-
+    prev_sigmask: set[int] | None = None
+    installed_signals = False
+    proc: subprocess.Popen[bytes] | None = None
+    pgid: int | None = None
+    registered = False
+    t_out: threading.Thread | None = None
+    t_err: threading.Thread | None = None
     timed_out = False
-    deadline = time.monotonic() + max(float(timeout_sec), 0.1)
+
     try:
+        # Block SIGTERM/SIGINT and install termination handlers BEFORE spawning the child so
+        # a signal arriving at the spawn/registration boundary cannot hit SIG_DFL or observe
+        # an unregistered child process group. The child's preexec_fn restores `prev_sigmask`
+        # before exec so the child never inherits blocked termination signals.
+        if can_mask_signals:
+            prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _TERM_SIGNALS)
+        if can_install_signals:
+            installed_signals = _acquire_termination_handlers()
+
+        preexec = _make_child_preexec(
+            cpu_limit_sec=eff_cpu,
+            max_fsize_bytes=max_fsize_bytes,
+            nofile_limit=nofile_limit,
+            restore_sigmask=prev_sigmask,
+        )
+
+        proc = subprocess.Popen(
+            final_cmd,
+            cwd=str(cwd_path),
+            env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=is_posix,
+            preexec_fn=preexec,
+        )
+        pgid = proc.pid
+        _register_active_child(pgid, proc)
+        registered = True
+
+        # Unmask now that the handler is active and `pgid` is registered; any SIGTERM/SIGINT
+        # queued during spawn/registration fires our handler right here and unwinds cleanly.
+        if prev_sigmask is not None:
+            signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+
+        t_out = threading.Thread(target=_drain, args=(proc.stdout, stdout_buf), daemon=True)
+        t_err = threading.Thread(target=_drain, args=(proc.stderr, stderr_buf), daemon=True)
+        t_out.start()
+        t_err.start()
+
+        deadline = time.monotonic() + max(float(timeout_sec), 0.1)
         while True:
             if output_exceeded.is_set() and kill_on_output_limit:
                 _kill_process_group(proc, pgid=pgid)
@@ -999,24 +1127,49 @@ def run_isolated(
                     _kill_process_group(proc, pgid=pgid)
                     break
     finally:
-        if proc.poll() is None:
-            _kill_process_group(proc, pgid=pgid)
-        else:
-            _sweep_process_group(pgid)
-        with _ACTIVE_LOCK:
-            _ACTIVE_CHILD_PGIDS.discard(pgid)
-        if installed_signals:
+        if prev_sigmask is not None:
             try:
-                if prev_sigterm is not None:
-                    signal.signal(signal.SIGTERM, prev_sigterm)
-                if prev_sigint is not None:
-                    signal.signal(signal.SIGINT, prev_sigint)
-            except (ValueError, OSError):
+                signal.pthread_sigmask(signal.SIG_BLOCK, _TERM_SIGNALS)
+            except OSError:
                 pass
-        t_out.join(timeout=1.0)
-        t_err.join(timeout=1.0)
+        try:
+            if proc is not None and pgid is not None:
+                if proc.poll() is None:
+                    _kill_process_group(proc, pgid=pgid)
+                else:
+                    _sweep_process_group(pgid, proc=proc)
+                if proc.poll() is None:
+                    try:
+                        proc.wait(timeout=2.0)
+                    except subprocess.TimeoutExpired:
+                        pass
+            if registered and pgid is not None and proc is not None:
+                _unregister_active_child(pgid, proc)
+            if installed_signals:
+                _release_termination_handlers()
+            if proc is not None:
+                if t_out is None and proc.stdout is not None:
+                    try:
+                        proc.stdout.close()
+                    except OSError:
+                        pass
+                if t_err is None and proc.stderr is not None:
+                    try:
+                        proc.stderr.close()
+                    except OSError:
+                        pass
+            if t_out is not None:
+                t_out.join(timeout=1.0)
+            if t_err is not None:
+                t_err.join(timeout=1.0)
+        finally:
+            if prev_sigmask is not None:
+                try:
+                    signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+                except OSError:
+                    pass
 
-    returncode = proc.returncode if proc.returncode is not None else -9
+    returncode = proc.returncode if proc is not None and proc.returncode is not None else -9
     return SandboxResult(
         returncode=returncode,
         stdout=stdout_buf.decode("utf-8", errors="replace"),
