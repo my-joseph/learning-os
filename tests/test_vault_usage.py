@@ -152,7 +152,17 @@ def test_usage_report_separates_active_historical_only_and_unused(
     )
     no_hist = json.loads(capsys.readouterr().out)
     assert no_hist["historicalOnlyCount"] == 0
-    assert no_hist["unusedCount"] == 2
+    assert no_hist["unusedCount"] == 0
+    assert no_hist["unknownCount"] == 2
+    assert no_hist["unusedKeys"] == []
+    assert {row["key"]: row["status"] for row in no_hist["rows"]} == {
+        "arch-active": "active",
+        "arch-retired": "unknown",
+        "arch-unused": "unknown",
+    }
+    no_history_text = vr.format_usage_report(no_hist)
+    assert "history disabled (--no-history)" in no_history_text
+    assert "UNKNOWN" in no_history_text and "UNUSED" not in no_history_text
 
     shallow = tmp_path / "shallow"
     _git(tmp_path, "clone", "--depth=1", tmp_path.as_uri(), str(shallow))
@@ -196,7 +206,8 @@ def test_only_active_variants_provide_usage_evidence(tmp_path: Path) -> None:
     )
     report = vr.usage_report(unit, str(tmp_path), str(tmp_path / "no-drills"), str(variants_dir), include_history=False)
     assert report["activeCount"] == report["everUsedCount"] == 1
-    assert report["unusedKeys"] == ["legacy"]
+    assert report["unusedKeys"] == []
+    assert {row["key"]: row["status"] for row in report["rows"]} == {"live": "active", "legacy": "unknown"}
     assert report["missingBaseLevelKeys"] == ["legacy"]
 
 
@@ -216,3 +227,37 @@ def test_usage_report_on_real_repo_surfaces_active_and_retired_units() -> None:
     else:
         assert rep_retired["historyNotice"] is None
         assert rep_retired["historicalOnlyCount"] >= 2
+
+
+def test_usage_report_reads_every_retirement_of_a_reused_drill_path(tmp_path: Path) -> None:
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    _git(tmp_path, "config", "user.name", "Test")
+    unit = "MTH-T99-C01-U01"
+    name = f"DRL-{unit}-01"
+    data = tmp_path / "drills" / "data"
+    drill = data / unit / f"{name}.json"
+    drill.parent.mkdir(parents=True)
+    vault_dir = tmp_path / "vault"
+    vault_dir.mkdir()
+    archetypes = [
+        {"archetypeKey": key, "unitCode": unit, "level": level}
+        for key, level in (("first-retired", 1), ("second-retired", 2))
+    ]
+    (vault_dir / f"{unit}.json").write_text(json.dumps({"unitCode": unit, "archetypes": archetypes}))
+    for archetype in archetypes:
+        problem = {**archetype, "id": "Q01"}
+        drill.write_text(json.dumps({"drillId": name, "unitCode": unit, "problems": [problem]}))
+        _git(tmp_path, "add", str(drill))
+        _git(tmp_path, "commit", "-m", "serve drill")
+        drill.unlink()
+        _git(tmp_path, "add", "-u", str(drill))
+        _git(tmp_path, "commit", "-m", "retire drill")
+
+    report = vr.usage_report(unit, str(vault_dir), str(data), str(tmp_path / "variants"), repo_root=str(tmp_path))
+    rows = {row["key"]: row for row in report["rows"]}
+    assert report["historicalOnlyCount"] == 2
+    assert report["unusedKeys"] == []
+    assert rows["first-retired"]["historicalDrillLevels"] == {1: 1}
+    assert rows["second-retired"]["historicalDrillLevels"] == {2: 1}
+    assert all(row["status"] == "historical-only" for row in rows.values())

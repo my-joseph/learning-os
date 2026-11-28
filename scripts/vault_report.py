@@ -320,7 +320,16 @@ def _historical_deleted_drill_usage(repo_root: str | None = None) -> tuple[dict[
         if shallow.stdout.strip() == "true":
             return {}, "history unavailable (shallow clone)"
         proc = subprocess.run(
-            ["git", "log", "--diff-filter=D", "--name-only", "--pretty=format:COMMIT:%H", "--", "drills/data/"],
+            [
+                "git",
+                "log",
+                "--full-history",
+                "--diff-filter=D",
+                "--name-only",
+                "--pretty=format:COMMIT:%H",
+                "--",
+                "drills/data/",
+            ],
             cwd=cwd,
             capture_output=True,
             text=True,
@@ -331,7 +340,6 @@ def _historical_deleted_drill_usage(repo_root: str | None = None) -> tuple[dict[
         return {}, "history unavailable (Git history could not be read)"
 
     deleted_paths: list[tuple[str, str]] = []
-    seen_paths: set[str] = set()
     cur_commit = ""
     for line in proc.stdout.splitlines():
         s = line.strip()
@@ -340,8 +348,8 @@ def _historical_deleted_drill_usage(repo_root: str | None = None) -> tuple[dict[
         if s.startswith("COMMIT:"):
             cur_commit = s.split(":", 1)[1].strip()
             continue
-        if cur_commit and s.endswith(".json") and s.startswith("drills/data/") and s not in seen_paths:
-            seen_paths.add(s)
+        if cur_commit and s.endswith(".json") and s.startswith("drills/data/"):
+            # Reused paths can contain different drills at each retirement.
             deleted_paths.append((cur_commit, s))
 
     hist: dict[str, Counter] = defaultdict(Counter)
@@ -401,7 +409,7 @@ def usage_report(
         hist_levels, history_notice = _historical_deleted_drill_usage(repo_root=repo_root)
     else:
         hist_levels, history_notice = historical_evidence
-    history_unavailable = include_history and history_notice is not None
+    history_unavailable = history_notice is not None
 
     rows = []
     active_count = 0
