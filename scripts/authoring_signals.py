@@ -287,15 +287,13 @@ def collect_authoring_signals(
 
     level_clean_rates = {}
     for lv, stats in sorted(dq_raw["levels"].items()):
-        if not re.fullmatch(r"L[1-5]", lv) or stats["items"] < _MIN_ITEMS:
+        if not re.fullmatch(r"L[1-5]", lv) or sum(stats["scores"].values()) < _MIN_ITEMS:
             continue
         rate = stats["firstTryCleanRate"]
         level_clean_rates[lv] = {
             "items": stats["items"],
             "attempts": stats["attempts"] if stats["attempts"] >= _MIN_ITEMS else None,
-            "firstTryCleanRate": round(rate, 3)
-            if rate is not None and sum(stats["scores"].values()) >= _MIN_ITEMS
-            else None,
+            "firstTryCleanRate": round(rate, 3) if rate is not None else None,
             "skips": stats["skips"] if stats["skips"] >= _MIN_ITEMS else None,
         }
 
