@@ -189,11 +189,19 @@ def test_count_real_steps_keeps_radical_evaluation_distinct() -> None:
         pytest.param(r"x = \frac{32}{4}", r"x = \dfrac{32}{4}", id="dfrac"),
         pytest.param(r"x = \frac{32}{4}", r"x = \tfrac{32}{4}", id="tfrac"),
         pytest.param("4x = 32", r"\begin{aligned}4x &= 32\end{aligned}", id="aligned"),
+        pytest.param(
+            "4x = 32",
+            r"\begin{aligned}4x &= 32 \\ 32 &= 4x\end{aligned}",
+            id="two-aligned-rows-repeat-one-line",
+        ),
+        pytest.param("4x = 32", r"{\fbox{\begin{aligned}&4x = 32\end{aligned}}}", id="braced-aligned"),
+        pytest.param("4x = 32", r"\left(4x = 32\right)", id="sized-parentheses"),
         pytest.param("4x = 32", r"\left[4x\right] = 32", id="sized-brackets"),
         pytest.param("4x = 32", r"\left\{4x\right\} = 32", id="sized-braces"),
         pytest.param("4x = 32", r"\left.4x\right. = 32", id="invisible-delimiters"),
         pytest.param("4x = 32", r"\displaystyle \text{so } 4x = 32", id="display-and-text-label"),
         pytest.param("4x = 32", r"\mathrm{therefore}\;\textbf{so}\;4x = 32", id="styled-labels"),
+        pytest.param("sin(x) = 0", r"\mathrm{sin}(\textbf{x}) = 0", id="styled-math"),
         pytest.param("4x = 32", "4x = 32.", id="trailing-period"),
         pytest.param("4x = 32", "4x = 32,", id="trailing-comma"),
         pytest.param("4x = 32", "4x = 32;", id="trailing-semicolon"),
@@ -234,6 +242,12 @@ def test_aligned_padding_compares_each_line_with_seen_steps() -> None:
         pytest.param(("4x = 39-7", "4x = 32"), id="subtraction-evaluation"),
         pytest.param(("2(x+3)", "2x+6"), id="expansion"),
         pytest.param(("4x = 32", r"\boxed{x = 8}"), id="boxed-final-line"),
+        pytest.param(("x = 3", r"\left|x\right| = 3"), id="absolute-value-delimiters"),
+        pytest.param((r"x = \alpha", r"\boxed{x = \beta}"), id="distinct-string-fallback"),
+        pytest.param(
+            (r"x_{\mathrm{initial}} = 3", r"x_{\mathrm{final}} = 3"),
+            id="math-subscripts",
+        ),
         pytest.param(("", r"\begin{align}4x &= 32 \\[2pt] x &= 8\end{align}"), id="new-aligned-lines"),
     ],
 )
@@ -348,6 +362,29 @@ def test_add_variants_enforces_l2_step_floor_for_new_variants(tmp_path: Path) ->
         vault_dir=str(TEMPLATE_DIR),
     )
     assert len(saved["variants"]) == 1
+
+
+def test_drill_and_variant_gates_report_the_same_unwrapped_count(tmp_path: Path) -> None:
+    draft = _template_draft()
+    item = draft["problems"][1]
+    item["steps"] = item["steps"][:2] + item["steps"][-1:]
+    duplicate = item["steps"][1]["latex"]
+    item["steps"].insert(2, {"latex": rf"\boxed{{{duplicate}}}", "explain": "Repeat the same equation."})
+
+    drill_errors = ai_drill_ingest.check_ai_drill(copy.deepcopy(draft), vault_dir=str(TEMPLATE_DIR))
+    drill_count = [error.split("] ", 1)[1] for error in drill_errors if "L2 problem has" in error]
+    assert len(drill_count) == 1
+    assert drill_count[0].startswith("L2 problem has 3 real step(s)")
+
+    with pytest.raises(variant_bank.VariantBankError) as exc:
+        variant_bank.add_variants(
+            {"unitCode": "MTH-TEMPLATE", "variants": [copy.deepcopy(item)]},
+            variants_dir=str(tmp_path / "variants"),
+            data_root=str(tmp_path / "empty_data"),
+            vault_dir=str(TEMPLATE_DIR),
+        )
+    variant_count = [line.split("] ", 1)[1] for line in str(exc.value).splitlines() if "L2 problem has" in line]
+    assert variant_count == drill_count
 
 
 def test_l2_step_floor_gate_accepts_baseline_and_skips_prg(
