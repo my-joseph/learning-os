@@ -22,6 +22,7 @@ import { GET as revealGET } from "../src/app/api/reveal/route";
 import { readProgress, writeProgress } from "../src/lib/progress";
 import { applyCheckResult } from "../src/lib/applyCheckResult";
 import { buildScheduleFromProgress } from "../src/lib/reviewItems";
+import { resultCardActions } from "../src/lib/similarTabs";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import type { Problem, ProblemState, WorkedExampleVariant } from "../src/types/drill";
 
@@ -269,6 +270,120 @@ function openNext(qid: string) {
     method: "POST",
     body: JSON.stringify({ drillId: "DRL-MTH-T01-C04-99", qid, action: "open-next" }),
   }));
+}
+
+async function testSimilarLevelAndParentMatching(drillsDir: string, variantsDir: string) {
+  const unitCode = "MTH-T99-C03";
+  const drillId = `DRL-${unitCode}-01`;
+  const archetypeKey = "mixed-operations-chain";
+  const variant = (suffix: string, level: number) => ({
+    variantId: `VAR-${unitCode}-${archetypeKey}-${suffix}`,
+    archetypeKey,
+    level,
+    prompt: `Synthetic variant ${suffix}`,
+  });
+  const level3 = variant("01", 3);
+  const legacy = variant("02", 2);
+  const otherDrill = {
+    ...variant("03", 2),
+    parentDrillId: `DRL-${unitCode}-02`,
+    parentProblemId: "Q01",
+  };
+  const sameParent = { ...variant("04", 2), parentDrillId: drillId, parentProblemId: "Q01" };
+  const sameSource = { ...variant("05", 2), sourceProblemId: `${drillId}/Q01` };
+  const wrongArchetype = { ...variant("06", 2), archetypeKey: "unrelated-archetype" };
+  const quarantined = { ...variant("07", 4), status: "quarantined", parentProblemId: "Q03" };
+  const wrongLevelParent = { ...level3, parentProblemId: "Q01" };
+  fs.mkdirSync(path.join(drillsDir, unitCode));
+  fs.writeFileSync(path.join(drillsDir, unitCode, `${drillId}.json`), JSON.stringify({
+    drillId, unitCode, unitTitle: "Synthetic drill", subject: "MATH",
+    problems: [2, 3, 4].map((level, idx) => ({
+      id: `Q0${idx + 1}`, archetypeKey, level, prompt: `Synthetic problem at level ${level}`,
+    })),
+  }));
+  fs.writeFileSync(path.join(variantsDir, `${unitCode}.json`), JSON.stringify({
+    unitCode,
+    variants: [wrongLevelParent, legacy, otherDrill, sameParent, sameSource, wrongArchetype, quarantined],
+  }));
+
+  const attempted = {
+    userInput: "0",
+    score: 0,
+    lastCheck: { verdict: "incorrect" as const, message: "Wrong", components: [], diagnostics: [] },
+    attempts: ["10:00", "10:05"].map((time) => ({
+      input: "0", ts: `2026-11-27T${time}:00Z`, verdict: "incorrect" as const,
+    })),
+  };
+  writeProgress({
+    drillId, unitCode,
+    problems: [
+      {
+        id: "Q01",
+        state: {
+          ...attempted,
+          variantsSeen: [sameParent.variantId],
+          similarSlots: ["vold123"],
+          variants: {
+            vold123: { role: "try", variantId: level3.variantId, servedAt: "2026-11-27T10:06:00Z", attempts: [] },
+          },
+        },
+      },
+      { id: "Q02", state: attempted },
+      { id: "Q03", state: attempted },
+    ],
+  });
+
+  const endpoint = "http://127.0.0.1:3000/api/variant";
+  const variantGet = (qid: string, query: string) =>
+    variantGET(new NextRequest(`${endpoint}?drillId=${drillId}&qid=${qid}&${query}`));
+  const next = async (qid: string) => {
+    const response = await variantPOST(new NextRequest(endpoint, {
+      method: "POST",
+      body: JSON.stringify({ drillId, qid, action: "open-next" }),
+    }));
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+
+  const drillResponse = await drillGET(new NextRequest(`http://127.0.0.1:3000/api/drill?id=${drillId}`));
+  assert.equal(drillResponse.status, 200);
+  const { problems } = (await drillResponse.json()) as { problems: Problem[] };
+  assert.deepEqual(problems.map((problem) => problem.hasVariants), [true, true, false]);
+  assert.deepEqual(problems[0].state.similarSlots, []);
+  const before = await (await variantGet("Q01", "mode=list")).json();
+  assert.deepEqual(before.tabs, []);
+  assert.equal(before.exhausted, false);
+  assert.equal((await variantGet("Q01", "mode=open&token=vold123")).status, 403);
+
+  // Parent matches come first, with the legacy and other-parent entries as same-level fallback.
+  for (const [index, expected] of [sameSource, sameParent, legacy, otherDrill].entries()) {
+    const opened = await next("Q01");
+    assert.equal(opened.variant.level, 2);
+    assert.equal(opened.slot, index + 1);
+    assert.equal(opened.exhausted, index === 3);
+    assert.equal(readProgress(drillId)?.problems?.Q01?.variants?.[opened.token]?.variantId, expected.variantId);
+  }
+  const listed = await (await variantGet("Q01", "mode=list")).json();
+  assert.equal(listed.exhausted, true);
+  assert.equal(listed.tabs.length, 4);
+  assert.deepEqual(await next("Q01"), { exhausted: true, tabs: listed.tabs });
+  assert.equal(readProgress(drillId)?.problems?.Q01?.variants?.vold123?.variantId, level3.variantId);
+
+  const openedL3 = await next("Q02");
+  assert.equal(openedL3.variant.level, 3);
+  assert.equal(openedL3.exhausted, true);
+  assert.deepEqual(await next("Q03"), { exhausted: true, tabs: [] });
+  assert.equal((await (await variantGet("Q03", "mode=list")).json()).exhausted, true);
+
+  // The worked-example entry point still uses the existing archetype pool.
+  assert.equal(problems[2].hasWorkedExamples, true);
+  assert.equal(resultCardActions({
+    tab: "q", hasVariants: false, hasWorkedExamples: problems[2].hasWorkedExamples,
+    rState: problems[2].state, statuses: [], exampleViewed: false,
+  }).showSeeExample, true);
+  const example = await variantGet("Q03", "mode=example");
+  assert.equal(example.status, 200);
+  assert.equal((await example.json()).variant.level, 3);
 }
 
 async function runTests() {
@@ -961,7 +1076,8 @@ async function runTests() {
       assert.equal(qNextBody.token, undefined, "no variant token should be minted for quarantined variants");
     }
 
-    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation, quarantine)");
+    await testSimilarLevelAndParentMatching(drillsDir, variantsDir);
+    console.log("PASS: variantBank.test.tsx (v2 list/open/example, opaque tokens, zero-leak, review isolation, quarantine, level and parent matching)");
   } finally {
     if (prevDrills === undefined) delete process.env.DRILLS_DATA_DIR;
     else process.env.DRILLS_DATA_DIR = prevDrills;

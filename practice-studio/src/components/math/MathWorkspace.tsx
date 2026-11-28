@@ -283,6 +283,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const rPlan = resultCardActions({
     tab: "q",
     hasVariants: hasVariantsAvailable,
+    hasWorkedExamples: Boolean(drillId && (problem.hasWorkedExamples ?? problem.hasVariants)),
     canOpenNext,
     isReviewSession,
     rState: problem.state,

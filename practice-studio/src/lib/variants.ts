@@ -76,14 +76,14 @@ function candidateBankCodes(
   return Array.from(seen);
 }
 
-/**
- * Return all bank variants matching a problem's `archetypeKey`,
- * strictly excluding any item identical to the learner's original problem.
- */
+/** Find same-archetype, same-level Similar variants. Worked examples use their existing archetype pool. */
 export function findVariantsForProblem(
   doc: Record<string, unknown>,
   problem: Record<string, unknown>,
-  bankCache?: Map<string, Array<Record<string, unknown>>>
+  options?: {
+    mode?: "similar" | "example";
+    bankCache?: Map<string, Array<Record<string, unknown>>>;
+  }
 ): Array<Record<string, unknown>> {
   const isPrg =
     doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-");
@@ -97,10 +97,15 @@ export function findVariantsForProblem(
       : "";
   if (!archetypeKey) return [];
 
+  const sameLevelRequired = options?.mode !== "example";
+  const level = problem.level;
+  if (sameLevelRequired && (typeof level !== "number" || !Number.isInteger(level))) return [];
+
   const origPrompt = normPrompt(problem.prompt);
   const origId = typeof problem.id === "string" ? problem.id : "";
   const seenIds = new Set<string>();
   const matches: Array<Record<string, unknown>> = [];
+  const bankCache = options?.bankCache;
 
   for (const code of candidateBankCodes(doc, problem)) {
     let variants: Array<Record<string, unknown>>;
@@ -116,6 +121,7 @@ export function findVariantsForProblem(
       if (isQuarantinedVariant(v)) continue;
       const vid = typeof v.variantId === "string" ? v.variantId : "";
       if (!vid || seenIds.has(vid)) continue;
+      if (sameLevelRequired && (v.level !== level || !isSafeId(vid))) continue;
       const vArch =
         (typeof v.archetypeKey === "string" && v.archetypeKey.trim()) ||
         (typeof v.sourceArchetype === "string" && v.sourceArchetype.trim()) ||
@@ -133,19 +139,47 @@ export function findVariantsForProblem(
   return matches;
 }
 
+/** Project the saved tab order onto the current bank while retaining session history. */
+export function similarStateForVariants(
+  state: ProblemState,
+  variants: Array<Record<string, unknown>>
+): ProblemState {
+  const eligibleIds = new Set(variants.map((variant) => variant.variantId));
+  return {
+    ...state,
+    similarSlots: openedSimilarTokens(state).filter((token) =>
+      eligibleIds.has(state.variants?.[token]?.variantId)
+    ),
+  };
+}
+
+function matchesParent(
+  variant: Record<string, unknown>,
+  parent: { drillId: string; problemId: string }
+): boolean {
+  const { drillId, problemId } = parent;
+  return [
+    [variant.parentProblemId, variant.parentDrillId],
+    [variant.sourceProblemId, variant.sourceDrillId],
+  ].some(([variantProblemId, variantDrillId]) =>
+    (variantDrillId == null || variantDrillId === drillId) &&
+    (variantProblemId === problemId || variantProblemId === `${drillId}/${problemId}`)
+  );
+}
+
 /**
  * Pick the next matching variant for `"+"` (`action: "open-next"`) in the CURRENT cycle:
  * - Excludes variants already served in the current cycle (either opened as a Similar tab
  *   or viewed as a worked example in the current cycle).
  * - Returns `null` when every matching variant has been served in the current cycle
  *   (per-cycle exhaustion).
- * - Prefers variants never served in any earlier cycle (in ladder/bank order).
- * - When every variant has been served in an earlier cycle, wraps back to the first
- *   available variant in ladder/bank order so the learner can re-practise after Reset.
+ * - Uses variants recorded for the parent first while any are available in the cycle.
+ * - Within that pool, prefers variants never served before, then wraps in bank order.
  */
 export function pickNextVariantForCycle(
   variants: Array<Record<string, unknown>>,
-  state?: ProblemState | null
+  state: ProblemState | null | undefined,
+  parent: { drillId: string; problemId: string }
 ): Record<string, unknown> | null {
   const eligible = variants.filter(
     (v) => !isQuarantinedVariant(v) && typeof v.variantId === "string" && isSafeId(v.variantId)
@@ -179,11 +213,13 @@ export function pickNextVariantForCycle(
   );
   if (availableInCycle.length === 0) return null;
 
+  const parentMatches = availableInCycle.filter((variant) => matchesParent(variant, parent));
+  const candidates = parentMatches.length > 0 ? parentMatches : availableInCycle;
   const servedEver = new Set(collectSeenVariantIds(state));
-  const neverServed = availableInCycle.find(
+  const neverServed = candidates.find(
     (v) => !servedEver.has(String(v.variantId))
   );
-  return neverServed ?? availableInCycle[0];
+  return neverServed ?? candidates[0];
 }
 
 /**
