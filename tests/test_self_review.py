@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -537,6 +538,129 @@ def test_self_review_cli_json_target_filter_and_bad_since(
     rc = sr.main(["--since", "2026/11/20", "--no-gh"])
     assert rc == 2
     assert "YYYY-MM-DD" in capsys.readouterr().err
+
+
+@pytest.fixture
+def usage_checkouts(tmp_path: Path) -> tuple[Path, Path]:
+    main = tmp_path.resolve() / "main checkout"
+    linked = tmp_path.resolve() / "linked checkout"
+    main.mkdir()
+    commands = (
+        ["init", "--quiet"],
+        [
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "core.hooksPath=/dev/null",
+            "commit",
+            "--quiet",
+            "--allow-empty",
+            "-m",
+            "Fixture commit",
+        ],
+        ["worktree", "add", "--quiet", "--detach", str(linked)],
+    )
+    for command in commands:
+        subprocess.run(["git", *command], cwd=main, check=True, capture_output=True, timeout=10)
+    return main, linked
+
+
+@pytest.mark.parametrize("case", ["main", "linked", "missing", "override"])
+def test_self_review_cli_usage_source(
+    case: str,
+    usage_checkouts: tuple[Path, Path],
+    tmp_issue_log: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    main, linked = usage_checkouts
+    checkout = main if case == "main" else linked
+    monkeypatch.chdir(checkout)
+    monkeypatch.setattr(sr, "__file__", str(checkout / "scripts" / "self_review.py"))
+    main_usage = main / "pilot" / "agent-usage.jsonl"
+    _write_jsonl(linked / "pilot" / "agent-usage.jsonl", [{"model": "linked-model"}])
+    if case != "missing":
+        _write_jsonl(main_usage, [{"model": "main-model"}])
+
+    args = ["--no-progress", "--no-gh"]
+    expected_path = main_usage
+    expected_model = "main-model"
+    if case == "override":
+        expected_path = Path("custom usage.jsonl")
+        expected_model = "override-model"
+        _write_jsonl(expected_path, [{"model": expected_model}])
+        args.extend(["--usage", str(expected_path)])
+
+    assert sr.main([*args, "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    usage = report["signals"]["usage"]
+    assert usage["path"] == str(expected_path)
+    assert usage["exists"] is (case != "missing")
+    assert set(usage["byModel"]) == (set() if case == "missing" else {expected_model})
+
+    assert sr.main(args) == 0
+    output = capsys.readouterr().out
+    if case == "missing":
+        assert f"usage: file not found at {expected_path}" in output
+    else:
+        assert f"Usage source: {expected_path}" in output
+
+
+def test_self_review_cli_usage_skips_bare_repository(
+    usage_checkouts: tuple[Path, Path],
+    tmp_path: Path,
+    tmp_issue_log: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    main, _ = usage_checkouts
+    bare = tmp_path.resolve() / "bare repository.git"
+    primary = tmp_path.resolve() / "primary worktree"
+    secondary = tmp_path.resolve() / "secondary worktree"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--bare", str(main), str(bare)],
+        check=True,
+        capture_output=True,
+        timeout=10,
+    )
+    for checkout in (primary, secondary):
+        subprocess.run(
+            ["git", "worktree", "add", "--quiet", "--detach", str(checkout)],
+            cwd=bare,
+            check=True,
+            capture_output=True,
+            timeout=10,
+        )
+    usage_path = primary / "pilot" / "agent-usage.jsonl"
+    _write_jsonl(usage_path, [{"model": "primary-model"}])
+    monkeypatch.chdir(secondary)
+    monkeypatch.setattr(sr, "__file__", str(secondary / "scripts" / "self_review.py"))
+
+    assert sr.main(["--no-progress", "--no-gh", "--json"]) == 0
+    usage = json.loads(capsys.readouterr().out)["signals"]["usage"]
+    assert usage["path"] == str(usage_path)
+    assert set(usage["byModel"]) == {"primary-model"}
+
+
+def test_self_review_explicit_python_paths(tmp_path: Path) -> None:
+    root_usage = tmp_path / "pilot" / "agent-usage.jsonl"
+    override = tmp_path / "override.jsonl"
+    _write_jsonl(root_usage, [{"model": "repo-root-model"}])
+    _write_jsonl(override, [{"model": "override-model"}])
+    for usage_path, expected in ((None, root_usage), (str(override), override)):
+        report = sr.build_self_review(
+            repo_root=str(tmp_path),
+            issues_path=str(tmp_path / "missing-issues.jsonl"),
+            usage_path=usage_path,
+            use_gh=False,
+            no_progress=True,
+        )
+        assert report["signals"]["usage"]["path"] == str(expected)
+        assert report["signals"]["usage"]["runs"] == 1
 
 
 def test_addressed_proposal_is_suppressed_without_post_since_evidence(tmp_path: Path) -> None:
