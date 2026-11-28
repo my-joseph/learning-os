@@ -4171,6 +4171,1989 @@
       "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-power-periodicity-03",
       "levelLabel": "Level 2 - Standard Exam",
       "fingerprint": "t02-c01-u01-report-reduced-exponent-trap|reverse|(#+I)**n=#"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-01",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "category": "Applied Modeling",
+      "context": "series_sensor_drive_fixture",
+      "prompt": "A sensor test fixture drives an ideal resistor, inductor, and capacitor in series at a fixed frequency. Its source voltage is $87\\,\\mathrm{V}$ rms, and at the required operating point the rms voltage across the resistor is $60\\,\\mathrm{V}$ and the rms current in the branch is $3\\,\\mathrm{A}$. The capacitor’s reactance magnitude at that frequency is $7\\,\\Omega$. What inductive reactance, in ohms, gives this operating point?",
+      "display": "Z = R+iX",
+      "plainText": "(87, 3, 60, 7)",
+      "givens": {
+        "voltage": 87,
+        "current": 3,
+        "resistorVoltage": 60,
+        "capacitiveReactance": 7
+      },
+      "constants": {
+        "derivedResistance": 20,
+        "targetMagnitude": 29
+      },
+      "trapGivens": [
+        29,
+        20,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "28",
+        "tolerance": 0
+      },
+      "answerPlain": "28",
+      "answerDisplay": "28",
+      "inputHint": "Enter the exact reactance in ohms.",
+      "commonTrapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+      "trapDerivation": "29 - 20 - 7",
+      "trapValue": "2",
+      "verify": {
+        "source": "7 + sqrt((87/3)^2 - (60/3)^2)",
+        "trapValue": "2"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "l"
+      ],
+      "steps": [
+        {
+          "latex": "R = \\frac{60}{3}",
+          "explain": "Use the rms voltage across the resistor and the common series current in Ohm’s law.",
+          "eq": [
+            "60/3",
+            "20"
+          ]
+        },
+        {
+          "latex": "R = 20",
+          "explain": "Evaluate the resistance in ohms.",
+          "eq": [
+            "20",
+            "60/3"
+          ]
+        },
+        {
+          "latex": "|Z| = \\frac{87}{3}",
+          "explain": "Divide the supply rms voltage by the series rms current to get the required impedance magnitude.",
+          "eq": [
+            "87/3",
+            "29"
+          ]
+        },
+        {
+          "latex": "|Z| = 29",
+          "explain": "Evaluate the required magnitude in ohms.",
+          "eq": [
+            "29",
+            "87/3"
+          ]
+        },
+        {
+          "latex": "Z = 20+ i(X_L - 7)",
+          "explain": "Add the impedances in series. Inductive reactance contributes positive imaginary impedance and capacitive reactance contributes negative imaginary impedance.",
+          "eq": [
+            "20+I*l-I*7",
+            "20+I*(l-7)"
+          ]
+        },
+        {
+          "latex": "29^2 = 20^2 + (X_L - 7)^2",
+          "explain": "Equate the squared magnitude to the sum of the squares of the real and imaginary parts.",
+          "eq": [
+            "(20+I*(l-7))*(20-I*(l-7))",
+            "20^2+(l-7)^2"
+          ]
+        },
+        {
+          "latex": "(X_L - 7)^2 = 29^2 - 20^2",
+          "explain": "Subtract the squared resistance from both sides.",
+          "eq": [
+            "29^2-20^2",
+            "441"
+          ]
+        },
+        {
+          "latex": "(X_L - 7)^2 = 441",
+          "explain": "Evaluate the right-hand side.",
+          "eq": [
+            "441",
+            "29^2-20^2"
+          ]
+        },
+        {
+          "latex": "X_L - 7 = \\pm 21",
+          "explain": "Take both real square-root branches for the net reactance.",
+          "eq": [
+            "(21)^2",
+            "441"
+          ]
+        },
+        {
+          "latex": "X_L = 7 \\pm 21",
+          "explain": "Add the capacitor’s reactance magnitude to each branch.",
+          "eq": [
+            "(7+(21)-7)^2",
+            "(21)^2"
+          ]
+        },
+        {
+          "latex": "-14 < 0",
+          "explain": "Reject the lower branch. A passive inductor has positive reactance at the test frequency.",
+          "eq": [
+            "abs(7-(21))",
+            "(21)-7"
+          ]
+        },
+        {
+          "latex": "X_L = 28\\,\\Omega",
+          "explain": "Keep the positive branch, which gives the specified magnitude.",
+          "val": "28"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-01",
+      "sourceArchetype": "t02-c01-u01-rlc-impedance-synthesis",
+      "blindSolve": {
+        "answer": "28",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7,
+        "edgeRejected": [
+          "-14"
+        ]
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Physically coherent (V_R = 60 V <= V_s = 87 V) and story is required to build the relation."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, scalar-impedance trap, resistor-voltage Ohm's-law variant structure, rms/ohm conventions, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-scalar-sum-of-impedance-trap|reverse|(#, #, #, #)"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-02",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "category": "Applied Modeling",
+      "context": "series_ac_load_bank_calibration",
+      "prompt": "An AC load bank has an adjustable ideal inductor, an ideal resistor, and an ideal capacitor in series. At the calibration frequency, the capacitor has reactance magnitude $8\\,\\Omega$. The bank must draw $5\\,\\mathrm{A}$ rms from a $130\\,\\mathrm{V}$ rms supply and absorb $350\\,\\mathrm{W}$ of average power. Find the required inductive reactance in ohms. Give an exact value.",
+      "display": "Z = R+iX",
+      "plainText": "(130, 5, 350, 8)",
+      "givens": {
+        "voltage": 130,
+        "current": 5,
+        "power": 350,
+        "capacitiveReactance": 8
+      },
+      "constants": {
+        "derivedResistance": 14,
+        "targetMagnitude": 26
+      },
+      "trapGivens": [
+        26,
+        14,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8 + 4*sqrt(30)",
+        "tolerance": 0
+      },
+      "answerPlain": "8 + 4*sqrt(30)",
+      "answerDisplay": "8 + 4\\sqrt{30}",
+      "inputHint": "Enter the exact reactance in ohms.",
+      "commonTrapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+      "trapDerivation": "26 - 14 - 8",
+      "trapValue": "4",
+      "verify": {
+        "source": "8 + sqrt((130/5)^2 - (350/5^2)^2)",
+        "trapValue": "4"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "l"
+      ],
+      "steps": [
+        {
+          "latex": "R = \\frac{350}{5^2}",
+          "explain": "Use average power for the resistor. Only the resistor dissipates power in the ideal series branch.",
+          "eq": [
+            "350/5^2",
+            "14"
+          ]
+        },
+        {
+          "latex": "R = 14",
+          "explain": "Evaluate the resistance in ohms.",
+          "eq": [
+            "14",
+            "350/5^2"
+          ]
+        },
+        {
+          "latex": "|Z| = \\frac{130}{5}",
+          "explain": "Divide the supply rms voltage by the series rms current to get the required impedance magnitude.",
+          "eq": [
+            "130/5",
+            "26"
+          ]
+        },
+        {
+          "latex": "|Z| = 26",
+          "explain": "Evaluate the required magnitude in ohms.",
+          "eq": [
+            "26",
+            "130/5"
+          ]
+        },
+        {
+          "latex": "Z = 14+ i(X_L - 8)",
+          "explain": "Add the impedances in series. Inductive reactance contributes positive imaginary impedance and capacitive reactance contributes negative imaginary impedance.",
+          "eq": [
+            "14+I*l-I*8",
+            "14+I*(l-8)"
+          ]
+        },
+        {
+          "latex": "26^2 = 14^2 + (X_L - 8)^2",
+          "explain": "Equate the squared magnitude to the sum of the squares of the real and imaginary parts.",
+          "eq": [
+            "(14+I*(l-8))*(14-I*(l-8))",
+            "14^2+(l-8)^2"
+          ]
+        },
+        {
+          "latex": "(X_L - 8)^2 = 26^2 - 14^2",
+          "explain": "Subtract the squared resistance from both sides.",
+          "eq": [
+            "26^2-14^2",
+            "480"
+          ]
+        },
+        {
+          "latex": "(X_L - 8)^2 = 480",
+          "explain": "Evaluate the right-hand side.",
+          "eq": [
+            "480",
+            "26^2-14^2"
+          ]
+        },
+        {
+          "latex": "X_L - 8 = \\pm 4\\sqrt{30}",
+          "explain": "Take both real square-root branches for the net reactance.",
+          "eq": [
+            "(4*sqrt(30))^2",
+            "480"
+          ]
+        },
+        {
+          "latex": "X_L = 8 \\pm 4\\sqrt{30}",
+          "explain": "Add the capacitor’s reactance magnitude to each branch.",
+          "eq": [
+            "(8+(4*sqrt(30))-8)^2",
+            "(4*sqrt(30))^2"
+          ]
+        },
+        {
+          "latex": "8 - 4\\sqrt{30} < 0",
+          "explain": "Reject the lower branch. A passive inductor has positive reactance at the test frequency.",
+          "eq": [
+            "abs(8-(4*sqrt(30)))",
+            "(4*sqrt(30))-8"
+          ]
+        },
+        {
+          "latex": "X_L = 8 + 4\\sqrt{30}\\,\\Omega",
+          "explain": "Keep the positive branch, which gives the specified magnitude.",
+          "val": "8 + 4*sqrt(30)"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-02",
+      "sourceArchetype": "t02-c01-u01-rlc-impedance-synthesis",
+      "blindSolve": {
+        "answer": "8 + 4*sqrt(30)",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 8,
+        "edgeRejected": [
+          "8 - 4*sqrt(30)"
+        ]
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Physically coherent (P = 350 W <= S = 650 VA) and story is required for the model."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Exact radical answer, scalar-impedance trap, power-relation setup with irrational branch rejection, rms/ohm conventions, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-scalar-sum-of-impedance-trap|reverse|(#, #, #, #)"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-03",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "category": "Applied Modeling",
+      "context": "series_ac_current_limiter_setting",
+      "prompt": "A current-limiting branch contains an ideal inductor, a $16\\,\\Omega$ resistor, and an ideal capacitor in series. At the test frequency, the capacitor’s reactance magnitude is $11\\,\\Omega$. When the branch is connected to a $136\\,\\mathrm{V}$ rms sinusoidal source at that frequency, it should draw $4\\,\\mathrm{A}$ rms. What inductive reactance, in ohms, should the designer specify?",
+      "display": "Z = R+iX",
+      "plainText": "(136, 4, 16, 11)",
+      "givens": {
+        "voltage": 136,
+        "current": 4,
+        "resistance": 16,
+        "capacitiveReactance": 11
+      },
+      "constants": {
+        "targetMagnitude": 34
+      },
+      "trapGivens": [
+        34,
+        16,
+        11
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "41",
+        "tolerance": 0
+      },
+      "answerPlain": "41",
+      "answerDisplay": "41",
+      "inputHint": "Enter the exact reactance in ohms.",
+      "commonTrapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+      "trapDerivation": "34 - 16 - 11",
+      "trapValue": "7",
+      "verify": {
+        "source": "11 + sqrt((136/4)^2 - (16)^2)",
+        "trapValue": "7"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "l"
+      ],
+      "steps": [
+        {
+          "latex": "|Z| = \\frac{136}{4}",
+          "explain": "Divide the supply rms voltage by the series rms current to get the required impedance magnitude.",
+          "eq": [
+            "136/4",
+            "34"
+          ]
+        },
+        {
+          "latex": "|Z| = 34",
+          "explain": "Evaluate the required magnitude in ohms.",
+          "eq": [
+            "34",
+            "136/4"
+          ]
+        },
+        {
+          "latex": "Z = 16+ i(X_L - 11)",
+          "explain": "Add the impedances in series. Inductive reactance contributes positive imaginary impedance and capacitive reactance contributes negative imaginary impedance.",
+          "eq": [
+            "16+I*l-I*11",
+            "16+I*(l-11)"
+          ]
+        },
+        {
+          "latex": "34^2 = 16^2 + (X_L - 11)^2",
+          "explain": "Equate the squared magnitude to the sum of the squares of the real and imaginary parts.",
+          "eq": [
+            "(16+I*(l-11))*(16-I*(l-11))",
+            "16^2+(l-11)^2"
+          ]
+        },
+        {
+          "latex": "(X_L - 11)^2 = 34^2 - 16^2",
+          "explain": "Subtract the squared resistance from both sides.",
+          "eq": [
+            "34^2-16^2",
+            "900"
+          ]
+        },
+        {
+          "latex": "(X_L - 11)^2 = 900",
+          "explain": "Evaluate the right-hand side.",
+          "eq": [
+            "900",
+            "34^2-16^2"
+          ]
+        },
+        {
+          "latex": "X_L - 11 = \\pm 30",
+          "explain": "Take both real square-root branches for the net reactance.",
+          "eq": [
+            "(30)^2",
+            "900"
+          ]
+        },
+        {
+          "latex": "X_L = 11 \\pm 30",
+          "explain": "Add the capacitor’s reactance magnitude to each branch.",
+          "eq": [
+            "(11+(30)-11)^2",
+            "(30)^2"
+          ]
+        },
+        {
+          "latex": "-19 < 0",
+          "explain": "Reject the lower branch. A passive inductor has positive reactance at the test frequency.",
+          "eq": [
+            "abs(11-(30))",
+            "(30)-11"
+          ]
+        },
+        {
+          "latex": "X_L = 41\\,\\Omega",
+          "explain": "Keep the positive branch, which gives the specified magnitude.",
+          "val": "41"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-rlc-impedance-synthesis-03",
+      "sourceArchetype": "t02-c01-u01-rlc-impedance-synthesis",
+      "blindSolve": {
+        "answer": "41",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 6,
+        "edgeRejected": [
+          "-19"
+        ]
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Physically coherent (|Z| = 34 >= R = 16) and story is needed for the AC impedance relation."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, scalar-impedance trap, direct-resistance series-branch variant structure, rms/ohm conventions, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-scalar-sum-of-impedance-trap|reverse|(#, #, #, #)"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-02",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "For real $k$, find the value of $k$ for which both roots of $x^2 + (k - 21)x + (k - 6)^2 - 240 = 0$ are nonreal and have modulus $17$.",
+      "display": "x^2 + (k - 21)x + (k - 6)^2 - 240 = 0",
+      "plainText": "x^2 + (k - 21)*x + (k - 6)^2 - 240 = 0",
+      "givens": {
+        "linearShift": -21,
+        "constantShift": -6,
+        "constantOffset": 240,
+        "rootModulus": 17
+      },
+      "constants": {
+        "squareExponent": 2
+      },
+      "trapGivens": [
+        240,
+        17,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "29",
+        "tolerance": 0
+      },
+      "answerPlain": "29",
+      "answerDisplay": "29",
+      "inputHint": "Enter the exact value of the parameter.",
+      "commonTrapTag": "t02-c01-u01-modulus-not-squared-trap",
+      "trapDerivation": "6 + sqrt(240 + 17)",
+      "trapValue": "6 + sqrt(257)",
+      "verify": {
+        "source": "6 + sqrt(240 + 17^2)",
+        "trapValue": "6 + sqrt(257)"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "x",
+        "k",
+        "a",
+        "b"
+      ],
+      "steps": [
+        {
+          "latex": "z\\overline{z} = (k - 6)^2 - 240",
+          "explain": "The roots of a real-coefficient quadratic occur in a conjugate pair when they are nonreal. Use the product of the roots of the monic polynomial.",
+          "eq": [
+            "(x-a-b*I)*(x-a+b*I)",
+            "x^2-2*a*x+a^2+b^2"
+          ]
+        },
+        {
+          "latex": "(k - 6)^2 - 240 = 17^2",
+          "explain": "Replace the conjugate product by $|z|^2$ and substitute the given modulus.",
+          "eq": [
+            "(a+b*I)*(a-b*I)",
+            "a^2+b^2"
+          ]
+        },
+        {
+          "latex": "(k - 6)^2 = 17^2 + 240",
+          "explain": "Add $240$ to both sides.",
+          "eq": [
+            "289+240",
+            "529"
+          ]
+        },
+        {
+          "latex": "(k - 6)^2 = 529",
+          "explain": "Evaluate the sum on the right.",
+          "eq": [
+            "529",
+            "17^2 + 240"
+          ]
+        },
+        {
+          "latex": "(k - 6) = \\pm 23",
+          "explain": "Take both square-root branches.",
+          "eq": [
+            "23^2",
+            "529"
+          ]
+        },
+        {
+          "latex": "k\\in\\{-17, 29\\}",
+          "explain": "Isolate $k$ in the two branches.",
+          "eq": [
+            "(29 - 6)^2",
+            "(-17 - 6)^2"
+          ]
+        },
+        {
+          "latex": "\\Delta(-17) = (-17 - 21)^2 - 4(17)^2",
+          "explain": "Substitute the candidate $k=-17$ into the discriminant, using the constant term forced by the modulus.",
+          "eq": [
+            "(-17 - 21)^2 - 4*17^2",
+            "288"
+          ]
+        },
+        {
+          "latex": "\\Delta(-17) > 0",
+          "explain": "Reject $k=-17$ because the discriminant is positive and therefore gives two real roots.",
+          "eq": [
+            "abs(288)",
+            "288"
+          ]
+        },
+        {
+          "latex": "\\Delta(29) = (29 - 21)^2 - 4(17)^2",
+          "explain": "Substitute the remaining candidate $k=29$ into the discriminant.",
+          "eq": [
+            "(29 - 21)^2 - 4*17^2",
+            "-1092"
+          ]
+        },
+        {
+          "latex": "\\Delta(29) < 0",
+          "explain": "The discriminant is negative, so this candidate gives nonreal roots. Their product fixes their common modulus.",
+          "eq": [
+            "abs(-1092)",
+            "1092"
+          ]
+        },
+        {
+          "latex": "k = 29",
+          "explain": "Keep the parameter that meets both root requirements.",
+          "val": "29"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-02",
+      "sourceArchetype": "t02-c01-u01-quadratic-formula-complex-roots",
+      "blindSolve": {
+        "answer": "29",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 8,
+        "edgeRejected": [
+          "-17"
+        ]
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, modulus-not-squared trap, shifted-square constant-term derivation with discriminant rejection, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-modulus-not-squared-trap|reverse|x^# + (k - #)*x + (k - #)^# - # = #"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-01",
+      "level": 3,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $\\frac{5+8i}{4+7i}+\\frac{11-6i}{4-7i}+\\frac{9-12i}{12+21i}$. Write the result in standard form $a+bi$.",
+      "display": "\\frac{5+8i}{4+7i}+\\frac{11-6i}{4-7i}+\\frac{9-12i}{12+21i}",
+      "plainText": "(5+8*I)/(4+7*I)+(11-6*I)/(4-7*I)+(9-12*I)/(12+21*I)",
+      "givens": {
+        "a": 5,
+        "b": 8,
+        "c": 4,
+        "d": 7,
+        "e": 11,
+        "f": 6,
+        "g": 9,
+        "h": 12,
+        "j": 21
+      },
+      "constants": {
+        "scale": 3,
+        "squareExponent": 2
+      },
+      "trapGivens": [
+        5,
+        8,
+        9,
+        12,
+        3,
+        4,
+        7,
+        11,
+        6
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "146/65+(1/5)*I"
+      },
+      "answerPlain": "146/65+(1/5)*I",
+      "answerDisplay": "\\frac{146}{65}+\\frac{1}{5}i",
+      "inputHint": "Enter the result in standard form using i.",
+      "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+      "trapDerivation": "(((5+8*I)+(9-12*I)/3)*(4-7*I)+(11-6*I)*(4+7*I))/(4^2-7^2)",
+      "trapValue": "-146/33-(13/33)*I",
+      "verify": {
+        "source": "(5+8*I)/(4+7*I)+(11-6*I)/(4-7*I)+(9-12*I)/(12+21*I)",
+        "trapValue": "-146/33-(13/33)*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare the amount of work involved in different equivalent forms of the expression.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E = \\frac{5+8i}{4+7i}+\\frac{11-6i}{4-7i}+\\frac{3-4i}{4+7i}",
+          "explain": "Cancel the common real factor in the last fraction.",
+          "eq": [
+            "(5+8*I)/(4+7*I)+(11-6*I)/(4-7*I)+(9-12*I)/(12+21*I)",
+            "((5+8i)/(4+7i))+((11-6i)/(4-7i))+((3-4i)/(4+7i))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{(5+8i)+(3-4i)}{4+7i}+\\frac{11-6i}{4-7i}",
+          "explain": "Add the numerators of the fractions with identical denominators.",
+          "eq": [
+            "((5+8i)/(4+7i))+((11-6i)/(4-7i))+((3-4i)/(4+7i))",
+            "(((5+8i)+(3-4i))/(4+7i))+((11-6i)/(4-7i))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{8+4i}{4+7i}+\\frac{11-6i}{4-7i}",
+          "explain": "Combine like terms in the first numerator.",
+          "eq": [
+            "(((5+8i)+(3-4i))/(4+7i))+((11-6i)/(4-7i))",
+            "((8+4i)/(4+7i))+((11-6i)/(4-7i))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{(8+4i)(4-7i)+(11-6i)(4+7i)}{(4+7i)(4-7i)}",
+          "explain": "Use the product of the conjugate denominators as a common denominator.",
+          "eq": [
+            "((8+4i)/(4+7i))+((11-6i)/(4-7i))",
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/((4+7i)(4-7i)))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{(8+4i)(4-7i)+(11-6i)(4+7i)}{4^2+7^2}",
+          "explain": "Write the denominator as a sum of squares.",
+          "eq": [
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/((4+7i)(4-7i)))",
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/(4^2+7^2))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{(8+4i)(4-7i)+(11-6i)(4+7i)}{65}",
+          "explain": "Evaluate the sum of squares.",
+          "eq": [
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/(4^2+7^2))",
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{32-56i+16i-28i^2+(11-6i)(4+7i)}{65}",
+          "explain": "Distribute the first numerator product.",
+          "eq": [
+            "(((8+4i)(4-7i)+(11-6i)(4+7i))/(65))",
+            "((32-56i+16i-28i^2+(11-6i)(4+7i))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{32-56i+16i+28+(11-6i)(4+7i)}{65}",
+          "explain": "Use $i^2=-1$ in the first expansion.",
+          "eq": [
+            "((32-56i+16i-28i^2+(11-6i)(4+7i))/(65))",
+            "((32-56i+16i+28+(11-6i)(4+7i))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{60-40i+(11-6i)(4+7i)}{65}",
+          "explain": "Collect like terms from the first expansion.",
+          "eq": [
+            "((32-56i+16i+28+(11-6i)(4+7i))/(65))",
+            "((60-40i+(11-6i)(4+7i))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{60-40i+(44+77i-24i-42i^2)}{65}",
+          "explain": "Distribute the second numerator product.",
+          "eq": [
+            "((60-40i+(11-6i)(4+7i))/(65))",
+            "((60-40i+(44+77i-24i-42i^2))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{60-40i+(44+77i-24i+42)}{65}",
+          "explain": "Use $i^2=-1$ in the second expansion.",
+          "eq": [
+            "((60-40i+(44+77i-24i-42i^2))/(65))",
+            "((60-40i+(44+77i-24i+42))/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{146+13i}{65}",
+          "explain": "Collect the real and imaginary terms in the numerator.",
+          "eq": [
+            "((60-40i+(44+77i-24i+42))/(65))",
+            "((146+13i)/(65))"
+          ]
+        },
+        {
+          "latex": "E = \\frac{146}{65}+\\frac{13}{65}i",
+          "explain": "Separate the real and imaginary parts.",
+          "eq": [
+            "((146+13i)/(65))",
+            "((146)/(65))+((13)/(65))i"
+          ]
+        },
+        {
+          "latex": "E = \\frac{146}{65}+\\frac{1}{5}i",
+          "explain": "Reduce the imaginary coefficient and write the result in standard form.",
+          "val": "146/65+(1/5)*I"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-01",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|direct|(#+#*I)/(#+#*I)+(#-#*I)/(#-#*I)+(#-#*I)/(#+#*I)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 14,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 35
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "blindSolve": {
+        "answer": "146/65 + (1/5)i",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 6
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, conjugate-denominator sign trap, scalar-cancellation plus conjugate-common-denominator steps, and non-leaking strategy hint all pass."
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-03",
+      "level": 3,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $\\frac{(15-10i)^4}{(6-4i)^3}+(7-5i)$. Write the result in standard form $a+bi$.",
+      "display": "\\frac{(15-10i)^4}{(6-4i)^3}+(7-5i)",
+      "plainText": "(15-10*I)**4/(6-4*I)**3+(7-5*I)",
+      "givens": {
+        "a": 15,
+        "b": 10,
+        "c": 6,
+        "d": 4,
+        "e": 7,
+        "f": 5,
+        "numeratorExponent": 4,
+        "denominatorExponent": 3
+      },
+      "constants": {
+        "squareExponent": 2
+      },
+      "trapGivens": [
+        15,
+        10,
+        6,
+        4,
+        3,
+        7,
+        5
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "1931/8-(645/4)*I"
+      },
+      "answerPlain": "1931/8-(645/4)*I",
+      "answerDisplay": "\\frac{1931}{8}-\\frac{645}{4}i",
+      "inputHint": "Enter the result in standard form using i.",
+      "commonTrapTag": "t02-c01-u01-cross-term-omission-trap",
+      "trapDerivation": "(15^2-10^2)^2/(6-4*I)^3+(7-5*I)",
+      "trapValue": "-17593/17576+(315435/8788)*I",
+      "verify": {
+        "source": "(15-10*I)**4/(6-4*I)**3+(7-5*I)",
+        "trapValue": "-17593/17576+(315435/8788)*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare the amount of work involved in different equivalent forms of the expression.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E = \\frac{(5(3-2i))^4}{(6-4i)^3}+(7-5i)",
+          "explain": "Factor a real scalar out of the numerator base.",
+          "eq": [
+            "(15-10*I)**4/(6-4*I)**3+(7-5*I)",
+            "(((5(3-2i))^4)/((6-4i)^3))+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{(5(3-2i))^4}{(2(3-2i))^3}+(7-5i)",
+          "explain": "Factor a real scalar out of the denominator base.",
+          "eq": [
+            "(((5(3-2i))^4)/((6-4i)^3))+(7-5i)",
+            "(((5(3-2i))^4)/((2(3-2i))^3))+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{5^4(3-2i)^4}{2^3(3-2i)^3}+(7-5i)",
+          "explain": "Apply each exponent to both factors of its base.",
+          "eq": [
+            "(((5(3-2i))^4)/((2(3-2i))^3))+(7-5i)",
+            "((5^4(3-2i)^4)/(2^3(3-2i)^3))+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{5^4}{2^3}(3-2i)+(7-5i)",
+          "explain": "Cancel the common power of the nonzero complex factor.",
+          "eq": [
+            "((5^4(3-2i)^4)/(2^3(3-2i)^3))+(7-5i)",
+            "((5^4)/(2^3))(3-2i)+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{625}{8}(3-2i)+(7-5i)",
+          "explain": "Evaluate the real scalar powers.",
+          "eq": [
+            "((5^4)/(2^3))(3-2i)+(7-5i)",
+            "((625)/(8))(3-2i)+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{1875}{8}-\\frac{625}{4}i+(7-5i)",
+          "explain": "Distribute the real scalar across the complex factor.",
+          "eq": [
+            "((625)/(8))(3-2i)+(7-5i)",
+            "((1875)/(8))-((625)/(4))i+(7-5i)"
+          ]
+        },
+        {
+          "latex": "E = \\frac{1931}{8}-\\frac{645}{4}i",
+          "explain": "Collect like terms and write the result in standard form.",
+          "val": "1931/8-(645/4)*I"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-03",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "fingerprint": "t02-c01-u01-cross-term-omission-trap|direct|(#-#*I)**#/(#-#*I)**#+(#-#*I)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-cross-term-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "blindSolve": {
+        "answer": "1931/8 - (645/4)i",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 6
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, cross-term-omission trap, scalar-factor power cancellation steps, and non-leaking strategy hint all pass."
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-04",
+      "level": 2,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $(8-15i)(-6i)+(14+7i)$. Give the result in $a+bi$ form.",
+      "display": "(8-15i)(-6i)+(14+7i)",
+      "plainText": "(8-15*I)*(-6*I)+(14+7*I)",
+      "givens": {
+        "a": 8,
+        "b": 15,
+        "m": 6,
+        "c": 14,
+        "d": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        15,
+        6,
+        14,
+        7
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "-76 - 41*I"
+      },
+      "answerPlain": "-76 - 41*I",
+      "answerDisplay": "-76-41i",
+      "inputHint": "Enter the exact result in standard form.",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(15*6+14)+(-8*6+7)*I",
+      "trapValue": "104 - 41*I",
+      "verify": {
+        "source": "(8-15*I)*(-6*I)+(14+7*I)",
+        "trapValue": "104 - 41*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare each line with the expression it replaces.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E=8(-6i)-15i(-6i)+(14+7i)",
+          "explain": "Let $E$ denote the given expression. Distribute the factor $-6i$ across the first binomial.",
+          "eq": [
+            "(8-15*I)*(-6*I)",
+            "8*(-6*I)-15*I*(-6*I)"
+          ]
+        },
+        {
+          "latex": "E=-48i+90i^2+(14+7i)",
+          "explain": "Multiply the coefficients and collect the powers of $i$.",
+          "eq": [
+            "8*(-6*I)-15*I*(-6*I)",
+            "-48*I+90*I^2"
+          ]
+        },
+        {
+          "latex": "E=-48i-90+(14+7i)",
+          "explain": "Replace $i^2$ with $-1$.",
+          "eq": [
+            "-48*I+90*I^2",
+            "-48*I-90"
+          ]
+        },
+        {
+          "latex": "E=-90+14-48i+7i",
+          "explain": "Group the real and imaginary terms.",
+          "eq": [
+            "-48*I-90+(14+7*I)",
+            "-90+14-48*I+7*I"
+          ]
+        },
+        {
+          "latex": "E=-76-48i+7i",
+          "explain": "Combine the real terms.",
+          "eq": [
+            "-90+14",
+            "-76"
+          ]
+        },
+        {
+          "latex": "E=-76-41i",
+          "explain": "Combine the imaginary terms.",
+          "val": "-76 - 41*I"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-04",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, positive-last-term trap, 6 granular steps on pure-imaginary binomial multiplication plus addition, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|direct|(#-#*I)*(-#*I)+(#+#*I)"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-05",
+      "level": 2,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $\\frac{(16-5i)-(9+13i)}{7}+4i$. Give the result in $a+bi$ form.",
+      "display": "\\frac{(16-5i)-(9+13i)}{7}+4i",
+      "plainText": "((16-5*I)-(9+13*I))/7+4*I",
+      "givens": {
+        "a": 16,
+        "b": 5,
+        "c": 9,
+        "d": 13,
+        "n": 7,
+        "e": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        16,
+        5,
+        9,
+        13,
+        7,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "1 + 10/7*I"
+      },
+      "answerPlain": "1 + 10/7*I",
+      "answerDisplay": "1+\\frac{10}{7}i",
+      "inputHint": "Enter the exact result in standard form.",
+      "commonTrapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+      "trapDerivation": "((16-9)+(-5+13)*I)/7+4*I",
+      "trapValue": "1 + 36/7*I",
+      "verify": {
+        "source": "((16-5*I)-(9+13*I))/7+4*I",
+        "trapValue": "1 + 36/7*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare each line with the expression it replaces.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E=\\frac{16-5i-9-13i}{7}+4i",
+          "explain": "Let $E$ denote the given expression. Distribute the subtraction within the numerator.",
+          "eq": [
+            "(16-5*I)-(9+13*I)",
+            "16-5*I-9-13*I"
+          ]
+        },
+        {
+          "latex": "E=\\frac{7-5i-13i}{7}+4i",
+          "explain": "Combine the real terms in the numerator.",
+          "eq": [
+            "16-9",
+            "7"
+          ]
+        },
+        {
+          "latex": "E=\\frac{7-18i}{7}+4i",
+          "explain": "Combine the imaginary terms in the numerator.",
+          "eq": [
+            "-5*I-13*I",
+            "-18*I"
+          ]
+        },
+        {
+          "latex": "E=1-\\frac{18}{7}i+4i",
+          "explain": "Divide each numerator term by the real denominator.",
+          "eq": [
+            "(7-18*I)/7",
+            "1-18/7*I"
+          ]
+        },
+        {
+          "latex": "E=1-\\frac{18}{7}i+\\frac{28}{7}i",
+          "explain": "Express the trailing imaginary term with the same denominator.",
+          "eq": [
+            "4*I",
+            "28/7*I"
+          ]
+        },
+        {
+          "latex": "E=1+\\frac{10}{7}i",
+          "explain": "Add the imaginary coefficients.",
+          "val": "1 + 10/7*I"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-05",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, sign-distribution trap, 6 granular steps on real-denominator quotient difference plus imaginary term, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap|direct|((#-#*I)-(#+#*I))/#+#*I"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-06",
+      "level": 2,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $(24+13i)+i^{23}(8-11i)-(7+4i)$. Give the result in $a+bi$ form.",
+      "display": "(24+13i)+i^{23}(8-11i)-(7+4i)",
+      "plainText": "(24+13*I)+I^23*(8-11*I)-(7+4*I)",
+      "givens": {
+        "a": 24,
+        "b": 13,
+        "c": 8,
+        "d": 11,
+        "e": 7,
+        "f": 4,
+        "exponent": 23
+      },
+      "constants": {
+        "cycle": 4,
+        "remainder": 3
+      },
+      "trapGivens": [
+        24,
+        13,
+        8,
+        11,
+        7,
+        4
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "6 + I"
+      },
+      "answerPlain": "6 + I",
+      "answerDisplay": "6+i",
+      "inputHint": "Enter the exact result in standard form.",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "(24+13*I)+I*(8-11*I)-(7+4*I)",
+      "trapValue": "28 + 17*I",
+      "verify": {
+        "source": "(24+13*I)+I^23*(8-11*I)-(7+4*I)",
+        "trapValue": "28 + 17*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare each line with the expression it replaces.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E=(24+13i)+i^3(8-11i)-(7+4i)",
+          "explain": "Let $E$ denote the given expression. Reduce the exponent $23$ modulo the cycle length $4$.",
+          "eq": [
+            "I^23",
+            "I^3"
+          ]
+        },
+        {
+          "latex": "E=(24+13i)-i(8-11i)-(7+4i)",
+          "explain": "Evaluate $i^3$ as $-i$.",
+          "eq": [
+            "I^3",
+            "-I"
+          ]
+        },
+        {
+          "latex": "E=(24+13i)-8i+11i^2-(7+4i)",
+          "explain": "Distribute $-i$ into the middle binomial.",
+          "eq": [
+            "-I*(8-11*I)",
+            "-8*I+11*I^2"
+          ]
+        },
+        {
+          "latex": "E=(24+13i)-8i-11-(7+4i)",
+          "explain": "Replace $i^2$ with $-1$.",
+          "eq": [
+            "-8*I+11*I^2",
+            "-8*I-11"
+          ]
+        },
+        {
+          "latex": "E=24+13i-8i-11-7-4i",
+          "explain": "Distribute the subtraction across the last binomial.",
+          "eq": [
+            "(24+13*I)-8*I-11-(7+4*I)",
+            "24+13*I-8*I-11-7-4*I"
+          ]
+        },
+        {
+          "latex": "E=6+13i-8i-4i",
+          "explain": "Combine the real terms.",
+          "eq": [
+            "24-11-7",
+            "6"
+          ]
+        },
+        {
+          "latex": "E=6+i",
+          "explain": "Combine the imaginary terms.",
+          "val": "6 + I"
+        }
+      ],
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-06",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, power-of-i remainder trap, 7 granular steps combining i^23 reduction with binomial multiplication and subtraction, and zero-leak hints all pass."
+      },
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|direct|(#+#*I)+I^#*(#-#*I)-(#+#*I)"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-07",
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-mixed-operations-chain-07",
+      "sourceArchetype": "t02-c01-u01-mixed-operations-chain",
+      "level": 3,
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "form": "direct",
+      "prompt": "Simplify $(1-2i)^6-3(2+i)^6$. Write the answer in $a+bi$ form.",
+      "context": "",
+      "givens": {
+        "realPart": 1,
+        "imaginaryMagnitude": 2,
+        "multiplier": 3
+      },
+      "constants": {
+        "exponent": 6,
+        "iSquared": -1
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "468 - 176i"
+      },
+      "answerPlain": "468 - 176i",
+      "answerDisplay": "468 - 176 i",
+      "inputHint": "Enter the result in standard form using i.",
+      "checkpointHint": "Compare the amount of work involved in different equivalent forms of the expression.",
+      "display": "(1-2i)^6-3(2+i)^6",
+      "plainText": "(1-2i)^6-3(2+i)^6",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "(1-2*i)^6-3*1*(1-2*i)^6",
+      "trapGivens": [
+        1,
+        2,
+        3
+      ],
+      "trapValue": "-234 + 88i",
+      "steps": [
+        {
+          "latex": "E=(1-2i)^6-3\\bigl(i(1-2i)\\bigr)^6",
+          "explain": "Let $E$ denote the given expression. Replace $2+i$ with $i(1-2i)$.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "(1-2i)^6-3(i(1-2i))^6"
+          ]
+        },
+        {
+          "latex": "E=(1-2i)^6-3i^6(1-2i)^6",
+          "explain": "Apply the outer exponent to each factor in the second power.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "(1-2i)^6-3i^6(1-2i)^6"
+          ]
+        },
+        {
+          "latex": "i^6=i^2",
+          "explain": "Reduce the exponent $6$ modulo $4$.",
+          "eq": [
+            "i^6",
+            "i^2"
+          ]
+        },
+        {
+          "latex": "i^6=-1",
+          "explain": "Evaluate $i^2$.",
+          "eq": [
+            "i^6",
+            "-1"
+          ]
+        },
+        {
+          "latex": "E=(1-2i)^6+3(1-2i)^6",
+          "explain": "Evaluate the multiplier $-3i^6$ using the value of $i^6$.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "(1-2i)^6+3(1-2i)^6"
+          ]
+        },
+        {
+          "latex": "E=4(1-2i)^6",
+          "explain": "Combine the coefficients of the common power.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(1-2i)^6"
+          ]
+        },
+        {
+          "latex": "E=4\\bigl((1-2i)^2\\bigr)^3",
+          "explain": "Rewrite the sixth power as the cube of the square.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4((1-2i)^2)^3"
+          ]
+        },
+        {
+          "latex": "(1-2i)^2=1-4i+4i^2",
+          "explain": "Expand the square of the binomial.",
+          "eq": [
+            "(1-2i)^2",
+            "1-4i+4i^2"
+          ]
+        },
+        {
+          "latex": "(1-2i)^2=1-4i-4",
+          "explain": "Substitute $-1$ for $i^2$.",
+          "eq": [
+            "(1-2i)^2",
+            "1-4i-4"
+          ]
+        },
+        {
+          "latex": "(1-2i)^2=-3-4i",
+          "explain": "Combine the real terms $1$ and $-4$.",
+          "eq": [
+            "(1-2i)^2",
+            "-3-4i"
+          ]
+        },
+        {
+          "latex": "E=4(-3-4i)^3",
+          "explain": "Substitute the simplified square into the cube.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(-3-4i)^3"
+          ]
+        },
+        {
+          "latex": "(-3-4i)^2=9+24i+16i^2",
+          "explain": "Expand the square to prepare one factor of the cube.",
+          "eq": [
+            "(-3-4i)^2",
+            "9+24i+16i^2"
+          ]
+        },
+        {
+          "latex": "(-3-4i)^2=9+24i-16",
+          "explain": "Substitute $-1$ for $i^2$.",
+          "eq": [
+            "(-3-4i)^2",
+            "9+24i-16"
+          ]
+        },
+        {
+          "latex": "(-3-4i)^2=-7+24i",
+          "explain": "Combine the real terms $9$ and $-16$.",
+          "eq": [
+            "(-3-4i)^2",
+            "-7+24i"
+          ]
+        },
+        {
+          "latex": "E=4(-7+24i)(-3-4i)",
+          "explain": "Write the cube as the computed square times its base.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(-7+24i)(-3-4i)"
+          ]
+        },
+        {
+          "latex": "E=4(21+28i-72i-96i^2)",
+          "explain": "Distribute the product of the two binomials inside the factor of $4$.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(21+28i-72i-96i^2)"
+          ]
+        },
+        {
+          "latex": "E=4(21+28i-72i+96)",
+          "explain": "Substitute $-1$ for $i^2$.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(21+28i-72i+96)"
+          ]
+        },
+        {
+          "latex": "E=4(117-44i)",
+          "explain": "Collect the real and imaginary terms inside the parentheses.",
+          "eq": [
+            "(1-2i)^6-3(2+i)^6",
+            "4(117-44i)"
+          ]
+        },
+        {
+          "latex": "E=468 - 176 i",
+          "explain": "Distribute $4$ to put the result in standard form.",
+          "val": "468 - 176i"
+        }
+      ],
+      "verify": {
+        "source": "(1-2i)^6-3(2+i)^6",
+        "trapValue": "-234 + 88i"
+      },
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|direct|(#-#i)^#-#(#+i)^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 19,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-power-of-i-remainder-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 45
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "blindSolve": {
+        "answer": "468 - 176i",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 6,
+        "edgeRejected": []
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, power-of-i remainder trap, 19 granular steps using the 2 + i = i(1 - 2i) rotation identity, and non-leaking strategy hint all pass (attach blindSolve from blind-replacement.json before variant_bank --add)."
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-14",
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-14",
+      "level": 4,
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "sourceArchetype": "t02-c01-u01-quadratic-formula-complex-roots",
+      "context": "",
+      "category": "Core Skill",
+      "form": "reverse",
+      "answerSpec": {
+        "type": "number",
+        "value": "-20",
+        "tolerance": 0
+      },
+      "answerPlain": "-20",
+      "answerDisplay": "-20",
+      "commonTrapTag": "t02-c01-u01-sign-under-radical-trap",
+      "trapDerivation": "-2*(3+sqrt(74+(10/2)^2))",
+      "trapValue": "-6-2*sqrt(99)",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "verify": {
+        "source": "-2*(3+sqrt(74-(10/2)^2))",
+        "trapValue": "-6-2*sqrt(99)"
+      },
+      "inputHint": "Enter the coefficient as a number.",
+      "prompt": "A monic quadratic polynomial with real coefficients takes the value $74$ at $x=3$. The imaginary parts of its roots differ by $10$. In the complex plane, each root is closer to the point $8$ on the real axis than to the origin. Find the coefficient of $x$.",
+      "display": "p(x)=x^2+bx+c,\\quad b,c\\in\\mathbb{R}",
+      "plainText": "(x-h)^2+(10/2)^2",
+      "checkpointHint": "Check whether every candidate satisfies the original conditions.",
+      "givens": {
+        "sampleInput": 3,
+        "sampleValue": 74,
+        "imaginaryGap": 10,
+        "referencePoint": 8
+      },
+      "constants": {
+        "pairCount": 2,
+        "squareExponent": 2
+      },
+      "trapGivens": [
+        2,
+        3,
+        74,
+        10
+      ],
+      "variables": [
+        "x",
+        "h",
+        "v",
+        "b",
+        "c",
+        "z"
+      ],
+      "steps": [
+        {
+          "latex": "z_{\\pm}=h\\pm vi,\\quad v>0",
+          "explain": "Use real coefficients and the nonzero gap in imaginary parts to represent the roots as a conjugate pair."
+        },
+        {
+          "latex": "2v=10",
+          "explain": "Subtract the lower imaginary part from the upper one."
+        },
+        {
+          "latex": "v=5",
+          "explain": "Divide by $2$ to find the magnitude of each imaginary part.",
+          "eq": [
+            "10/2",
+            "5"
+          ]
+        },
+        {
+          "latex": "p(x)=(x-h-5i)(x-h+5i)",
+          "explain": "Write the monic polynomial as a product of its root factors."
+        },
+        {
+          "latex": "p(x)=(x-h)^2-(5i)^2",
+          "explain": "Use the difference of squares to multiply the conjugate factors.",
+          "eq": [
+            "(x-h-5*i)*(x-h+5*i)",
+            "(x-h)^2-(5*i)^2"
+          ]
+        },
+        {
+          "latex": "p(x)=(x-h)^2+25",
+          "explain": "Evaluate the squared imaginary term.",
+          "eq": [
+            "-(5*i)^2",
+            "25"
+          ]
+        },
+        {
+          "latex": "(3-h)^2+25=74",
+          "explain": "Use the given value of $p$ at $x=3$."
+        },
+        {
+          "latex": "(3-h)^2=49",
+          "explain": "Subtract $25$ from both sides.",
+          "eq": [
+            "74-25",
+            "49"
+          ]
+        },
+        {
+          "latex": "3-h=\\pm7",
+          "explain": "Take both square-root branches.",
+          "eq": [
+            "sqrt(49)",
+            "7"
+          ]
+        },
+        {
+          "latex": "h\\in\\{-4,10\\}",
+          "explain": "Solve each branch for $h$.",
+          "eq": [
+            "3-7",
+            "-4"
+          ]
+        },
+        {
+          "latex": "(h-8)^2+25<h^2+25",
+          "explain": "Compare the squared distances of a root from the point $8$ and from the origin."
+        },
+        {
+          "latex": "(h-8)^2<h^2",
+          "explain": "Cancel the common squared imaginary part."
+        },
+        {
+          "latex": "h^2-16h+64<h^2",
+          "explain": "Expand the square on the left.",
+          "eq": [
+            "(h-8)^2",
+            "h^2-16*h+64"
+          ]
+        },
+        {
+          "latex": "-16h+64<0",
+          "explain": "Subtract $h^2$ from both sides."
+        },
+        {
+          "latex": "-16h<-64",
+          "explain": "Subtract $64$ from both sides."
+        },
+        {
+          "latex": "h>4",
+          "explain": "Divide by $-16$ and reverse the inequality.",
+          "eq": [
+            "-64/(-16)",
+            "4"
+          ]
+        },
+        {
+          "latex": "h=10",
+          "explain": "Keep the candidate to the right of the boundary and discard $h=-4$.",
+          "eq": [
+            "3+7",
+            "10"
+          ]
+        },
+        {
+          "latex": "p(x)=x^2-2hx+h^2+25",
+          "explain": "Expand the square in the polynomial to identify the linear term.",
+          "eq": [
+            "(x-h)^2+25",
+            "x^2-2*h*x+h^2+25"
+          ]
+        },
+        {
+          "latex": "b=-2\\cdot10",
+          "explain": "Substitute the surviving value of $h$ into the linear coefficient."
+        },
+        {
+          "latex": "b=-20",
+          "explain": "Multiply to obtain the requested coefficient.",
+          "val": "-20"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-20",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7,
+        "edgeRejected": [
+          "u=-4: roots -4±5i are farther from 8 than from the origin"
+        ]
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer and solution still check; commonTrapTag now names sign-under-radical, matching the deliberate +25 instead of −25 under the square root in trapDerivation; evaluation matches trapValue. Blind-solve tags present and consistent. Relative to prior reviewed version, only the intended tag update and blindSolve addition are visible."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-sign-under-radical-trap|reverse|(x-h)^#+(#/#)^#"
+    },
+    {
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-15",
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-quadratic-formula-complex-roots-15",
+      "level": 4,
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "sourceArchetype": "t02-c01-u01-quadratic-formula-complex-roots",
+      "context": "",
+      "category": "Core Skill",
+      "form": "reverse",
+      "answerSpec": {
+        "type": "number",
+        "value": "68",
+        "tolerance": 0
+      },
+      "answerPlain": "68",
+      "answerDisplay": "68",
+      "commonTrapTag": "t02-c01-u01-sign-under-radical-trap",
+      "trapDerivation": "(6*15+46)/2-46*re(sqrt((((6*15+46)/2)^2-4*6*((6*15-46)/2))/abs(((6*15+46)/2)^2-4*6*((6*15-46)/2))))",
+      "trapValue": "22",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "verificationLevel": "partial",
+      "verify": {
+        "source": "(6*15+46)/2",
+        "trapValue": "22"
+      },
+      "inputHint": "Enter the coefficient as a number.",
+      "prompt": "The sum of the roots of a quadratic polynomial with real coefficients is $15$ less than their product. Its leading coefficient is $6$, and its linear coefficient and constant coefficient are $46$ apart. The graph of the polynomial does not meet the horizontal axis. Find its constant coefficient.",
+      "display": "p(x)=ax^2+bx+c,\\quad a,b,c\\in\\mathbb{R},\\ a\\ne 0",
+      "plainText": "6*x^2+b*x+c",
+      "checkpointHint": "Check whether each possible polynomial meets all the conditions.",
+      "givens": {
+        "leadingCoefficient": 6,
+        "sumProductGap": 15,
+        "coefficientGap": 46
+      },
+      "constants": {
+        "pairCount": 2,
+        "discriminantFactor": 4
+      },
+      "trapGivens": [
+        6,
+        15,
+        46,
+        2
+      ],
+      "variables": [
+        "x",
+        "b",
+        "c",
+        "r",
+        "s"
+      ],
+      "steps": [
+        {
+          "latex": "p(x)=6x^2+bx+c",
+          "explain": "Name the linear and constant coefficients $b$ and $c$."
+        },
+        {
+          "latex": "r+s=-\\frac{b}{6}",
+          "explain": "Express the sum of the roots $r$ and $s$ using Viète’s formula."
+        },
+        {
+          "latex": "rs=\\frac{c}{6}",
+          "explain": "Express the product of the roots using Viète’s formula."
+        },
+        {
+          "latex": "r+s=rs-15",
+          "explain": "Translate the comparison of the sum and product."
+        },
+        {
+          "latex": "-\\frac{b}{6}=\\frac{c}{6}-15",
+          "explain": "Substitute both coefficient expressions into the root relation."
+        },
+        {
+          "latex": "-b=c-90",
+          "explain": "Multiply the relation by $6$.",
+          "eq": [
+            "6*15",
+            "90"
+          ]
+        },
+        {
+          "latex": "b+c=90",
+          "explain": "Rearrange to obtain the sum of the coefficients."
+        },
+        {
+          "latex": "\\lvert c-b\\rvert=46",
+          "explain": "Express the distance between the coefficients as an absolute difference."
+        },
+        {
+          "latex": "c-b=\\pm46",
+          "explain": "Allow either coefficient to be the larger one."
+        },
+        {
+          "latex": "2c=90\\pm46",
+          "explain": "Add the coefficient sum to the signed difference to eliminate $b$.",
+          "eq": [
+            "(b+c)+(c-b)",
+            "2*c"
+          ]
+        },
+        {
+          "latex": "c=\\frac{90\\pm46}{2}",
+          "explain": "Divide each branch by $2$."
+        },
+        {
+          "latex": "c\\in\\{22,68\\}",
+          "explain": "Evaluate both branches.",
+          "eq": [
+            "(90-46)/2",
+            "22"
+          ]
+        },
+        {
+          "latex": "b=90-c",
+          "explain": "Isolate $b$ in the coefficient sum."
+        },
+        {
+          "latex": "(b,c)\\in\\{(68,22),(22,68)\\}",
+          "explain": "Pair each candidate constant coefficient with its corresponding linear coefficient.",
+          "eq": [
+            "90-22",
+            "68"
+          ]
+        },
+        {
+          "latex": "\\Delta=b^2-4\\cdot6c",
+          "explain": "Form the discriminant to determine whether each graph has a real zero."
+        },
+        {
+          "latex": "\\Delta(68,22)=68^2-4\\cdot6\\cdot22",
+          "explain": "Substitute the first coefficient pair into the discriminant."
+        },
+        {
+          "latex": "\\Delta(68,22)=4096",
+          "explain": "Evaluate the positive discriminant to rule out this pair because the graph has real zeros.",
+          "eq": [
+            "68^2-4*6*22",
+            "4096"
+          ]
+        },
+        {
+          "latex": "\\Delta(22,68)=22^2-4\\cdot6\\cdot68",
+          "explain": "Substitute the other coefficient pair into the discriminant."
+        },
+        {
+          "latex": "\\Delta(22,68)=-1148",
+          "explain": "Evaluate the negative discriminant to verify that this graph has no real zeros.",
+          "eq": [
+            "22^2-4*6*68",
+            "-1148"
+          ]
+        },
+        {
+          "latex": "c=68",
+          "explain": "Read the constant coefficient from the surviving pair.",
+          "val": "68"
+        }
+      ],
+      "blindSolve": {
+        "answer": "68",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": [
+          "(linear, constant)=(68,22): discriminant 4096 > 0, so the graph meets the x-axis"
+        ]
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer and solution still check; trapDerivation evaluates to trapValue 22 and uses the positive discriminant under the normalized square root to select the wrong sign branch, matching the sign-under-radical/discriminant-sign trap. Blind-solve tags present and consistent. Relative to prior reviewed version, only the intended derivation update and blindSolve addition are visible."
+      },
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u01-sign-under-radical-trap|reverse|#*x^#+b*x+c"
     }
   ]
 }

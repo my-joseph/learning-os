@@ -1,0 +1,744 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Complex Numbers",
+  "unitTitle": "Complex Numbers",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "category": "Applied Modeling",
+      "context": "series_notch_filter_bench_calibration",
+      "prompt": "An engineer is tuning the series branch of a bench-test notch filter. The branch contains an ideal resistor, inductor, and capacitor. At the test frequency, the supply is set to $104\\,\\mathrm{V}$ rms, and the branch must draw $4\\,\\mathrm{A}$ rms while dissipating $160\\,\\mathrm{W}$ of average power. The capacitor has a reactance magnitude of $13\\,\\Omega$. What inductive reactance, in ohms, meets these requirements?",
+      "display": "Z = R+iX",
+      "plainText": "(104, 4, 160, 13)",
+      "givens": {
+        "voltage": 104,
+        "current": 4,
+        "power": 160,
+        "capacitiveReactance": 13
+      },
+      "constants": {
+        "derivedResistance": 10,
+        "targetMagnitude": 26
+      },
+      "trapGivens": [
+        26,
+        10,
+        13
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "37",
+        "tolerance": 0
+      },
+      "answerPlain": "37",
+      "answerDisplay": "37",
+      "inputHint": "Enter the exact reactance in ohms.",
+      "commonTrapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+      "trapDerivation": "26 - 10 - 13",
+      "trapValue": "3",
+      "verify": {
+        "source": "13 + sqrt((104/4)^2 - (160/4^2)^2)",
+        "trapValue": "3"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "l"
+      ],
+      "steps": [
+        {
+          "latex": "R = \\frac{160}{4^2}",
+          "explain": "Use average power for the resistor. Only the resistor dissipates power in the ideal series branch.",
+          "eq": [
+            "160/4^2",
+            "10"
+          ]
+        },
+        {
+          "latex": "R = 10",
+          "explain": "Evaluate the resistance in ohms.",
+          "eq": [
+            "10",
+            "160/4^2"
+          ]
+        },
+        {
+          "latex": "|Z| = \\frac{104}{4}",
+          "explain": "Divide the supply rms voltage by the series rms current to get the required impedance magnitude.",
+          "eq": [
+            "104/4",
+            "26"
+          ]
+        },
+        {
+          "latex": "|Z| = 26",
+          "explain": "Evaluate the required magnitude in ohms.",
+          "eq": [
+            "26",
+            "104/4"
+          ]
+        },
+        {
+          "latex": "Z = 10+ i(X_L - 13)",
+          "explain": "Add the impedances in series. Inductive reactance contributes positive imaginary impedance and capacitive reactance contributes negative imaginary impedance.",
+          "eq": [
+            "10+I*l-I*13",
+            "10+I*(l-13)"
+          ]
+        },
+        {
+          "latex": "26^2 = 10^2 + (X_L - 13)^2",
+          "explain": "Equate the squared magnitude to the sum of the squares of the real and imaginary parts.",
+          "eq": [
+            "(10+I*(l-13))*(10-I*(l-13))",
+            "10^2+(l-13)^2"
+          ]
+        },
+        {
+          "latex": "(X_L - 13)^2 = 26^2 - 10^2",
+          "explain": "Subtract the squared resistance from both sides.",
+          "eq": [
+            "26^2-10^2",
+            "576"
+          ]
+        },
+        {
+          "latex": "(X_L - 13)^2 = 576",
+          "explain": "Evaluate the right-hand side.",
+          "eq": [
+            "576",
+            "26^2-10^2"
+          ]
+        },
+        {
+          "latex": "X_L - 13 = \\pm 24",
+          "explain": "Take both real square-root branches for the net reactance.",
+          "eq": [
+            "(24)^2",
+            "576"
+          ]
+        },
+        {
+          "latex": "X_L = 13 \\pm 24",
+          "explain": "Add the capacitor’s reactance magnitude to each branch.",
+          "eq": [
+            "(13+(24)-13)^2",
+            "(24)^2"
+          ]
+        },
+        {
+          "latex": "-11 < 0",
+          "explain": "Reject the lower branch. A passive inductor has positive reactance at the test frequency.",
+          "eq": [
+            "abs(13-(24))",
+            "(24)-13"
+          ]
+        },
+        {
+          "latex": "X_L = 37\\,\\Omega",
+          "explain": "Keep the positive branch, which gives the specified magnitude.",
+          "val": "37"
+        }
+      ],
+      "blindSolve": {
+        "answer": "37",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7,
+        "edgeRejected": [
+          "-11"
+        ]
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Story is physically coherent (P=160 W <= S=416 VA) and required for the circuit relations."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, scalar-impedance trap, 12 single-transformation steps, rms/ohm conventions, physical notch-branch calibration story, and zero-leak hints all pass."
+      },
+      "unitCode": "MTH-T02-C01-U01",
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-scalar-sum-of-impedance-trap|reverse|(#, #, #, #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 12,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 31
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q02",
+      "level": 4,
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "For real $k$, find the value of $k$ for which both roots of $x^2 + (k - 14)x + k^2 - 120 = 0$ are nonreal and have modulus $13$.",
+      "display": "x^2 + (k - 14)x + k^2 - 120 = 0",
+      "plainText": "x^2 + (k - 14)*x + k^2 - 120 = 0",
+      "givens": {
+        "linearShift": -14,
+        "constantOffset": 120,
+        "rootModulus": 13
+      },
+      "constants": {
+        "squareExponent": 2
+      },
+      "trapGivens": [
+        120,
+        13
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "17",
+        "tolerance": 0
+      },
+      "answerPlain": "17",
+      "answerDisplay": "17",
+      "inputHint": "Enter the exact value of the parameter.",
+      "commonTrapTag": "t02-c01-u01-modulus-not-squared-trap",
+      "trapDerivation": "sqrt(120 + 13)",
+      "trapValue": "sqrt(133)",
+      "verify": {
+        "source": "sqrt(120 + 13^2)",
+        "trapValue": "sqrt(133)"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Test your candidate against the original requirements.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "variables": [
+        "x",
+        "k",
+        "a",
+        "b"
+      ],
+      "steps": [
+        {
+          "latex": "z\\overline{z} = k^2 - 120",
+          "explain": "The roots of a real-coefficient quadratic occur in a conjugate pair when they are nonreal. Use the product of the roots of the monic polynomial.",
+          "eq": [
+            "(x-a-b*I)*(x-a+b*I)",
+            "x^2-2*a*x+a^2+b^2"
+          ]
+        },
+        {
+          "latex": "k^2 - 120 = 13^2",
+          "explain": "Replace the conjugate product by $|z|^2$ and substitute the given modulus.",
+          "eq": [
+            "(a+b*I)*(a-b*I)",
+            "a^2+b^2"
+          ]
+        },
+        {
+          "latex": "k^2 = 13^2 + 120",
+          "explain": "Add $120$ to both sides.",
+          "eq": [
+            "169+120",
+            "289"
+          ]
+        },
+        {
+          "latex": "k^2 = 289",
+          "explain": "Evaluate the sum on the right.",
+          "eq": [
+            "289",
+            "13^2 + 120"
+          ]
+        },
+        {
+          "latex": "k = \\pm 17",
+          "explain": "Take both square-root branches.",
+          "eq": [
+            "17^2",
+            "289"
+          ]
+        },
+        {
+          "latex": "\\Delta(-17) = (-17 - 14)^2 - 4(13)^2",
+          "explain": "Substitute the candidate $k=-17$ into the discriminant, using the constant term forced by the modulus.",
+          "eq": [
+            "(-17 - 14)^2 - 4*13^2",
+            "285"
+          ]
+        },
+        {
+          "latex": "\\Delta(-17) > 0",
+          "explain": "Reject $k=-17$ because the discriminant is positive and therefore gives two real roots.",
+          "eq": [
+            "abs(285)",
+            "285"
+          ]
+        },
+        {
+          "latex": "\\Delta(17) = (17 - 14)^2 - 4(13)^2",
+          "explain": "Substitute the remaining candidate $k=17$ into the discriminant.",
+          "eq": [
+            "(17 - 14)^2 - 4*13^2",
+            "-667"
+          ]
+        },
+        {
+          "latex": "\\Delta(17) < 0",
+          "explain": "The discriminant is negative, so this candidate gives nonreal roots. Their product fixes their common modulus.",
+          "eq": [
+            "abs(-667)",
+            "667"
+          ]
+        },
+        {
+          "latex": "k = 17",
+          "explain": "Keep the parameter that meets both root requirements.",
+          "val": "17"
+        }
+      ],
+      "blindSolve": {
+        "answer": "17",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7,
+        "edgeRejected": [
+          "-17"
+        ]
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, modulus-not-squared trap, conjugate-product and discriminant branch-rejection steps, unambiguous wording, and zero-leak hints all pass."
+      },
+      "unitCode": "MTH-T02-C01-U01",
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-modulus-not-squared-trap|reverse|x^# + (k - #)*x + k^# - # = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 10,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-modulus-not-squared-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 27
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $(7+4i)(3-8i)(2+5i)(7-4i)(3+8i)-(11-6i)$. Write the result in standard form $a+bi$.",
+      "display": "(7+4i)(3-8i)(2+5i)(7-4i)(3+8i)-(11-6i)",
+      "plainText": "(7+4*I)*(3-8*I)*(2+5*I)*(7-4*I)*(3+8*I)-(11-6*I)",
+      "givens": {
+        "a": 7,
+        "b": 4,
+        "c": 3,
+        "d": 8,
+        "e": 2,
+        "f": 5,
+        "g": 11,
+        "h": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        4,
+        3,
+        8,
+        2,
+        5,
+        11,
+        6
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "9479+(23731)*I"
+      },
+      "answerPlain": "9479+(23731)*I",
+      "answerDisplay": "9479+23731i",
+      "inputHint": "Enter the result in standard form using i.",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(7^2-4^2)*(3^2+8^2)*(2+5*I)-(11-6*I)",
+      "trapValue": "4807+(12051)*I",
+      "verify": {
+        "source": "(7+4*I)*(3-8*I)*(2+5*I)*(7-4*I)*(3+8*I)-(11-6*I)",
+        "trapValue": "4807+(12051)*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare the amount of work involved in different equivalent forms of the expression.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E = (7+4i)(7-4i)(3-8i)(3+8i)(2+5i)-(11-6i)",
+          "explain": "Reorder the factors to place each conjugate next to its partner.",
+          "eq": [
+            "(7+4*I)*(3-8*I)*(2+5*I)*(7-4*I)*(3+8*I)-(11-6*I)",
+            "(7+4i)(7-4i)(3-8i)(3+8i)(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = (7^2+4^2)(3-8i)(3+8i)(2+5i)-(11-6i)",
+          "explain": "Replace the first conjugate product with the sum of its squared coefficients.",
+          "eq": [
+            "(7+4i)(7-4i)(3-8i)(3+8i)(2+5i)-(11-6i)",
+            "(7^2+4^2)(3-8i)(3+8i)(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 65(3-8i)(3+8i)(2+5i)-(11-6i)",
+          "explain": "Evaluate the first sum of squares.",
+          "eq": [
+            "(7^2+4^2)(3-8i)(3+8i)(2+5i)-(11-6i)",
+            "65(3-8i)(3+8i)(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 65(3^2+8^2)(2+5i)-(11-6i)",
+          "explain": "Replace the second conjugate product with the sum of its squared coefficients.",
+          "eq": [
+            "65(3-8i)(3+8i)(2+5i)-(11-6i)",
+            "65(3^2+8^2)(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 65\\cdot 73(2+5i)-(11-6i)",
+          "explain": "Evaluate the second sum of squares.",
+          "eq": [
+            "65(3^2+8^2)(2+5i)-(11-6i)",
+            "65* 73(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 4745(2+5i)-(11-6i)",
+          "explain": "Multiply the two real factors.",
+          "eq": [
+            "65* 73(2+5i)-(11-6i)",
+            "4745(2+5i)-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 9490+23725i-(11-6i)",
+          "explain": "Distribute the real factor across the complex binomial.",
+          "eq": [
+            "4745(2+5i)-(11-6i)",
+            "9490+23725i-(11-6i)"
+          ]
+        },
+        {
+          "latex": "E = 9490+23725i-11+6i",
+          "explain": "Distribute the minus sign across the last binomial.",
+          "eq": [
+            "9490+23725i-(11-6i)",
+            "9490+23725i-11+6i"
+          ]
+        },
+        {
+          "latex": "E = 9479+23731i",
+          "explain": "Collect like terms and write the result in standard form.",
+          "val": "9479+(23731)*I"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|direct|(#+#*I)*(#-#*I)*(#+#*I)*(#-#*I)*(#+#*I)-(#-#*I)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 9,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-positive-last-term-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 25
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "blindSolve": {
+        "answer": "9479 + 23731i",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, positive-last-term trap, conjugate-pairing derivation steps, and non-leaking strategy hint all pass."
+      },
+      "unitCode": "MTH-T02-C01-U01",
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-mixed-operations-chain",
+      "category": "Core Skill",
+      "context": "",
+      "prompt": "Simplify $(14-9i)-(6+8i)(3i)+11i$. Give the result in $a+bi$ form.",
+      "display": "(14-9i)-(6+8i)(3i)+11i",
+      "plainText": "(14-9*I)-(6+8*I)*(3*I)+11*I",
+      "givens": {
+        "a": 14,
+        "b": 9,
+        "c": 6,
+        "d": 8,
+        "m": 3,
+        "e": 11
+      },
+      "constants": {},
+      "trapGivens": [
+        14,
+        9,
+        6,
+        8,
+        3,
+        11
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "38 - 16*I"
+      },
+      "answerPlain": "38 - 16*I",
+      "answerDisplay": "38-16i",
+      "inputHint": "Enter the exact result in standard form.",
+      "commonTrapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+      "trapDerivation": "(14+8*3)+(-9+6*3+11)*I",
+      "trapValue": "38 + 20*I",
+      "verify": {
+        "source": "(14-9*I)-(6+8*I)*(3*I)+11*I",
+        "trapValue": "38 + 20*I"
+      },
+      "verificationLevel": "partial",
+      "checkpointHint": "Compare each line with the expression it replaces.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "E=(14-9i)-[6(3i)+8i(3i)]+11i",
+          "explain": "Let $E$ denote the given expression. Distribute the factor $3i$ across the middle binomial.",
+          "eq": [
+            "(6+8*I)*(3*I)",
+            "6*(3*I)+8*I*(3*I)"
+          ]
+        },
+        {
+          "latex": "E=(14-9i)-(18i+24i^2)+11i",
+          "explain": "Multiply the coefficients and collect the powers of $i$.",
+          "eq": [
+            "6*(3*I)+8*I*(3*I)",
+            "18*I+24*I^2"
+          ]
+        },
+        {
+          "latex": "E=(14-9i)-(18i-24)+11i",
+          "explain": "Replace $i^2$ with $-1$.",
+          "eq": [
+            "18*I+24*I^2",
+            "18*I-24"
+          ]
+        },
+        {
+          "latex": "E=14-9i-18i+24+11i",
+          "explain": "Distribute the subtraction across both middle terms.",
+          "eq": [
+            "(14-9*I)-(18*I-24)+11*I",
+            "14-9*I-18*I+24+11*I"
+          ]
+        },
+        {
+          "latex": "E=38-9i-18i+11i",
+          "explain": "Combine the real terms.",
+          "eq": [
+            "14+24",
+            "38"
+          ]
+        },
+        {
+          "latex": "E=38-16i",
+          "explain": "Combine the imaginary terms.",
+          "val": "38 - 16*I"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer, sign-distribution trap, 6 granular steps, and zero-leak hints all pass for an L2 mixed-operations chain."
+      },
+      "unitCode": "MTH-T02-C01-U01",
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap|direct|(#-#*I)-(#+#*I)*(#*I)+#*I",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U01-06",
+  "title": "Complex Numbers — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C01",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-28 15:38:22",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-06.json"
+}
