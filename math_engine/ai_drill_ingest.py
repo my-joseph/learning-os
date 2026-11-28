@@ -11,6 +11,7 @@ import copy
 import json
 import os
 import re
+import unicodedata
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
@@ -1548,10 +1549,15 @@ _STEP_ARG_SPACE_RE = re.compile(r"\s*")
 _STEP_SIZING_COMMAND_RE = re.compile(r"(?:left|right|(?:big|Big|bigg|Bigg)[lrm]?)")
 _STEP_TEXT_LABEL_RE = re.compile(r"[A-Za-z]{2,}(?:[\s,-]+[A-Za-z]+)*[.!?:;]?")
 _STEP_SCRIPT_PREFIX_RE = re.compile(r"[_^]\s*(?:\{\s*)*$")
+_STEP_SCRIPT_ARG_RE = re.compile(r"\s*([_^])\s*(\\(?:[A-Za-z]+|[^\n])|[^\s}_^])")
 _STEP_ROW_BREAK_RE = re.compile(r"\\\\\*?(?:\s*\[[^\]\n]*\])?")
 _STEP_LAYOUT_PREAMBLES = {"array", "subarray", "tabular", "alignat", "alignedat"}
 _STEP_POSITIONED_LAYOUTS = {"aligned", "gathered", "alignedat", "array", "tabular"}
-_STEP_HIDDEN_ARGUMENTS = {"color", "textcolor", "phantom", "hphantom", "vphantom", "hspace", "tag", "label"}
+_STEP_HIDDEN_ARGUMENTS = {"color", "phantom", "hphantom", "vphantom", "hspace", "mspace", "tag", "label"}
+_STEP_LEADING_ARGUMENTS = dict.fromkeys(("textcolor", "colorbox", "overset", "underset", "stackrel"), 1) | {
+    "fcolorbox": 2,
+}
+_STEP_BRACE_ANNOTATIONS = {"underbrace": "_", "overbrace": "^"}
 _STEP_STARRED_COMMANDS = {"operatorname", "hspace", "tag"}
 _STEP_LATEX_REPLACEMENTS = {
     **{name: name for name in ("sin", "cos", "tan", "ln", "log", "exp", "pi")},
@@ -1669,10 +1675,11 @@ def _step_latex_lines(latex: Any) -> Iterable[str]:
     """Keep mathematical tokens, unwrap presentation arguments, and yield rows for comparison."""
     if not isinstance(latex, str):
         return
-    latex = latex.replace("$", "").replace("\u2212", "-")
+    latex = "".join(ch for ch in latex if unicodedata.category(ch) != "Cf")
+    latex = latex.replace("$", "").replace("\u2212", "-").replace("~", " ")
     tokens = list(_STEP_LATEX_TOKEN_RE.finditer(latex))
     group_ends = _step_latex_group_ends(tokens)
-    wrapper_closes = set()
+    wrapper_closes: Dict[int, int] = {}
     parts: List[str] = []
     cursor = 0
     for token in tokens:
@@ -1680,7 +1687,10 @@ def _step_latex_lines(latex: Any) -> Iterable[str]:
             continue
         parts.append(latex[cursor : token.start()])
         cursor = token.end()
-        if token.start() in wrapper_closes or token[0] == "&":
+        if token.start() in wrapper_closes:
+            cursor = wrapper_closes[token.start()]
+            continue
+        if token[0] == "&":
             continue
         command = token[0][1:]
         if token[0] in {"{", "}"} or command in _STEP_MATH_COMMANDS or command == "\\":
@@ -1706,12 +1716,15 @@ def _step_latex_lines(latex: Any) -> Iterable[str]:
             continue
         if command in _STEP_HIDDEN_ARGUMENTS:
             cursor = arg_end
-            if command != "textcolor":
-                continue
+            continue
+        for _ in range(_STEP_LEADING_ARGUMENTS.get(command, 0)):
+            cursor = arg_end
             arg_start = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
             arg_end = group_ends.get(arg_start)
             if arg_end is None:
-                continue
+                break
+        if arg_end is None:
+            continue
 
         is_text = command == "mathrm" or (command.startswith("text") and command != "textcolor")
         label = latex[arg_start + 1 : arg_end - 1].strip() if is_text else ""
@@ -1724,7 +1737,14 @@ def _step_latex_lines(latex: Any) -> Iterable[str]:
             parts.append(" ")
         else:
             cursor = arg_start + 1
-            wrapper_closes.add(arg_end - 1)
+            wrapper_end = arg_end
+            if command in _STEP_BRACE_ANNOTATIONS:
+                annotation = _STEP_SCRIPT_ARG_RE.match(latex, arg_end)
+                if annotation and annotation[1] == _STEP_BRACE_ANNOTATIONS[command]:
+                    wrapper_end = (
+                        group_ends.get(annotation.start(2), arg_end) if annotation[2] == "{" else annotation.end()
+                    )
+            wrapper_closes[arg_end - 1] = wrapper_end
 
     parts.append(latex[cursor:])
     line = _strip_step_outer_groups("".join(parts), {"{": "{}"})
@@ -1751,14 +1771,13 @@ def _normalize_step_latex(line: str) -> str:
         if parsed is not None:
             return f"expr:{parsed}"
 
-    # String fallback when SymPy parsing fails: drop braces and whitespace (and sort sides of a single '=').
-    fallback = re.sub(r"\s+", "", cand.replace("{", "").replace("}", ""))
-    if not fallback:
-        return ""
-    fb_parts = _STEP_SINGLE_EQ_RE.split(fallback)
-    if len(fb_parts) == 2 and all(fb_parts):
-        fallback = "=".join(sorted(fb_parts))
-    return f"str:{fallback}"
+    # Keep internal braces in unparseable math because they determine the scope of commands and scripts.
+    fb_parts = _STEP_SINGLE_EQ_RE.split(cand)
+    if len(fb_parts) == 2:
+        sides = [re.sub(r"\s+", "", _strip_step_outer_groups(side, {"{": "{}"})) for side in fb_parts]
+        if all(sides):
+            return "str:" + "=".join(sorted(sides))
+    return "str:" + re.sub(r"\s+", "", cand)
 
 
 def count_real_steps(prob: Dict[str, Any]) -> int:
