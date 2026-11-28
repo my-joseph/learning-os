@@ -141,6 +141,12 @@
     "rules/07_problem_generation.md",
     "CLAUDE.md"
   ],
+  "scripts/authoring_signals.py": [
+    ".claude/skills/new-math-drill/SKILL.md",
+    ".claude/skills/new-code-drill/SKILL.md",
+    "rules/07_problem_generation.md",
+    "CLAUDE.md"
+  ],
   "scripts/vault_report.py": [
     "rules/07_problem_generation.md",
     "CLAUDE.md"
