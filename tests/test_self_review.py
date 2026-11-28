@@ -610,6 +610,42 @@ def test_self_review_cli_usage_source(
         assert f"Usage source: {expected_path}" in output
 
 
+def test_self_review_cli_usage_skips_bare_repository(
+    usage_checkouts: tuple[Path, Path],
+    tmp_path: Path,
+    tmp_issue_log: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    main, _ = usage_checkouts
+    bare = tmp_path.resolve() / "bare repository.git"
+    primary = tmp_path.resolve() / "primary worktree"
+    secondary = tmp_path.resolve() / "secondary worktree"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--bare", str(main), str(bare)],
+        check=True,
+        capture_output=True,
+        timeout=10,
+    )
+    for checkout in (primary, secondary):
+        subprocess.run(
+            ["git", "worktree", "add", "--quiet", "--detach", str(checkout)],
+            cwd=bare,
+            check=True,
+            capture_output=True,
+            timeout=10,
+        )
+    usage_path = primary / "pilot" / "agent-usage.jsonl"
+    _write_jsonl(usage_path, [{"model": "primary-model"}])
+    monkeypatch.chdir(secondary)
+    monkeypatch.setattr(sr, "__file__", str(secondary / "scripts" / "self_review.py"))
+
+    assert sr.main(["--no-progress", "--no-gh", "--json"]) == 0
+    usage = json.loads(capsys.readouterr().out)["signals"]["usage"]
+    assert usage["path"] == str(usage_path)
+    assert set(usage["byModel"]) == {"primary-model"}
+
+
 def test_self_review_explicit_python_paths(tmp_path: Path) -> None:
     root_usage = tmp_path / "pilot" / "agent-usage.jsonl"
     override = tmp_path / "override.jsonl"

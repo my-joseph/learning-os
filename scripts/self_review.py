@@ -1391,9 +1391,13 @@ def _default_cli_usage_path() -> str | None:
         )
     except (OSError, subprocess.SubprocessError):
         return None
-    first_field = proc.stdout.partition("\0")[0]
-    if first_field.startswith("worktree "):
-        return os.path.join(first_field.removeprefix("worktree "), "pilot", "agent-usage.jsonl")
+    for entry in proc.stdout.split("\0\0"):
+        worktree, *attributes = entry.split("\0")
+        if not worktree.startswith("worktree ") or "bare" in attributes:
+            continue
+        checkout = Path(worktree.removeprefix("worktree "))
+        if (checkout / ".git").exists() and any(field.startswith("HEAD ") for field in attributes):
+            return str(checkout / "pilot" / "agent-usage.jsonl")
     return None
 
 
