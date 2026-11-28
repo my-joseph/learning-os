@@ -765,6 +765,10 @@ def _normalize_sympy_candidate(raw: str) -> str:
         s = s.replace(macro, repl)
     for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad"):
         s = s.replace(macro, " ")
+    return _normalize_sympy_latex_groups(s)
+
+
+def _normalize_sympy_latex_groups(s: str) -> str:
     # Convert \frac{a}{b} and \dfrac{a}{b}
     for cmd in (r"\dfrac", r"\frac"):
         while cmd in s:
@@ -1537,18 +1541,48 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
                 break
 
 
-_STEP_LATEX_FUNC_RE = re.compile(r"\\(sin|cos|tan|ln|log|exp|pi)\b")
 _STEP_LEADING_EQ_RE = re.compile(r"^\s*=+\s*")
 _STEP_SINGLE_EQ_RE = re.compile(r"(?<![<>!=\\])=(?!=)")
-_STEP_STYLE_RE = re.compile(r"\\(?:(?:displaystyle|textstyle|qquad|quad)(?![A-Za-z])|[,;:!])")
-_STEP_SIZING_RE = re.compile(r"\\(?:left|right)(?![A-Za-z])(?:\s*(?P<delimiter>\\[{}]|\.))?")
-_STEP_WRAPPER_RE = re.compile(r"\\(boxed|fbox|text|mathrm|textbf)\s*(?=\{)")
+_STEP_LATEX_TOKEN_RE = re.compile(r"\\(?:[A-Za-z]+|[^\n])|[{}&]")
+_STEP_ARG_SPACE_RE = re.compile(r"\s*")
+_STEP_SIZING_COMMAND_RE = re.compile(r"(?:left|right|(?:big|Big|bigg|Bigg)[lrm]?)")
 _STEP_TEXT_LABEL_RE = re.compile(r"[A-Za-z]{2,}(?:[\s,-]+[A-Za-z]+)*[.!?:;]?")
 _STEP_SCRIPT_PREFIX_RE = re.compile(r"[_^]\s*(?:\{\s*)*$")
-_STEP_ALIGNMENT_RE = re.compile(r"\\begin\{((?:aligned|align|gathered)\*?)\}(.*)\\end\{\1\}", re.DOTALL)
 _STEP_ROW_BREAK_RE = re.compile(r"\\\\\*?(?:\s*\[[^\]\n]*\])?")
-_STEP_ALIGNMENT_MARK_RE = re.compile(r"(?<!\\)&")
-_STEP_TFRAC_RE = re.compile(r"\\tfrac(?![A-Za-z])")
+_STEP_LAYOUT_PREAMBLES = {"array", "subarray", "tabular", "alignat", "alignedat"}
+_STEP_POSITIONED_LAYOUTS = {"aligned", "gathered", "alignedat", "array", "tabular"}
+_STEP_HIDDEN_ARGUMENTS = {"color", "textcolor", "phantom", "hphantom", "vphantom", "hspace", "tag", "label"}
+_STEP_STARRED_COMMANDS = {"operatorname", "hspace", "tag"}
+_STEP_LATEX_REPLACEMENTS = {
+    **{name: name for name in ("sin", "cos", "tan", "ln", "log", "exp", "pi")},
+    "cdot": "*",
+    "times": "*",
+    "div": "/",
+    "dfrac": r"\frac",
+    "tfrac": r"\frac",
+    "{": "{",
+    "}": "}",
+}
+# These commands encode mathematical notation. Other commands have only their visible arguments compared.
+_STEP_MATH_COMMANDS = frozenset(
+    r"""
+    frac sqrt binom dbinom tbinom over atop choose
+    arcsin arccos arctan sinh cosh tanh cot sec csc lg min max inf sup gcd det dim ker deg arg Pr
+    alpha beta gamma delta epsilon varepsilon zeta eta theta vartheta iota kappa varkappa lambda mu nu xi
+    omicron rho varrho sigma varsigma tau upsilon phi varphi chi psi omega
+    Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega digamma
+    infty partial nabla ell hbar imath jmath Re Im aleph emptyset varnothing
+    pm mp ast star circ bullet oplus ominus otimes odot wedge vee cap cup setminus bmod mod pmod
+    le leq leqslant ge geq geqslant ne neq approx sim simeq cong equiv propto ll gg
+    in ni notin not subset subseteq supset supseteq parallel perp mid nmid colon
+    to mapsto leftarrow rightarrow leftrightarrow Leftarrow Rightarrow Leftrightarrow implies iff
+    sum prod coprod int iint iiint oint lim liminf limsup bigcup bigcap
+    overline bar underline vec hat widehat tilde widetilde dot ddot overrightarrow
+    langle rangle lvert rvert vert lVert rVert Vert lbrace rbrace lceil rceil lfloor rfloor
+    forall exists nexists neg therefore because angle triangle square prime degree
+    dots ldots cdots vdots ddots | % _ # &
+    """.split()
+)
 _STEP_GROUP_DELIMITERS = {"{": "{}", "[": "[]", "(": "()"}
 # Preserve function calls as written so evaluating a radical or a trig function still counts as a step.
 _STEP_UNEVALUATED_FUNCS = {name: sp.Function(name) for name in WHITELIST_FUNCS}
@@ -1607,45 +1641,99 @@ def _strip_step_outer_groups(line: str, delimiters: Dict[str, str]) -> str:
         line = group[0]
 
 
+def _step_latex_group_ends(tokens: List[re.Match[str]]) -> Dict[int, int]:
+    """Index balanced argument groups without treating escaped braces as group boundaries."""
+    openings: List[int] = []
+    ends: Dict[int, int] = {}
+    for token in tokens:
+        if token[0] == "{":
+            openings.append(token.start())
+        elif token[0] == "}" and openings:
+            ends[openings.pop()] = token.end()
+    return ends
+
+
+def _step_environment_body(latex: str, name: str, pos: int, group_ends: Dict[int, int]) -> int:
+    """Skip a layout's optional position and required column specification, when present."""
+    name = name.rstrip("*")
+    if name in _STEP_POSITIONED_LAYOUTS:
+        option = _extract_braced_arg(latex, _STEP_ARG_SPACE_RE.match(latex, pos).end(), "[]")
+        if option:
+            pos = option[1]
+    if name in _STEP_LAYOUT_PREAMBLES:
+        pos = group_ends.get(_STEP_ARG_SPACE_RE.match(latex, pos).end(), pos)
+    return pos
+
+
 def _step_latex_lines(latex: Any) -> Iterable[str]:
-    """Unwrap presentation commands and yield the mathematical rows of a step."""
+    """Keep mathematical tokens, unwrap presentation arguments, and yield rows for comparison."""
     if not isinstance(latex, str):
         return
-    line = latex.replace("$", "").replace("\u2212", "-")
-    line = _STEP_STYLE_RE.sub("", line)
-    line = _STEP_SIZING_RE.sub(lambda match: (match["delimiter"] or "").lstrip("\\").replace(".", ""), line)
-    line = _STEP_TFRAC_RE.sub(lambda _: r"\frac", line)
-    pos = 0
-    while match := _STEP_WRAPPER_RE.search(line, pos):
-        group = _extract_braced_arg(line, match.end())
-        if group is None:
-            pos = match.end()
+    latex = latex.replace("$", "").replace("\u2212", "-")
+    tokens = list(_STEP_LATEX_TOKEN_RE.finditer(latex))
+    group_ends = _step_latex_group_ends(tokens)
+    wrapper_closes = set()
+    parts: List[str] = []
+    cursor = 0
+    for token in tokens:
+        if token.start() < cursor:
             continue
-        content, end = group
-        label = content.strip()
-        if (
-            match[1] in {"text", "mathrm", "textbf"}
-            and label not in KNOWN_MATH_FUNCTIONS
-            and _STEP_TEXT_LABEL_RE.fullmatch(label)
-            and not _STEP_SCRIPT_PREFIX_RE.search(line, 0, match.start())
-        ):
-            content = " "
-        line = line[: match.start()] + content + line[end:]
-        pos = match.start()
+        parts.append(latex[cursor : token.start()])
+        cursor = token.end()
+        if token.start() in wrapper_closes or token[0] == "&":
+            continue
+        command = token[0][1:]
+        if token[0] in {"{", "}"} or command in _STEP_MATH_COMMANDS or command == "\\":
+            parts.append(token[0])
+            continue
+        if command in _STEP_LATEX_REPLACEMENTS:
+            parts.append(_STEP_LATEX_REPLACEMENTS[command])
+            continue
+        if _STEP_SIZING_COMMAND_RE.fullmatch(command):
+            delimiter = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+            cursor = delimiter + 1 if latex[delimiter : delimiter + 1] == "." else cursor
+            continue
 
-    line = _strip_step_outer_groups(line, {"{": "{}"})
-    alignment = _STEP_ALIGNMENT_RE.fullmatch(line)
-    if alignment:
-        # An ampersand marks a column boundary in a row, including between an LHS and its equals sign.
-        yield from _STEP_ROW_BREAK_RE.split(_STEP_ALIGNMENT_MARK_RE.sub("", alignment[2]))
-    else:
-        yield line
+        if command in _STEP_STARRED_COMMANDS and latex[cursor : cursor + 1] == "*":
+            cursor += 1
+        arg_start = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+        arg_end = group_ends.get(arg_start)
+        if arg_end is None:
+            continue
+        if command in {"begin", "end"}:
+            name = latex[arg_start + 1 : arg_end - 1]
+            cursor = _step_environment_body(latex, name, arg_end, group_ends) if command == "begin" else arg_end
+            continue
+        if command in _STEP_HIDDEN_ARGUMENTS:
+            cursor = arg_end
+            if command != "textcolor":
+                continue
+            arg_start = _STEP_ARG_SPACE_RE.match(latex, cursor).end()
+            arg_end = group_ends.get(arg_start)
+            if arg_end is None:
+                continue
+
+        is_text = command == "mathrm" or (command.startswith("text") and command != "textcolor")
+        label = latex[arg_start + 1 : arg_end - 1].strip() if is_text else ""
+        if (
+            label not in KNOWN_MATH_FUNCTIONS
+            and _STEP_TEXT_LABEL_RE.fullmatch(label)
+            and not _STEP_SCRIPT_PREFIX_RE.search("".join(parts))
+        ):
+            cursor = arg_end
+            parts.append(" ")
+        else:
+            cursor = arg_start + 1
+            wrapper_closes.add(arg_end - 1)
+
+    parts.append(latex[cursor:])
+    line = _strip_step_outer_groups("".join(parts), {"{": "{}"})
+    yield from _STEP_ROW_BREAK_RE.split(line)
 
 
 def _normalize_step_latex(line: str) -> str:
     """Return a canonical key for one unwrapped row, preserving unevaluated arithmetic."""
-    cand = _normalize_sympy_candidate(line)
-    cand = _STEP_LATEX_FUNC_RE.sub(r"\1", cand)
+    cand = _normalize_sympy_latex_groups(line)
     cand = _strip_step_outer_groups(cand, {"{": "{}"})
     if not cand:
         return ""
