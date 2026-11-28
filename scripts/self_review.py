@@ -12,7 +12,7 @@ Collects deterministic, no-AI improvement signals from:
 5. Doc-reference checks via ``scripts/doc_refs.py`` (skipped gracefully if absent).
 
 Usage:
-    python -m scripts.self_review [--since YYYY-MM-DD] [--compare-at YYYY-MM-DD] [--target TARGET] [--json]
+    python -m scripts.self_review [--since YYYY-MM-DD] [--compare-at YYYY-MM-DD] [--target TARGET] [--usage PATH] [--json]
 """
 
 from __future__ import annotations
@@ -1319,6 +1319,8 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
         f"drill_units={'skipped' if drill_units is None else drill_units}, "
         f"doc_refs_broken={dr.get('count', 0)}"
     )
+    if usg.get("exists"):
+        lines.append(f"Usage source: {usg['path']}")
     if report.get("skipped"):
         lines.append("Skipped: " + "; ".join(report["skipped"]))
 
@@ -1378,6 +1380,23 @@ def format_self_review(report: dict[str, Any], *, limit: int = 20) -> str:
     return "\n".join(lines)
 
 
+def _default_cli_usage_path() -> str | None:
+    try:
+        proc = subprocess.run(
+            ["git", "worktree", "list", "--porcelain", "-z"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    first_field = proc.stdout.partition("\0")[0]
+    if first_field.startswith("worktree "):
+        return os.path.join(first_field.removeprefix("worktree "), "pilot", "agent-usage.jsonl")
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="python -m scripts.self_review",
@@ -1385,6 +1404,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--since", default=None, help="only include dated signals on or after YYYY-MM-DD")
     ap.add_argument("--compare-at", default=None, help="compare before/after usage windows at YYYY-MM-DD")
+    ap.add_argument("--usage", metavar="PATH", help="override the main checkout's pilot/agent-usage.jsonl")
     ap.add_argument(
         "--target",
         default=None,
@@ -1398,6 +1418,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         report = build_self_review(
+            usage_path=args.usage or _default_cli_usage_path(),
             since=args.since,
             compare_at=args.compare_at,
             target=args.target,
