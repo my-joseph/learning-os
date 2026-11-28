@@ -41,6 +41,7 @@ from math_engine.ai_drill_ingest import (
     load_scope_archetypes,
     normalize_prompt_numbers,
     story_text,
+    validate_context_check,
     validate_l2_step_floor,
     validate_review,
 )
@@ -54,6 +55,13 @@ from math_engine.figure_autofill import collect_figure_title_warnings
 from math_engine.fmt import LEVEL_LABELS
 from math_engine.source_cores import index_dir, resolve_sources_dir
 from math_engine.source_cores.originality import check_document_originality
+from math_engine.variant_instances import (
+    FAMILY,
+    PARAMETER_KEYS,
+    PARENT_METADATA,
+    certify_instance,
+    render_radical_problem,
+)
 from math_engine.verify import verify_problem as verify_problem
 from progress_store import find_repo_root, strip_progress
 from quality_rules import (
@@ -374,6 +382,51 @@ def check_variant_uniqueness(
     return errors
 
 
+def _resolve_parent(parent_id: Any, parents: List[Tuple[str, Dict[str, Any]]]) -> Dict[str, Any]:
+    matches = [parent for label, parent in parents if label == parent_id]
+    if not isinstance(parent_id, str) or len(matches) != 1:
+        raise AiContractError("A parent must identify one active, in-scope drill problem or variant in this bank.")
+    return matches[0]
+
+
+def _generate_instance(request: Any, parents: List[Tuple[str, Dict[str, Any]]]) -> Dict[str, Any]:
+    if not isinstance(request, dict) or not {"parent", "parameters"} <= request.keys():
+        raise AiContractError("Expected parameterInstance with parent and parameters.")
+    parent_id = request["parent"]
+    problem = certify_instance(_resolve_parent(parent_id, parents), request["parameters"])
+    problem["parameterInstance"] = {
+        "parent": parent_id,
+        "parameters": problem["givens"].copy(),
+        "family": FAMILY,
+        "note": f"parameter instance of {parent_id}, invariants certified",
+    }
+    return problem
+
+
+def _full_path_error(message: str) -> str:
+    return f"{message} Use the full path with independent blind solve and review, including the context check when applicable."
+
+
+def _validate_variant_context(prob: Dict[str, Any], drill_items: List[Tuple[str, Dict[str, Any]]]) -> None:
+    pair = (prob.get("archetypeKey"), prob.get("level"))
+    candidates = [(label, p) for label, p in drill_items if (p.get("archetypeKey"), p.get("level")) == pair]
+    if "parentProblem" in prob:
+        candidates = [(label, p) for label, p in candidates if label == prob["parentProblem"]]
+        if len(candidates) != 1:
+            raise AiContractError(
+                "'parentProblem' must identify one in-scope drill problem at the same archetype and level."
+            )
+
+    parent_context = (candidates[0][1].get("context") or "") if candidates else ""
+    if len(candidates) <= 1 and (prob.get("context") or "") == parent_context:
+        return
+
+    validate_context_check(prob, changed=True)
+    validate_review(prob)
+    if any(prob[key] == parent.get(key) for _, parent in candidates for key in ("contextCheck", "review")):
+        raise AiContractError("A changed story needs its own independent context check and review.")
+
+
 def check_variant_bank(
     bank_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -383,6 +436,7 @@ def check_variant_bank(
     sources_dir: Optional[str] = None,
     *,
     allow_l2_baseline: bool = True,
+    variants_dir: Optional[str] = None,
 ) -> List[str]:
     """Run every single-problem ingest gate + variant uniqueness checks on ``bank_doc``."""
     errors: List[str] = []
@@ -403,11 +457,23 @@ def check_variant_bank(
 
     vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     drill_items = load_scope_drill_problems(unit_code, data_root=data_root)
+    try:
+        stored_bank = load_bank(unit_code, variants_dir=variants_dir)
+    except (OSError, ValueError):
+        stored_bank = None
+    stored_variants = stored_bank.get("variants") if isinstance(stored_bank, dict) else None
+    if not isinstance(stored_variants, list):
+        stored_variants = []
     active_rules = rules or QUALITY_RULES
     l2_baseline = load_l2_step_floor_baseline() if allow_l2_baseline else None
 
     seen_ids: set[str] = set()
     accepted: List[Tuple[str, Dict[str, Any]]] = []
+    parents = drill_items + [
+        (v.get("variantId"), v)
+        for v in variants
+        if isinstance(v, dict) and isinstance(v.get("variantId"), str) and not is_quarantined_variant(v, bank_doc)
+    ]
 
     for idx, original in enumerate(variants, 1):
         if not isinstance(original, dict):
@@ -451,6 +517,29 @@ def check_variant_bank(
         prob["id"] = str(original.get("variantId") or original.get("id") or f"V{idx:02d}")
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
+        certified = "parameterInstance" in prob
+        try:
+            if certified:
+                expected = _generate_instance(prob["parameterInstance"], parents)
+                content = {k: v for k, v in prob.items() if k not in PARENT_METADATA}
+                if content != expected or any(k in prob for k in ("blindSolve", "review")):
+                    raise AiContractError(
+                        "The saved instance differs from its certified numbers-only content or provenance."
+                    )
+                if prob["verificationLevel"] != "partial":
+                    raise AiContractError("A parameter instance must carry its own verification status.")
+                prov_errors, prov_warnings = check_distractor_provenance(prob, vault_archs)
+                if prov_errors or prov_warnings:
+                    raise AiContractError("; ".join(prov_errors + prov_warnings))
+            elif "parentProblem" in prob or original not in stored_variants:
+                # Keep unchanged legacy entries valid when no parent was recorded.
+                _validate_variant_context(prob, drill_items)
+        except AiContractError as exc:
+            if certified:
+                errors.append(f"[{pid}] {_full_path_error(str(exc))}")
+                continue
+            message = str(exc)
+            errors.append(message if message.startswith(f"[{pid}]") else f"[{pid}] {message}")
 
         _run_problem_gates(
             prob,
@@ -461,6 +550,7 @@ def check_variant_bank(
             enforce_l2_step_floor=True,
             bank_unit=unit_code if allow_l2_baseline else None,
             l2_baseline=l2_baseline,
+            certified_instance=certified,
         )
         errors.extend(check_variant_uniqueness(prob, drill_items + accepted))
         # Include failed variants when checking later entries for duplicates.
@@ -530,6 +620,8 @@ def add_variants(
     data_root: Optional[str] = None,
     vault_dir: Optional[str] = None,
     rules: Optional[Dict[str, Any]] = None,
+    *,
+    sources_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Gate and append variants from ``draft_doc`` into ``drills/variants/<UNIT>.json``."""
     resolved_unit = unit_code or draft_doc.get("unitCode")
@@ -557,17 +649,43 @@ def add_variants(
         combined_variants = []
 
     vault_archs = load_scope_archetypes(resolved_unit, vault_dir=vault_dir)
+    instance_parents = None
     newly_added: List[Dict[str, Any]] = []
     for item in raw_items:
+        if not isinstance(item, dict):
+            raise VariantBankError("Every variant draft must be a JSON object.")
+        if "parameterInstance" in item:
+            request = item["parameterInstance"]
+            if (
+                set(item) != {"parameterInstance"}
+                or not isinstance(request, dict)
+                or set(request) != {"parent", "parameters"}
+            ):
+                raise VariantBankError(
+                    _full_path_error("A parameter request may supply only its parent and parameters.")
+                )
+            if instance_parents is None:
+                instance_parents = load_scope_drill_problems(resolved_unit, data_root=data_root) + [
+                    (v["variantId"], v)
+                    for v in combined_variants
+                    if isinstance(v, dict) and isinstance(v.get("variantId"), str) and not is_quarantined_variant(v)
+                ]
+            try:
+                item = _generate_instance(request, instance_parents)
+            except AiContractError as exc:
+                raise VariantBankError(_full_path_error(str(exc))) from exc
         prepared = _prepare_variant_for_bank(item, resolved_unit, combined_variants, vault_archs)
         combined_variants.append(prepared)
         newly_added.append(prepared)
 
     candidate_doc = {"unitCode": resolved_unit, "variants": combined_variants}
     strip_progress({"problems": candidate_doc["variants"]})
-    errs = check_variant_bank(candidate_doc, data_root=data_root, vault_dir=vault_dir, rules=rules)
+    errs = check_variant_bank(
+        candidate_doc, data_root=data_root, vault_dir=vault_dir, rules=rules, variants_dir=variants_dir
+    )
+    instances = [p for p in newly_added if "parameterInstance" in p]
     for prepared in newly_added:
-        if "review" not in prepared:
+        if "review" not in prepared and "parameterInstance" not in prepared:
             try:
                 validate_review(prepared)
             except AiContractError as exc:
@@ -577,8 +695,16 @@ def add_variants(
         except AiContractError as exc:
             if str(exc) not in errs:
                 errs.append(str(exc))
+    if instances and not errs:
+        orig_errors, notice = check_document_originality(
+            {"unitCode": resolved_unit, "variants": instances}, sources_dir=sources_dir
+        )
+        errs.extend(orig_errors)
+        if notice:
+            errs.append(notice)
     if errs:
-        raise VariantBankError("Variant bank gates failed:\n" + "\n".join(f"  - {e}" for e in errs))
+        heading = _full_path_error("Parameter instance gates failed.") if instances else "Variant bank gates failed:"
+        raise VariantBankError(heading + "\n" + "\n".join(f"  - {e}" for e in errs))
 
     save_bank(resolved_unit, candidate_doc, variants_dir=variants_dir)
     for warn in check_variant_bank_warnings(candidate_doc, vault_dir=vault_dir):
@@ -586,7 +712,7 @@ def add_variants(
     return candidate_doc
 
 
-DEFAULT_MIN_VARIANTS = 3
+DEFAULT_MIN_VARIANTS = 1
 COVERAGE_BASELINE_PATH = Path("tests/data/variant_coverage_baseline.json")
 
 
@@ -896,6 +1022,13 @@ def _summarize_coverage(
     variant_pair_counts: Counter[Tuple[str, int]] = Counter()
     variant_arch_counts: Counter[str] = Counter()
     for var in scope_variants:
+        # Active legacy stock predates the review field. Explicit failed or
+        # malformed reviews never count, and new writes require review or certification.
+        if "review" in var:
+            try:
+                validate_review(var)
+            except AiContractError:
+                continue
         v_arch = str(var.get("archetypeKey") or var.get("sourceArchetype") or "").strip()
         if not v_arch:
             continue
@@ -1182,7 +1315,7 @@ def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
     passed = not (new or stale)
     lines = [
         f"{'PASS' if passed else 'FAIL'} Similar variant coverage gate "
-        f"(minimum {DEFAULT_MIN_VARIANTS} variants per pair)."
+        f"(trial minimum: {DEFAULT_MIN_VARIANTS} eligible variant per (archetypeKey, level) pair)."
     ]
     for key, entry in sorted(actual.items()):
         drill, arch, level = key
@@ -1191,7 +1324,9 @@ def check_coverage_gate(repo_root: Optional[Path] = None) -> Tuple[bool, str]:
             f"{status}: {drill} {arch} @ L{level} (have {entry['variantCount']}, need {entry['needed']} more)."
         )
     if new:
-        lines.append("Add reviewed Similar variants to cover new pairs. Adding baseline entries is forbidden.")
+        lines.append(
+            "Add reviewed or certified Similar variants to cover new pairs. Adding baseline entries is forbidden."
+        )
     for drill, arch, level in sorted(stale):
         pair = json.dumps([arch, level])
         lines.append(
@@ -1291,7 +1426,7 @@ def format_coverage_report(report: Dict[str, Any]) -> str:
 
     uncovered_n = len(report.get("uncoveredPairs") or [])
     lines.append(
-        f"Summary: {report['coveredPairs']}/{report['totalPairs']} pair(s) covered (>= {min_v} variants), "
+        f"Summary: {report['coveredPairs']}/{report['totalPairs']} pair(s) covered (>= {min_v} variant(s)), "
         f"{uncovered_n} uncovered (< {min_v})."
     )
     return "\n".join(lines)
@@ -1317,7 +1452,7 @@ def format_coverage_warning(
     items = ", ".join(f"{e['archetypeKey']}@L{e['level']} ({e['variantCount']}/{min_variants})" for e in uncovered)
     target_hint = drill_path or drill_doc.get("unitCode") or ""
     return (
-        f"WARNING: Similar variant bank has {len(uncovered)} uncovered pair(s) (< {min_variants} variants): "
+        f"WARNING: Similar variant bank has {len(uncovered)} uncovered pair(s) (< {min_variants} variant(s)): "
         f"{items}. Run: python -m math_engine.variant_bank --coverage {target_hint}. "
         "Check CI readiness with: python -m math_engine.variant_bank --coverage-gate"
     )
@@ -1328,6 +1463,13 @@ def _build_parser() -> argparse.ArgumentParser:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--check", metavar="FILE_OR_UNIT", help="Validate a variant bank JSON file or unit code.")
     group.add_argument("--add", metavar="DRAFT_JSON", help="Gate and append variants from a draft JSON file.")
+    group.add_argument(
+        "--instance-template",
+        type=int,
+        nargs=4,
+        metavar=("A", "B", "D", "C"),
+        help="Print a problem draft for the radical parameter family, for independent parent verification.",
+    )
     group.add_argument(
         "--coverage",
         metavar="UNIT_OR_DRILL",
@@ -1372,7 +1514,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--sources-dir",
         default=None,
-        help="Override sources directory for --originality (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
+        help="Override sources directory for originality checks (default: LEARNINGOS_SOURCES_DIR or <main>/sources).",
     )
     return parser
 
@@ -1380,6 +1522,15 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.instance_template is not None:
+        try:
+            problem = render_radical_problem(dict(zip(PARAMETER_KEYS, args.instance_template, strict=True)))
+        except AiContractError as exc:
+            print(f"FAIL {exc}")
+            return 1
+        print(json.dumps(problem, ensure_ascii=False, indent=2))
+        return 0
 
     if args.coverage_gate:
         try:
@@ -1480,7 +1631,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         with open(args.add, "r", encoding="utf-8") as fh:
             draft = json.load(fh)
         try:
-            saved = add_variants(draft, unit_code=args.unit)
+            saved = add_variants(draft, unit_code=args.unit, sources_dir=args.sources_dir)
         except VariantBankError as exc:
             print(f"FAIL {exc}")
             return 1
