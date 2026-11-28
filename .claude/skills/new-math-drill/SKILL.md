@@ -104,7 +104,7 @@ Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, th
 1. the answer, trap value and steps are correct;
 2. no second reading: units and conventions (e.g. MB = 1000 or 1024 kB, bits vs bytes), rounding, wording;
 3. the problem exercises its archetype and `commonTrapTag`;
-4. the drill fits the brief: levels, count, plain vs. word problems, at most 2 diagnose problems, no two problems with the same structure;
+4. the drill fits the brief: levels, count, plain vs. word problems, at most 2 diagnose problems, and distinct structures among main drill problems;
 5. hints and `display` help without giving the answer away.
 
 It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. Copy each verdict into the problem's `review` as given; never edit it.
@@ -118,7 +118,7 @@ It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. 
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file scratch/drafts/<file>.json
 ```
 
-Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json`, records the used contexts in the vault, and prints a non-blocking warning if any `(archetypeKey, level)` pair in the drill has < 3 Similar variants.
+Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json`, records the used contexts in the vault, and prints a non-blocking warning if any `(archetypeKey, level)` pair in the drill has no eligible Similar.
 
 ## 9. Complete Similar coverage and test before the drill PR
 
@@ -126,10 +126,13 @@ Ingest refuses any problem without `review.verdict: pass`. It assigns the drill 
 .venv/bin/python -m math_engine.variant_bank --coverage drills/data/<UNIT>/<DRILL_ID>.json
 ```
 
-Bring every `(archetypeKey, level)` pair in the new drill to at least three AI-made Similar variants at that exact level. Vary the numbers or form while preserving the archetype and level.
+Trial a minimum of one eligible, non-quarantined Similar per `(archetypeKey, level)`. Count existing reviewed variants first and include active legacy stock under the bank's compatibility rule. Variants of one parent may share its exact mathematical structure.
 
-1. Run blind solve (required for L3+, plus context check when non-empty) and reviewer subagent on the variant draft.
-2. Append via `.venv/bin/python -m math_engine.variant_bank --add scratch/drafts/<UNIT>-variants.json` and check originality with `.venv/bin/python -m math_engine.variant_bank --check <UNIT> --originality`.
+1. For a tightly specified, validated parameter-only family, keep the parent's wording, mathematical structure and solution path and change only numbers. Use a `parameterInstance` request with the parent and numbers described in [Similar trial](../../../docs/similar_trial.md). Ingest certifies the domain, solution count, distinctness and type, answer form, every candidate and the rejected class, real-step count, trap and distractor provenance, uniqueness, leaks and originality for each instance. The instance has its own provenance record. Leave the parent's blind solve and review records with the parent.
+2. Use the full authoring workflow whenever any invariant or the demand cannot be established mechanically. Obtain an independent blind solve and review for the fallback item. A new or changed context, including a removed story, always requires a fresh independent context check (§4.8) and review and uses the full workflow. Record a changed story's parent in `parentProblem` and keep story text in `context`. Follow steps 5–7 for the variant draft.
+3. Append via `.venv/bin/python -m math_engine.variant_bank --add scratch/drafts/<UNIT>-variants.json` and check originality with `.venv/bin/python -m math_engine.variant_bank --check <UNIT> --originality`. The parameter path requires cached source pages at append time.
+
+For “ขอเพิ่ม”, offer a Similar for a near-repeat and a new scoped drill for broader or different practice. Follow the learner's preference and state expected availability. Additional Similar use this same workflow and take authoring time. The Studio opens available bank items and may run out, including after a worked example uses the available item.
 
 Run the coverage gate and the **full** test suite before syncing or opening the PR. Fix every failure before step 10.
 

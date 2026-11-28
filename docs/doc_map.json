@@ -18,6 +18,9 @@
     ".claude/skills/new-math-drill/SKILL.md",
     "rules/07_problem_generation.md"
   ],
+  "math_engine/variant_instances.py": [
+    "docs/similar_trial.md"
+  ],
   "math_engine/figure_*.py": [
     "rules/03_stem.md",
     "CLAUDE.md"

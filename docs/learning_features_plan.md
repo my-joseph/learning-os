@@ -28,10 +28,9 @@ math steps include an `explain` line; do not rebuild this capability.
 4. Revisit note: optional one-line "next time I will…" note after a pass; shown first when that item comes back.
 
 ## Phase 2 — Variant bank and Similar questions (shipped)
-1. **Variant bank** `drills/variants/<UNIT>.json` (content, not learner state): per archetype ≥ 3 verified
-   math variants (same archetype + trap, different numbers/context), each with answerSpec, steps, and verify —
-   passing the same math ingest gates as drills (`math_engine.ai_drill_ingest --check`).
-   Variants are generated through the AI gated workflow (blind-solve, reviewer, and originality); template engines have been removed.
+1. **Variant bank** `drills/variants/<UNIT>.json` stores math variants with answer specs, derivations and verification.
+   The [Similar trial](similar_trial.md) sets an initial minimum of one eligible variant per archetype and level.
+   The authoring workflow includes blind solve, review and originality. The trial also permits certified instances of one bounded numbers-only family.
 2. **"Try a similar question" (+)** unlocks after a substantive check or Skip in the current cycle. It
    opens the next variant for the current cycle in bank order (preferring variants never served in earlier
    cycles, then wrapping from the first) and is accented after a wrong, assisted, or skipped answer.

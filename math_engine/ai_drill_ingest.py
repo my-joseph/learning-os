@@ -1381,12 +1381,14 @@ def validate_distractor_provenance(
     return warnings
 
 
-def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]], unit_code: str) -> None:
+def validate_against_vault(
+    prob: Dict[str, Any], archetypes: List[Dict[str, Any]], unit_code: str, *, certified_instance: bool = False
+) -> None:
     """Gates that need the vault or a blind solve (07 §4), shared by --check and ingest.
 
     - archetypeKey must be a vault archetype, and commonTrapTag one of its cognitiveTraps,
       so trapMatched telemetry only ever reports misconceptions the vault defines.
-    - L3+ problems must pass the blind-solve floor gate (`validate_blind_solve`).
+    - L3+ problems must pass the blind-solve floor gate unless the variant bank already certified the demand.
       G2 counts structure (steps, concepts, constraints, category) and cannot judge demand.
     """
     pid = prob.get("id", "?")
@@ -1414,7 +1416,7 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
     validate_context_check(prob)  # before the blind-solve gate, so a bad story is reported even if the level fails too
     level = prob.get("level")
     if isinstance(level, int) and not isinstance(level, bool):
-        if level >= 3 or prob.get("blindSolve") is not None:
+        if (level >= 3 and not certified_instance) or prob.get("blindSolve") is not None:
             validate_blind_solve(prob)
         form = str(prob.get("form") or "").strip().lower()
         if level == 1 and form == "reverse":
@@ -1444,13 +1446,10 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
 CONTEXT_CHECK_VERDICTS = ("ok", "fail")
 
 
-def validate_context_check(prob: Dict[str, Any]) -> None:
-    """Real-world context gate (07 §4.8): a problem with a non-empty `context` needs a
-    `contextCheck` {verdict, note} from a separate reviewer who judged the story against the
-    three criteria (real domain law, units and bounds, removal test). Plain problems leave
-    `context` empty and skip this gate."""
+def validate_context_check(prob: Dict[str, Any], *, changed: bool = False) -> None:
+    """Require an independent verdict for a story or a variant that removed its parent's story (07 §4.8)."""
     ctx = prob.get("context")
-    if not (isinstance(ctx, str) and ctx.strip()):
+    if not changed and not (isinstance(ctx, str) and ctx.strip()):
         return
     pid = prob.get("id", "?")
     cc = prob.get("contextCheck")
@@ -1459,6 +1458,8 @@ def validate_context_check(prob: Dict[str, Any]) -> None:
         or cc.get("verdict") not in CONTEXT_CHECK_VERDICTS
         or not str(cc.get("note") or "").strip()
     ):
+        if changed:
+            raise AiContractError(f"[{pid}] Changed context has no 'contextCheck' from a separate reviewer (07 §4.8).")
         raise AiContractError(
             f"[{pid}] Problem has context '{ctx}' but no 'contextCheck' {{verdict: ok|fail, note}} from a separate "
             f"reviewer (07 §4.8). Get the check, or drop the story and leave 'context' empty."
@@ -2017,14 +2018,19 @@ def _run_problem_gates(
     drill_id: Optional[str] = None,
     bank_unit: Optional[str] = None,
     l2_baseline: Optional[Dict[str, Dict[str, List[str]]]] = None,
+    certified_instance: bool = False,
 ) -> None:
     """Run vault/review and figure/verification gates in order.
 
     Checks collect one failure from each group and allow an absent review. Ingest
     stops at the first failure and fills references after the vault gate passes.
+    The bank sets certified_instance only after regenerating and checking the exact instance.
     """
     try:
-        validate_against_vault(prob, archetypes, unit_code)
+        if certified_instance:
+            validate_against_vault(prob, archetypes, unit_code, certified_instance=True)
+        else:
+            validate_against_vault(prob, archetypes, unit_code)
         if prepare_for_ingest is not None:
             prepare_for_ingest(prob)
         if errors is None or "review" in prob:

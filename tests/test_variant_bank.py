@@ -32,14 +32,11 @@ def test_seed_bank_passes_all_gates() -> None:
     errs = variant_bank.check_variant_bank(bank)
     assert errs == []
 
-    # Verify at least 3 distinct variants per seeded archetype and content-only schema.
-    counts: dict[str, int] = {}
+    # The seeded stock still passes the content-only schema and ID gates.
     for var in bank["variants"]:
         assert "state" not in var
         assert var["sourceArchetype"] == var["archetypeKey"]
         assert var["variantId"].startswith(f"VAR-MTH-T01-C04-{var['archetypeKey']}-")
-        counts[var["archetypeKey"]] = counts.get(var["archetypeKey"], 0) + 1
-    assert all(c >= 3 for c in counts.values())
 
 
 def test_gate_rejects_copy_of_existing_drill_problem() -> None:
@@ -249,8 +246,8 @@ def test_coverage_report_and_ingest_warning(
     variants_dir.mkdir(parents=True)
 
     # Fixture bank: 3 variants for c04-fraction-simplification-gcf@L1 (covered),
-    # 1 variant for c04-fraction-multiplication-product@L1 (uncovered: 1/3),
-    # 0 variants for c04-fraction-division-reciprocal@L2 (uncovered: 0/3).
+    # 1 variant for c04-fraction-multiplication-product@L1 (covered),
+    # 0 variants for c04-fraction-division-reciprocal@L2 (uncovered).
     seed_bank = _load_seed_bank()
     simp_l1 = [
         copy.deepcopy(v) for v in seed_bank["variants"] if v["archetypeKey"] == "c04-fraction-simplification-gcf"
@@ -282,10 +279,9 @@ def test_coverage_report_and_ingest_warning(
     # 1. Coverage by unit code and by drill JSON path
     cov_unit = variant_bank.compute_coverage(unit, variants_dir=str(variants_dir), data_root=str(data_root))
     assert cov_unit["totalPairs"] == 3
-    assert cov_unit["coveredPairs"] == 1
+    assert cov_unit["coveredPairs"] == 2
     uncovered_keys = {(e["archetypeKey"], e["level"]): e["variantCount"] for e in cov_unit["uncoveredPairs"]}
     assert uncovered_keys == {
-        ("c04-fraction-multiplication-product", 1): 1,
         ("c04-fraction-division-reciprocal", 2): 0,
     }
 
@@ -296,15 +292,15 @@ def test_coverage_report_and_ingest_warning(
     assert rc_unit == 0
     out_unit = capsys.readouterr().out
     assert "OK   c04-fraction-simplification-gcf @ L1: 3 variant(s)" in out_unit
-    assert "LOW  c04-fraction-multiplication-product @ L1: 1 variant(s) (need 2 more" in out_unit
-    assert "LOW  c04-fraction-division-reciprocal @ L2: 0 variant(s) (need 3 more" in out_unit
-    assert "1/3 pair(s) covered (>= 3 variants), 2 uncovered (< 3)." in out_unit
+    assert "OK   c04-fraction-multiplication-product @ L1: 1 variant(s)" in out_unit
+    assert "LOW  c04-fraction-division-reciprocal @ L2: 0 variant(s) (need 1 more" in out_unit
+    assert "2/3 pair(s) covered (>= 1 variant(s)), 1 uncovered (< 1)." in out_unit
 
     rc_file = variant_bank.main(["--coverage", str(drill_path), "--json"])
     assert rc_file == 0
     cov_json = json.loads(capsys.readouterr().out)
     assert cov_json["drillCount"] == 1
-    assert len(cov_json["uncoveredPairs"]) == 2
+    assert len(cov_json["uncoveredPairs"]) == 1
 
     # 2. Non-blocking ingest warning on ai_drill_ingest when drill has uncovered pairs (and silent when covered)
     tpl_path = ROOT / ".claude" / "skills" / "new-math-drill" / "template" / "draft.json"
@@ -327,10 +323,10 @@ def test_coverage_report_and_ingest_warning(
     assert rc_ingest == 0
     ingest_out = capsys.readouterr().out.strip().splitlines()
     assert ingest_out[-1].startswith("WARNING: Similar variant bank has 1 uncovered pair(s)"), ingest_out
-    assert f"{p1['archetypeKey']}@L{p1['level']} (0/3)" in ingest_out[-1]
+    assert f"{p1['archetypeKey']}@L{p1['level']} (0/1)" in ingest_out[-1]
     assert "python -m math_engine.variant_bank --coverage-gate" in ingest_out[-1]
 
-    # Now populate 3 variants for that exact (archetypeKey, level) -> ingest prints NO warning.
+    # One variant at the exact pair satisfies the trial minimum.
     covered_variants = tmp_path / "covered_variants"
     covered_variants.mkdir()
     (covered_variants / f"{single_draft['unitCode']}.json").write_text(
@@ -339,12 +335,11 @@ def test_coverage_report_and_ingest_warning(
                 "unitCode": single_draft["unitCode"],
                 "variants": [
                     {
-                        "variantId": f"VAR-{single_draft['unitCode']}-{p1['archetypeKey']}-{i:02d}",
+                        "variantId": f"VAR-{single_draft['unitCode']}-{p1['archetypeKey']}-01",
                         "archetypeKey": p1["archetypeKey"],
                         "sourceArchetype": p1["archetypeKey"],
                         "level": p1["level"],
                     }
-                    for i in range(1, 4)
                 ],
             }
         ),

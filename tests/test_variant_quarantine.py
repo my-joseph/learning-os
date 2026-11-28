@@ -67,7 +67,7 @@ def test_quarantined_variants_do_not_count_toward_coverage_gate_or_drill_review(
     }
     (data_root / unit / f"DRL-{unit}-01.json").write_text(json.dumps(drill_doc), encoding="utf-8")
 
-    # 3 quarantined variants for arch-a@L2 must NOT satisfy coverage >= 3.
+    # Quarantined stock cannot satisfy coverage.
     q_vars = [
         {
             "variantId": f"VAR-{unit}-arch-a-0{i}",
@@ -88,7 +88,7 @@ def test_quarantined_variants_do_not_count_toward_coverage_gate_or_drill_review(
 
     passed, gate_report = variant_bank.check_coverage_gate(tmp_path)
     assert not passed
-    assert "have 0, need 3 more" in gate_report
+    assert "have 0, need 1 more" in gate_report
 
     # drill_review._similar_variants_for_missed must also skip quarantined variants.
     missed = drill_review._similar_variants_for_missed(
