@@ -739,15 +739,16 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         )
 
 
-def _extract_braced_arg(s: str, start_idx: int) -> Optional[Tuple[str, int]]:
-    """Extract content inside `{...}` starting at `start_idx` (where `s[start_idx] == '{'`)."""
-    if start_idx >= len(s) or s[start_idx] != "{":
+def _extract_braced_arg(s: str, start_idx: int, delimiters: str = "{}") -> Optional[Tuple[str, int]]:
+    """Extract a balanced group starting at `start_idx`."""
+    opening, closing = delimiters
+    if start_idx >= len(s) or s[start_idx] != opening:
         return None
     depth = 0
     for idx in range(start_idx, len(s)):
-        if s[idx] == "{":
+        if s[idx] == opening:
             depth += 1
-        elif s[idx] == "}":
+        elif s[idx] == closing:
             depth -= 1
             if depth == 0:
                 return s[start_idx + 1 : idx], idx + 1
@@ -1539,6 +1540,15 @@ def _step_math_errors(prob: Dict[str, Any]) -> Iterable[str]:
 _STEP_LATEX_FUNC_RE = re.compile(r"\\(sin|cos|tan|ln|log|exp|pi)\b")
 _STEP_LEADING_EQ_RE = re.compile(r"^\s*=+\s*")
 _STEP_SINGLE_EQ_RE = re.compile(r"(?<![<>!=\\])=(?!=)")
+_STEP_STYLE_RE = re.compile(r"\\(?:(?:displaystyle|textstyle|qquad|quad)(?![A-Za-z])|[,;:!])")
+_STEP_SIZING_RE = re.compile(r"\\(?:left|right)(?![A-Za-z])(?:\s*(?P<delimiter>\\[{}]|\.))?")
+_STEP_WRAPPER_RE = re.compile(r"\\(boxed|fbox|text|mathrm|textbf)\s*(?=\{)")
+_STEP_TEXT_LABEL_RE = re.compile(r"[A-Za-z]{2,}(?:[\s,-]+[A-Za-z]+)*[.!?:;]?")
+_STEP_ALIGNMENT_RE = re.compile(r"\\begin\{((?:aligned|align|gathered)\*?)\}(.*)\\end\{\1\}", re.DOTALL)
+_STEP_ROW_BREAK_RE = re.compile(r"\\\\\*?(?:\s*\[[^\]\n]*\])?")
+_STEP_ALIGNMENT_MARK_RE = re.compile(r"(?<!\\)&")
+_STEP_TFRAC_RE = re.compile(r"\\tfrac(?![A-Za-z])")
+_STEP_GROUP_DELIMITERS = str.maketrans("[]{}", "()()")
 # Preserve function calls as written so evaluating a radical or a trig function still counts as a step.
 _STEP_UNEVALUATED_FUNCS = {name: sp.Function(name) for name in WHITELIST_FUNCS}
 _STEP_KNOWN_SYMBOLS = _STEP_UNEVALUATED_FUNCS.keys() | WHITELIST_CONSTANTS.keys()
@@ -1583,32 +1593,41 @@ def _parse_step_side_canonical(raw_side: str) -> Optional[str]:
     return _canonical_sympy_expr(expr)
 
 
-def _normalize_step_latex(latex: Any) -> str:
-    """Return a canonical anti-padding key for a step's LaTeX.
+def _strip_step_punctuation(line: str) -> str:
+    return line.rstrip().rstrip(".,;").rstrip()
 
-    Strips leading ``=``, formatting macros, extra braces, and whitespace. When the expression (or
-    both sides of a single ``=`` equation) parses via ``answer_check.safe_parse(..., evaluate=False)``,
-    returns a canonical math form that treats commutative reordering and LHS/RHS equation flips as
-    identical while keeping real simplification steps distinct. Falls back to string normalisation
-    when parsing fails.
-    """
+
+def _step_latex_lines(latex: Any) -> Iterable[str]:
+    """Unwrap presentation commands and yield the mathematical rows of a step."""
     if not isinstance(latex, str):
-        return ""
-    s = latex.strip().replace("$", "").replace("\u2212", "-")
-    for macro in (
-        r"\left",
-        r"\right",
-        r"\,",
-        r"\;",
-        r"\:",
-        r"\!",
-        r"\quad",
-        r"\qquad",
-        r"\displaystyle",
-        r"\textstyle",
-    ):
-        s = s.replace(macro, "")
-    cand = _normalize_sympy_candidate(s)
+        return
+    line = latex.replace("$", "").replace("\u2212", "-")
+    line = _STEP_STYLE_RE.sub(" ", line)
+    line = _STEP_SIZING_RE.sub(lambda match: (match["delimiter"] or "").lstrip("\\").replace(".", ""), line)
+    line = _STEP_TFRAC_RE.sub(lambda _: r"\frac", line)
+    pos = 0
+    while match := _STEP_WRAPPER_RE.search(line, pos):
+        group = _extract_braced_arg(line, match.end())
+        if group is None:
+            pos = match.end()
+            continue
+        content, end = group
+        if match[1] in {"text", "mathrm", "textbf"} and _STEP_TEXT_LABEL_RE.fullmatch(content.strip()):
+            content = " "
+        line = line[: match.start()] + content + line[end:]
+        pos = match.start()
+
+    line = _strip_step_punctuation(line.strip())
+    alignment = _STEP_ALIGNMENT_RE.fullmatch(line)
+    if alignment:
+        yield from _STEP_ROW_BREAK_RE.split(_STEP_ALIGNMENT_MARK_RE.sub("", alignment[2]))
+    else:
+        yield line
+
+
+def _normalize_step_latex(line: str) -> str:
+    """Return a canonical key for one unwrapped row, preserving unevaluated arithmetic."""
+    cand = _normalize_sympy_candidate(_strip_step_punctuation(line))
     cand = _STEP_LATEX_FUNC_RE.sub(r"\1", cand)
     cand = _STEP_LEADING_EQ_RE.sub("", cand).strip()
     while cand.startswith("{"):
@@ -1619,7 +1638,13 @@ def _normalize_step_latex(latex: Any) -> str:
     if not cand:
         return ""
 
-    eq_parts = _STEP_SINGLE_EQ_RE.split(cand)
+    parse_candidate = cand.translate(_STEP_GROUP_DELIMITERS)
+    while parse_candidate.startswith("("):
+        group = _extract_braced_arg(parse_candidate, 0, "()")
+        if group is None or group[1] != len(parse_candidate):
+            break
+        parse_candidate = _STEP_LEADING_EQ_RE.sub("", group[0]).strip()
+    eq_parts = _STEP_SINGLE_EQ_RE.split(parse_candidate)
     if len(eq_parts) == 2:
         lhs = _parse_step_side_canonical(eq_parts[0])
         rhs = _parse_step_side_canonical(eq_parts[1])
@@ -1646,21 +1671,14 @@ def count_real_steps(prob: Dict[str, Any]) -> int:
 
     A step counts only when:
     - both ``latex`` and ``explain`` are non-empty strings; and
-    - its canonical ``latex`` key has not already been seen in the given ``display``/prompt
-      expressions or any earlier counted step (rejects adjacent and non-adjacent repeats,
-      leading ``=``, extra braces, commutative reorderings, and LHS/RHS equation flips).
+    - its canonical row key has not already been seen in the given ``display``/prompt
+      expressions or any earlier counted row, after removing presentation formatting.
     """
     steps = prob.get("steps")
     if not isinstance(steps, list):
         return 0
-    seen: Set[str] = set()
-    given_norm = _normalize_step_latex(prob.get("display") or "")
-    if given_norm:
-        seen.add(given_norm)
-    for match in _INLINE_MATH_RE.findall(str(prob.get("prompt") or "")):
-        norm_match = _normalize_step_latex(match)
-        if norm_match:
-            seen.add(norm_match)
+    givens = [prob.get("display"), *_INLINE_MATH_RE.findall(str(prob.get("prompt") or ""))]
+    seen = {key for given in givens for line in _step_latex_lines(given) if (key := _normalize_step_latex(line))}
 
     count = 0
     for st in steps:
@@ -1669,11 +1687,11 @@ def count_real_steps(prob: Dict[str, Any]) -> int:
         lx, ex = st.get("latex"), st.get("explain")
         if not (isinstance(lx, str) and lx.strip() and isinstance(ex, str) and ex.strip()):
             continue
-        norm = _normalize_step_latex(lx)
-        if not norm or norm in seen:
-            continue
-        seen.add(norm)
-        count += 1
+        for line in _step_latex_lines(lx):
+            key = _normalize_step_latex(line)
+            if key and key not in seen:
+                seen.add(key)
+                count += 1
     return count
 
 

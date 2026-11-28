@@ -180,6 +180,68 @@ def test_count_real_steps_keeps_radical_evaluation_distinct() -> None:
     assert ai_drill_ingest.count_real_steps(problem) == 1
 
 
+@pytest.mark.parametrize(
+    ("earlier", "padding"),
+    [
+        pytest.param("4x = 32", r"\boxed{4x = 32}", id="boxed"),
+        pytest.param("4x = 32", r"\fbox{4x = 32}", id="fbox"),
+        pytest.param("x = (39-7)/4", r"x = \frac{39-7}{4}", id="frac-vs-slash"),
+        pytest.param(r"x = \frac{32}{4}", r"x = \dfrac{32}{4}", id="dfrac"),
+        pytest.param(r"x = \frac{32}{4}", r"x = \tfrac{32}{4}", id="tfrac"),
+        pytest.param("4x = 32", r"\begin{aligned}4x &= 32\end{aligned}", id="aligned"),
+        pytest.param("4x = 32", r"\left[4x\right] = 32", id="sized-brackets"),
+        pytest.param("4x = 32", r"\left\{4x\right\} = 32", id="sized-braces"),
+        pytest.param("4x = 32", r"\left.4x\right. = 32", id="invisible-delimiters"),
+        pytest.param("4x = 32", r"\displaystyle \text{so } 4x = 32", id="display-and-text-label"),
+        pytest.param("4x = 32", r"\mathrm{therefore}\;\textbf{so}\;4x = 32", id="styled-labels"),
+        pytest.param("4x = 32", "4x = 32.", id="trailing-period"),
+        pytest.param("4x = 32", "4x = 32,", id="trailing-comma"),
+        pytest.param("4x = 32", "4x = 32;", id="trailing-semicolon"),
+        pytest.param("4*x = 32", r"4\cdot x = 32", id="cdot"),
+        pytest.param("4x = 32", r"4\times x = 32", id="times"),
+        pytest.param("4x = 32", "4*x = 32", id="implicit-multiplication"),
+        pytest.param("x = 32/4", r"\boxed{\displaystyle x = \frac{32}{4}}", id="nested-wrappers"),
+        pytest.param("4x = 32", r"\boxed{32 = 4x}", id="boxed-equation-flip"),
+        pytest.param(r"x = \alpha", r"\boxed{\alpha = x.}", id="unsupported-command-fallback"),
+        pytest.param("x = 2, 3", r"\fbox{x = 2, 3;}", id="safe-parse-error-fallback"),
+    ],
+)
+def test_presentation_padding_does_not_count(earlier: str, padding: str) -> None:
+    problem = {"steps": [{"latex": latex, "explain": "Show the transformation."} for latex in (earlier, padding)]}
+    assert ai_drill_ingest.count_real_steps(problem) == 1
+
+
+def test_aligned_padding_compares_each_line_with_seen_steps() -> None:
+    problem = {
+        "display": r"\begin{gathered}4x+7=39 \\ x=(39-7)/4\end{gathered}",
+        "prompt": r"Use $\boxed{4x=39-7}$.",
+        "steps": [
+            {"latex": "4x=32", "explain": "Simplify the difference."},
+            {
+                "latex": r"\begin{aligned*}4x+7 &=39 \\ 4x &=39-7 \\ 4x &=32 \\ 4x &=32\end{aligned*}",
+                "explain": "Repeat the equations.",
+            },
+            {"latex": r"\textbf{therefore}", "explain": "Add a label."},
+        ],
+    }
+    assert ai_drill_ingest.count_real_steps(problem) == 1
+
+
+@pytest.mark.parametrize(
+    "lines",
+    [
+        pytest.param((r"x = \frac{32}{4}", "x = 8"), id="fraction-evaluation"),
+        pytest.param(("4x = 39-7", "4x = 32"), id="subtraction-evaluation"),
+        pytest.param(("2(x+3)", "2x+6"), id="expansion"),
+        pytest.param(("4x = 32", r"\boxed{x = 8}"), id="boxed-final-line"),
+        pytest.param(("", r"\begin{align}4x &= 32 \\[2pt] x &= 8\end{align}"), id="new-aligned-lines"),
+    ],
+)
+def test_real_transformations_still_count(lines: tuple[str, str]) -> None:
+    problem = {"steps": [{"latex": line, "explain": "Show the transformation."} for line in lines]}
+    assert ai_drill_ingest.count_real_steps(problem) == 2
+
+
 def test_under_labelling_bypass_rejected_at_all_levels() -> None:
     draft = _template_draft()
 
